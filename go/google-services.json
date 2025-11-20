@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "65724819181",
+    "project_id": "go-mobile-cb9f1",
+    "storage_bucket": "go-mobile-cb9f1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:65724819181:android:58ae5bd6a9597f9c530ee4",
+        "android_client_info": {
+          "package_name": "go.mobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "65724819181-d4ptqtnuj3tvhhg51j8a7h0vjoj9bc60.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCEqCwLje7F7-b-_CZLKKRp3vNSZIMl0AI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "65724819181-d4ptqtnuj3tvhhg51j8a7h0vjoj9bc60.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "65724819181-ceh6dbnoj29bp4tagfpihg15mk0s4tjs.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "go-mobile"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

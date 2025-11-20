@@ -1,0 +1,279 @@
+// Firebase Firestore 本番用セキュリティルール
+// このファイルの内容をそのまま Firebase Console にコピペして使用すること
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ユーザーコレクションのルール
+    match /users/{userId} {
+      // 自分のデータの読み書き
+      allow read, write: if request.auth != null
+        && request.auth.uid == userId;
+
+      // 認証されたユーザーは他のユーザーデータも読み取り可能（ユーザー検索用）
+      allow read: if request.auth != null;
+
+      // 新規ユーザー作成時の追加チェック
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && validateBasicUserData();
+
+      // 更新時の追加チェック（自分のデータのみ）
+      allow update: if request.auth != null
+        && request.auth.uid == userId
+        && validateUserUpdate();
+    }
+
+    // カウンターコレクション（イベントID生成用）
+    match /counters/{counterId} {
+      // 認証されたユーザーは読み取り・更新可能
+      allow read, write: if request.auth != null;
+    }
+
+    // システムカウンターコレクション（イベントID生成用）
+    match /system_counters/{counterId} {
+      // 認証されたユーザーは読み取り・更新可能
+      allow read, write: if request.auth != null;
+    }
+
+    // 公開イベントコレクション
+    match /events/{eventId} {
+      // 認証されたユーザーは読み取り可能
+      allow read: if request.auth != null;
+
+      // 作成者のみ作成・更新・削除可能
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.createdBy;
+
+      allow update, delete: if request.auth != null
+        && request.auth.uid == resource.data.createdBy;
+    }
+
+    // 下書きイベントコレクション
+    match /event_drafts/{draftId} {
+      // 作成者のみアクセス可能
+      allow read, write: if request.auth != null
+        && (resource == null || request.auth.uid == resource.data.createdBy)
+        && (request.resource == null || request.auth.uid == request.resource.data.createdBy);
+    }
+
+    // ゲームコレクションのルール
+    match /games/{gameId} {
+      // 全ユーザー読み取り可能（ゲーム情報は公開データ）
+      allow read: if request.auth != null;
+
+      // 管理者のみ書き込み可能（将来的に管理者権限実装予定）
+      allow write: if false; // 現在は無効
+    }
+
+    // ゲームイベントコレクション（既存のコレクション）
+    match /gameEvents/{eventId} {
+      // 認証されたユーザーは読み取り可能
+      allow read: if request.auth != null;
+
+      // 作成者のみ作成・更新・削除可能
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.createdBy;
+
+      allow update, delete: if request.auth != null
+        && request.auth.uid == resource.data.createdBy;
+    }
+
+    // 共有ゲームコレクションのルール
+    match /shared_games/{gameId} {
+      // 認証されたユーザーは読み取り可能（ゲーム情報は共有データ）
+      allow read: if request.auth != null;
+
+      // 認証されたユーザーは書き込み可能（キャッシュデータ作成・更新用）
+      // 一時的にバリデーション関数を無効化（デバッグ用）
+      allow write: if request.auth != null;
+    }
+
+    // ユーザーのプライベートデータ（設定など）
+    match /users/{userId}/private/{document} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == userId;
+    }
+
+    // フレンドリクエストコレクション
+    match /friendRequests/{requestId} {
+      // 緊急対応: 認証されたユーザーは全操作可能（一時的）
+      allow read, write: if request.auth != null;
+    }
+
+    // フレンド関係コレクション
+    match /friendships/{friendshipId} {
+      // 緊急対応: 認証されたユーザーは全操作可能（一時的）
+      allow read, write: if request.auth != null;
+    }
+
+
+    // 通知コレクション
+    match /notifications/{notificationId} {
+      // 緊急対応: 認証されたユーザーは全操作可能（デバッグ用）
+      allow read, write: if request.auth != null;
+
+      // TODO: 本番運用時は以下のルールに戻すこと
+      // // 受信者のみ読み取り・更新可能
+      // allow read, update: if request.auth != null
+      //   && (request.auth.uid == resource.data.toUserId ||
+      //       getUserCustomIdFromFirebaseUid(request.auth.uid) == resource.data.toUserId);
+
+      // // 認証されたユーザーは作成可能（通知送信時）
+      // allow create: if request.auth != null
+      //   && validateNotificationData();
+
+      // // 受信者のみ削除可能
+      // allow delete: if request.auth != null
+      //   && (request.auth.uid == resource.data.toUserId ||
+      //       getUserCustomIdFromFirebaseUid(request.auth.uid) == resource.data.toUserId);
+    }
+
+    // 参加申し込みコレクション
+    match /participationApplications/{applicationId} {
+      // 参加申し込みの作成：認証済みユーザーが自分の申し込みを作成
+      allow create: if request.auth != null &&
+        request.auth.uid == request.resource.data.userId;
+
+      // 参加申し込みの読み取り・一覧取得：認証済みユーザー
+      // （アプリ側で適切なフィルタリングを実装）
+      allow read, list: if request.auth != null;
+
+      // 参加申し込みの更新：一時的に認証済みユーザー全員に許可（デバッグ用）
+      allow update: if request.auth != null;
+
+      // 参加申し込みの削除：申し込み者本人または主催者・管理者
+      allow delete: if request.auth != null &&
+        (request.auth.uid == resource.data.userId ||
+         isEventManagerAdvanced(resource.data.eventId));
+    }
+
+    // ユーザーのゲームプロフィール（サブコレクション）
+    match /users/{userId}/gameProfiles/{gameId} {
+      // プロフィール所有者は読み書き可能
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // 他ユーザーは公開プロフィールのみ読み取り可能
+      allow read: if request.auth != null && resource.data.isPublic == true;
+    }
+
+  }
+
+  // 基本的なユーザーデータ検証（必須項目のみ）
+  function validateBasicUserData() {
+    let data = request.resource.data;
+    return data.keys().hasAny(['userId', 'username', 'email'])
+      && (
+        !('userId' in data) ||
+        (data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 50)
+      )
+      && (
+        !('username' in data) ||
+        (data.username is string && data.username.size() >= 1 && data.username.size() <= 100)
+      )
+      && (
+        !('email' in data) ||
+        (data.email is string && data.email.size() >= 1 && data.email.size() <= 200)
+      );
+  }
+
+  // 更新時の検証（既存データを考慮）
+  function validateUserUpdate() {
+    let data = request.resource.data;
+    return validateBasicUserData()
+      && (!('createdAt' in data) || data.createdAt == resource.data.createdAt); // createdAt変更禁止
+  }
+
+  // 共有ゲームデータの検証
+  function validateSharedGameData() {
+    let data = request.resource.data;
+    return data.keys().hasAll(['game', 'createdAt', 'lastAccessedAt', 'usageCount', 'sourceType'])
+      && data.game is map
+      && data.game.keys().hasAll(['id', 'name', 'developer'])
+      && data.createdAt is int
+      && data.lastAccessedAt is int
+      && data.usageCount is int && data.usageCount >= 0
+      && data.sourceType is string && data.sourceType.size() >= 1
+      && (
+        !('version' in data) ||
+        (data.version is int && data.version >= 1)
+      );
+  }
+
+  // フレンドリクエストデータの検証
+  function validateFriendRequestData() {
+    let data = request.resource.data;
+    return data.keys().hasAll(['fromUserId', 'toUserId', 'status', 'createdAt', 'updatedAt'])
+      && data.fromUserId is string && data.fromUserId.size() >= 1
+      && data.toUserId is string && data.toUserId.size() >= 1
+      && data.fromUserId != data.toUserId
+      && data.status is string && data.status == 'pending'
+      && data.createdAt is timestamp
+      && data.updatedAt is timestamp;
+  }
+
+  // フレンドリクエスト更新の検証
+  function validateFriendRequestUpdate() {
+    let data = request.resource.data;
+    let oldData = resource.data;
+    return data.fromUserId == oldData.fromUserId
+      && data.toUserId == oldData.toUserId
+      && data.createdAt == oldData.createdAt
+      && data.status is string
+      && (data.status == 'accepted' || data.status == 'rejected')
+      && data.updatedAt is timestamp;
+  }
+
+  // フレンド関係データの検証
+  function validateFriendshipData() {
+    let data = request.resource.data;
+    return data.keys().hasAll(['user1Id', 'user2Id', 'createdAt', 'updatedAt'])
+      && data.user1Id is string && data.user1Id.size() >= 1
+      && data.user2Id is string && data.user2Id.size() >= 1
+      && data.user1Id != data.user2Id
+      && data.createdAt is timestamp
+      && data.updatedAt is timestamp;
+  }
+
+  // 通知データの検証
+  function validateNotificationData() {
+    let data = request.resource.data;
+    return data.keys().hasAll(['toUserId', 'type', 'title', 'message', 'isRead', 'createdAt'])
+      && data.toUserId is string && data.toUserId.size() >= 1
+      && data.type is string && data.type.size() >= 1
+      && data.title is string && data.title.size() >= 1
+      && data.message is string && data.message.size() >= 1
+      && data.isRead is bool
+      && data.createdAt is timestamp;
+  }
+
+  // ヘルパー関数：ユーザーがイベントの主催者または管理者かチェック（参加申し込み用）
+  function isEventManagerAdvanced(eventId) {
+    let eventData = get(/databases/$(database)/documents/events/$(eventId)).data;
+    return request.auth.uid == eventData.createdBy ||
+           (eventData.keys().hasAny(['managerIds']) && request.auth.uid in eventData.managerIds) ||
+           // Temporary debug: check if event exists in gameEvents collection instead
+           (
+             exists(/databases/$(database)/documents/gameEvents/$(eventId)) &&
+             get(/databases/$(database)/documents/gameEvents/$(eventId)).data.createdBy == request.auth.uid
+           );
+  }
+
+  // ヘルパー関数：ステータス関連フィールドのみ変更されているかチェック
+  function onlyStatusFieldsChanged() {
+    let allowedFields = ['status', 'rejectionReason'];
+    return request.resource.data.diff(resource.data).affectedKeys()
+      .hasOnly(allowedFields);
+  }
+}
+
+// 注意事項：
+// 1. ルール変更時は必ず Firebase Emulator でテストすること
+// 2. 本番環境適用前にステージング環境で動作確認を行うこと
+// 3. セキュリティルールは拒否が優先されることを理解すること
+// 4. 複雑なクエリを実行する際はインデックス設定も確認すること
+// 5. フレンド機能で必要な複合インデックスは firebase/indexes.md を参照
+// 6. フレンド機能のデバッグのため一時的に読み取り権限を拡張中
+// 7. 現在の権限設定: 認証済みユーザーは friendRequests/friendships の読み取り・一覧取得可能
+// 8. セキュリティ考慮: 本番運用時は当事者のみアクセス可能なルールに変更を推奨

@@ -1,0 +1,100 @@
+// Firebase Storage 本番用セキュリティルール
+// このファイルの内容をそのまま Firebase Console にコピペして使用すること
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // ユーザーアバター画像のルール
+    match /users/{userId}/avatars/{avatarId} {
+      // 読み取り権限: 認証済みユーザーかつ所有者のみ
+      allow read: if request.auth != null
+        && request.auth.uid == userId;
+
+      // 書き込み権限: 認証済みユーザーかつ所有者のみ
+      allow write: if request.auth != null
+        && request.auth.uid == userId
+        && isValidAvatarUpload();
+
+      // 削除権限: 認証済みユーザーかつ所有者のみ
+      allow delete: if request.auth != null
+        && request.auth.uid == userId;
+    }
+
+    // 一時アップロード用（プロフィール設定時）
+    match /temp/{userId}/avatars/{avatarId} {
+      allow read, write, delete: if request.auth != null
+        && request.auth.uid == userId
+        && isValidAvatarUpload();
+    }
+
+    // イベント画像のルール
+    match /events/{eventId}/images/{imageId} {
+      // 読み取り権限: 認証済みユーザーなら誰でも可能
+      allow read: if request.auth != null;
+
+      // 書き込み権限: 認証済みユーザーのみ（将来的にイベント作成者チェックを追加予定）
+      allow write: if request.auth != null
+        && isValidEventImageUpload();
+
+      // 削除権限: 認証済みユーザーのみ（将来的にイベント作成者チェックを追加予定）
+      allow delete: if request.auth != null;
+    }
+  }
+}
+
+// アバター画像アップロードの検証関数
+function isValidAvatarUpload() {
+  return request.resource != null
+    && isValidImageFile()
+    && isValidFileSize()
+    && hasValidMetadata();
+}
+
+// イベント画像アップロードの検証関数
+function isValidEventImageUpload() {
+  return request.resource != null
+    && isValidImageFile()
+    && isValidEventImageSize()
+    && hasValidMetadata();
+}
+
+// 有効な画像ファイル形式かチェック
+function isValidImageFile() {
+  return request.resource.contentType != null
+    && (request.resource.contentType.matches('image/jpeg')
+        || request.resource.contentType.matches('image/png')
+        || request.resource.contentType.matches('image/jpg'));
+}
+
+// ファイルサイズ制限チェック（5MB以下）
+function isValidFileSize() {
+  return request.resource.size <= 5 * 1024 * 1024; // 5MB
+}
+
+// イベント画像のファイルサイズ制限チェック（10MB以下）
+function isValidEventImageSize() {
+  return request.resource.size <= 10 * 1024 * 1024; // 10MB
+}
+
+// メタデータの妥当性チェック
+function hasValidMetadata() {
+  return request.resource.metadata != null
+    && request.resource.metadata.keys().hasAll(['uploadedAt'])
+    && request.resource.metadata.uploadedAt is string;
+}
+
+// 注意事項：
+// 1. ルール変更時は必ず Firebase Emulator でテストすること
+// 2. 本番環境適用前にステージング環境で動作確認を行うこと
+// 3. セキュリティルールは拒否が優先されることを理解すること
+// 4. ファイルアップロード時はクライアント側でも事前検証を行うこと
+// 5. 古いアバター画像の削除処理を忘れないこと
+// 6. イベント画像は認証済みユーザーなら誰でもアップロード可能（将来改善予定）
+
+// デプロイ手順：
+// firebase deploy --only storage
+
+// 変更履歴：
+// - 2024/11/20: イベント画像アップロード権限を追加（events/{eventId}/images/{imageId}）
+// - イベント画像のファイルサイズ制限を10MBに設定
+// - 将来的な改善点: イベント作成者のみがアップロード可能にする権限制御の追加
