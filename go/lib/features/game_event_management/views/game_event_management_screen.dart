@@ -8,7 +8,6 @@ import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
 import '../../../shared/widgets/event_card.dart';
 import '../../../shared/widgets/empty_state_view.dart';
-import '../../../shared/widgets/auth_dialog.dart';
 import '../../../shared/widgets/quick_action_button.dart';
 import '../../event_detail/views/event_detail_screen.dart';
 import '../../../shared/widgets/app_drawer.dart';
@@ -247,10 +246,6 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
     );
   }
 
-  /// ログインダイアログを表示
-  void _showLoginDialog(BuildContext context) {
-    AuthDialog.show(context);
-  }
 
   // 参加予定イベント
   Widget _buildUpcomingEvents() {
@@ -561,39 +556,95 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
 
   // アクティビティ状況
   Widget _buildActivitySummary() {
-    return _buildSectionContainer(
-      title: 'あなたのアクティビティ',
-      icon: Icons.analytics,
-      children: [
-        Row(
+    final currentUserAsync = ref.watch(currentUserDataProvider);
+    final authState = ref.watch(authStateProvider);
+
+    return currentUserAsync.when(
+      data: (user) {
+        if (user == null || !authState.hasValue || authState.value == null) {
+          return _buildSectionContainer(
+            title: 'あなたのアクティビティ',
+            icon: Icons.analytics,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(AppDimensions.spacingL),
+                child: Text(
+                  'ログインしてください',
+                  style: TextStyle(
+                    fontSize: AppDimensions.fontSizeM,
+                    color: AppColors.textSecondary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          );
+        }
+
+        return _buildSectionContainer(
+          title: 'あなたのアクティビティ',
+          icon: Icons.analytics,
           children: [
-            Expanded(
-              child: _buildActivityItem(
-                '今月の参加',
-                '8回',
-                Icons.event_available,
-                AppColors.success,
-              ),
-            ),
-            Expanded(
-              child: _buildActivityItem(
-                '獲得ポイント',
-                '1,250pt',
-                Icons.stars,
-                AppColors.warning,
-              ),
-            ),
-            Expanded(
-              child: _buildActivityItem(
-                'ストリーク',
-                '5日連続',
-                Icons.local_fire_department,
-                AppColors.error,
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildActivityItem(
+                    '今月の参加',
+                    '8回',
+                    Icons.event_available,
+                    AppColors.success,
+                  ),
+                ),
+                Expanded(
+                  child: _buildActivityItem(
+                    '獲得ポイント',
+                    '1,250pt',
+                    Icons.stars,
+                    AppColors.warning,
+                  ),
+                ),
+                Expanded(
+                  child: _buildActivityItem(
+                    'ストリーク',
+                    '5日連続',
+                    Icons.local_fire_department,
+                    AppColors.error,
+                  ),
+                ),
+              ],
             ),
           ],
-        ),
-      ],
+        );
+      },
+      loading: () => _buildSectionContainer(
+        title: 'あなたのアクティビティ',
+        icon: Icons.analytics,
+        children: [
+          const SizedBox(
+            height: 100,
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
+          ),
+        ],
+      ),
+      error: (error, stack) => _buildSectionContainer(
+        title: 'あなたのアクティビティ',
+        icon: Icons.analytics,
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(AppDimensions.spacingL),
+            child: Text(
+              'エラーが発生しました',
+              style: TextStyle(
+                fontSize: AppDimensions.fontSizeM,
+                color: AppColors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -647,12 +698,16 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
             title: 'おすすめイベント',
             icon: Icons.recommend,
             children: [
-              EmptyStateView(
-                icon: Icons.login,
-                title: 'ログインが必要です',
-                message: 'おすすめイベントを表示するには\nログインしてください',
-                onAction: () => _showLoginDialog(context),
-                actionLabel: 'ログイン',
+              const Padding(
+                padding: EdgeInsets.all(AppDimensions.spacingL),
+                child: Text(
+                  'ログインしてください',
+                  style: TextStyle(
+                    fontSize: AppDimensions.fontSizeM,
+                    color: AppColors.textSecondary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
             ],
           );
