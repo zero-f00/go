@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/event_application_model.dart';
 import '../models/game_profile_model.dart';
 import '../models/user_model.dart';
+import '../../shared/services/notification_service.dart';
 
 /// イベント参加申込リポジトリ
 class EventApplicationRepository {
