@@ -24,6 +24,14 @@ class EventCard extends StatelessWidget {
         return AppColors.statusCompleted;
       case GameEventStatus.expired:
         return AppColors.statusExpired;
+      case GameEventStatus.cancelled:
+        return AppColors.warning;
+      case GameEventStatus.draft:
+        return AppColors.textSecondary;
+      case GameEventStatus.scheduled:
+        return AppColors.info;
+      case GameEventStatus.published:
+        return AppColors.success;
     }
   }
 
@@ -506,6 +514,26 @@ class EventCard extends StatelessWidget {
         periodText = '期限切れ';
         periodColor = AppColors.statusExpired;
         periodIcon = Icons.cancel;
+        break;
+      case GameEventStatus.cancelled:
+        periodText = 'キャンセル済み';
+        periodColor = AppColors.warning;
+        periodIcon = Icons.cancel_outlined;
+        break;
+      case GameEventStatus.draft:
+        periodText = '下書き';
+        periodColor = AppColors.textSecondary;
+        periodIcon = Icons.draft;
+        break;
+      case GameEventStatus.scheduled:
+        periodText = '公開予約済み';
+        periodColor = AppColors.info;
+        periodIcon = Icons.schedule_send;
+        break;
+      case GameEventStatus.published:
+        periodText = '公開済み';
+        periodColor = AppColors.success;
+        periodIcon = Icons.public;
         break;
     }
 

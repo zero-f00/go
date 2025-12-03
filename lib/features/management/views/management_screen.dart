@@ -22,6 +22,7 @@ import '../../../data/models/event_model.dart';
 import '../../../shared/widgets/past_events_selection_dialog.dart';
 import '../../../shared/services/participation_service.dart';
 import '../../calendar/views/event_calendar_screen.dart';
+import '../../calendar/views/host_event_calendar_screen.dart';
 import '../../../shared/widgets/game_icon.dart';
 import '../../../shared/services/game_service.dart';
 
@@ -721,6 +722,31 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
     }
   }
 
+  /// 主催イベント用カレンダー画面に遷移
+  void _navigateToHostCalendar() async {
+    final currentUser = await ref.read(currentUserDataProvider.future);
+    if (currentUser == null) return;
+
+    try {
+      if (mounted) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => HostEventCalendarScreen(),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('カレンダーの読み込みに失敗しました'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
   /// イベントステータスの色を取得
   Color _getEventStatusColor(Event event) {
     final now = DateTime.now();
@@ -788,7 +814,22 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
                   },
                 ),
               ),
-              const SizedBox(width: AppDimensions.spacingM),
+              const SizedBox(width: AppDimensions.spacingS),
+              Expanded(
+                child: _buildActionButton(
+                  title: 'カレンダー表示',
+                  icon: Icons.calendar_month,
+                  color: AppColors.primary,
+                  onTap: () {
+                    _navigateToHostCalendar();
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacingS),
+          Row(
+            children: [
               Expanded(
                 child: _buildActionButton(
                   title: 'イベントをコピー',
@@ -799,6 +840,7 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
                   },
                 ),
               ),
+              const Expanded(child: SizedBox()), // 空のスペースで調整
             ],
           ),
         ],

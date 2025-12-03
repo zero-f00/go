@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// イベントのステータス
 enum EventStatus {
   draft,     // 下書き
-  scheduled, // 予約公開
   published, // 公開中
   cancelled, // キャンセル
   completed, // 完了
@@ -52,7 +51,6 @@ class Event {
   final List<String> participantIds; // 将来の参加機能用
   final EventStatus status;
   final String? eventPassword; // 招待制イベントのパスワード
-  final DateTime? scheduledPublishAt; // 予約公開日時
   final String? cancellationReason; // 中止理由
   final DateTime? cancelledAt; // 中止日時
 
@@ -91,7 +89,6 @@ class Event {
     required this.participantIds,
     required this.status,
     this.eventPassword,
-    this.scheduledPublishAt,
     this.cancellationReason,
     this.cancelledAt,
   });
@@ -135,9 +132,6 @@ class Event {
       participantIds: List<String>.from(data['participantIds'] ?? []),
       status: _parseStatus(data['status']),
       eventPassword: data['eventPassword'],
-      scheduledPublishAt: data['scheduledPublishAt'] != null
-          ? (data['scheduledPublishAt'] as Timestamp).toDate()
-          : null,
       cancellationReason: data['cancellationReason'],
       cancelledAt: data['cancelledAt'] != null
           ? (data['cancelledAt'] as Timestamp).toDate()
@@ -181,9 +175,6 @@ class Event {
       'participantIds': participantIds,
       'status': status.name,
       'eventPassword': eventPassword,
-      'scheduledPublishAt': scheduledPublishAt != null
-          ? Timestamp.fromDate(scheduledPublishAt!)
-          : null,
       'cancellationReason': cancellationReason,
       'cancelledAt': cancelledAt != null
           ? Timestamp.fromDate(cancelledAt!)
@@ -325,8 +316,6 @@ class Event {
   static EventStatus _parseStatus(dynamic value) {
     if (value == null) return EventStatus.draft;
     switch (value.toString()) {
-      case 'scheduled':
-        return EventStatus.scheduled;
       case 'published':
         return EventStatus.published;
       case 'cancelled':
@@ -384,7 +373,6 @@ class EventInput {
   final String? policy;
   final String? eventPassword; // 招待制イベントのパスワード
   final EventStatus status; // イベントのステータス
-  final DateTime? scheduledPublishAt; // 予約公開日時
 
   const EventInput({
     required this.name,
@@ -414,6 +402,5 @@ class EventInput {
     this.policy,
     this.eventPassword,
     this.status = EventStatus.draft,
-    this.scheduledPublishAt,
   });
 }

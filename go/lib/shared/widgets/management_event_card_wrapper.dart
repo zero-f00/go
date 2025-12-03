@@ -174,6 +174,34 @@ class ManagementEventCardWrapper extends StatelessWidget {
           icon: Icons.event_busy,
           color: AppColors.textSecondary,
         );
+      case GameEventStatus.cancelled:
+        // キャンセル済み
+        return (
+          label: 'キャンセル',
+          icon: Icons.cancel,
+          color: AppColors.error,
+        );
+      case GameEventStatus.draft:
+        // 下書き
+        return (
+          label: '下書き',
+          icon: Icons.drafts,
+          color: AppColors.warning,
+        );
+      case GameEventStatus.scheduled:
+        // 公開予約済み
+        return (
+          label: '公開予約',
+          icon: Icons.schedule_send,
+          color: AppColors.info,
+        );
+      case GameEventStatus.published:
+        // 公開済み
+        return (
+          label: '公開済み',
+          icon: Icons.public,
+          color: AppColors.success,
+        );
     }
   }
 
