@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:go/data/models/event_model.dart';
 
 class GameEvent {
   final String id;
@@ -45,6 +46,9 @@ class GameEvent {
   final String? createdBy;
   final String? createdByName;
 
+  // 予約公開設定
+  final DateTime? scheduledPublishAt;
+
   const GameEvent({
     required this.id,
     required this.name,
@@ -85,6 +89,7 @@ class GameEvent {
     this.managers = const [],
     this.createdBy,
     this.createdByName,
+    this.scheduledPublishAt,
   });
 
   /// FirestoreドキュメントからGameEventを作成
@@ -135,7 +140,27 @@ class GameEvent {
       managers: List<String>.from(data['managers'] as List<dynamic>? ?? []),
       createdBy: data['createdBy'] as String?,
       createdByName: data['createdByName'] as String?,
+      scheduledPublishAt: (data['scheduledPublishAt'] as Timestamp?)?.toDate(),
     );
+  }
+
+  /// GameEventStatusをEventStatusに変換
+  EventStatus get eventStatus {
+    switch (status) {
+      case GameEventStatus.draft:
+        return EventStatus.draft;
+      case GameEventStatus.scheduled:
+        return EventStatus.scheduled;
+      case GameEventStatus.published:
+        return EventStatus.published;
+      case GameEventStatus.cancelled:
+        return EventStatus.cancelled;
+      case GameEventStatus.upcoming:
+      case GameEventStatus.active:
+      case GameEventStatus.completed:
+      case GameEventStatus.expired:
+        return EventStatus.completed;
+    }
   }
 }
 
@@ -160,19 +185,31 @@ enum GameEventType {
 }
 
 enum GameEventStatus {
+  draft,
+  scheduled,
+  published,
   upcoming,
   active,
   completed,
+  cancelled,
   expired;
 
   String get displayName {
     switch (this) {
+      case GameEventStatus.draft:
+        return '下書き';
+      case GameEventStatus.scheduled:
+        return '公開予約済み';
+      case GameEventStatus.published:
+        return '公開済み';
       case GameEventStatus.upcoming:
         return '開催予定';
       case GameEventStatus.active:
         return '開催中';
       case GameEventStatus.completed:
         return '完了';
+      case GameEventStatus.cancelled:
+        return 'キャンセル';
       case GameEventStatus.expired:
         return '期限切れ';
     }

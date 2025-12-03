@@ -309,6 +309,14 @@ class EventConverter {
         return EventStatus.completed;
       case GameEventStatus.expired:
         return EventStatus.cancelled;
+      case GameEventStatus.cancelled:
+        return EventStatus.cancelled;
+      case GameEventStatus.draft:
+        return EventStatus.draft;
+      case GameEventStatus.scheduled:
+        return EventStatus.scheduled;
+      case GameEventStatus.published:
+        return EventStatus.published;
     }
   }
 

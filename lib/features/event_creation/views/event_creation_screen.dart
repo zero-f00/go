@@ -84,9 +84,6 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   String? _existingImageUrl; // 編集モード時の既存画像URL
   bool _useExistingImage = false; // 前回の画像を使用するフラグ
 
-  // 公開設定
-  EventStatus _publicationStatus = EventStatus.published;
-  DateTime? _scheduledPublishDate;
 
   final ImagePicker _imagePicker = ImagePicker();
 
@@ -117,6 +114,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       _policyController.text = event.policy ?? '';
       _additionalInfoController.text = event.additionalInfo ?? '';
       _streamingUrls = List.from(event.streamingUrls);
+
+
       // 参加費の初期化
       if (event.feeText != null && event.feeText!.isNotEmpty) {
         _feeAmountController.text = event.feeText!;
@@ -303,8 +302,6 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                       _buildExternalSection(),
                       const SizedBox(height: AppDimensions.spacingXL),
                       _buildOtherSection(),
-                      const SizedBox(height: AppDimensions.spacingXL),
-                      _buildPublicationSection(),
                       const SizedBox(height: AppDimensions.spacingXXL),
                       _buildActionButtons(),
                       const SizedBox(height: AppDimensions.spacingL),
@@ -1937,67 +1934,6 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     );
   }
 
-  Widget _buildPublicationSection() {
-    return _buildSectionContainer(
-      title: '公開設定',
-      icon: Icons.public,
-      children: [
-        // 公開方式選択
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '公開方式',
-              style: const TextStyle(
-                fontSize: AppDimensions.fontSizeM,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textDark,
-              ),
-            ),
-            const SizedBox(height: AppDimensions.spacingS),
-            // 即座に公開
-            RadioListTile<EventStatus>(
-              value: EventStatus.published,
-              groupValue: _publicationStatus,
-              onChanged: (value) {
-                setState(() {
-                  _publicationStatus = value!;
-                  _scheduledPublishDate = null;
-                });
-              },
-              title: const Text('即座に公開'),
-              subtitle: const Text('イベント作成と同時に公開されます'),
-              contentPadding: EdgeInsets.zero,
-            ),
-            // 予約公開
-            RadioListTile<EventStatus>(
-              value: EventStatus.scheduled,
-              groupValue: _publicationStatus,
-              onChanged: (value) {
-                setState(() {
-                  _publicationStatus = value!;
-                });
-              },
-              title: const Text('予約公開'),
-              subtitle: const Text('指定した日時に自動で公開されます'),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ],
-        ),
-
-        // 予約公開日時選択
-        if (_publicationStatus == EventStatus.scheduled) ...[
-          const SizedBox(height: AppDimensions.spacingL),
-          _buildDateTimeField(
-            label: '公開日時',
-            value: _scheduledPublishDate,
-            onTap: () => _selectPublishDateTime(),
-            isRequired: true,
-          ),
-        ],
-      ],
-    );
-  }
 
   Widget _buildTagField({
     required String label,
@@ -2134,43 +2070,6 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     );
   }
 
-  void _selectPublishDateTime() async {
-    final now = DateTime.now();
-    final initialDate = _scheduledPublishDate ?? now.add(const Duration(hours: 1));
-    final firstDate = now;
-    final lastDate = _eventDate ?? now.add(const Duration(days: 365));
-
-    // TODO: 多言語化は見送り、日本語固定で実装
-    final selectedDate = await showDatePicker(
-      context: context,
-      initialDate: initialDate.isBefore(firstDate) ? firstDate : initialDate,
-      firstDate: firstDate,
-      lastDate: lastDate,
-    );
-
-    if (selectedDate == null) return;
-
-    if (!mounted) return;
-
-    final selectedTime = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.fromDateTime(initialDate),
-    );
-
-    if (selectedTime == null) return;
-
-    final selectedDateTime = DateTime(
-      selectedDate.year,
-      selectedDate.month,
-      selectedDate.day,
-      selectedTime.hour,
-      selectedTime.minute,
-    );
-
-    setState(() {
-      _scheduledPublishDate = selectedDateTime;
-    });
-  }
 
   void _selectDateTime({required bool isEventDate}) async {
     // 日付選択時の制限を設定
@@ -2320,7 +2219,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   }
 
   void _createEvent() async {
-    await _saveEventWithStatus(_publicationStatus);
+    await _saveEventWithStatus(EventStatus.published);
   }
 
   void _saveDraft() async {
@@ -2351,9 +2250,15 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       } else if (participantCount <= 5) {
         // 少数の参加者がいる場合は警告ダイアログを表示
         return await _showParticipantWarningDialog(participantCount);
+      } else if (participantCount <= 20) {
+        // 中程度の参加者がいる場合は理由入力必須の警告
+        return await _showManyParticipantsWarningDialog(
+          participantCount,
+          action: '下書きに変更'
+        );
       } else {
         // 多数の参加者がいる場合は制限
-        _showTooManyParticipantsError(participantCount);
+        _showTooManyParticipantsForDraftError(participantCount);
         return false;
       }
     } catch (e) {
@@ -2880,25 +2785,14 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       eventPassword: _visibility == '招待制' && _eventPasswordController.text.isNotEmpty
           ? _eventPasswordController.text.trim()
           : null,
-      status: overrideStatus ?? _publicationStatus,
-      scheduledPublishAt: _publicationStatus == EventStatus.scheduled
-          ? _scheduledPublishDate
-          : null,
+      status: overrideStatus ?? EventStatus.published,
     );
   }
 
-  /// 公開設定に応じた作成ボタンのテキストを取得
+  /// 作成ボタンのテキストを取得
   String _getCreateButtonText() {
     final isEditing = widget.editingEvent != null;
-
-    switch (_publicationStatus) {
-      case EventStatus.published:
-        return isEditing ? 'イベントを更新・公開する' : 'イベントを公開する';
-      case EventStatus.scheduled:
-        return isEditing ? 'イベントを更新・予約公開する' : 'イベントを予約公開する';
-      default:
-        return isEditing ? '変更を保存する' : AppStrings.createEventButton;
-    }
+    return isEditing ? 'イベントを更新・公開する' : 'イベントを公開する';
   }
 
   /// 文字列の可視性をEnumに変換
@@ -2960,7 +2854,6 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       }
     }
 
-    // ※公開設定セクションの必須項目
     if (_visibility == '招待制') {
       // 招待制イベント時の条件付き必須項目
       if (_invitedUsers.isEmpty) {
@@ -2988,16 +2881,6 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       errors.add('配信URLを入力してください');
     }
 
-    // 公開設定のバリデーション
-    if (_publicationStatus == EventStatus.scheduled) {
-      if (_scheduledPublishDate == null) {
-        errors.add('予約公開日時を設定してください');
-      } else if (_scheduledPublishDate!.isBefore(DateTime.now())) {
-        errors.add('予約公開日時は現在時刻より後に設定してください');
-      } else if (_eventDate != null && _scheduledPublishDate!.isAfter(_eventDate!)) {
-        errors.add('予約公開日時はイベント開催日時より前に設定してください');
-      }
-    }
 
     return errors;
   }
@@ -3270,4 +3153,121 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       ],
     );
   }
+
+
+  /// 中程度の参加者がいる場合の警告ダイアログ（6-20人）
+  Future<bool> _showManyParticipantsWarningDialog(
+    int participantCount, {
+    String action = '下書きに変更'
+  }) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          '注意が必要です',
+          style: TextStyle(
+            fontSize: AppDimensions.fontSizeL,
+            fontWeight: FontWeight.w600,
+            color: AppColors.warning,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '現在${participantCount}名の参加者がいるため、変更には慎重な検討が必要です。',
+              style: const TextStyle(
+                fontSize: AppDimensions.fontSizeM,
+                color: AppColors.textDark,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacingM),
+            const Text(
+              '変更理由を記入してください：',
+              style: TextStyle(
+                fontSize: AppDimensions.fontSizeM,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textDark,
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacingS),
+            TextField(
+              maxLines: 3,
+              decoration: const InputDecoration(
+                hintText: '例：スケジュール変更により内容を更新しました',
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.all(AppDimensions.spacingM),
+              ),
+              onChanged: (value) {
+                // 理由を保存（実装時に追加）
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.textSecondary,
+            ),
+            child: const Text('キャンセル'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.warning,
+            ),
+            child: Text('${action}する'),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
+
+  /// 下書き変更時のエラーダイアログ（21人以上）
+  void _showTooManyParticipantsForDraftError(int participantCount) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          'イベントの下書き化はできません',
+          style: TextStyle(
+            fontSize: AppDimensions.fontSizeL,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textDark,
+          ),
+        ),
+        content: Text(
+          '参加者が${participantCount}人いるため、イベントを下書きに戻すことはできません。'
+          '\n\n申し込み締切後の大幅な変更は参加者の混乱を招く可能性があります。',
+          style: const TextStyle(
+            fontSize: AppDimensions.fontSizeM,
+            color: AppColors.textDark,
+            height: 1.5,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.accent,
+            ),
+            child: const Text(
+              '了解',
+              style: TextStyle(
+                fontSize: AppDimensions.fontSizeM,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
 }

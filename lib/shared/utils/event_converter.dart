@@ -119,19 +119,6 @@ class EventConverter {
     switch (event.status) {
       case EventStatus.draft:
         return GameEventStatus.upcoming;
-      case EventStatus.scheduled:
-        // 予約公開の場合、公開日時前なら upcoming
-        if (event.scheduledPublishAt != null && now.isBefore(event.scheduledPublishAt!)) {
-          return GameEventStatus.upcoming;
-        }
-        // 公開日時を過ぎていれば通常の published と同じ処理
-        if (now.isBefore(event.eventDate)) {
-          return GameEventStatus.upcoming;
-        } else if (event.registrationDeadline != null && now.isAfter(event.registrationDeadline!)) {
-          return GameEventStatus.expired;
-        } else {
-          return GameEventStatus.active;
-        }
       case EventStatus.published:
         if (now.isBefore(event.eventDate)) {
           return GameEventStatus.upcoming;
@@ -320,7 +307,6 @@ class EventConverter {
       participantIds: const [],
       status: _mapGameEventStatusToEventStatus(gameEvent.status),
       eventPassword: null, // GameEventモデルにはパスワードフィールドがない
-      scheduledPublishAt: null,
       cancellationReason: gameEvent.cancellationReason, // 中止理由を追加
       cancelledAt: gameEvent.cancelledAt, // 中止日時を追加
     );

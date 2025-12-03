@@ -174,7 +174,6 @@ class EventService {
         participantIds: [], // 初期状態は空
         status: eventInput.status,
         eventPassword: eventInput.eventPassword,
-        scheduledPublishAt: eventInput.scheduledPublishAt,
       );
 
       // Firestoreデータの準備と確認

@@ -32,6 +32,14 @@ class EventDetailDialog extends StatelessWidget {
         return AppColors.statusCompleted;
       case GameEventStatus.expired:
         return AppColors.statusExpired;
+      case GameEventStatus.cancelled:
+        return AppColors.warning;
+      case GameEventStatus.draft:
+        return AppColors.textSecondary;
+      case GameEventStatus.scheduled:
+        return AppColors.info;
+      case GameEventStatus.published:
+        return AppColors.success;
     }
   }
 
@@ -692,6 +700,14 @@ class EventDetailDialog extends StatelessWidget {
         return '結果確認';
       case GameEventStatus.expired:
         return '複製';
+      case GameEventStatus.cancelled:
+        return '再開';
+      case GameEventStatus.draft:
+        return '編集';
+      case GameEventStatus.scheduled:
+        return '編集';
+      case GameEventStatus.published:
+        return '参加';
     }
   }
 }

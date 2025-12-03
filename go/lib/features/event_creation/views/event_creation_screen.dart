@@ -148,6 +148,10 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         _minAge = event.minAge!;
       }
 
+      // 公開設定の初期化
+      _publicationStatus = event.eventStatus;
+      _scheduledPublishDate = event.scheduledPublishAt;
+
       // 承認方法の初期化
       _approvalMethod = event.approvalMethod;
     }
