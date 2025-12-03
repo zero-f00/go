@@ -109,6 +109,9 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
   bool _useRanking = true;
   bool _useWinLoss = true;
 
+  // 選択された結果入力タイプ
+  SimpleResultType _selectedResultType = SimpleResultType.score;
+
   // 結果データの保存用
   Map<String, int> _scores = {}; // participantId -> score
   Map<String, int> _rankings = {}; // participantId -> rank

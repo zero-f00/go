@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/event_application_model.dart';
 import '../models/game_profile_model.dart';
 import '../models/user_model.dart';
-import '../../shared/services/notification_service.dart';
+// import '../../shared/services/notification_service.dart';
 
 /// イベント参加申込リポジトリ
 class EventApplicationRepository {
@@ -223,20 +223,7 @@ class EventApplicationRepository {
       final applicantData = applicantDoc.docs.first.data();
       final applicantUsername = applicantData['username'] as String;
 
-      // 通知サービスを使用して通知を送信
-      final notificationService = NotificationService.instance;
-      await notificationService.sendEventApplicationNotification(
-        eventId: application.eventId,
-        eventTitle: eventTitle,
-        applicantUserId: application.userId,
-        applicantUsername: applicantUsername,
-        managerIds: managerIds,
-        additionalData: {
-          'applicationId': application.id,
-          'gameProfileId': application.gameProfileId,
-          'applicantMessage': application.applicantMessage,
-        },
-      );
+      // TODO: 通知サービスを使用して通知を送信（一時的に削除）
 
     } catch (e) {
       print('❌ EventApplicationRepository: Error sending application notification: $e');
