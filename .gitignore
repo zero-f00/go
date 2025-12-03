@@ -1,0 +1,284 @@
+# =============================================================================
+# Flutter/Dart プロジェクト用 .gitignore
+# =============================================================================
+
+# ====================
+# 基本的な除外パターン
+# ====================
+
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# ====================
+# IDE・エディタ関連
+# ====================
+
+# IntelliJ/Android Studio
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code（プロジェクト設定を含める場合はコメントアウト）
+# .vscode/
+
+# Xcode user data
+**/xcuserdata/
+
+# ====================
+# Flutter/Dart関連
+# ====================
+
+# Flutter
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+coverage/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# ====================
+# プラットフォーム別ビルド成果物
+# ====================
+
+# Android
+/android/app/debug/
+/android/app/profile/
+/android/app/release/
+/android/gradle/
+/android/.gradle/
+/android/captures/
+/android/gradlew
+/android/gradlew.bat
+/android/local.properties
+*.apk
+*.ap_
+*.aab
+
+# iOS
+/ios/Pods/
+/ios/Runner.xcworkspace/xcuserdata/
+/ios/Flutter/flutter_export_environment.sh
+*.ipa
+
+# macOS
+/macos/Pods/
+/macos/Runner.xcworkspace/xcuserdata/
+/macos/Flutter/ephemeral/
+
+# Web
+/web/build/
+
+# Linux
+/linux/flutter/ephemeral/
+
+# Windows
+/windows/flutter/ephemeral/
+
+# ====================
+# Firebase関連
+# ====================
+
+# Firebase CLI設定ファイル（プロジェクト情報含む）
+# 注意: .firebaserc にはプロジェクトIDが含まれる
+# チーム開発の場合は共有を検討、個人開発なら除外を検討
+# .firebaserc
+
+# Firebase設定ファイル（機密情報を含む可能性）
+# 重要: GoogleService-Info.plist と google-services.json は
+#      本番用の設定ファイルの場合は除外すること
+#      開発用設定はチームで共有することが一般的
+ios/Runner/GoogleService-Info.plist
+android/app/google-services.json
+google-services.json
+GoogleService-Info.plist
+
+# Firebase Emulator関連
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+*-debug.log
+
+# Firebase Functions（使用時）
+functions/node_modules/
+functions/.env
+functions/.env.*
+functions/lib/
+functions/dist/
+
+# Firebase hosting（使用時）
+.firebase/hosting.*
+firebase-hosting-merge.*.html
+
+# Firebase Firestore indexes（自動生成される場合）
+# 注意: firestore.indexes.json は通常はバージョン管理に含める
+#      ただし自動生成される場合は除外を検討
+# firestore.indexes.json
+
+# ====================
+# セキュリティ関連ファイル
+# ====================
+
+# 環境変数ファイル
+.env
+.env.*
+!.env.example
+
+# 秘密鍵・証明書
+*.keystore
+*.jks
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
+
+# API キー
+**/api_keys.dart
+**/secrets.dart
+**/config.dart
+api_key.txt
+
+# ====================
+# 開発ツール・一時ファイル
+# ====================
+
+# Serena（AI開発ツール）
+.serena/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# ====================
+# バックアップ・ログ
+# ====================
+
+# Database backups
+*.db
+*.sqlite
+*.sqlite3
+
+# Log files
+*.log
+logs/
+log/
+
+# ====================
+# 依存関係管理
+# ====================
+
+# Pub dependencies
+pubspec.lock
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Node modules（Firebase Functions使用時）
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ====================
+# テスト・デバッグ関連
+# ====================
+
+# Test coverage
+coverage/
+lcov.info
+
+# Flutter integration test logs
+**/integration_test_driver.log
+
+# ====================
+# 独自追加（プロジェクト固有）
+# ====================
+
+# Firebase設定書類・開発ドキュメント（一時的な除外）
+# 注意: プロジェクトの方針に応じて調整
+firebase/EMERGENCY_FIX.md
+firebase/FRIEND_SETUP_GUIDE.md
+
+# 開発中の一時ファイル
+*.tmp
+*.temp
+*.draft
+
+# プロジェクト固有のメモリファイル（AI開発支援）
+.serena/memories/
+
+# スクリーンショット・画像素材（サイズが大きい場合）
+# screenshots/
+# assets/images/raw/
+
+# ====================
+# 注意事項
+# ====================
+#
+# 1. Firebase設定ファイルについて：
+#    - .firebaserc: プロジェクトID含む、チーム共有なら含める
+#    - firebase.json: 設定ファイル、通常は含める
+#    - firestore.indexes.json: インデックス設定、通常は含める
+#    - firestore.rules / storage.rules: セキュリティルール、必ず含める
+#    - GoogleService-Info.plist / google-services.json:
+#      開発用は含める、本番用は除外を検討
+#
+# 2. 環境変数について：
+#    - .env.example を作成して設定項目をドキュメント化
+#    - 本番環境の設定は絶対にコミットしない
+#    - Firebase API キーは制限付きなので含めても比較的安全
+#
+# 3. セキュリティ：
+#    - 秘密鍵・プライベートキーは絶対にコミットしない
+#    - .gitignore の設定後は必ず git status で確認
+#    - firebase deploy 前にルールとインデックスの確認
+#
+# 4. プロジェクト固有の注意：
+#    - firebase/ ディレクトリのドキュメントは除外設定済み
+#    - .serena/ の AI支援ファイルは除外設定済み
+#    - 本番運用前にセキュリティ設定の最終確認必須
+#
+# =============================================================================
