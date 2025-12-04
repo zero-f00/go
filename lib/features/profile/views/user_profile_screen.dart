@@ -19,6 +19,7 @@ import '../../../shared/widgets/event_card.dart';
 import '../../../shared/services/event_filter_service.dart';
 import '../../../features/game_profile/providers/game_profile_provider.dart';
 import '../../../shared/services/game_profile_service.dart';
+import '../../../shared/widgets/auth_dialog.dart';
 
 /// ユーザープロフィール表示画面
 class UserProfileScreen extends ConsumerStatefulWidget {
@@ -648,9 +649,23 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     final currentUserAsync = ref.watch(currentUserDataProvider);
     final currentUser = currentUserAsync.asData?.value;
 
-    // 現在のユーザーがサインインしていない場合は表示しない
+    // 現在のユーザーがサインインしていない場合はログインボタンを表示
     if (currentUser == null) {
-      return const SizedBox.shrink();
+      return Container(
+        margin: const EdgeInsets.only(bottom: AppDimensions.spacingL),
+        child: AppButton(
+          text: 'ログインしてフレンドになる',
+          icon: Icons.login,
+          onPressed: () async {
+            final result = await AuthDialog.show(context);
+            if (result == true) {
+              // サインイン成功後は自動的に状態が更新される
+            }
+          },
+          type: AppButtonType.primary,
+          isFullWidth: true,
+        ),
+      );
     }
 
     // 自分自身のプロフィールの場合は表示しない

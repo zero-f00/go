@@ -20,7 +20,7 @@
 | friendships | user1Id | 昇順 | user2Id | 昇順 | - | - | コレクション | 必須作成 | 未作成 | フレンド関係確認 |
 | notifications | toUserId | 昇順 | createdAt | 降順 | - | - | コレクション | 必須作成 | **要作成** | ユーザー通知一覧 |
 | events | status | 昇順 | visibility | 昇順 | eventDate | 昇順 | コレクション | 要作成 | **未作成** | 公開イベント日付順一覧 |
-| events | gameId | 昇順 | status | 昇順 | visibility | 昇順 | コレクション | 要作成 | **未作成** | ゲーム別公開イベント |
+| events | gameId | 昇順 | status | 昇順 | visibility | 昇順 | コレクション | 作成済み | **デプロイ済み** | ゲーム別公開イベント（gameId+status+visibility+eventDate）（EventService.getEventsByGameId使用） |
 | events | createdBy | 昇順 | startDate | 昇順 | - | - | コレクション | 作成済み | **作成済み** | 運営者イベント取得（RecommendationService.getManagedEvents使用） |
 | events | participantIds | 配列 | status | 昇順 | startDate | 昇順 | コレクション | 要作成 | **未作成** | 参加予定イベント（UserEventService使用） |
 | events | participantIds | 配列 | status | 昇順 | endDate | 降順 | コレクション | 要作成 | **新規作成** | 過去参加済みイベント（UserEventService.getUserParticipatedEvents使用） |

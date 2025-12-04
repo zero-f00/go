@@ -313,8 +313,6 @@ class EventConverter {
         return EventStatus.cancelled;
       case GameEventStatus.draft:
         return EventStatus.draft;
-      case GameEventStatus.scheduled:
-        return EventStatus.scheduled;
       case GameEventStatus.published:
         return EventStatus.published;
     }

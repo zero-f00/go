@@ -149,8 +149,6 @@ class GameEvent {
     switch (status) {
       case GameEventStatus.draft:
         return EventStatus.draft;
-      case GameEventStatus.scheduled:
-        return EventStatus.scheduled;
       case GameEventStatus.published:
         return EventStatus.published;
       case GameEventStatus.cancelled:
@@ -186,20 +184,17 @@ enum GameEventType {
 
 enum GameEventStatus {
   draft,
-  scheduled,
   published,
   upcoming,
   active,
   completed,
-  cancelled,
-  expired;
+  expired,
+  cancelled;
 
   String get displayName {
     switch (this) {
       case GameEventStatus.draft:
         return '下書き';
-      case GameEventStatus.scheduled:
-        return '公開予約済み';
       case GameEventStatus.published:
         return '公開済み';
       case GameEventStatus.upcoming:
@@ -208,10 +203,10 @@ enum GameEventStatus {
         return '開催中';
       case GameEventStatus.completed:
         return '完了';
-      case GameEventStatus.cancelled:
-        return 'キャンセル';
       case GameEventStatus.expired:
         return '期限切れ';
+      case GameEventStatus.cancelled:
+        return 'キャンセル';
     }
   }
 }

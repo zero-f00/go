@@ -12,6 +12,7 @@ import '../../data/repositories/user_repository.dart';
 import '../models/game.dart' as SharedGame;
 import '../../data/models/game_model.dart' as DataGame;
 import 'app_button.dart';
+import 'auth_dialog.dart';
 
 /// プロフィール要件状態
 enum ProfileRequirementStatus {
@@ -220,6 +221,15 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
         AppButton.outline(
           text: '閉じる',
           onPressed: () => Navigator.of(context).pop(),
+        ),
+        const SizedBox(width: AppDimensions.spacingS),
+        AppButton(
+          text: 'ログイン',
+          onPressed: () async {
+            Navigator.of(context).pop(); // ダイアログを閉じる
+            await AuthDialog.show(context);
+          },
+          type: AppButtonType.primary,
         ),
       ],
     );

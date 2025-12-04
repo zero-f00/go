@@ -109,6 +109,7 @@ app.*.map.json
 #      本番用の設定ファイルの場合は除外すること
 #      開発用設定はチームで共有することが一般的
 ios/Runner/GoogleService-Info.plist
+go/ios/Runner/GoogleService-Info.plist
 android/app/google-services.json
 google-services.json
 GoogleService-Info.plist

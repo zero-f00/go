@@ -16,6 +16,10 @@ class EventCard extends StatelessWidget {
 
   Color _getStatusColor(GameEventStatus status) {
     switch (status) {
+      case GameEventStatus.draft:
+        return AppColors.warning;
+      case GameEventStatus.published:
+        return AppColors.success;
       case GameEventStatus.upcoming:
         return AppColors.info;
       case GameEventStatus.active:
@@ -696,6 +700,16 @@ class EventCard extends StatelessWidget {
     IconData periodIcon;
 
     switch (event.status) {
+      case GameEventStatus.draft:
+        periodText = '下書き';
+        periodColor = AppColors.warning;
+        periodIcon = Icons.edit;
+        break;
+      case GameEventStatus.published:
+        periodText = '公開中';
+        periodColor = AppColors.success;
+        periodIcon = Icons.public;
+        break;
       case GameEventStatus.upcoming:
         final daysUntilStart = startDate.difference(now).inDays;
         periodText = daysUntilStart > 0

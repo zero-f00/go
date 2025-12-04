@@ -177,6 +177,8 @@ enum GameEventType {
 }
 
 enum GameEventStatus {
+  draft,
+  published,
   upcoming,
   active,
   completed,
@@ -185,6 +187,10 @@ enum GameEventStatus {
 
   String get displayName {
     switch (this) {
+      case GameEventStatus.draft:
+        return '下書き';
+      case GameEventStatus.published:
+        return '公開済み';
       case GameEventStatus.upcoming:
         return '開催予定';
       case GameEventStatus.active:

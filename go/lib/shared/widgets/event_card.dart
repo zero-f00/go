@@ -28,8 +28,6 @@ class EventCard extends StatelessWidget {
         return AppColors.warning;
       case GameEventStatus.draft:
         return AppColors.textSecondary;
-      case GameEventStatus.scheduled:
-        return AppColors.info;
       case GameEventStatus.published:
         return AppColors.success;
     }
@@ -523,12 +521,7 @@ class EventCard extends StatelessWidget {
       case GameEventStatus.draft:
         periodText = '下書き';
         periodColor = AppColors.textSecondary;
-        periodIcon = Icons.draft;
-        break;
-      case GameEventStatus.scheduled:
-        periodText = '公開予約済み';
-        periodColor = AppColors.info;
-        periodIcon = Icons.schedule_send;
+        periodIcon = Icons.edit;
         break;
       case GameEventStatus.published:
         periodText = '公開済み';

@@ -249,11 +249,149 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ],
           ),
+          const SizedBox(height: AppDimensions.spacingL),
+          _buildInfoSection(context),
         ],
       ),
     );
   }
 
+  Widget _buildInfoSection(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundLight,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.description,
+                color: AppColors.accent,
+                size: AppDimensions.iconM,
+              ),
+              const SizedBox(width: AppDimensions.spacingS),
+              const Text(
+                '情報・サポート',
+                style: TextStyle(
+                  fontSize: AppDimensions.fontSizeL,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacingM),
+          _buildInfoItem(
+            context: context,
+            icon: Icons.description,
+            title: '利用規約',
+            onTap: () => _onTermsOfServiceTap(context),
+          ),
+          const SizedBox(height: AppDimensions.spacingS),
+          _buildInfoItem(
+            context: context,
+            icon: Icons.privacy_tip,
+            title: 'プライバシーポリシー',
+            onTap: () => _onPrivacyPolicyTap(context),
+          ),
+          const SizedBox(height: AppDimensions.spacingS),
+          _buildInfoItem(
+            context: context,
+            icon: Icons.contact_support,
+            title: 'お問い合わせ',
+            onTap: () => _onContactTap(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoItem({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacingM,
+          vertical: AppDimensions.spacingS,
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppDimensions.spacingXS),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+              ),
+              child: Icon(
+                icon,
+                color: AppColors.primary,
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: AppDimensions.spacingM),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: AppDimensions.fontSizeM,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: AppColors.textSecondary,
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _onTermsOfServiceTap(BuildContext context) {
+    // TODO: 利用規約画面への遷移
+    _showComingSoon(context, '利用規約');
+  }
+
+  void _onPrivacyPolicyTap(BuildContext context) {
+    // TODO: プライバシーポリシー画面への遷移
+    _showComingSoon(context, 'プライバシーポリシー');
+  }
+
+  void _onContactTap(BuildContext context) {
+    // TODO: お問い合わせ画面への遷移
+    _showComingSoon(context, 'お問い合わせ');
+  }
+
+  void _showComingSoon(BuildContext context, String feature) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(feature),
+        content: Text('$feature機能は今後実装予定です。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
 
   Future<void> _showSignOutConfirmation(BuildContext context, WidgetRef ref) async {
     final confirmed = await showDialog<bool>(

@@ -23,7 +23,6 @@ class EventDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
-
   Color _getStatusColor(GameEventStatus status) {
     switch (status) {
       case GameEventStatus.upcoming:
@@ -34,6 +33,12 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         return AppColors.statusCompleted;
       case GameEventStatus.expired:
         return AppColors.statusExpired;
+      case GameEventStatus.cancelled:
+        return AppColors.statusExpired;
+      case GameEventStatus.draft:
+        return AppColors.warning;
+      case GameEventStatus.published:
+        return AppColors.success;
     }
   }
 
@@ -90,7 +95,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                       _buildRulesSection(),
                       const SizedBox(height: AppDimensions.spacingL),
                     ],
-                    if (widget.event.hasStreaming && widget.event.streamingUrl != null) ...[
+                    if (widget.event.hasStreaming &&
+                        widget.event.streamingUrl != null) ...[
                       _buildStreamingSection(),
                       const SizedBox(height: AppDimensions.spacingL),
                     ],
@@ -201,9 +207,17 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
               AppColors.primary,
             ),
             const SizedBox(width: AppDimensions.spacingS),
-            _buildInfoChip(widget.event.visibility, Icons.visibility, AppColors.info),
+            _buildInfoChip(
+              widget.event.visibility,
+              Icons.visibility,
+              AppColors.info,
+            ),
             const SizedBox(width: AppDimensions.spacingS),
-            _buildInfoChip(widget.event.language, Icons.language, AppColors.accent),
+            _buildInfoChip(
+              widget.event.language,
+              Icons.language,
+              AppColors.accent,
+            ),
           ],
         ),
       ],
@@ -276,7 +290,11 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     return _buildSectionContainer(
       title: 'スケジュール',
       children: [
-        _buildInfoRow('開催日時', dateFormat.format(widget.event.startDate), Icons.event),
+        _buildInfoRow(
+          '開催日時',
+          dateFormat.format(widget.event.startDate),
+          Icons.event,
+        ),
         if (widget.event.registrationDeadline != null) ...[
           const SizedBox(height: AppDimensions.spacingM),
           _buildInfoRow(
@@ -394,17 +412,24 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       children: [
         _buildInfoRow('募集人数', '${widget.event.maxParticipants}人', Icons.group),
         const SizedBox(height: AppDimensions.spacingM),
-        _buildInfoRow('現在の参加者数', '${widget.event.participantCount}人', Icons.people),
+        _buildInfoRow(
+          '現在の参加者数',
+          '${widget.event.participantCount}人',
+          Icons.people,
+        ),
         const SizedBox(height: AppDimensions.spacingM),
         _buildInfoRow('承認方法', widget.event.approvalMethod, Icons.approval),
         if (widget.event.hasFee) ...[
           const SizedBox(height: AppDimensions.spacingM),
           _buildInfoRow(
             '参加費',
-            widget.event.feeAmount != null ? '${widget.event.feeAmount!.round()}円' : '有料',
+            widget.event.feeAmount != null
+                ? '${widget.event.feeAmount!.round()}円'
+                : '有料',
             Icons.paid,
           ),
-          if (widget.event.feeSupplement != null && widget.event.feeSupplement!.isNotEmpty) ...[
+          if (widget.event.feeSupplement != null &&
+              widget.event.feeSupplement!.isNotEmpty) ...[
             const SizedBox(height: AppDimensions.spacingS),
             _buildFeeSupplementInfo(widget.event.feeSupplement!),
           ],
@@ -439,7 +464,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
   Widget _buildStreamingSection() {
     return _buildSectionContainer(
       title: '配信情報',
-      children: [_buildInfoRow('配信URL', widget.event.streamingUrl!, Icons.live_tv)],
+      children: [
+        _buildInfoRow('配信URL', widget.event.streamingUrl!, Icons.live_tv),
+      ],
     );
   }
 
@@ -754,7 +781,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
   /// イベント編集画面への遷移
   void _navigateToEventEdit(BuildContext context) {
-    Navigator.of(context).pushNamed('/event_edit', arguments: widget.event).then((_) {
+    Navigator.of(
+      context,
+    ).pushNamed('/event_edit', arguments: widget.event).then((_) {
       // 編集から戻った場合、必要に応じて画面を更新
       // TODO: イベントの更新後にデータを再読み込みする処理を実装
     });
@@ -820,7 +849,10 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
         // 参加申し込み状況を監視
         final participationStatus = ref.watch(
-          userParticipationStatusProvider((eventId: widget.event.id, userId: user.id))
+          userParticipationStatusProvider((
+            eventId: widget.event.id,
+            userId: user.id,
+          )),
         );
 
         return participationStatus.when(

@@ -162,11 +162,13 @@ class SharedGameRepository {
   /// クエリパラメータでゲームを検索
   Future<List<SharedGameData>> searchGames(GameSearchQuery query) async {
     try {
+      print('[SharedGameRepository] searchGames開始: name="${query.name}", platforms=${query.platforms}');
       Query firestoreQuery = _firestore.collection(_collection);
 
       // 名前での検索
       if (query.name != null && query.name!.isNotEmpty) {
         final searchName = query.name!.toLowerCase();
+        print('[SharedGameRepository] 名前フィルタ追加: "$searchName"');
         firestoreQuery = firestoreQuery
             .where('game.name', isGreaterThanOrEqualTo: searchName)
             .where('game.name', isLessThanOrEqualTo: searchName + '\uf8ff');
@@ -174,23 +176,29 @@ class SharedGameRepository {
 
       // 開発者での検索
       if (query.developer != null && query.developer!.isNotEmpty) {
+        print('[SharedGameRepository] 開発者フィルタ追加: "${query.developer}"');
         firestoreQuery = firestoreQuery
             .where('game.developer', isEqualTo: query.developer);
       }
 
       // 人気ゲームでの絞り込み
       if (query.isPopular != null) {
+        print('[SharedGameRepository] 人気ゲームフィルタ追加: ${query.isPopular}');
         firestoreQuery = firestoreQuery
             .where('game.isPopular', isEqualTo: query.isPopular);
       }
 
       // 評価での絞り込み
       if (query.minRating != null) {
+        print('[SharedGameRepository] 評価フィルタ追加: ${query.minRating}');
         firestoreQuery = firestoreQuery
             .where('game.rating', isGreaterThanOrEqualTo: query.minRating);
       }
 
+      print('[SharedGameRepository] Firestoreクエリ実行開始');
       final querySnapshot = await firestoreQuery.limit(20).get();
+      print('[SharedGameRepository] Firestoreクエリ成功: ${querySnapshot.docs.length}件');
+
       final results = <SharedGameData>[];
 
       for (final doc in querySnapshot.docs) {
@@ -202,14 +210,21 @@ class SharedGameRepository {
             (platform) => query.platforms!.contains(platform),
           );
 
-          if (!hasMatchingPlatform) continue;
+          if (!hasMatchingPlatform) {
+            print('[SharedGameRepository] プラットフォーム不一致で除外: ${sharedGame.game.name}');
+            continue;
+          }
         }
 
         results.add(sharedGame);
+        print('[SharedGameRepository] 結果に追加: ${sharedGame.game.name}');
       }
 
+      print('[SharedGameRepository] searchGames完了: ${results.length}件の結果');
       return results;
     } catch (e) {
+      print('[SharedGameRepository] searchGamesエラー: $e');
+      print('[SharedGameRepository] エラータイプ: ${e.runtimeType}');
       return [];
     }
   }

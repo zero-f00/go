@@ -36,8 +36,6 @@ class EventDetailDialog extends StatelessWidget {
         return AppColors.warning;
       case GameEventStatus.draft:
         return AppColors.textSecondary;
-      case GameEventStatus.scheduled:
-        return AppColors.info;
       case GameEventStatus.published:
         return AppColors.success;
     }
@@ -703,8 +701,6 @@ class EventDetailDialog extends StatelessWidget {
       case GameEventStatus.cancelled:
         return '再開';
       case GameEventStatus.draft:
-        return '編集';
-      case GameEventStatus.scheduled:
         return '編集';
       case GameEventStatus.published:
         return '参加';

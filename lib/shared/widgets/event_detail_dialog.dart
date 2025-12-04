@@ -24,6 +24,10 @@ class EventDetailDialog extends StatelessWidget {
 
   Color _getStatusColor(GameEventStatus status) {
     switch (status) {
+      case GameEventStatus.draft:
+        return AppColors.warning;
+      case GameEventStatus.published:
+        return AppColors.success;
       case GameEventStatus.upcoming:
         return AppColors.info;
       case GameEventStatus.active:
@@ -686,6 +690,10 @@ class EventDetailDialog extends StatelessWidget {
 
   String _getActionButtonText() {
     switch (event.status) {
+      case GameEventStatus.draft:
+        return '編集';
+      case GameEventStatus.published:
+        return '参加';
       case GameEventStatus.upcoming:
         return '編集';
       case GameEventStatus.active:

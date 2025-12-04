@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/foundation.dart';
 import 'dart:io' show Platform;
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
-import '../constants/app_strings.dart';
 import '../providers/auth_provider.dart';
-import '../services/auth_service.dart';
 import 'user_settings_dialog.dart';
 
 class AuthDialog extends ConsumerStatefulWidget {
@@ -52,7 +49,7 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
         // Show user-friendly error message
         _showErrorDialog('Googleサインインに失敗しました');
       }
-    } catch (e, stackTrace) {
+    } catch (e) {
       _showErrorDialog('Googleサインインエラーが発生しました');
     } finally {
       if (mounted) {
@@ -82,7 +79,7 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
         // Show user-friendly error message
         _showErrorDialog('Apple IDサインインに失敗しました');
       }
-    } catch (e, stackTrace) {
+    } catch (e) {
       _showErrorDialog('Apple IDサインインエラーが発生しました');
     } finally {
       if (mounted) {
@@ -315,21 +312,26 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
 
       if (userData != null && userData.isSetupCompleteBasedOnUserId) {
         // 既存ユーザーかつ設定完了済みの場合、ようこそメッセージを表示して初回設定はスキップ
-        Navigator.of(context).pop(true);
-        _showWelcomeBackDialog();
+        if (mounted) {
+          Navigator.of(context).pop(true);
+          _showWelcomeBackDialog();
+        }
         return;
       }
 
       // 認証ダイアログを閉じる
-      Navigator.of(context).pop(true);
-
-      // 新規ユーザーまたは設定未完了の場合、初回ユーザー設定ダイアログを表示
-      await UserSettingsDialog.show(context, isInitialSetup: true);
+      if (mounted) {
+        Navigator.of(context).pop(true);
+        // 新規ユーザーまたは設定未完了の場合、初回ユーザー設定ダイアログを表示
+        await UserSettingsDialog.show(context, isInitialSetup: true);
+      }
 
     } catch (e) {
       // エラーの場合は安全側に倒して初回設定を表示
-      Navigator.of(context).pop(true);
-      await UserSettingsDialog.show(context, isInitialSetup: true);
+      if (mounted) {
+        Navigator.of(context).pop(true);
+        await UserSettingsDialog.show(context, isInitialSetup: true);
+      }
     }
   }
 

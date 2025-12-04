@@ -20,6 +20,7 @@ import '../../../shared/utils/event_converter.dart';
 import '../../../data/models/event_model.dart';
 import '../../../shared/widgets/activity_stats_card.dart';
 import '../../../shared/services/user_event_service.dart';
+import '../../../shared/widgets/auth_dialog.dart';
 
 class GameEventManagementScreen extends ConsumerStatefulWidget {
   final VoidCallback? onNavigateToSearch;
@@ -92,9 +93,7 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
               child: QuickActionButton(
                 label: 'イベント作成',
                 icon: Icons.add_circle_outline,
-                onTap: () {
-                  widget.onNavigateToEventCreation?.call();
-                },
+                onTap: () => _handleEventCreation(),
                 backgroundColor: AppColors.accent.withValues(alpha: 0.1),
                 iconColor: AppColors.accent,
                 textColor: AppColors.accent,
@@ -854,6 +853,28 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
   /// お気に入りゲーム画面へ遷移
   void _navigateToFavoriteGames() {
     Navigator.pushNamed(context, '/favorite-games');
+  }
+
+  Future<void> _handleEventCreation() async {
+    final authState = ref.watch(authStateProvider);
+    authState.when(
+      data: (user) {
+        if (user == null) {
+          // ゲストユーザーの場合はログインダイアログを表示
+          AuthDialog.show(context);
+        } else {
+          // サインイン済みの場合はイベント作成画面に遷移
+          widget.onNavigateToEventCreation?.call();
+        }
+      },
+      loading: () {
+        // ローディング中は何もしない
+      },
+      error: (error, stack) {
+        // エラー時はログインダイアログを表示
+        AuthDialog.show(context);
+      },
+    );
   }
 
   /// 運営者イベントセクション

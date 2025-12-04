@@ -65,6 +65,8 @@ class AppColors {
   static const Color statusActive = Color(0xFF4CAF50);
   static const Color statusCompleted = Color(0xFF9C27B0);
   static const Color statusExpired = Color(0xFF757575);
+  static const Color statusDraft = Color(0xFFFFA500);
+  static const Color statusPublished = Color(0xFF4CAF50);
 
   // Text colors
   static const Color textOnPrimary = textWhite;

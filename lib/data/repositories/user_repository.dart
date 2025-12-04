@@ -228,6 +228,7 @@ class UserRepository {
       if (exactUserIdMatch != null && exactUserIdMatch.isActive) {
         results.add(exactUserIdMatch);
         seenIds.add(exactUserIdMatch.id);
+      } else {
       }
 
       // 2. ユーザー名での部分一致検索（一時的に簡素化）

@@ -18,8 +18,6 @@ class StandardEventCard extends StatelessWidget {
     switch (status) {
       case EventStatus.draft:
         return AppColors.textSecondary;
-      case EventStatus.scheduled:
-        return AppColors.info;
       case EventStatus.published:
         return AppColors.success;
       case EventStatus.cancelled:
@@ -33,8 +31,6 @@ class StandardEventCard extends StatelessWidget {
     switch (status) {
       case EventStatus.draft:
         return '下書き';
-      case EventStatus.scheduled:
-        return '予約公開';
       case EventStatus.published:
         return '公開中';
       case EventStatus.cancelled:

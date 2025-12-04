@@ -164,6 +164,10 @@ class _HostEventCalendarScreenState extends ConsumerState<HostEventCalendarScree
   /// イベントステータスに基づく色を取得
   Color _getEventStatusColor(GameEvent event) {
     switch (event.status) {
+      case GameEventStatus.draft:
+        return AppColors.warning;
+      case GameEventStatus.published:
+        return AppColors.success;
       case GameEventStatus.upcoming:
         return AppColors.info;
       case GameEventStatus.active:

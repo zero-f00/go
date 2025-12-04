@@ -17,6 +17,10 @@ class CompactEventCard extends StatelessWidget {
 
   Color _getStatusColor(GameEventStatus status) {
     switch (status) {
+      case GameEventStatus.draft:
+        return AppColors.warning;
+      case GameEventStatus.published:
+        return AppColors.success;
       case GameEventStatus.upcoming:
         return AppColors.info;
       case GameEventStatus.active:

@@ -103,19 +103,18 @@ class AuthService {
   /// Sign in with Apple
   Future<UserCredential?> signInWithApple() async {
     try {
-
-      // Check platform and environment
+      print('[AuthService] Apple Sign-in開始');
 
       // Check if Apple Sign-In is available
-      if (!(await SignInWithApple.isAvailable())) {
+      final isAvailable = await SignInWithApple.isAvailable();
+      print('[AuthService] Apple Sign-in利用可能: $isAvailable');
+
+      if (!isAvailable) {
+        print('[AuthService] Apple Sign-inが利用できません');
         throw Exception('Apple Sign-In is not available on this device');
       }
 
-
-      // Simulator warning and handling
-      if (kDebugMode) {
-      }
-
+      print('[AuthService] Apple ID認証情報要求開始');
       // Request Apple ID credential
       final appleCredential = await SignInWithApple.getAppleIDCredential(
         scopes: [
@@ -124,32 +123,58 @@ class AuthService {
         ],
       );
 
+      print('[AuthService] Apple ID認証情報取得完了');
+      print('[AuthService] - identityToken有無: ${appleCredential.identityToken != null}');
+      print('[AuthService] - authorizationCode有無: ${appleCredential.authorizationCode != null}');
+      print('[AuthService] - email: ${appleCredential.email ?? "なし"}');
+      print('[AuthService] - givenName: ${appleCredential.givenName ?? "なし"}');
+      print('[AuthService] - familyName: ${appleCredential.familyName ?? "なし"}');
 
       // Validate required credentials
       if (appleCredential.identityToken == null) {
+        print('[AuthService] エラー: identityTokenが取得できません');
         throw Exception('Apple Sign-In failed: No identity token received');
       }
 
       if (appleCredential.authorizationCode == null) {
+        print('[AuthService] エラー: authorizationCodeが取得できません');
         throw Exception('Apple Sign-In failed: No authorization code received');
       }
 
+      print('[AuthService] Firebase OAuth認証情報作成開始');
       // Create OAuth credential
       final oAuthCredential = OAuthProvider('apple.com').credential(
         idToken: appleCredential.identityToken,
         accessToken: appleCredential.authorizationCode,
       );
 
+      print('[AuthService] Firebaseサインイン開始');
       // Sign in to Firebase with the Apple credential
       final userCredential = await _auth.signInWithCredential(oAuthCredential);
 
+      print('[AuthService] Firebaseサインイン成功');
+      print('[AuthService] - UID: ${userCredential.user?.uid}');
+      print('[AuthService] - 表示名: ${userCredential.user?.displayName ?? "なし"}');
+      print('[AuthService] - Email: ${userCredential.user?.email ?? "なし"}');
+
       return userCredential;
     } catch (e, stackTrace) {
+      print('[AuthService] Apple Sign-inエラー発生');
+      print('[AuthService] - エラー内容: $e');
+      print('[AuthService] - エラータイプ: ${e.runtimeType}');
+      print('[AuthService] - スタックトレース: $stackTrace');
 
       // Specific error handling for common Apple Sign-In errors
       if (e.toString().contains('1000')) {
+        print('[AuthService] - 詳細: ユーザーがキャンセルしました');
       } else if (e.toString().contains('1001')) {
+        print('[AuthService] - 詳細: 不明なエラーが発生しました');
+      } else if (e.toString().contains('firebase')) {
+        print('[AuthService] - 詳細: Firebaseエラーです');
+      } else if (e.toString().contains('network')) {
+        print('[AuthService] - 詳細: ネットワークエラーです');
       } else {
+        print('[AuthService] - 詳細: その他のエラーです');
       }
 
       return null;

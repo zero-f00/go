@@ -85,32 +85,6 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
               padding: EdgeInsets.zero,
               children: [
                 _buildDrawerItem(
-                  icon: Icons.description,
-                  title: '利用規約',
-                  onTap: () => _onTermsOfServiceTap(context),
-                ),
-                _buildDrawerItem(
-                  icon: Icons.privacy_tip,
-                  title: 'プライバシーポリシー',
-                  onTap: () => _onPrivacyPolicyTap(context),
-                ),
-                _buildDrawerItem(
-                  icon: Icons.contact_support,
-                  title: 'お問い合わせ',
-                  onTap: () => _onContactTap(context),
-                ),
-                _buildDrawerItem(
-                  icon: Icons.star_rate,
-                  title: 'アプリを評価',
-                  onTap: () => _onRatingTap(context),
-                ),
-                const Divider(
-                  color: AppColors.border,
-                  thickness: 1,
-                  indent: AppDimensions.spacingL,
-                  endIndent: AppDimensions.spacingL,
-                ),
-                _buildDrawerItem(
                   icon: Icons.people,
                   title: 'フレンド',
                   onTap: () => _onFriendsTap(context),
@@ -120,10 +94,21 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                   title: 'お気に入りのゲーム',
                   onTap: () => _onFavoriteGamesTap(context),
                 ),
+                const Divider(
+                  color: AppColors.border,
+                  thickness: 1,
+                  indent: AppDimensions.spacingL,
+                  endIndent: AppDimensions.spacingL,
+                ),
                 _buildDrawerItem(
                   icon: Icons.settings,
                   title: '設定',
                   onTap: () => _onSettingsTap(context),
+                ),
+                _buildDrawerItem(
+                  icon: Icons.star_rate,
+                  title: 'アプリを評価',
+                  onTap: () => _onRatingTap(context),
                 ),
               ],
             ),
@@ -519,24 +504,9 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
     }
   }
 
-  void _onTermsOfServiceTap(BuildContext context) {
-    Navigator.pop(context);
-    // TODO: 利用規約画面への遷移
-    _showComingSoon(context, '利用規約');
-  }
-
-  void _onPrivacyPolicyTap(BuildContext context) {
-    Navigator.pop(context);
-    // TODO: プライバシーポリシー画面への遷移
-    _showComingSoon(context, 'プライバシーポリシー');
-  }
 
 
-  void _onContactTap(BuildContext context) {
-    Navigator.pop(context);
-    // TODO: お問い合わせ画面への遷移
-    _showComingSoon(context, 'お問い合わせ');
-  }
+
 
   void _onRatingTap(BuildContext context) {
     Navigator.pop(context);
@@ -596,19 +566,4 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
     }
   }
 
-  void _showComingSoon(BuildContext context, String feature) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(feature),
-        content: Text('$feature画面は準備中です。'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
 }

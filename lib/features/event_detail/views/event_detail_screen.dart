@@ -20,6 +20,7 @@ import '../../../data/repositories/user_repository.dart';
 import '../../../data/models/user_model.dart';
 import '../../../shared/widgets/user_action_modal.dart';
 import '../../../shared/widgets/streaming_player_widget.dart';
+import '../../../shared/widgets/auth_dialog.dart';
 import 'participant_match_results_screen.dart';
 
 class EventDetailScreen extends ConsumerStatefulWidget {
@@ -83,6 +84,10 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
   Color _getStatusColor(GameEventStatus status) {
     switch (status) {
+      case GameEventStatus.draft:
+        return AppColors.warning;
+      case GameEventStatus.published:
+        return AppColors.success;
       case GameEventStatus.upcoming:
         return AppColors.info;
       case GameEventStatus.active:
@@ -1688,10 +1693,15 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       data: (user) {
         if (user == null) {
           return AppButton(
-            text: 'ログインが必要です',
-            onPressed: null,
-            type: AppButtonType.secondary,
-            isEnabled: false,
+            text: 'ログインして参加申し込み',
+            onPressed: () async {
+              final result = await AuthDialog.show(context);
+              if (result == true) {
+                // サインイン成功後は自動的に状態が更新される
+              }
+            },
+            type: AppButtonType.primary,
+            icon: Icons.login,
           );
         }
 

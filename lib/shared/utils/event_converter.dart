@@ -315,6 +315,10 @@ class EventConverter {
   /// GameEventStatus を EventStatus にマッピング
   static EventStatus _mapGameEventStatusToEventStatus(GameEventStatus status) {
     switch (status) {
+      case GameEventStatus.draft:
+        return EventStatus.draft;
+      case GameEventStatus.published:
+        return EventStatus.published;
       case GameEventStatus.upcoming:
         return EventStatus.published;
       case GameEventStatus.active:

@@ -505,6 +505,7 @@ class EventService {
           .where('status', isEqualTo: 'published')
           .where('visibility', isEqualTo: 'public');
 
+
       if (platforms != null && platforms.isNotEmpty) {
         query = query.where('platforms', arrayContainsAny: platforms);
       }
@@ -516,6 +517,7 @@ class EventService {
       query = query.limit(limit);
 
       final querySnapshot = await query.get();
+
       final allEvents = querySnapshot.docs.map((doc) => Event.fromFirestore(doc)).toList();
 
       // クライアントサイドでキーワード検索（暫定）
@@ -523,6 +525,8 @@ class EventService {
         final searchText = '${event.name} ${event.description} ${event.gameName ?? ''}'.toLowerCase();
         return searchText.contains(keyword.toLowerCase());
       }).toList();
+
+
 
       return filteredEvents;
     } catch (e) {
@@ -546,7 +550,9 @@ class EventService {
           .limit(limit)
           .get();
 
+
       final events = query.docs.map((doc) => Event.fromFirestore(doc)).toList();
+
 
       return events;
     } catch (e) {

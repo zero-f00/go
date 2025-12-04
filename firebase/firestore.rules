@@ -12,7 +12,8 @@ service cloud.firestore {
         && request.auth.uid == userId;
 
       // 認証されたユーザーは他のユーザーデータも読み取り可能（ユーザー検索用）
-      allow read: if request.auth != null;
+      // ゲストユーザーも検索機能のためにユーザーデータの読み取りを許可
+      allow read: if true;
 
       // 新規ユーザー作成時の追加チェック
       allow create: if request.auth != null
@@ -39,8 +40,8 @@ service cloud.firestore {
 
     // 公開イベントコレクション
     match /events/{eventId} {
-      // 認証されたユーザーは読み取り可能
-      allow read: if request.auth != null;
+      // 認証されたユーザーとゲストユーザーは読み取り可能（検索機能用）
+      allow read: if true;
 
       // 作成者のみ作成・更新・削除可能
       allow create: if request.auth != null
@@ -52,8 +53,8 @@ service cloud.firestore {
 
     // イベントコレクション全体へのクエリアクセス（おすすめイベント機能用）
     match /events/{document=**} {
-      // 一覧表示とクエリも許可（おすすめイベント機能で必要）
-      allow list: if request.auth != null;
+      // 一覧表示とクエリも許可（おすすめイベント機能とゲスト検索で必要）
+      allow list: if true;
     }
 
     // 下書きイベントコレクション
@@ -66,8 +67,8 @@ service cloud.firestore {
 
     // ゲームコレクションのルール
     match /games/{gameId} {
-      // 全ユーザー読み取り可能（ゲーム情報は公開データ）
-      allow read: if request.auth != null;
+      // 全ユーザー（ゲスト含む）読み取り可能（ゲーム情報は公開データ）
+      allow read: if true;
 
       // 管理者のみ書き込み可能（将来的に管理者権限実装予定）
       allow write: if false; // 現在は無効
@@ -75,11 +76,11 @@ service cloud.firestore {
 
     // ゲームイベントコレクション（既存のコレクション）
     match /gameEvents/{eventId} {
-      // 認証されたユーザーは読み取り可能
-      allow read: if request.auth != null;
+      // 認証されたユーザーとゲストユーザーは読み取り可能（検索機能用）
+      allow read: if true;
 
-      // 一覧表示とクエリも許可（おすすめイベント機能で必要）
-      allow list: if request.auth != null;
+      // 一覧表示とクエリも許可（おすすめイベント機能とゲスト検索で必要）
+      allow list: if true;
 
       // 作成者のみ作成・更新・削除可能
       allow create: if request.auth != null
@@ -91,8 +92,11 @@ service cloud.firestore {
 
     // 共有ゲームコレクションのルール
     match /shared_games/{gameId} {
-      // 認証されたユーザーは読み取り可能（ゲーム情報は共有データ）
-      allow read: if request.auth != null;
+      // 認証されたユーザーとゲストユーザーは読み取り可能（ゲーム検索機能用）
+      allow read: if true;
+
+      // 一覧表示とクエリも許可（ゲスト検索機能で必要）
+      allow list: if true;
 
       // 認証されたユーザーは書き込み可能（キャッシュデータ作成・更新用）
       // 一時的にバリデーション関数を無効化（デバッグ用）
@@ -488,3 +492,7 @@ service cloud.firestore {
 //             - event_applications コレクションを追加（新形式のイベント申し込み）
 //             - 一時的に認証済みユーザーに全権限を付与（デバッグ用）
 //             - 理由: 違反報告機能で承認済み参加者の一覧取得が必要
+// 2024-12-03: ゲストユーザー検索機能対応
+//             - users, events, games, gameEvents, shared_games コレクションでゲストユーザーにread/list権限を付与
+//             - 理由: ゲストユーザーでも検索機能（ユーザー検索、イベント検索、ゲーム検索）を利用可能にするため
+//             - セキュリティ考慮: 公開情報のみアクセス可能、書き込み操作は引き続き認証が必要

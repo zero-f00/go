@@ -188,13 +188,6 @@ class ManagementEventCardWrapper extends StatelessWidget {
           icon: Icons.drafts,
           color: AppColors.warning,
         );
-      case GameEventStatus.scheduled:
-        // 公開予約済み
-        return (
-          label: '公開予約',
-          icon: Icons.schedule_send,
-          color: AppColors.info,
-        );
       case GameEventStatus.published:
         // 公開済み
         return (

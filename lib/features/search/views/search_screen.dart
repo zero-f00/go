@@ -8,7 +8,6 @@ import '../../../shared/widgets/user_avatar.dart';
 import '../../../shared/widgets/event_card.dart';
 import '../../../shared/widgets/empty_search_result.dart';
 import '../../../data/models/user_model.dart';
-import '../../../data/models/event_model.dart';
 import '../../../features/game_event_management/models/game_event.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../shared/models/game.dart';
@@ -17,6 +16,7 @@ import '../../../shared/services/event_service.dart';
 import '../../../shared/utils/event_converter.dart';
 import '../../../shared/services/event_filter_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SearchScreen extends StatefulWidget {
   final bool shouldFocusSearchField;
@@ -51,6 +51,9 @@ class _SearchScreenState extends State<SearchScreen> {
   bool _isSearchingEvents = false;
   String? _eventSearchErrorMessage;
 
+  // UI状態
+  bool _isSearchFieldFocused = false;
+
   final List<String> _searchTypes = [
     'イベント',
     'ユーザー',
@@ -60,6 +63,10 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void initState() {
     super.initState();
+
+    // フォーカス状態のリスナーを追加
+    _searchFocusNode.addListener(_onSearchFocusChanged);
+
     // ホーム画面からの遷移時にフォーカスを当てる
     if (widget.shouldFocusSearchField) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -68,8 +75,28 @@ class _SearchScreenState extends State<SearchScreen> {
     }
   }
 
+  void _onSearchFocusChanged() {
+    // キーボードのアニメーションとタイミングを合わせるため少し遅延を追加
+    if (!_searchFocusNode.hasFocus) {
+      // フォーカスが外れた場合は少し遅延を入れる
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (mounted && !_searchFocusNode.hasFocus) {
+          setState(() {
+            _isSearchFieldFocused = false;
+          });
+        }
+      });
+    } else {
+      // フォーカスが当たった場合は即座に反映
+      setState(() {
+        _isSearchFieldFocused = true;
+      });
+    }
+  }
+
   @override
   void dispose() {
+    _searchFocusNode.removeListener(_onSearchFocusChanged);
     _searchController.dispose();
     _searchFocusNode.dispose();
     super.dispose();
@@ -97,15 +124,13 @@ class _SearchScreenState extends State<SearchScreen> {
       setState(() {
         _userSearchResults = results;
         _isSearching = false;
-        if (results.isEmpty) {
-          _searchErrorMessage = 'ユーザーが見つかりませんでした';
-        }
+        _searchErrorMessage = null; // エラーメッセージをクリア
       });
 
     } catch (e) {
       setState(() {
         _isSearching = false;
-        _searchErrorMessage = 'ユーザー検索中にエラーが発生しました';
+        _searchErrorMessage = 'ユーザー検索中にエラーが発生しました: ${e.toString()}';
         _userSearchResults = [];
       });
     }
@@ -137,15 +162,13 @@ class _SearchScreenState extends State<SearchScreen> {
         _isSearchingGames = false;
         _selectedGame = null;
         _relatedEvents = [];
-        if (results.isEmpty) {
-          _gameSearchErrorMessage = 'ゲームが見つかりませんでした';
-        }
+        _gameSearchErrorMessage = null; // エラーメッセージをクリア
       });
 
     } catch (e) {
       setState(() {
         _isSearchingGames = false;
-        _gameSearchErrorMessage = 'ゲーム検索中にエラーが発生しました';
+        _gameSearchErrorMessage = 'ゲーム検索中にエラーが発生しました: ${e.toString()}';
         _gameSearchResults = [];
       });
     }
@@ -212,7 +235,7 @@ class _SearchScreenState extends State<SearchScreen> {
     } catch (e) {
       setState(() {
         _isSearchingEvents = false;
-        _eventSearchErrorMessage = 'イベント検索でエラーが発生しました';
+        _eventSearchErrorMessage = 'イベント検索でエラーが発生しました: ${e.toString()}';
         _eventSearchResults = [];
       });
     }
@@ -220,6 +243,9 @@ class _SearchScreenState extends State<SearchScreen> {
 
   /// 検索を実行する
   void _performSearch() {
+    // Firebase Firestore接続状態の確認
+    FirebaseFirestore.instance.settings.persistenceEnabled;
+
     switch (_selectedSearchType) {
       case 'ユーザー':
         _performUserSearch();
@@ -230,12 +256,15 @@ class _SearchScreenState extends State<SearchScreen> {
       case 'イベント':
         _performEventSearch();
         break;
+      default:
+        break;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: AppGradientBackground(
         child: SafeArea(
           child: Column(
@@ -245,14 +274,24 @@ class _SearchScreenState extends State<SearchScreen> {
                 showBackButton: false,
               ),
               Expanded(
-                child: Padding(
+                child: SingleChildScrollView(
                   padding: const EdgeInsets.all(AppDimensions.spacingL),
                   child: Column(
                     children: [
                       _buildSearchSection(),
                       const SizedBox(height: AppDimensions.spacingL),
-                      Expanded(
-                        child: _buildSearchResults(),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        child: _isSearchFieldFocused
+                            ? SizedBox(
+                                key: const ValueKey('focused'),
+                                child: _buildFocusedStateHint(),
+                              )
+                            : SizedBox(
+                                key: const ValueKey('unfocused'),
+                                height: MediaQuery.of(context).size.height * 0.6,
+                                child: _buildSearchResults(),
+                              ),
                       ),
                     ],
                   ),
@@ -1575,6 +1614,46 @@ class _SearchScreenState extends State<SearchScreen> {
             style: const TextStyle(
               fontSize: AppDimensions.fontSizeM,
               color: AppColors.textLight,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFocusedStateHint() {
+    return Container(
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundLight,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.keyboard,
+            size: AppDimensions.iconL,
+            color: AppColors.textSecondary,
+          ),
+          const SizedBox(height: AppDimensions.spacingM),
+          Text(
+            'キーワードを入力して検索',
+            style: const TextStyle(
+              fontSize: AppDimensions.fontSizeM,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textDark,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingS),
+          Text(
+            'Enterキーを押すか、検索ボタンをタップして検索してください',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: AppDimensions.fontSizeS,
+              color: AppColors.textSecondary,
               height: 1.4,
             ),
           ),

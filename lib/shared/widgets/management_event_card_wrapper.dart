@@ -152,6 +152,18 @@ class ManagementEventCardWrapper extends StatelessWidget {
 
     // パブリックまたは限定公開の場合はイベントステータスで判定
     switch (event.status) {
+      case GameEventStatus.draft:
+        return (
+          label: '下書き',
+          icon: Icons.edit,
+          color: AppColors.warning,
+        );
+      case GameEventStatus.published:
+        return (
+          label: '公開済み',
+          icon: Icons.public,
+          color: AppColors.success,
+        );
       case GameEventStatus.upcoming:
         // 開催予定だが公開されている
         return (
