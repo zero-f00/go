@@ -4,6 +4,7 @@ import '../../../shared/constants/app_strings.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
+import '../../../shared/widgets/app_drawer.dart';
 import '../../../shared/widgets/user_avatar.dart';
 import '../../../shared/widgets/event_card.dart';
 import '../../../shared/widgets/empty_search_result.dart';
@@ -28,6 +29,7 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   final _userRepository = UserRepository();
@@ -264,6 +266,8 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: const AppDrawer(),
       resizeToAvoidBottomInset: true,
       body: AppGradientBackground(
         child: SafeArea(
@@ -272,6 +276,8 @@ class _SearchScreenState extends State<SearchScreen> {
               AppHeader(
                 title: AppStrings.searchTab,
                 showBackButton: false,
+                showUserIcon: true,
+                onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
               ),
               Expanded(
                 child: SingleChildScrollView(

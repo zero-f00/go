@@ -5,6 +5,7 @@ import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/constants/app_strings.dart';
 import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
+import '../../../shared/widgets/app_drawer.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/providers/notification_provider.dart';
@@ -30,6 +31,7 @@ class NotificationScreen extends ConsumerStatefulWidget {
 }
 
 class _NotificationScreenState extends ConsumerState<NotificationScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   Set<String> _processingRequests = {}; // 処理中のリクエストID
   Set<String> _readNotifications = {}; // 既読処理済みの通知ID
 
@@ -63,6 +65,8 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
     final notificationsAsync = ref.watch(userNotificationsProvider);
 
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: const AppDrawer(),
       body: AppGradientBackground(
         child: SafeArea(
           child: Column(
@@ -71,6 +75,8 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                 data: (notifications) => AppHeader(
                   title: AppStrings.notificationTab,
                   showBackButton: false,
+                  showUserIcon: true,
+                  onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
                   actions: [
                     if (notifications.any((n) => !n.isRead))
                       Container(
@@ -128,10 +134,14 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                 loading: () => AppHeader(
                   title: AppStrings.notificationTab,
                   showBackButton: false,
+                  showUserIcon: true,
+                  onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
                 ),
                 error: (_, __) => AppHeader(
                   title: AppStrings.notificationTab,
                   showBackButton: false,
+                  showUserIcon: true,
+                  onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
                 ),
               ),
               Expanded(
