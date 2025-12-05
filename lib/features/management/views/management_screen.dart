@@ -6,6 +6,7 @@ import '../../../shared/constants/app_strings.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
+import '../../../shared/widgets/app_drawer.dart';
 import '../../../shared/widgets/app_tab_bar.dart';
 import '../../../shared/widgets/auth_dialog.dart';
 import '../../../shared/widgets/user_settings_dialog.dart';
@@ -45,6 +46,7 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
     with TickerProviderStateMixin {
   @override
   Ticker createTicker(TickerCallback onTick) => Ticker(onTick);
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late TabController _tabController;
   TabController? _participantTabController;
 
@@ -206,11 +208,18 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
     }
 
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: const AppDrawer(),
       body: AppGradientBackground(
         child: SafeArea(
           child: Column(
             children: [
-              AppHeader(title: AppStrings.manageTab, showBackButton: false),
+              AppHeader(
+                title: AppStrings.manageTab,
+                showBackButton: false,
+                showUserIcon: true,
+                onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
+              ),
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.spacingL,
