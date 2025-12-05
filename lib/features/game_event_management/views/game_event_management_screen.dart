@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_event.dart';
-import '../../../shared/widgets/activity_detail_dialog.dart';
+import '../../../shared/widgets/enhanced_activity_detail_dialog.dart';
 import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/app_gradient_background.dart';
@@ -558,7 +558,7 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
                       onTap: () {
                         showDialog(
                           context: context,
-                          builder: (context) => ActivityDetailDialog(
+                          builder: (context) => EnhancedActivityDetailDialog(
                             title: '今月の参加イベント',
                             activityType: 'participating',
                             userId: user.id,
@@ -577,7 +577,7 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
                       onTap: () {
                         showDialog(
                           context: context,
-                          builder: (context) => ActivityDetailDialog(
+                          builder: (context) => EnhancedActivityDetailDialog(
                             title: '申し込み中のイベント',
                             activityType: 'pending',
                             userId: user.id,
@@ -596,7 +596,7 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
                       onTap: () {
                         showDialog(
                           context: context,
-                          builder: (context) => ActivityDetailDialog(
+                          builder: (context) => EnhancedActivityDetailDialog(
                             title: '参加履歴',
                             activityType: 'total',
                             userId: user.id,
@@ -615,7 +615,7 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
                       onTap: () {
                         showDialog(
                           context: context,
-                          builder: (context) => ActivityDetailDialog(
+                          builder: (context) => EnhancedActivityDetailDialog(
                             title: '運営イベント',
                             activityType: 'hosting',
                             userId: user.id,

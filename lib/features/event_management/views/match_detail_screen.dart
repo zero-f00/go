@@ -296,6 +296,13 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen> {
             const SizedBox(height: AppDimensions.spacingL),
           ],
 
+          // 運営メモ表示
+          if (_currentMatch.adminPublicNotes != null && _currentMatch.adminPublicNotes!.isNotEmpty ||
+              _currentMatch.adminPrivateNotes != null && _currentMatch.adminPrivateNotes!.isNotEmpty) ...[
+            _buildAdminNotesDisplay(),
+            const SizedBox(height: AppDimensions.spacingL),
+          ],
+
           // エビデンス画像表示
           if (_currentMatch.evidenceImages.isNotEmpty) ...[
             _buildEvidenceImagesDisplay(),
@@ -685,19 +692,63 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen> {
         const SizedBox(height: AppDimensions.spacingM),
         SizedBox(
           width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: () => _showStatusChangeDialog(),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.info,
-              side: BorderSide(color: AppColors.info),
-              padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingM),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.info.withValues(alpha: 0.1),
+                  AppColors.info.withValues(alpha: 0.05),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+              border: Border.all(
+                color: AppColors.info,
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.info.withValues(alpha: 0.2),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            icon: const Icon(Icons.edit_note),
-            label: Text(
-              'ステータス変更',
-              style: TextStyle(
-                fontSize: AppDimensions.fontSizeL,
-                fontWeight: FontWeight.w600,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                onTap: () => _showStatusChangeDialog(),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingM),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppColors.info,
+                          borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                        ),
+                        child: const Icon(
+                          Icons.edit_note,
+                          color: Colors.white,
+                          size: AppDimensions.iconS,
+                        ),
+                      ),
+                      const SizedBox(width: AppDimensions.spacingM),
+                      Text(
+                        'ステータス変更',
+                        style: TextStyle(
+                          fontSize: AppDimensions.fontSizeL,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -1106,6 +1157,191 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen> {
     } catch (e) {
       // エラーは無視（UI更新は必須ではない）
     }
+  }
+
+  /// 運営メモ表示（管理者向け：公開・プライベート両方を表示）
+  Widget _buildAdminNotesDisplay() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 公開メモ（ユーザー閲覧可能）
+        if (_currentMatch.adminPublicNotes != null && _currentMatch.adminPublicNotes!.isNotEmpty) ...[
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppDimensions.spacingL),
+            decoration: BoxDecoration(
+              color: AppColors.cardBackground,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.cardShadow,
+                  blurRadius: AppDimensions.cardElevation,
+                  offset: const Offset(0, AppDimensions.shadowOffsetY),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppColors.info.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                      ),
+                      child: Icon(
+                        Icons.visibility,
+                        color: AppColors.info,
+                        size: AppDimensions.iconS,
+                      ),
+                    ),
+                    const SizedBox(width: AppDimensions.spacingM),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '公開メモ（ユーザー閲覧可能）',
+                            style: TextStyle(
+                              fontSize: AppDimensions.fontSizeM,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textDark,
+                            ),
+                          ),
+                          Text(
+                            '参加者に公開される運営メモです',
+                            style: TextStyle(
+                              fontSize: AppDimensions.fontSizeS,
+                              color: AppColors.info,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppDimensions.spacingM),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppDimensions.spacingM),
+                  decoration: BoxDecoration(
+                    color: AppColors.info.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                    border: Border.all(
+                      color: AppColors.info.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    _currentMatch.adminPublicNotes!,
+                    style: TextStyle(
+                      fontSize: AppDimensions.fontSizeM,
+                      color: AppColors.textDark,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+
+        // 公開メモとプライベートメモの両方がある場合のスペース
+        if (_currentMatch.adminPublicNotes != null && _currentMatch.adminPublicNotes!.isNotEmpty &&
+            _currentMatch.adminPrivateNotes != null && _currentMatch.adminPrivateNotes!.isNotEmpty)
+          const SizedBox(height: AppDimensions.spacingM),
+
+        // プライベートメモ（運営者のみ）
+        if (_currentMatch.adminPrivateNotes != null && _currentMatch.adminPrivateNotes!.isNotEmpty) ...[
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppDimensions.spacingL),
+            decoration: BoxDecoration(
+              color: AppColors.cardBackground,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+              border: Border.all(
+                color: AppColors.warning.withValues(alpha: 0.3),
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.cardShadow,
+                  blurRadius: AppDimensions.cardElevation,
+                  offset: const Offset(0, AppDimensions.shadowOffsetY),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppColors.warning.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                      ),
+                      child: Icon(
+                        Icons.visibility_off,
+                        color: AppColors.warning,
+                        size: AppDimensions.iconS,
+                      ),
+                    ),
+                    const SizedBox(width: AppDimensions.spacingM),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'プライベートメモ（運営者のみ閲覧可能）',
+                            style: TextStyle(
+                              fontSize: AppDimensions.fontSizeM,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textDark,
+                            ),
+                          ),
+                          Text(
+                            '内部管理用のメモです（参加者には表示されません）',
+                            style: TextStyle(
+                              fontSize: AppDimensions.fontSizeS,
+                              color: AppColors.warning,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppDimensions.spacingM),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppDimensions.spacingM),
+                  decoration: BoxDecoration(
+                    color: AppColors.warning.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                    border: Border.all(
+                      color: AppColors.warning.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    _currentMatch.adminPrivateNotes!,
+                    style: TextStyle(
+                      fontSize: AppDimensions.fontSizeM,
+                      color: AppColors.textDark,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
   }
 
   /// 日時フォーマット

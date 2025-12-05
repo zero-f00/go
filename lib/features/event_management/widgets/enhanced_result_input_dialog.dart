@@ -4,6 +4,7 @@ import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../data/models/enhanced_match_result_model.dart';
+import '../../../shared/widgets/app_text_field.dart';
 
 /// 拡張された結果入力ダイアログ
 class EnhancedResultInputDialog extends ConsumerStatefulWidget {
@@ -708,14 +709,12 @@ class _EnhancedResultInputDialogState
   }
 
   Widget _buildNotes() {
-    return TextFormField(
+    return AppTextFieldMultiline(
       controller: _notesController,
-      decoration: const InputDecoration(
-        labelText: '備考',
-        hintText: 'メモ、特記事項など',
-        border: OutlineInputBorder(),
-      ),
+      label: '備考',
+      hintText: 'メモ、特記事項など',
       maxLines: 3,
+      doneButtonText: '完了',
     );
   }
 

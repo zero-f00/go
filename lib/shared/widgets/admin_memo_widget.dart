@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import 'app_button.dart';
+import 'app_text_field.dart';
 
 /// 管理者専用ユーザーメモ機能
 /// イベントとユーザーに紐づくメモを管理者のみが閲覧・編集可能
@@ -166,15 +167,13 @@ class _AdminMemoWidgetState extends State<AdminMemoWidget> {
                 ),
               ),
               const SizedBox(height: AppDimensions.spacingM),
-              TextField(
+              AppTextFieldMultiline(
                 controller: controller,
-                decoration: const InputDecoration(
-                  labelText: 'メモ内容',
-                  hintText: '管理上の注意点やメモを入力してください',
-                  border: OutlineInputBorder(),
-                ),
+                label: 'メモ内容',
+                hintText: '管理上の注意点やメモを入力してください',
                 maxLines: 5,
                 minLines: 3,
+                doneButtonText: '完了',
               ),
             ],
           ),

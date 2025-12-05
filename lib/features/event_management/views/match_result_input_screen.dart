@@ -61,6 +61,10 @@ class _MatchResultInputScreenState
   Map<String, TextEditingController> _individualScoreControllers = {};
   Map<String, TextEditingController> _rankingControllers = {};
 
+  // 運営メモ用コントローラー
+  final _adminPublicNotesController = TextEditingController();
+  final _adminPrivateNotesController = TextEditingController();
+
   bool _isLoading = false;
   Map<String, String> _participantNames = {}; // participantId -> 表示名
   final GroupManagementService _groupService = GroupManagementService();
@@ -90,11 +94,18 @@ class _MatchResultInputScreenState
     _initializeControllers();
     _loadParticipantNames();
     _initializeEvidenceImages();
+    _initializeAdminNotes();
   }
 
   /// エビデンス画像の初期化
   void _initializeEvidenceImages() {
     _existingEvidenceImages = List.from(widget.match.evidenceImages);
+  }
+
+  /// 運営メモの初期化
+  void _initializeAdminNotes() {
+    _adminPublicNotesController.text = widget.match.adminPublicNotes ?? '';
+    _adminPrivateNotesController.text = widget.match.adminPrivateNotes ?? '';
   }
 
   /// 順位を初期化（編集時は勝者情報から推定）
@@ -341,6 +352,8 @@ class _MatchResultInputScreenState
     for (final controller in _rankingControllers.values) {
       controller.dispose();
     }
+    _adminPublicNotesController.dispose();
+    _adminPrivateNotesController.dispose();
     super.dispose();
   }
 
@@ -371,6 +384,8 @@ class _MatchResultInputScreenState
                         _buildScoreSection(),
                         const SizedBox(height: AppDimensions.spacingL),
                         _buildEvidenceImageSection(),
+                        const SizedBox(height: AppDimensions.spacingL),
+                        _buildAdminNotesSection(),
                         const SizedBox(height: AppDimensions.spacingXL),
                       ],
                     ),
@@ -1926,6 +1941,203 @@ class _MatchResultInputScreenState
     });
   }
 
+  /// 運営メモセクション
+  Widget _buildAdminNotesSection() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.cardShadow,
+            blurRadius: AppDimensions.cardElevation,
+            offset: const Offset(0, AppDimensions.shadowOffsetY),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.admin_panel_settings,
+                color: AppColors.warning,
+                size: AppDimensions.iconM,
+              ),
+              const SizedBox(width: AppDimensions.spacingS),
+              Text(
+                '運営メモ',
+                style: TextStyle(
+                  fontSize: AppDimensions.fontSizeL,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacingS),
+          Text(
+            '試合結果に関する運営側のメモを記入できます',
+            style: TextStyle(
+              fontSize: AppDimensions.fontSizeM,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingL),
+
+          // 公開メモ（ユーザー閲覧可能）
+          Container(
+            padding: const EdgeInsets.all(AppDimensions.spacingM),
+            decoration: BoxDecoration(
+              color: AppColors.info.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+              border: Border.all(color: AppColors.info.withValues(alpha: 0.3)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.visibility,
+                      color: AppColors.info,
+                      size: AppDimensions.iconS,
+                    ),
+                    const SizedBox(width: AppDimensions.spacingS),
+                    Text(
+                      '公開メモ（ユーザー閲覧可能）',
+                      style: TextStyle(
+                        fontSize: AppDimensions.fontSizeM,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.info,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppDimensions.spacingS),
+                Text(
+                  '参加者が閲覧できるメモです。試合の詳細や特記事項を記入してください。',
+                  style: TextStyle(
+                    fontSize: AppDimensions.fontSizeS,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.spacingM),
+                TextFormField(
+                  controller: _adminPublicNotesController,
+                  decoration: InputDecoration(
+                    hintText: '例：接続不良により再戦を実施、MVP賞を追加授与など...',
+                    hintStyle: TextStyle(
+                      fontSize: AppDimensions.fontSizeS,
+                      color: AppColors.textLight,
+                    ),
+                    filled: true,
+                    fillColor: AppColors.cardBackground,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                      borderSide: BorderSide(color: AppColors.border),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                      borderSide: BorderSide(color: AppColors.border),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                      borderSide: BorderSide(color: AppColors.info, width: 2),
+                    ),
+                    contentPadding: const EdgeInsets.all(AppDimensions.spacingM),
+                  ),
+                  maxLines: 3,
+                  style: TextStyle(
+                    fontSize: AppDimensions.fontSizeM,
+                    color: AppColors.textDark,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: AppDimensions.spacingM),
+
+          // プライベートメモ（運営者のみ）
+          Container(
+            padding: const EdgeInsets.all(AppDimensions.spacingM),
+            decoration: BoxDecoration(
+              color: AppColors.warning.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+              border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.visibility_off,
+                      color: AppColors.warning,
+                      size: AppDimensions.iconS,
+                    ),
+                    const SizedBox(width: AppDimensions.spacingS),
+                    Text(
+                      'プライベートメモ（運営者のみ閲覧可能）',
+                      style: TextStyle(
+                        fontSize: AppDimensions.fontSizeM,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.warning,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppDimensions.spacingS),
+                Text(
+                  '運営者のみが閲覧できる内部メモです。参加者には表示されません。',
+                  style: TextStyle(
+                    fontSize: AppDimensions.fontSizeS,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.spacingM),
+                TextFormField(
+                  controller: _adminPrivateNotesController,
+                  decoration: InputDecoration(
+                    hintText: '例：参加者Aから異議申し立てあり、要確認事項など...',
+                    hintStyle: TextStyle(
+                      fontSize: AppDimensions.fontSizeS,
+                      color: AppColors.textLight,
+                    ),
+                    filled: true,
+                    fillColor: AppColors.cardBackground,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                      borderSide: BorderSide(color: AppColors.border),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                      borderSide: BorderSide(color: AppColors.border),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                      borderSide: BorderSide(color: AppColors.warning, width: 2),
+                    ),
+                    contentPadding: const EdgeInsets.all(AppDimensions.spacingM),
+                  ),
+                  maxLines: 3,
+                  style: TextStyle(
+                    fontSize: AppDimensions.fontSizeM,
+                    color: AppColors.textDark,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// 結果を提出
   Future<void> _submitResult() async {
     if (!_formKey.currentState!.validate()) return;
@@ -2152,6 +2364,12 @@ class _MatchResultInputScreenState
         individualScores: individualScores,
         winner: winner,
         evidenceImages: allEvidenceImages,
+        adminPublicNotes: _adminPublicNotesController.text.trim().isNotEmpty
+            ? _adminPublicNotesController.text.trim()
+            : null,
+        adminPrivateNotes: _adminPrivateNotesController.text.trim().isNotEmpty
+            ? _adminPrivateNotesController.text.trim()
+            : null,
         status: MatchStatus.completed,
         completedAt: DateTime.now(),
         updatedAt: DateTime.now(),

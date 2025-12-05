@@ -63,6 +63,12 @@ class MatchResult extends Equatable {
   /// 備考
   final String? notes;
 
+  /// 運営側メモ（ユーザー閲覧可能）
+  final String? adminPublicNotes;
+
+  /// 運営側メモ（運営者のみ閲覧可能）
+  final String? adminPrivateNotes;
+
   /// 試合ステータス
   final MatchStatus status;
 
@@ -87,6 +93,8 @@ class MatchResult extends Equatable {
     required this.isTeamMatch,
     this.matchFormat,
     this.notes,
+    this.adminPublicNotes,
+    this.adminPrivateNotes,
     this.status = MatchStatus.scheduled,
     this.evidenceImages = const [],
     this.evidenceImageMetadata,
@@ -120,6 +128,8 @@ class MatchResult extends Equatable {
       isTeamMatch: data['isTeamMatch'] as bool? ?? false,
       matchFormat: data['matchFormat'] as String?,
       notes: data['notes'] as String?,
+      adminPublicNotes: data['adminPublicNotes'] as String?,
+      adminPrivateNotes: data['adminPrivateNotes'] as String?,
       status: data['status'] != null
           ? MatchStatus.fromString(data['status'] as String)
           : MatchStatus.scheduled,
@@ -163,6 +173,8 @@ class MatchResult extends Equatable {
       isTeamMatch: json['isTeamMatch'] as bool? ?? false,
       matchFormat: json['matchFormat'] as String?,
       notes: json['notes'] as String?,
+      adminPublicNotes: json['adminPublicNotes'] as String?,
+      adminPrivateNotes: json['adminPrivateNotes'] as String?,
       status: json['status'] != null
           ? MatchStatus.fromString(json['status'] as String)
           : MatchStatus.scheduled,
@@ -197,6 +209,8 @@ class MatchResult extends Equatable {
       'isTeamMatch': isTeamMatch,
       'matchFormat': matchFormat,
       'notes': notes,
+      'adminPublicNotes': adminPublicNotes,
+      'adminPrivateNotes': adminPrivateNotes,
       'status': status.value,
       'evidenceImages': evidenceImages,
       'evidenceImageMetadata': evidenceImageMetadata,
@@ -220,6 +234,8 @@ class MatchResult extends Equatable {
       'isTeamMatch': isTeamMatch,
       'matchFormat': matchFormat,
       'notes': notes,
+      'adminPublicNotes': adminPublicNotes,
+      'adminPrivateNotes': adminPrivateNotes,
       'status': status.value,
       'evidenceImages': evidenceImages,
       'evidenceImageMetadata': evidenceImageMetadata,
@@ -242,6 +258,8 @@ class MatchResult extends Equatable {
     bool? isTeamMatch,
     String? matchFormat,
     String? notes,
+    String? adminPublicNotes,
+    String? adminPrivateNotes,
     MatchStatus? status,
     List<String>? evidenceImages,
     Map<String, Map<String, dynamic>>? evidenceImageMetadata,
@@ -261,6 +279,8 @@ class MatchResult extends Equatable {
       isTeamMatch: isTeamMatch ?? this.isTeamMatch,
       matchFormat: matchFormat ?? this.matchFormat,
       notes: notes ?? this.notes,
+      adminPublicNotes: adminPublicNotes ?? this.adminPublicNotes,
+      adminPrivateNotes: adminPrivateNotes ?? this.adminPrivateNotes,
       status: status ?? this.status,
       evidenceImages: evidenceImages ?? this.evidenceImages,
       evidenceImageMetadata: evidenceImageMetadata ?? this.evidenceImageMetadata,
@@ -292,6 +312,8 @@ class MatchResult extends Equatable {
         isTeamMatch,
         matchFormat,
         notes,
+        adminPublicNotes,
+        adminPrivateNotes,
         status,
         evidenceImages,
         evidenceImageMetadata,
