@@ -14,6 +14,7 @@ import '../../../shared/widgets/app_button.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/services/game_service.dart';
 import '../../../shared/widgets/user_search_dialog.dart';
+import '../../../shared/widgets/friend_selection_dialog.dart';
 import '../../../shared/widgets/tag_input_field.dart';
 import '../../../shared/widgets/streaming_url_input_field.dart';
 import '../../../shared/widgets/user_tag.dart';
@@ -1465,11 +1466,12 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         ),
         const SizedBox(height: AppDimensions.spacingM),
 
-        // ボタンを横並びで配置
-        Row(
+        // ボタンを縦並びで配置
+        Column(
           children: [
             // 自分を追加ボタン
-            Expanded(
+            SizedBox(
+              width: double.infinity,
               child: GestureDetector(
                 onTap: _addSelfAsManager,
                 child: Container(
@@ -1501,40 +1503,80 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                 ),
               ),
             ),
-            const SizedBox(width: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.spacingM),
 
-            // 他のユーザーを追加ボタン
-            Expanded(
-              child: GestureDetector(
-                onTap: _addManager,
-                child: Container(
-                  padding: const EdgeInsets.all(AppDimensions.spacingM),
-                  decoration: BoxDecoration(
-                    color: AppColors.accent.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                    border: Border.all(color: AppColors.accent),
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.person_add,
-                        color: AppColors.accent,
-                        size: AppDimensions.iconS,
+            // ボタンを横並びで配置
+            Row(
+              children: [
+                // フレンドから追加ボタン
+                Expanded(
+                  child: GestureDetector(
+                    onTap: _addManagerFromFriends,
+                    child: Container(
+                      padding: const EdgeInsets.all(AppDimensions.spacingM),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                        border: Border.all(color: AppColors.secondary),
                       ),
-                      SizedBox(width: AppDimensions.spacingS),
-                      Text(
-                        '他の運営者を追加',
-                        style: TextStyle(
-                          fontSize: AppDimensions.fontSizeS,
-                          color: AppColors.accent,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.people,
+                            color: AppColors.secondary,
+                            size: AppDimensions.iconS,
+                          ),
+                          SizedBox(width: AppDimensions.spacingS),
+                          Text(
+                            'フレンドから',
+                            style: TextStyle(
+                              fontSize: AppDimensions.fontSizeS,
+                              color: AppColors.secondary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
+                const SizedBox(width: AppDimensions.spacingM),
+
+                // 他のユーザーを追加ボタン
+                Expanded(
+                  child: GestureDetector(
+                    onTap: _addManager,
+                    child: Container(
+                      padding: const EdgeInsets.all(AppDimensions.spacingM),
+                      decoration: BoxDecoration(
+                        color: AppColors.accent.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                        border: Border.all(color: AppColors.accent),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.search,
+                            color: AppColors.accent,
+                            size: AppDimensions.iconS,
+                          ),
+                          SizedBox(width: AppDimensions.spacingS),
+                          Text(
+                            'ユーザー検索',
+                            style: TextStyle(
+                              fontSize: AppDimensions.fontSizeS,
+                              color: AppColors.accent,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -1635,12 +1677,100 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     );
   }
 
+  Future<void> _addManagerFromFriends() async {
+    await FriendSelectionDialog.show(
+      context,
+      title: 'フレンドから運営者を選択',
+      description: 'フレンドの中からイベント運営者を追加してください',
+      excludedUsers: _selectedManagers,
+      onFriendSelected: (user) {
+        if (!_selectedManagers.any((manager) => manager.id == user.id)) {
+          setState(() {
+            _selectedManagers.add(user);
+            // Remove from blocked users if present
+            _blockedUsers.removeWhere((blockedUser) => blockedUser.id == user.id);
+          });
+        }
+      },
+    );
+  }
+
   Future<void> _addSponsor() async {
+    await _showSponsorSelectionDialog();
+  }
+
+  Future<void> _showSponsorSelectionDialog() async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('スポンサーを追加'),
+        content: const Text('どの方法でスポンサーを追加しますか？'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _addSponsorFromFriends();
+            },
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.people, size: 16),
+                SizedBox(width: 8),
+                Text('フレンドから選択'),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _addSponsorFromSearch();
+            },
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.search, size: 16),
+                SizedBox(width: 8),
+                Text('ユーザー検索'),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('キャンセル'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _addSponsorFromSearch() async {
     await UserSearchDialog.show(
       context,
       title: 'スポンサーを検索',
       description: 'イベントのスポンサーを追加してください',
       onUserSelected: (user) {
+        if (!_selectedSponsors.any((sponsor) => sponsor.id == user.id)) {
+          setState(() {
+            _selectedSponsors.add(user);
+            // Automatically add to managers
+            if (!_selectedManagers.any((manager) => manager.id == user.id)) {
+              _selectedManagers.add(user);
+            }
+            // Remove from blocked users if present
+            _blockedUsers.removeWhere((blockedUser) => blockedUser.id == user.id);
+          });
+        }
+      },
+    );
+  }
+
+  Future<void> _addSponsorFromFriends() async {
+    await FriendSelectionDialog.show(
+      context,
+      title: 'フレンドからスポンサーを選択',
+      description: 'フレンドの中からイベントスポンサーを追加してください',
+      excludedUsers: _selectedSponsors,
+      onFriendSelected: (user) {
         if (!_selectedSponsors.any((sponsor) => sponsor.id == user.id)) {
           setState(() {
             _selectedSponsors.add(user);

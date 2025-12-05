@@ -561,7 +561,7 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
                           builder: (context) => EnhancedActivityDetailDialog(
                             title: '今月の参加イベント',
                             activityType: 'participating',
-                            userId: user.id,
+                            userId: userIdToUse,
                           ),
                         );
                       },
@@ -580,7 +580,7 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
                           builder: (context) => EnhancedActivityDetailDialog(
                             title: '申し込み中のイベント',
                             activityType: 'pending',
-                            userId: user.id,
+                            userId: userIdToUse,
                           ),
                         );
                       },
@@ -599,7 +599,7 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
                           builder: (context) => EnhancedActivityDetailDialog(
                             title: '参加履歴',
                             activityType: 'total',
-                            userId: user.id,
+                            userId: userIdToUse,
                           ),
                         );
                       },
@@ -618,7 +618,7 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
                           builder: (context) => EnhancedActivityDetailDialog(
                             title: '運営イベント',
                             activityType: 'hosting',
-                            userId: user.id,
+                            userId: userIdToUse,
                           ),
                         );
                       },

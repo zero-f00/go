@@ -3,6 +3,7 @@ import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../services/participation_service.dart';
 import '../services/violation_service.dart';
+import '../utils/withdrawn_user_helper.dart';
 import '../../data/models/game_profile_model.dart';
 import '../../data/models/user_model.dart';
 import '../../data/models/violation_record_model.dart';
@@ -70,8 +71,8 @@ class ParticipantProfileCard extends StatelessWidget {
           child: CircleAvatar(
             radius: 30,
             backgroundColor: AppColors.accent.withValues(alpha: 0.1),
-            backgroundImage: userData?.photoUrl != null
-                ? NetworkImage(userData!.photoUrl!)
+            backgroundImage: WithdrawnUserHelper.getDisplayAvatarUrl(userData) != null
+                ? NetworkImage(WithdrawnUserHelper.getDisplayAvatarUrl(userData)!)
                 : null,
             child: userData?.photoUrl == null
                 ? Text(
@@ -109,7 +110,7 @@ class ParticipantProfileCard extends StatelessWidget {
               // ユーザー名（リアル）
               if (userData?.username != null)
                 Text(
-                  userData!.username,
+                  WithdrawnUserHelper.getDisplayUsername(userData),
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     color: AppColors.textSecondary,

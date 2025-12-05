@@ -17,6 +17,7 @@ import '../../../shared/services/violation_service.dart';
 import '../../../shared/services/participation_service.dart';
 import '../../../shared/services/notification_service.dart';
 import '../../../shared/providers/auth_provider.dart';
+import '../../../shared/utils/withdrawn_user_helper.dart';
 import '../../../features/game_profile/providers/game_profile_provider.dart';
 import '../../../features/game_profile/views/game_profile_view_screen.dart';
 import '../../../features/profile/views/user_profile_screen.dart';
@@ -401,7 +402,7 @@ class _ViolationManagementScreenState
                     Text(
                       _gameUsernameCache[violation.violatedUserId]?.isNotEmpty == true
                           ? _gameUsernameCache[violation.violatedUserId]!
-                          : _userDataCache[violation.violatedUserId]?.displayName ?? 'ユーザー不明',
+                          : WithdrawnUserHelper.getDisplayUsername(_userDataCache[violation.violatedUserId]),
                       style: const TextStyle(
                         fontSize: AppDimensions.fontSizeL,
                         fontWeight: FontWeight.w600,
@@ -410,7 +411,7 @@ class _ViolationManagementScreenState
                     ),
                     // 実名をサブ表示（ゲーム内ユーザー名がある場合のみ）
                     if (_gameUsernameCache[violation.violatedUserId]?.isNotEmpty == true &&
-                        _userDataCache[violation.violatedUserId]?.displayName != null)
+                        _userDataCache[violation.violatedUserId] != null)
                       Container(
                         margin: const EdgeInsets.only(top: AppDimensions.spacingXS),
                         padding: const EdgeInsets.symmetric(
@@ -425,7 +426,7 @@ class _ViolationManagementScreenState
                           ),
                         ),
                         child: Text(
-                          _userDataCache[violation.violatedUserId]!.displayName,
+                          WithdrawnUserHelper.getDisplayUsername(_userDataCache[violation.violatedUserId]),
                           style: TextStyle(
                             fontSize: AppDimensions.fontSizeS,
                             fontWeight: FontWeight.w500,
@@ -839,8 +840,8 @@ class _ViolationManagementScreenState
   void _showViolationDetailDialog(ViolationRecord violation) {
     // ゲーム内ユーザー名または実名を取得
     final gameUsername = _gameUsernameCache[violation.violatedUserId];
-    final displayName = _userDataCache[violation.violatedUserId]?.displayName;
-    final userDisplayName = gameUsername?.isNotEmpty == true ? gameUsername! : (displayName ?? 'ユーザー不明');
+    final displayName = WithdrawnUserHelper.getDisplayUsername(_userDataCache[violation.violatedUserId]);
+    final userDisplayName = gameUsername?.isNotEmpty == true ? gameUsername! : displayName;
 
     showDialog(
       context: context,
@@ -1250,7 +1251,7 @@ class _ViolationManagementScreenState
   /// 報告者行ウィジェット（タップ可能）
   Widget _buildReporterRow(BuildContext context, ViolationRecord violation) {
     final reporterData = _userDataCache[violation.reportedByUserId];
-    final displayName = reporterData?.displayName ?? violation.reportedByUserName;
+    final displayName = WithdrawnUserHelper.getDisplayUsername(reporterData);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),

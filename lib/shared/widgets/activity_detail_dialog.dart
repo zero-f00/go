@@ -8,7 +8,7 @@ import '../../features/game_event_management/models/game_event.dart';
 // ApplicationStatusをParticipationStatusのエイリアスとして定義
 typedef ApplicationStatus = ParticipationStatus;
 
-class ActivityDetailDialog extends StatelessWidget {
+class ActivityDetailDialog extends StatefulWidget {
   final String title;
   final String activityType;
   final String userId;
@@ -19,6 +19,22 @@ class ActivityDetailDialog extends StatelessWidget {
     required this.activityType,
     required this.userId,
   });
+
+  @override
+  State<ActivityDetailDialog> createState() => _ActivityDetailDialogState();
+}
+
+class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
+  Future<List<GameEvent>>? _managedEventsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    // 運営イベントの場合のみFutureをキャッシュ
+    if (widget.activityType == 'hosting') {
+      _managedEventsFuture = _getManagedEvents();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,14 +54,14 @@ class ActivityDetailDialog extends StatelessWidget {
             Row(
               children: [
                 Icon(
-                  _getIconForType(activityType),
-                  color: _getColorForType(activityType),
+                  _getIconForType(widget.activityType),
+                  color: _getColorForType(widget.activityType),
                   size: AppDimensions.iconM,
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
                 Expanded(
                   child: Text(
-                    title,
+                    widget.title,
                     style: const TextStyle(
                       fontSize: AppDimensions.fontSizeL,
                       fontWeight: FontWeight.w600,
@@ -62,7 +78,7 @@ class ActivityDetailDialog extends StatelessWidget {
             ),
             const Divider(height: AppDimensions.spacingXL),
             Expanded(
-              child: _buildActivityContent(activityType),
+              child: _buildActivityContent(widget.activityType),
             ),
           ],
         ),
@@ -119,7 +135,7 @@ class ActivityDetailDialog extends StatelessWidget {
 
   Widget _buildPendingApplications() {
     return FutureBuilder<List<ParticipationApplication>>(
-      future: ParticipationService.getUserApplications(userId),
+      future: ParticipationService.getUserApplications(widget.userId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -167,7 +183,7 @@ class ActivityDetailDialog extends StatelessWidget {
 
   Widget _buildParticipatingEvents() {
     return FutureBuilder<List<ParticipationApplication>>(
-      future: ParticipationService.getUserApplications(userId),
+      future: ParticipationService.getUserApplications(widget.userId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -218,19 +234,34 @@ class ActivityDetailDialog extends StatelessWidget {
   }
 
   Widget _buildHostingEvents() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('events')
-          .where('hostId', isEqualTo: userId)
-          .orderBy('createdAt', descending: true)
-          .limit(10)
-          .snapshots(),
+    return FutureBuilder<List<GameEvent>>(
+      future: _managedEventsFuture ??= _getManagedEvents(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+        if (snapshot.hasError) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: AppColors.error, size: 48),
+                const SizedBox(height: 16),
+                Text(
+                  'エラーが発生しました: ${snapshot.error}',
+                  style: const TextStyle(
+                    fontSize: AppDimensions.fontSizeM,
+                    color: AppColors.error,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          );
+        }
+
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const Center(
             child: Text(
               '運営中のイベントはありません',
@@ -243,38 +274,10 @@ class ActivityDetailDialog extends StatelessWidget {
         }
 
         return ListView.separated(
-          itemCount: snapshot.data!.docs.length,
+          itemCount: snapshot.data!.length,
           separatorBuilder: (context, index) => const Divider(),
           itemBuilder: (context, index) {
-            final doc = snapshot.data!.docs[index];
-            final data = doc.data() as Map<String, dynamic>;
-            final event = GameEvent(
-              id: doc.id,
-              name: data['name'] ?? 'イベント',
-              description: data['description'] ?? '',
-              type: _parseEventType(data['type']),
-              status: _parseEventStatus(data['status']),
-              startDate: (data['startDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
-              endDate: (data['endDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
-              participantCount: data['participantCount'] ?? 0,
-              maxParticipants: data['maxParticipants'] ?? 0,
-              completionRate: (data['completionRate'] ?? 0).toDouble(),
-              gameId: data['gameId'] ?? '',
-              gameName: data['gameName'] ?? '',
-              platforms: List<String>.from(data['platforms'] ?? []),
-              registrationDeadline: data['registrationDeadline'] != null
-                  ? (data['registrationDeadline'] as Timestamp).toDate()
-                  : null,
-              approvalMethod: data['approvalMethod'] ?? '自動承認',
-              visibility: data['visibility'] ?? 'public',
-              language: data['language'] ?? '日本語',
-              hasAgeRestriction: data['hasAgeRestriction'] ?? false,
-              hasStreaming: data['hasStreaming'] ?? false,
-              eventTags: List<String>.from(data['eventTags'] ?? []),
-              sponsors: List<String>.from(data['sponsors'] ?? []),
-              managers: List<String>.from(data['managers'] ?? []),
-              blockedUsers: List<String>.from(data['blockedUsers'] ?? []),
-            );
+            final event = snapshot.data![index];
             return _buildEventTile(context, event);
           },
         );
@@ -282,9 +285,114 @@ class ActivityDetailDialog extends StatelessWidget {
     );
   }
 
+  Future<List<GameEvent>> _getManagedEvents() async {
+    try {
+      final events = <GameEvent>[];
+      final eventIds = <String>{};
+      final now = DateTime.now();
+
+      // 複数のクエリを並列実行
+      final futures = <Future>[
+        // 1. 作成者として作成したイベントを取得
+        FirebaseFirestore.instance
+            .collection('events')
+            .where('createdBy', isEqualTo: widget.userId)
+            .get(),
+
+        // 2. 管理者として参加しているイベントを取得
+        FirebaseFirestore.instance
+            .collection('events')
+            .where('managerIds', arrayContains: widget.userId)
+            .get(),
+
+        // 3. スポンサーとして参加しているイベントを取得
+        FirebaseFirestore.instance
+            .collection('events')
+            .where('sponsorIds', arrayContains: widget.userId)
+            .get(),
+
+        // 4. gameEventsコレクションからも取得
+        FirebaseFirestore.instance
+            .collection('gameEvents')
+            .where('createdBy', isEqualTo: widget.userId)
+            .get(),
+      ];
+
+      final results = await Future.wait(futures.map((future) async {
+        try {
+          return await future;
+        } catch (e) {
+          return null;
+        }
+      }));
+
+      // 結果を処理
+      for (final result in results) {
+        if (result == null) continue;
+
+        final querySnapshot = result as QuerySnapshot;
+        for (final doc in querySnapshot.docs) {
+          try {
+            final data = doc.data() as Map<String, dynamic>;
+            final startDate = (data['startDate'] as Timestamp?)?.toDate();
+
+            // 未来のイベントまたは24時間以内に終了したイベントのみを対象
+            if (startDate != null && startDate.isAfter(now.subtract(const Duration(hours: 24)))) {
+              final event = _createGameEventFromFirestore(doc);
+              if (!eventIds.contains(event.id)) {
+                events.add(event);
+                eventIds.add(event.id);
+              }
+            }
+          } catch (e) {
+            // 個別イベントの処理エラーは無視して続行
+          }
+        }
+      }
+
+      // 開催日時順にソート
+      events.sort((a, b) => a.startDate.compareTo(b.startDate));
+
+      return events;
+    } catch (e) {
+      return [];
+    }
+  }
+
+  GameEvent _createGameEventFromFirestore(QueryDocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return GameEvent(
+      id: doc.id,
+      name: data['name'] ?? 'イベント',
+      description: data['description'] ?? '',
+      type: _parseEventType(data['type']),
+      status: _parseEventStatus(data['status']),
+      startDate: (data['startDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      endDate: (data['endDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      participantCount: data['participantCount'] ?? 0,
+      maxParticipants: data['maxParticipants'] ?? 0,
+      completionRate: (data['completionRate'] ?? 0).toDouble(),
+      gameId: data['gameId'] ?? '',
+      gameName: data['gameName'] ?? '',
+      platforms: List<String>.from(data['platforms'] ?? []),
+      registrationDeadline: data['registrationDeadline'] != null
+          ? (data['registrationDeadline'] as Timestamp).toDate()
+          : null,
+      approvalMethod: data['approvalMethod'] ?? '自動承認',
+      visibility: data['visibility'] ?? 'public',
+      language: data['language'] ?? '日本語',
+      hasAgeRestriction: data['hasAgeRestriction'] ?? false,
+      hasStreaming: data['hasStreaming'] ?? false,
+      eventTags: List<String>.from(data['eventTags'] ?? []),
+      sponsors: List<String>.from(data['sponsors'] ?? []),
+      managers: List<String>.from(data['managers'] ?? []),
+      blockedUsers: List<String>.from(data['blockedUsers'] ?? []),
+    );
+  }
+
   Widget _buildTotalParticipation() {
     return FutureBuilder<List<ParticipationApplication>>(
-      future: ParticipationService.getUserApplications(userId),
+      future: ParticipationService.getUserApplications(widget.userId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());

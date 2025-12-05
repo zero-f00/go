@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
+import '../utils/withdrawn_user_helper.dart';
 import '../../data/models/user_model.dart';
 import '../../data/repositories/user_repository.dart';
 
@@ -176,9 +177,10 @@ class _UserTagWidgetState extends ConsumerState<UserTagWidget> {
 
   /// ユーザータグ
   Widget _buildUserTag(UserData userData) {
+    final userDisplayInfo = WithdrawnUserHelper.getMaskedUserInfo(userData);
     final displayName = widget.showFullName
-        ? (userData.displayName ?? userData.userId)
-        : userData.displayName?.split(' ').first ?? userData.userId;
+        ? userDisplayInfo.username
+        : userDisplayInfo.username.split(' ').first;
 
     return InkWell(
       onTap: () => _navigateToUserProfile(userData.id),
@@ -206,10 +208,10 @@ class _UserTagWidgetState extends ConsumerState<UserTagWidget> {
             CircleAvatar(
               radius: (widget.avatarSize ?? AppDimensions.iconM) / 2,
               backgroundColor: AppColors.accent.withValues(alpha: 0.1),
-              backgroundImage: userData.photoUrl != null
-                  ? NetworkImage(userData.photoUrl!)
+              backgroundImage: userDisplayInfo.photoUrl != null
+                  ? NetworkImage(userDisplayInfo.photoUrl!)
                   : null,
-              child: userData.photoUrl == null
+              child: userDisplayInfo.photoUrl == null
                   ? Text(
                       displayName.isNotEmpty
                           ? displayName.substring(0, 1).toUpperCase()

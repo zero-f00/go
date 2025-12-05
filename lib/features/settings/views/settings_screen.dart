@@ -8,6 +8,7 @@ import '../../../shared/services/firebase_user_service.dart' as firebase_user;
 import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
 import '../../../shared/widgets/user_avatar.dart';
+import '../../../shared/widgets/account_withdrawal_dialog.dart';
 
 /// 設定画面
 class SettingsScreen extends ConsumerWidget {
@@ -50,6 +51,8 @@ class SettingsScreen extends ConsumerWidget {
                           _buildAccountSection(context, ref),
                           const SizedBox(height: AppDimensions.spacingL),
                           _buildAppInfoSection(context, ref),
+                          const SizedBox(height: AppDimensions.spacingL),
+                          _buildAccountManagementSection(context, ref),
                         ],
                       ),
                     ),
@@ -470,6 +473,141 @@ class SettingsScreen extends ConsumerWidget {
         );
       }
     }
+  }
+
+
+  /// アカウント管理セクション
+  Widget _buildAccountManagementSection(BuildContext context, WidgetRef ref) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundLight,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.manage_accounts,
+                color: AppColors.accent,
+                size: AppDimensions.iconM,
+              ),
+              const SizedBox(width: AppDimensions.spacingS),
+              const Text(
+                'アカウント管理',
+                style: TextStyle(
+                  fontSize: AppDimensions.fontSizeL,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacingM),
+          const Text(
+            'アカウントに関する重要な操作',
+            style: TextStyle(
+              fontSize: AppDimensions.fontSizeS,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingM),
+          _buildAccountManagementItem(
+            context: context,
+            icon: Icons.person_remove,
+            title: 'アカウント退会',
+            description: 'アカウントとすべてのデータを削除します',
+            onTap: () => _showAccountWithdrawalDialog(context),
+            isDestructive: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAccountManagementItem({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required String description,
+    required VoidCallback onTap,
+    bool isDestructive = false,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+      child: Container(
+        padding: const EdgeInsets.all(AppDimensions.spacingM),
+        decoration: BoxDecoration(
+          color: isDestructive
+              ? AppColors.error.withValues(alpha: 0.05)
+              : AppColors.primary.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+          border: Border.all(
+            color: isDestructive
+                ? AppColors.error.withValues(alpha: 0.2)
+                : AppColors.primary.withValues(alpha: 0.2),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppDimensions.spacingS),
+              decoration: BoxDecoration(
+                color: isDestructive
+                    ? AppColors.error.withValues(alpha: 0.1)
+                    : AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+              ),
+              child: Icon(
+                icon,
+                color: isDestructive ? AppColors.error : AppColors.primary,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: AppDimensions.spacingM),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: AppDimensions.fontSizeM,
+                      fontWeight: FontWeight.w600,
+                      color: isDestructive ? AppColors.error : AppColors.textDark,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    description,
+                    style: const TextStyle(
+                      fontSize: AppDimensions.fontSizeS,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: AppColors.textSecondary,
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// アカウント退会ダイアログを表示
+  Future<void> _showAccountWithdrawalDialog(BuildContext context) async {
+    await showAccountWithdrawalDialog(context);
   }
 
 }
