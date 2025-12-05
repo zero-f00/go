@@ -1921,10 +1921,67 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
             type: AppButtonType.secondary,
             isEnabled: false,
           ),
-          error: (error, stack) => AppButton(
-            text: 'エラーが発生しました',
-            onPressed: () => _showParticipationDialog(),
-            type: AppButtonType.primary,
+          error: (error, stack) => Container(
+            padding: const EdgeInsets.all(AppDimensions.spacingM),
+            decoration: BoxDecoration(
+              color: AppColors.error.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+              border: Border.all(
+                color: AppColors.error.withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      color: AppColors.error,
+                      size: AppDimensions.iconM,
+                    ),
+                    const SizedBox(width: AppDimensions.spacingS),
+                    const Expanded(
+                      child: Text(
+                        '参加状況の取得に失敗しました',
+                        style: TextStyle(
+                          fontSize: AppDimensions.fontSizeM,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.error,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppDimensions.spacingM),
+                Row(
+                  children: [
+                    Expanded(
+                      child: AppButton(
+                        text: '再試行',
+                        onPressed: () {
+                          // プロバイダーを無効化して再読み込み
+                          ref.invalidate(userParticipationStatusProvider((
+                            eventId: widget.event.id,
+                            userId: user.id
+                          )));
+                        },
+                        type: AppButtonType.secondary,
+                        icon: Icons.refresh,
+                      ),
+                    ),
+                    const SizedBox(width: AppDimensions.spacingS),
+                    Expanded(
+                      child: AppButton(
+                        text: '申し込み',
+                        onPressed: () => _showParticipationDialog(),
+                        type: AppButtonType.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         );
       },

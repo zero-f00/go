@@ -13,6 +13,7 @@ import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/constants/event_management_types.dart';
 import '../../event_creation/views/event_creation_screen.dart';
 import '../../../shared/widgets/generic_event_list_screen.dart';
+import '../../../shared/widgets/enhanced_past_events_screen.dart';
 import '../../event_detail/views/event_detail_screen.dart';
 import '../../game_event_management/models/game_event.dart';
 import '../../../shared/services/event_service.dart';
@@ -541,8 +542,16 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
               child: Container(
                 padding: const EdgeInsets.all(AppDimensions.spacingL),
                 decoration: BoxDecoration(
-                  color: AppColors.cardBackground,
+                  color: event.status == EventStatus.cancelled
+                      ? AppColors.error.withValues(alpha: 0.05)
+                      : AppColors.cardBackground,
                   borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                  border: event.status == EventStatus.cancelled
+                      ? Border.all(
+                          color: AppColors.error.withValues(alpha: 0.2),
+                          width: 1,
+                        )
+                      : null,
                   boxShadow: [
                     BoxShadow(
                       color: AppColors.cardShadow,
@@ -559,10 +568,15 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
                         Expanded(
                           child: Text(
                             event.name,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: AppDimensions.fontSizeL,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.textDark,
+                              color: event.status == EventStatus.cancelled
+                                  ? AppColors.textSecondary
+                                  : AppColors.textDark,
+                              decoration: event.status == EventStatus.cancelled
+                                  ? TextDecoration.lineThrough
+                                  : null,
                             ),
                           ),
                         ),
@@ -749,6 +763,11 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
 
   /// イベントステータスの色を取得
   Color _getEventStatusColor(Event event) {
+    // イベントが中止された場合
+    if (event.status == EventStatus.cancelled) {
+      return AppColors.error; // 中止
+    }
+
     final now = DateTime.now();
     if (event.eventDate.isAfter(now)) {
       return AppColors.info; // 開催予定
@@ -759,6 +778,11 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
 
   /// イベントステータステキストを取得
   String _getEventStatusText(Event event) {
+    // イベントが中止された場合
+    if (event.status == EventStatus.cancelled) {
+      return '中止';
+    }
+
     final now = DateTime.now();
     if (event.eventDate.isAfter(now)) {
       return '開催予定';
@@ -1110,13 +1134,6 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
                             AppColors.success,
                             _isLoadingCounts,
                           ),
-                        _buildStatusChip(
-                          '下書き',
-                          '0', // TODO: 実際の下書き数を計算
-                          Icons.drafts,
-                          AppColors.warning,
-                          _isLoadingCounts,
-                        ),
                       ],
                     ),
                   ],
@@ -1349,26 +1366,46 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
 
     // 常に画面遷移を行う（イベントが0個でも空状態画面を表示）
     if (mounted && context.mounted) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => GenericEventListScreen(
-            title: eventType.title,
-            events: events,
-            isManagementMode: true, // 管理者モードを有効化
-            onEventTap: (event) {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => EventDetailScreen(event: event),
-                ),
-              );
-            },
-            emptyTitle: errorMessage ?? eventType.emptyMessage,
-            emptyMessage: errorMessage ?? eventType.emptyDetailMessage,
-            searchHint: '${eventType.title}を検索...',
+      // 過去のイベント履歴の場合は改善されたUIを使用
+      if (eventType == EventManagementType.pastEvents) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EnhancedPastEventsScreen(
+              events: events,
+              isManagementMode: true,
+              onEventTap: (event) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => EventDetailScreen(event: event),
+                  ),
+                );
+              },
+            ),
           ),
-        ),
-      );
+        );
+      } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => GenericEventListScreen(
+              title: eventType.title,
+              events: events,
+              isManagementMode: true, // 管理者モードを有効化
+              onEventTap: (event) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => EventDetailScreen(event: event),
+                  ),
+                );
+              },
+              emptyTitle: errorMessage ?? eventType.emptyMessage,
+              emptyMessage: errorMessage ?? eventType.emptyDetailMessage,
+              searchHint: '${eventType.title}を検索...',
+            ),
+          ),
+        );
+      }
 
       // エラーメッセージがある場合は、画面遷移後に表示
       if (errorMessage != null) {

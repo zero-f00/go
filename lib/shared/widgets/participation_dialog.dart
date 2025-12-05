@@ -13,6 +13,7 @@ import '../models/game.dart' as SharedGame;
 import '../../data/models/game_model.dart' as DataGame;
 import 'app_button.dart';
 import 'auth_dialog.dart';
+import 'app_text_field.dart';
 
 /// プロフィール要件状態
 enum ProfileRequirementStatus {
@@ -701,26 +702,10 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
           ),
         ),
         const SizedBox(height: AppDimensions.spacingS),
-        TextField(
+        AppTextField(
           controller: _messageController,
+          hintText: '主催者へのメッセージを入力（任意）',
           maxLines: 3,
-          decoration: InputDecoration(
-            hintText: '主催者へのメッセージを入力（任意）',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-              borderSide: const BorderSide(color: AppColors.accent, width: 2),
-            ),
-            filled: true,
-            fillColor: AppColors.backgroundLight,
-          ),
         ),
       ],
     );
@@ -739,31 +724,65 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
           top: BorderSide(color: AppColors.borderLight, width: 1),
         ),
       ),
-      child: Row(
+      child: _buildFooterContent(),
+    );
+  }
+
+  Widget _buildFooterContent() {
+    // プロフィールが設定されていない場合は、設定ボタンのみ表示
+    if (_profileStatus == ProfileRequirementStatus.needsSetup ||
+        _profileStatus == ProfileRequirementStatus.needsUsername) {
+      return Column(
         children: [
-          Expanded(
-            child: AppButton.outline(
-              text: 'キャンセル',
-              onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+          if (_isLoading)
+            const Center(
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            )
+          else
+            AppButton.primary(
+              text: _getButtonText(),
+              onPressed: _getButtonAction(),
+              isFullWidth: true,
             ),
-          ),
-          const SizedBox(width: AppDimensions.spacingM),
-          Expanded(
-            child: _isLoading
-                ? const Center(
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  )
-                : AppButton.primary(
-                    text: _getButtonText(),
-                    onPressed: _canSubmitApplication() ? _handleParticipation : null,
-                  ),
+          const SizedBox(height: AppDimensions.spacingM),
+          AppButton.outline(
+            text: 'キャンセル',
+            onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+            isFullWidth: true,
           ),
         ],
-      ),
+      );
+    }
+
+    // プロフィールが設定されている場合は、従来の横並び
+    return Row(
+      children: [
+        Expanded(
+          child: AppButton.outline(
+            text: 'キャンセル',
+            onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+          ),
+        ),
+        const SizedBox(width: AppDimensions.spacingM),
+        Expanded(
+          child: _isLoading
+              ? const Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                )
+              : AppButton.primary(
+                  text: _getButtonText(),
+                  onPressed: _canSubmitApplication() ? _handleParticipation : null,
+                ),
+        ),
+      ],
     );
   }
 
@@ -783,9 +802,9 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
       case ProfileRequirementStatus.checking:
         return '確認中...';
       case ProfileRequirementStatus.needsSetup:
-        return 'プロフィール設定が必要';
+        return 'プロフィールを設定する';
       case ProfileRequirementStatus.needsUsername:
-        return 'ユーザー名設定が必要';
+        return 'ユーザー名を設定する';
       case ProfileRequirementStatus.ready:
         if (widget.event.visibility == EventVisibility.private) {
           return '申し込めません';
@@ -793,6 +812,19 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
         return widget.event.visibility == EventVisibility.inviteOnly
             ? '申し込む'
             : '参加する';
+    }
+  }
+
+  VoidCallback? _getButtonAction() {
+    switch (_profileStatus) {
+      case ProfileRequirementStatus.checking:
+        return null;
+      case ProfileRequirementStatus.needsSetup:
+        return _handleCreateProfile;
+      case ProfileRequirementStatus.needsUsername:
+        return _navigateToProfileEdit;
+      case ProfileRequirementStatus.ready:
+        return _canSubmitApplication() ? _handleParticipation : null;
     }
   }
 

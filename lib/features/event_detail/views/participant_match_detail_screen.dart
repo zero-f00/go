@@ -7,6 +7,7 @@ import '../../../shared/widgets/app_header.dart';
 import '../../../data/models/match_result_model.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/services/match_report_service.dart';
+import '../../../shared/widgets/app_text_field.dart';
 
 /// 参加者向け試合詳細画面（閲覧専用）
 class ParticipantMatchDetailScreen extends ConsumerWidget {
@@ -63,6 +64,10 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
                       if (match.notes != null && match.notes!.isNotEmpty) ...[
                         const SizedBox(height: AppDimensions.spacingL),
                         _buildNotes(),
+                      ],
+                      if (match.adminPublicNotes != null && match.adminPublicNotes!.isNotEmpty) ...[
+                        const SizedBox(height: AppDimensions.spacingL),
+                        _buildAdminPublicNotes(),
                       ],
                       if (match.evidenceImages.isNotEmpty) ...[
                         const SizedBox(height: AppDimensions.spacingL),
@@ -568,6 +573,90 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
               fontSize: AppDimensions.fontSizeM,
               color: AppColors.textDark,
               height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 運営公開メモ
+  Widget _buildAdminPublicNotes() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.cardShadow,
+            blurRadius: AppDimensions.cardElevation,
+            offset: const Offset(0, AppDimensions.shadowOffsetY),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.info.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                ),
+                child: Icon(
+                  Icons.admin_panel_settings,
+                  color: AppColors.info,
+                  size: AppDimensions.iconS,
+                ),
+              ),
+              const SizedBox(width: AppDimensions.spacingM),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '運営からのお知らせ',
+                      style: TextStyle(
+                        fontSize: AppDimensions.fontSizeM,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                    Text(
+                      '運営側からの重要な情報です',
+                      style: TextStyle(
+                        fontSize: AppDimensions.fontSizeS,
+                        color: AppColors.info,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacingM),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppDimensions.spacingM),
+            decoration: BoxDecoration(
+              color: AppColors.info.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+              border: Border.all(
+                color: AppColors.info.withValues(alpha: 0.2),
+                width: 1,
+              ),
+            ),
+            child: Text(
+              match.adminPublicNotes!,
+              style: TextStyle(
+                fontSize: AppDimensions.fontSizeM,
+                color: AppColors.textDark,
+                height: 1.4,
+              ),
             ),
           ),
         ],
@@ -1510,16 +1599,11 @@ class _ReportMatchDialogState extends ConsumerState<_ReportMatchDialog> {
               ),
             ),
             const SizedBox(height: AppDimensions.spacingS),
-            TextField(
+            AppTextFieldMultiline(
               controller: _descriptionController,
+              hintText: '問題の詳細を説明してください...',
               maxLines: 4,
-              decoration: InputDecoration(
-                hintText: '問題の詳細を説明してください...',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                ),
-                contentPadding: const EdgeInsets.all(AppDimensions.spacingM),
-              ),
+              doneButtonText: '完了',
             ),
           ],
         ),

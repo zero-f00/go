@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import 'app_button.dart';
+import 'app_text_field.dart';
 
 /// グループ管理者専用メモ機能
 /// 管理者のみが閲覧・編集可能なグループメモ
@@ -166,15 +167,13 @@ class _GroupMemoWidgetState extends State<GroupMemoWidget> {
                 ),
               ),
               const SizedBox(height: AppDimensions.spacingM),
-              TextField(
+              AppTextFieldMultiline(
                 controller: controller,
-                decoration: const InputDecoration(
-                  labelText: 'グループメモ',
-                  hintText: 'グループ管理上の注意点やメモを入力してください',
-                  border: OutlineInputBorder(),
-                ),
+                label: 'グループメモ',
+                hintText: 'グループ管理上の注意点やメモを入力してください',
                 maxLines: 5,
                 minLines: 3,
+                doneButtonText: '完了',
               ),
             ],
           ),

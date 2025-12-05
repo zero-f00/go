@@ -6,6 +6,7 @@ import '../../data/models/violation_record_model.dart';
 import '../services/violation_service.dart';
 import '../services/notification_service.dart';
 import '../providers/auth_provider.dart';
+import 'app_text_field.dart';
 
 /// 異議申立ダイアログ
 class AppealDialog extends ConsumerStatefulWidget {
@@ -220,16 +221,12 @@ class _AppealDialogState extends ConsumerState<AppealDialog> {
                         ),
                       ),
                       const SizedBox(height: AppDimensions.spacingS),
-                      TextFormField(
+                      AppTextFieldMultiline(
                         controller: _appealTextController,
+                        label: '異議申立の理由',
+                        hintText: '違反報告に対する異議の理由を詳しく記載してください\n\n例：\n・状況についての説明\n・誤解があった場合の詳細\n・証拠となる情報\n・その他関連する事実',
+                        isRequired: true,
                         maxLines: 6,
-                        decoration: InputDecoration(
-                          hintText: '違反報告に対する異議の理由を詳しく記載してください\n\n例：\n・状況についての説明\n・誤解があった場合の詳細\n・証拠となる情報\n・その他関連する事実',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                          ),
-                          contentPadding: const EdgeInsets.all(AppDimensions.spacingM),
-                        ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return '異議申立の理由を入力してください';
@@ -239,6 +236,7 @@ class _AppealDialogState extends ConsumerState<AppealDialog> {
                           }
                           return null;
                         },
+                        doneButtonText: '完了',
                       ),
                       const SizedBox(height: AppDimensions.spacingL),
 

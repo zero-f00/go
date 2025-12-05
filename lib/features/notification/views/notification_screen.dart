@@ -513,6 +513,14 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         icon = Icons.event_busy;
         iconColor = AppColors.warning;
         break;
+      case NotificationType.eventCancelled:
+        icon = Icons.cancel;
+        iconColor = AppColors.error;
+        break;
+      case NotificationType.eventCancelProcessed:
+        icon = Icons.task_alt;
+        iconColor = AppColors.success;
+        break;
       case NotificationType.violationReported:
         icon = Icons.report;
         iconColor = AppColors.error;
@@ -636,6 +644,12 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
     if (notification.type == NotificationType.eventApproved ||
         notification.type == NotificationType.eventRejected) {
       _handleEventDecisionNotification(notification);
+      return;
+    }
+
+    if (notification.type == NotificationType.eventCancelled ||
+        notification.type == NotificationType.eventCancelProcessed) {
+      _handleEventCancelNotification(notification);
       return;
     }
 
@@ -1354,6 +1368,41 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         ),
       ),
     );
+  }
+
+  /// イベント中止通知の処理
+  Future<void> _handleEventCancelNotification(NotificationData notification) async {
+    final data = notification.data;
+    if (data == null || data['eventId'] == null) {
+      _showErrorMessage('イベント情報が見つかりません');
+      return;
+    }
+
+    final eventId = data['eventId'] as String;
+
+    try {
+      // イベント情報を取得
+      final event = await EventService.getEventById(eventId);
+      if (event == null) {
+        _showErrorMessage('イベント情報が見つかりません');
+        return;
+      }
+
+      // GameEventに変換
+      final gameEvent = await EventConverter.eventToGameEvent(event);
+
+      // イベント詳細画面へ遷移
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EventDetailScreen(event: gameEvent),
+          ),
+        );
+      }
+    } catch (e) {
+      _showErrorMessage('エラーが発生しました');
+    }
   }
 
   /// エラーメッセージを表示

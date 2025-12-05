@@ -11,6 +11,7 @@ import '../../../shared/services/violation_service.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../data/models/game_profile_model.dart';
 import '../../../data/models/user_model.dart';
+import '../../../features/game_profile/providers/game_profile_provider.dart';
 import '../../../data/models/violation_record_model.dart';
 import '../../../data/repositories/user_repository.dart';
 
@@ -82,61 +83,26 @@ class _ParticipantListViewScreenState
             continue;
           }
 
-          // ゲームプロフィールを取得（gameProfileDataから）
+          // Firestoreから実際のゲームプロフィールを取得
           GameProfile? gameProfile;
-          if (application.gameProfileData != null) {
-            // Map<String, dynamic>からGameProfileを作成
-            final data = application.gameProfileData!;
-            gameProfile = GameProfile(
-              id: data['id'] as String? ?? '',
-              gameId: data['gameId'] as String? ?? '',
-              userId: application.userId,
-              gameUsername: data['gameUsername'] as String? ?? application.gameUsername ?? '',
-              gameUserId: data['gameUserId'] as String? ?? application.gameUserId ?? '',
-              experience: data['experience'] != null
-                ? GameExperience.values.firstWhere(
-                    (e) => e.name == data['experience'],
-                    orElse: () => GameExperience.beginner,
-                  )
-                : GameExperience.beginner,
-              playStyles: (data['playStyles'] as List?)
-                      ?.map((e) => PlayStyle.values.firstWhere(
-                            (style) => style.name == e,
-                            orElse: () => PlayStyle.casual,
-                          ))
-                      .toList() ??
-                  [],
-              rankOrLevel: data['rankOrLevel'] as String? ?? '',
-              activityTimes: (data['activityTimes'] as List?)
-                      ?.map((e) => ActivityTime.values.firstWhere(
-                            (time) => time.name == e,
-                            orElse: () => ActivityTime.evening,
-                          ))
-                      .toList() ??
-                  [],
-              useInGameVC: data['useInGameVC'] as bool? ?? false,
-              voiceChatDetails: data['voiceChatDetails'] as String? ?? '',
-              achievements: data['achievements'] as String? ?? '',
-              notes: data['notes'] as String? ?? '',
-              isFavorite: data['isFavorite'] as bool? ?? false,
-              isPublic: data['isPublic'] as bool? ?? true,
-              clan: data['clan'] as String? ?? '',
-              createdAt: data['createdAt'] != null
-                ? (data['createdAt'] as Timestamp).toDate()
-                : DateTime.now(),
-              updatedAt: data['updatedAt'] != null
-                ? (data['updatedAt'] as Timestamp).toDate()
-                : DateTime.now(),
-            );
-          } else if (application.gameUsername != null) {
-            // 基本的なゲームプロフィールを作成
+          if (_gameId != null) {
+            try {
+              final gameProfileService = ref.read(gameProfileServiceProvider);
+              gameProfile = await gameProfileService.getGameProfile(application.userId, _gameId!);
+            } catch (e) {
+              debugPrint('ゲームプロフィールの取得エラー: $e');
+            }
+          }
+
+          // プロフィールが取得できない場合は基本情報のみで作成
+          if (gameProfile == null && application.gameUsername != null) {
             gameProfile = GameProfile(
               id: '',
-              gameId: '', // デフォルトのゲームID
+              gameId: _gameId ?? '',
               userId: application.userId,
               gameUsername: application.gameUsername!,
               gameUserId: application.gameUserId ?? '',
-              experience: GameExperience.beginner,
+              experience: null,
               playStyles: [],
               rankOrLevel: '',
               activityTimes: [],
@@ -533,29 +499,13 @@ class _ParticipantListViewScreenState
     }
 
     try {
-      // GameProfileオブジェクトを作成（運営側と同じロジック）
-      final gameProfile = GameProfile(
-        userId: participant.userData.userId,
-        gameId: _gameId!,
-        gameUsername: participant.gameProfile.gameUsername.isNotEmpty
-            ? participant.gameProfile.gameUsername
-            : participant.userData.username,
-        gameUserId: participant.gameProfile.gameUserId.isNotEmpty
-            ? participant.gameProfile.gameUserId
-            : participant.userData.username,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        rankOrLevel: participant.gameProfile.rankOrLevel,
-        achievements: participant.gameProfile.achievements,
-        notes: participant.gameProfile.notes,
-      );
-
+      // 既存のGameProfileをそのまま使用（ユーザーが設定した全ての詳細データを保持）
       // ゲームプロフィール画面に遷移
       Navigator.pushNamed(
         context,
         '/game_profile_view',
         arguments: {
-          'profile': gameProfile,
+          'profile': participant.gameProfile,
           'userData': participant.userData,
           'gameName': null,
           'gameIconUrl': null,

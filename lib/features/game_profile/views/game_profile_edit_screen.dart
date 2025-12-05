@@ -7,6 +7,7 @@ import '../../../shared/widgets/app_header.dart';
 import '../../../shared/widgets/loading_overlay.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/text_input_field.dart';
+import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/selection_button_group.dart';
 import '../../../data/models/game_profile_model.dart';
 import '../providers/game_profile_provider.dart';
@@ -536,7 +537,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
           ),
         ),
         const SizedBox(height: AppDimensions.spacingM),
-        TextInputField(
+        AppTextField(
           controller: _voiceChatDetailsController,
           label: 'VC詳細情報',
           hintText: '例: ゲーム内VCメイン、Discord: user#1234、○時以降はVC可能',
@@ -551,14 +552,14 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
       title: 'その他の情報',
       icon: Icons.notes,
       children: [
-        TextInputField(
+        AppTextField(
           controller: _achievementsController,
           label: '達成実績・アピールポイント',
           hintText: '例: 世界ランキング100位、大会優勝歴あり、配信経験あり',
           maxLines: 3,
         ),
         const SizedBox(height: AppDimensions.spacingM),
-        TextInputField(
+        AppTextField(
           controller: _notesController,
           label: '自由記入・メモ',
           hintText: '例: 初心者歓迎、まったりプレイ希望、ボイスチャット可能',

@@ -580,5 +580,11 @@ final userParticipationStatusProvider = StreamProvider.family<ParticipationAppli
           return null;
         }
         return ParticipationApplication.fromFirestore(snapshot.docs.first);
+      })
+      .handleError((error, stackTrace) {
+        print('Error in userParticipationStatusProvider: $error');
+        print('StackTrace: $stackTrace');
+        // エラーを再throwして、UI側でエラーハンドリングできるようにする
+        throw error;
       });
 });

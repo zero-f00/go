@@ -14,6 +14,7 @@ import '../../../shared/services/participation_service.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/models/game_profile_model.dart';
+import '../../../shared/widgets/app_text_field.dart';
 
 class ParticipantManagementScreen extends ConsumerStatefulWidget {
   final String eventId;
@@ -933,25 +934,11 @@ class _ApprovalDialogState extends State<_ApprovalDialog> {
             ),
           ),
           const SizedBox(height: AppDimensions.spacingL),
-          TextField(
+          AppTextFieldMultiline(
             controller: _controller,
-            decoration: InputDecoration(
-              hintText: widget.isRejection ? '拒否理由を入力...' : '承認メッセージを入力...',
-              hintStyle: TextStyle(color: AppColors.textLight),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                borderSide: BorderSide(color: AppColors.border),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                borderSide: BorderSide(color: AppColors.accent, width: 2),
-              ),
-            ),
+            hintText: widget.isRejection ? '拒否理由を入力...' : '承認メッセージを入力...',
             maxLines: 3,
-            style: const TextStyle(
-              fontSize: AppDimensions.fontSizeM,
-              color: AppColors.textDark,
-            ),
+            doneButtonText: '完了',
           ),
         ],
       ),

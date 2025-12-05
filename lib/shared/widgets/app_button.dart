@@ -227,6 +227,8 @@ class AppButton extends StatelessWidget {
             : AppDimensions.fontSizeM,
         fontWeight: FontWeight.w600,
       ),
+      overflow: TextOverflow.ellipsis,
+      maxLines: 1,
     );
   }
 }

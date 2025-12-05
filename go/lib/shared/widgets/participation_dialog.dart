@@ -12,6 +12,7 @@ import '../../data/repositories/user_repository.dart';
 import '../models/game.dart' as SharedGame;
 import '../../data/models/game_model.dart' as DataGame;
 import 'app_button.dart';
+import 'app_text_field.dart';
 
 /// プロフィール要件状態
 enum ProfileRequirementStatus {
@@ -684,26 +685,11 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
           ),
         ),
         const SizedBox(height: AppDimensions.spacingS),
-        TextField(
+        AppTextFieldMultiline(
           controller: _messageController,
+          hintText: '主催者へのメッセージを入力（任意）',
           maxLines: 3,
-          decoration: InputDecoration(
-            hintText: '主催者へのメッセージを入力（任意）',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-              borderSide: const BorderSide(color: AppColors.accent, width: 2),
-            ),
-            filled: true,
-            fillColor: AppColors.backgroundLight,
-          ),
+          doneButtonText: '完了',
         ),
       ],
     );

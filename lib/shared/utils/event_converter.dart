@@ -262,7 +262,8 @@ class EventConverter {
         filteredEvents = events.where((event) =>
           (event.createdBy == currentUserId || event.managerIds.contains(currentUserId)) &&
           (event.status == EventStatus.completed ||
-           (event.registrationDeadline != null && now.isAfter(event.registrationDeadline!)))
+           event.status == EventStatus.cancelled ||
+           now.isAfter(event.eventDate)) // イベント開催日時が過去
         ).toList();
         break;
     }

@@ -6,6 +6,7 @@ import '../constants/app_strings.dart';
 import '../../data/models/violation_record_model.dart';
 import '../services/violation_service.dart';
 import '../providers/auth_provider.dart';
+import 'app_text_field.dart';
 
 /// 違反報告ダイアログ
 class ViolationReportDialog extends ConsumerStatefulWidget {
@@ -313,25 +314,12 @@ class _ViolationReportDialogState
                       const SizedBox(height: AppDimensions.spacingL),
 
                       // 説明
-                      Text(
-                        '違反内容の詳細 *',
-                        style: TextStyle(
-                          fontSize: AppDimensions.fontSizeS,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: AppDimensions.spacingS),
-                      TextFormField(
+                      AppTextFieldMultiline(
                         controller: _descriptionController,
+                        label: '違反内容の詳細',
+                        hintText: '違反の具体的な内容を記載してください',
+                        isRequired: true,
                         maxLines: 4,
-                        decoration: InputDecoration(
-                          hintText: '違反の具体的な内容を記載してください',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                          ),
-                          contentPadding: const EdgeInsets.all(AppDimensions.spacingM),
-                        ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return '違反内容を入力してください';
@@ -341,29 +329,17 @@ class _ViolationReportDialogState
                           }
                           return null;
                         },
+                        doneButtonText: '完了',
                       ),
                       const SizedBox(height: AppDimensions.spacingL),
 
                       // メモ（任意）
-                      Text(
-                        'メモ（任意）',
-                        style: TextStyle(
-                          fontSize: AppDimensions.fontSizeS,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: AppDimensions.spacingS),
-                      TextFormField(
+                      AppTextFieldMultiline(
                         controller: _notesController,
+                        label: 'メモ（任意）',
+                        hintText: '追加情報があれば記載してください',
                         maxLines: 3,
-                        decoration: InputDecoration(
-                          hintText: '追加情報があれば記載してください',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                          ),
-                          contentPadding: const EdgeInsets.all(AppDimensions.spacingM),
-                        ),
+                        doneButtonText: '完了',
                       ),
                     ],
                   ),

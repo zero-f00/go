@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import 'app_button.dart';
+import 'app_text_field.dart';
 
 /// 理由入力ダイアログ
 class ReasonInputDialog extends StatefulWidget {
@@ -121,44 +122,14 @@ class _ReasonInputDialogState extends State<ReasonInputDialog> {
               ),
             ),
             const SizedBox(height: AppDimensions.spacingL),
-            TextField(
+            AppTextFieldMultiline(
               controller: _reasonController,
+              hintText: widget.hintText,
+              isRequired: widget.isRequired,
               maxLines: 4,
               maxLength: widget.maxLength,
               onChanged: (_) => _validateInput(),
-              decoration: InputDecoration(
-                hintText: widget.hintText,
-                hintStyle: const TextStyle(
-                  color: AppColors.textLight,
-                  fontSize: AppDimensions.fontSizeM,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                  borderSide: BorderSide(
-                    color: _isValid ? AppColors.borderLight : AppColors.error,
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                  borderSide: BorderSide(
-                    color: _isValid ? AppColors.borderLight : AppColors.error,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                  borderSide: BorderSide(
-                    color: _isValid ? AppColors.primary : AppColors.error,
-                    width: 2.0,
-                  ),
-                ),
-                filled: true,
-                fillColor: AppColors.surface,
-                contentPadding: const EdgeInsets.all(AppDimensions.spacingM),
-              ),
-              style: const TextStyle(
-                fontSize: AppDimensions.fontSizeM,
-                color: AppColors.textDark,
-              ),
+              doneButtonText: '完了',
             ),
             if (!_isValid && widget.isRequired) ...[
               const SizedBox(height: AppDimensions.spacingS),

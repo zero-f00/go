@@ -16,6 +16,7 @@ import '../../../data/models/payment_model.dart';
 import '../../../data/models/notification_model.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../data/models/user_model.dart';
+import '../../../shared/widgets/app_text_field.dart';
 
 /// イベント参加者管理画面
 class EventParticipantsManagementScreen extends ConsumerStatefulWidget {
@@ -891,15 +892,11 @@ class _EventParticipantsManagementScreenState
               ),
             ),
             const SizedBox(height: AppDimensions.spacingM),
-            TextField(
+            AppTextFieldMultiline(
               controller: messageController,
-              decoration: InputDecoration(
-                hintText: '理由を入力...',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                ),
-              ),
+              hintText: '理由を入力...',
               maxLines: 3,
+              doneButtonText: '完了',
             ),
           ],
         ),

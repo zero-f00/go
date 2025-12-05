@@ -3,6 +3,7 @@ import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/services/event_cancellation_service.dart';
+import '../../../shared/widgets/app_text_field.dart';
 
 /// イベント中止確認ダイアログ
 class EventCancellationDialog extends StatefulWidget {
@@ -251,29 +252,12 @@ class _EventCancellationDialogState extends State<EventCancellationDialog> {
           ),
         ),
         const SizedBox(height: AppDimensions.spacingM),
-        TextField(
+        AppTextFieldMultiline(
           controller: _reasonController,
+          hintText: '参加者へのメッセージや詳細な説明を入力してください...',
           maxLines: 4,
           maxLength: 500,
-          decoration: InputDecoration(
-            hintText: '参加者へのメッセージや詳細な説明を入力してください...',
-            hintStyle: const TextStyle(color: AppColors.textLight),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-              borderSide: const BorderSide(color: AppColors.primary, width: 2),
-            ),
-            filled: true,
-            fillColor: AppColors.backgroundLight,
-            contentPadding: const EdgeInsets.all(AppDimensions.spacingL),
-          ),
+          doneButtonText: '完了',
         ),
       ],
     );

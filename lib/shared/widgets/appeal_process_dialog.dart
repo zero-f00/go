@@ -6,6 +6,7 @@ import '../../data/models/violation_record_model.dart';
 import '../services/violation_service.dart';
 import '../services/notification_service.dart';
 import '../providers/auth_provider.dart';
+import 'app_text_field.dart';
 
 /// 異議申立処理ダイアログ
 class AppealProcessDialog extends ConsumerStatefulWidget {
@@ -367,16 +368,12 @@ class _AppealProcessDialogState extends ConsumerState<AppealProcessDialog> {
                         ),
                       ),
                       const SizedBox(height: AppDimensions.spacingS),
-                      TextFormField(
+                      AppTextFieldMultiline(
                         controller: _responseController,
+                        label: '申立者への回答',
+                        hintText: '処理結果の理由や詳細を申立者に説明してください',
+                        isRequired: true,
                         maxLines: 4,
-                        decoration: InputDecoration(
-                          hintText: '処理結果の理由や詳細を申立者に説明してください',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                          ),
-                          contentPadding: const EdgeInsets.all(AppDimensions.spacingM),
-                        ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return '申立者への回答を入力してください';
@@ -386,6 +383,7 @@ class _AppealProcessDialogState extends ConsumerState<AppealProcessDialog> {
                           }
                           return null;
                         },
+                        doneButtonText: '完了',
                       ),
                     ],
                   ),

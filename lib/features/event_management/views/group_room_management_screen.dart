@@ -14,6 +14,7 @@ import '../../../data/repositories/user_repository.dart';
 import '../../../shared/widgets/user_avatar_from_id.dart';
 import '../../../data/models/game_profile_model.dart';
 import '../../../data/models/event_group_model.dart';
+import '../../../shared/widgets/app_text_field.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// グループ管理画面
@@ -1035,16 +1036,13 @@ class _GroupRoomManagementScreenState
                 ),
               ),
               const SizedBox(height: AppDimensions.spacingM),
-              TextField(
+              AppTextFieldMultiline(
                 controller: announcementsController,
-                decoration: const InputDecoration(
-                  labelText: '全体連絡事項',
-                  helperText: '全参加者が閲覧可能',
-                  hintText: '例：イベント開始時刻が30分変更になりました',
-                  border: OutlineInputBorder(),
-                ),
+                label: '全体連絡事項',
+                hintText: '例：イベント開始時刻が30分変更になりました',
                 maxLines: 5,
                 minLines: 3,
+                doneButtonText: '完了',
               ),
             ],
           ),
@@ -1208,14 +1206,12 @@ class _GroupRoomManagementScreenState
                 maxLines: 2,
               ),
               const SizedBox(height: AppDimensions.spacingM),
-              TextField(
+              AppTextFieldMultiline(
                 controller: announcementsController,
-                decoration: const InputDecoration(
-                  labelText: 'グループ連絡事項',
-                  helperText: 'メンバーのみ閲覧可能',
-                  hintText: '例：次回の練習は19時からです',
-                ),
+                label: 'グループ連絡事項',
+                hintText: '例：次回の練習は19時からです',
                 maxLines: 3,
+                doneButtonText: '完了',
               ),
             ],
           ),

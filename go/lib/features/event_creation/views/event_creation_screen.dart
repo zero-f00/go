@@ -23,6 +23,8 @@ import '../../../shared/services/event_service.dart';
 import '../../../shared/services/error_handler_service.dart';
 import '../../../shared/services/validation_service.dart';
 import '../../game_event_management/models/game_event.dart';
+import '../../../shared/widgets/keyboard_overlay_widget.dart';
+import '../../../shared/widgets/app_text_field.dart';
 
 class EventCreationScreen extends StatefulWidget {
   final GameEvent? editingEvent; // 編集する既存イベント
@@ -341,6 +343,41 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     bool obscureText = false,
     String? Function(String?)? validator,
   }) {
+    // 複数行入力の場合は新しいウィジェットを使用
+    if (maxLines > 1) {
+      return EnhancedMultilineTextField(
+        controller: controller,
+        label: label,
+        hint: hint,
+        isRequired: isRequired,
+        maxLines: maxLines,
+        validator: validator ?? (isRequired
+            ? (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return '$labelは必須項目です';
+                }
+                return null;
+              }
+            : null),
+      );
+    }
+
+    // 数字入力の場合は専用ウィジェットを使用
+    if (keyboardType == TextInputType.number ||
+        (inputFormatters != null &&
+         inputFormatters.any((formatter) =>
+             formatter is FilteringTextInputFormatter &&
+             formatter.filterPattern.toString().contains('digitsOnly')))) {
+      return AppTextFieldNumber(
+        controller: controller,
+        label: label,
+        hintText: hint,
+        isRequired: isRequired,
+        validator: validator,
+      );
+    }
+
+    // 単一行入力の場合は従来通り
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -372,6 +409,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           keyboardType: keyboardType,
           inputFormatters: inputFormatters,
           obscureText: obscureText,
+          textInputAction: TextInputAction.next,
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: const TextStyle(

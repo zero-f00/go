@@ -12,6 +12,7 @@ import '../providers/auth_provider.dart';
 import 'user_avatar.dart';
 import '../../data/models/user_model.dart';
 import 'game_selection_dialog.dart';
+import 'app_text_field.dart';
 
 class UserSettingsDialog extends ConsumerStatefulWidget {
   final bool isInitialSetup;
@@ -634,48 +635,13 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
   }
 
   Widget _buildBioField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '自己紹介',
-          style: const TextStyle(
-            fontSize: AppDimensions.fontSizeM,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textDark,
-          ),
-        ),
-        const SizedBox(height: AppDimensions.spacingS),
-        TextField(
-          controller: _userBioController,
-          maxLines: 3,
-          maxLength: 150,
-          decoration: InputDecoration(
-            hintText: '自分について簡単に紹介してください...',
-            prefixIcon: const Padding(
-              padding: EdgeInsets.only(bottom: 40),
-              child: Icon(Icons.description_outlined, color: AppColors.accent),
-            ),
-            contentPadding: const EdgeInsets.all(AppDimensions.spacingM),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-              borderSide: const BorderSide(color: AppColors.accent, width: 2),
-            ),
-          ),
-          style: const TextStyle(
-            color: AppColors.textDark,
-            fontSize: AppDimensions.fontSizeM,
-          ),
-        ),
-      ],
+    return AppTextFieldMultiline(
+      controller: _userBioController,
+      label: '自己紹介',
+      hintText: '自分について簡単に紹介してください...',
+      maxLines: 3,
+      maxLength: 150,
+      doneButtonText: '完了',
     );
   }
 
@@ -872,47 +838,12 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '連絡先情報',
-          style: const TextStyle(
-            fontSize: AppDimensions.fontSizeM,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textDark,
-          ),
-        ),
-        const SizedBox(height: AppDimensions.spacingS),
-        TextField(
+        AppTextFieldMultiline(
           controller: _contactController,
+          label: '連絡先情報',
+          hintText: '例：Discord: @username, Twitter: @username, YouTube: @channel, Steam: steamname, LINE: lineid',
           maxLines: 4,
-          decoration: InputDecoration(
-            hintText:
-                '例：Discord: @username, Twitter: @username, YouTube: @channel, Steam: steamname, LINE: lineid',
-            hintStyle: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: AppDimensions.fontSizeS,
-            ),
-            prefixIcon: const Padding(
-              padding: EdgeInsets.only(bottom: 60),
-              child: Icon(Icons.contact_page_outlined, color: AppColors.accent),
-            ),
-            contentPadding: const EdgeInsets.all(AppDimensions.spacingM),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-              borderSide: const BorderSide(color: AppColors.accent, width: 2),
-            ),
-          ),
-          style: const TextStyle(
-            color: AppColors.textDark,
-            fontSize: AppDimensions.fontSizeM,
-          ),
+          doneButtonText: '完了',
         ),
         const SizedBox(height: AppDimensions.spacingS),
         Text(

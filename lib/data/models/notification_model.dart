@@ -12,6 +12,8 @@ enum NotificationType {
   eventRejected,       // イベント参加拒否
   eventApplication,    // イベント申込み（運営側への通知）
   eventDraftReverted,  // イベント下書き化による参加取り消し
+  eventCancelled,      // イベント中止のお知らせ（参加者向け）
+  eventCancelProcessed,// イベント中止処理完了（運営者向け）
   violationReported,   // 違反報告
   violationProcessed,  // 違反処理完了
   violationDismissed,  // 違反却下
@@ -279,6 +281,10 @@ class NotificationData extends Equatable {
         return 'event_note';
       case NotificationType.eventDraftReverted:
         return 'event_busy';
+      case NotificationType.eventCancelled:
+        return 'cancel';
+      case NotificationType.eventCancelProcessed:
+        return 'task_alt';
       case NotificationType.violationReported:
         return 'report';
       case NotificationType.violationProcessed:
@@ -313,6 +319,8 @@ class NotificationData extends Equatable {
       case NotificationType.eventRejected:
       case NotificationType.eventApplication:
       case NotificationType.eventDraftReverted:
+      case NotificationType.eventCancelled:
+      case NotificationType.eventCancelProcessed:
         return 'イベント';
       case NotificationType.violationReported:
       case NotificationType.violationProcessed:

@@ -20,6 +20,7 @@ import '../../../shared/providers/auth_provider.dart';
 import '../../../features/game_profile/providers/game_profile_provider.dart';
 import '../../../features/game_profile/views/game_profile_view_screen.dart';
 import '../../../features/profile/views/user_profile_screen.dart';
+import '../../../shared/widgets/app_text_field.dart';
 
 /// 違反管理画面
 class ViolationManagementScreen extends ConsumerStatefulWidget {
@@ -969,14 +970,12 @@ class _ViolationManagementScreenState
                 maxLines: 2,
               ),
               const SizedBox(height: AppDimensions.spacingM),
-              TextField(
+              AppTextFieldMultiline(
                 controller: notesController,
-                decoration: const InputDecoration(
-                  labelText: '備考（任意）',
-                  hintText: '処理に関するメモ',
-                  border: OutlineInputBorder(),
-                ),
+                label: '備考（任意）',
+                hintText: '処理に関するメモ',
                 maxLines: 3,
+                doneButtonText: '完了',
               ),
             ],
           ),
@@ -1168,14 +1167,12 @@ class _ViolationManagementScreenState
               const SizedBox(height: AppDimensions.spacingM),
               const Text('この違反記録を却下しますか？'),
               const SizedBox(height: AppDimensions.spacingM),
-              TextField(
+              AppTextFieldMultiline(
                 controller: notesController,
-                decoration: const InputDecoration(
-                  labelText: '却下理由（任意）',
-                  hintText: '却下する理由を記載してください',
-                  border: OutlineInputBorder(),
-                ),
+                label: '却下理由（任意）',
+                hintText: '却下する理由を記載してください',
                 maxLines: 3,
+                doneButtonText: '完了',
               ),
             ],
           ),
