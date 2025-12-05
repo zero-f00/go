@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../../data/models/user_model.dart';
+import '../utils/withdrawn_user_helper.dart';
 import 'user_avatar.dart';
 
 class UserTag extends StatelessWidget {
@@ -53,7 +54,7 @@ class UserTag extends StatelessWidget {
               padding: EdgeInsets.all(tagSize * 0.15),
               child: UserAvatar(
                 size: tagSize * 0.7,
-                avatarUrl: user.photoUrl,
+                avatarUrl: WithdrawnUserHelper.getDisplayAvatarUrl(user),
                 backgroundColor: AppColors.overlayMedium,
                 iconColor: AppColors.textSecondary,
                 borderColor: AppColors.accent.withValues(alpha: 0.3),
@@ -71,7 +72,7 @@ class UserTag extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      user.username,
+                      WithdrawnUserHelper.getDisplayUsername(user),
                       style: TextStyle(
                         fontSize: tagSize * 0.35,
                         fontWeight: FontWeight.w600,
@@ -80,7 +81,7 @@ class UserTag extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
-                      '@${user.userId}',
+                      '@${WithdrawnUserHelper.getDisplayUserId(user)}',
                       style: TextStyle(
                         fontSize: tagSize * 0.25,
                         color: txtColor.withValues(alpha: 0.7),

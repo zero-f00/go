@@ -620,140 +620,151 @@ class _EnhancedActivityDetailDialogState extends State<EnhancedActivityDetailDia
   }
 
   Widget _buildHostingEvents() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('events')
-          .where('createdBy', isEqualTo: widget.userId)
-          .orderBy('updatedAt', descending: true)
-          .limit(50)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+    return FutureBuilder<String?>(
+      future: _getFirebaseUidFromCustomId(widget.userId),
+      builder: (context, uidSnapshot) {
+        if (uidSnapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return _buildEmptyState('運営中のイベントはありません');
+        final firebaseUid = uidSnapshot.data;
+        if (firebaseUid == null) {
+          return _buildEmptyState('ユーザー情報が取得できませんでした');
         }
 
-        // イベントを月別にグループ化
-        Map<String, List<DocumentSnapshot>> groupedByMonth = {};
+        return FutureBuilder<List<DocumentSnapshot>>(
+          future: _getManagedEventDocs(firebaseUid),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-        for (var doc in snapshot.data!.docs) {
-          final data = doc.data() as Map<String, dynamic>;
-          final date = data['updatedAt'] != null
-              ? (data['updatedAt'] as Timestamp).toDate()
-              : DateTime.now();
-          final monthKey = '${date.year}年${date.month}月';
-          groupedByMonth[monthKey] ??= [];
-          groupedByMonth[monthKey]!.add(doc);
-        }
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return _buildEmptyState('運営中のイベントはありません');
+            }
 
-        final sortedMonths = groupedByMonth.keys.toList()
-          ..sort((a, b) => b.compareTo(a));
+            final docs = snapshot.data!;
 
-        return ListView.builder(
-          itemCount: sortedMonths.length,
-          itemBuilder: (context, index) {
-            final month = sortedMonths[index];
-            final monthDocs = groupedByMonth[month]!;
+            // イベントを月別にグループ化
+            Map<String, List<DocumentSnapshot>> groupedByMonth = {};
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingL,
-                    vertical: AppDimensions.spacingM,
-                  ),
-                  color: AppColors.backgroundLight,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        month,
-                        style: const TextStyle(
-                          fontSize: AppDimensions.fontSizeM,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textDark,
-                        ),
+            for (var doc in docs) {
+              final data = doc.data() as Map<String, dynamic>;
+              final date = data['updatedAt'] != null
+                  ? (data['updatedAt'] as Timestamp).toDate()
+                  : DateTime.now();
+              final monthKey = '${date.year}年${date.month}月';
+              groupedByMonth[monthKey] ??= [];
+              groupedByMonth[monthKey]!.add(doc);
+            }
+
+            final sortedMonths = groupedByMonth.keys.toList()
+              ..sort((a, b) => b.compareTo(a));
+
+            return ListView.builder(
+              itemCount: sortedMonths.length,
+              itemBuilder: (context, index) {
+                final month = sortedMonths[index];
+                final monthDocs = groupedByMonth[month]!;
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.spacingL,
+                        vertical: AppDimensions.spacingM,
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppDimensions.spacingS,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.accent.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(AppDimensions.radiusXS),
-                        ),
-                        child: Text(
-                          '${monthDocs.length}件',
-                          style: TextStyle(
-                            fontSize: AppDimensions.fontSizeXS,
-                            color: AppColors.accent,
-                            fontWeight: FontWeight.w600,
+                      color: AppColors.backgroundLight,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            month,
+                            style: const TextStyle(
+                              fontSize: AppDimensions.fontSizeM,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textDark,
+                            ),
                           ),
-                        ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppDimensions.spacingS,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.accent.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(AppDimensions.radiusXS),
+                            ),
+                            child: Text(
+                              '${monthDocs.length}件',
+                              style: TextStyle(
+                                fontSize: AppDimensions.fontSizeXS,
+                                color: AppColors.accent,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-                ...monthDocs.map((doc) {
-                  final data = doc.data() as Map<String, dynamic>;
+                    ),
+                    ...monthDocs.map((doc) {
+                      final data = doc.data() as Map<String, dynamic>;
 
-                  // ステータスを適切に取得
-                  GameEventStatus eventStatus;
-                  try {
-                    if (data['status'] is String) {
-                      eventStatus = _parseEventStatus(data['status']);
-                    } else {
-                      // 日付から判定
-                      final now = DateTime.now();
-                      final eventDate = data['eventDate'] != null
-                          ? (data['eventDate'] as Timestamp).toDate()
-                          : null;
-                      final endDate = data['endDate'] != null
-                          ? (data['endDate'] as Timestamp).toDate()
-                          : null;
+                      // ステータスを適切に取得
+                      GameEventStatus eventStatus;
+                      try {
+                        if (data['status'] is String) {
+                          eventStatus = _parseEventStatus(data['status']);
+                        } else {
+                          // 日付から判定
+                          final now = DateTime.now();
+                          final eventDate = data['eventDate'] != null
+                              ? (data['eventDate'] as Timestamp).toDate()
+                              : null;
+                          final endDate = data['endDate'] != null
+                              ? (data['endDate'] as Timestamp).toDate()
+                              : null;
 
-                      // status がEventStatus enumの場合の処理
-                      if (data['status'] != null && data['status'].toString() == 'EventStatus.cancelled') {
-                        eventStatus = GameEventStatus.cancelled;
-                      } else if (endDate != null && endDate.isBefore(now)) {
-                        eventStatus = GameEventStatus.completed;
-                      } else if (eventDate != null && eventDate.isAfter(now)) {
+                          // status がEventStatus enumの場合の処理
+                          if (data['status'] != null && data['status'].toString() == 'EventStatus.cancelled') {
+                            eventStatus = GameEventStatus.cancelled;
+                          } else if (endDate != null && endDate.isBefore(now)) {
+                            eventStatus = GameEventStatus.completed;
+                          } else if (eventDate != null && eventDate.isAfter(now)) {
+                            eventStatus = GameEventStatus.upcoming;
+                          } else {
+                            eventStatus = GameEventStatus.active;
+                          }
+                        }
+                      } catch (e) {
+                        // エラーが発生した場合はデフォルトステータス
                         eventStatus = GameEventStatus.upcoming;
-                      } else {
-                        eventStatus = GameEventStatus.active;
                       }
-                    }
-                  } catch (e) {
-                    // エラーが発生した場合はデフォルトステータス
-                    eventStatus = GameEventStatus.upcoming;
-                  }
 
-                  final event = GameEvent(
-                    id: doc.id,
-                    name: data['name'] ?? 'イベント',
-                    description: data['description'] ?? '',
-                    type: GameEventType.daily,
-                    status: eventStatus,
-                    startDate: data['eventDate'] != null
-                        ? (data['eventDate'] as Timestamp).toDate()
-                        : DateTime.now(),
-                    endDate: data['endDate'] != null
-                        ? (data['endDate'] as Timestamp).toDate()
-                        : DateTime.now(),
-                    participantCount: data['currentParticipants'] ?? 0,
-                    maxParticipants: data['maxParticipants'] ?? 0,
-                    completionRate: 0.0,
-                  );
-                  return _buildEventTile(context, event);
-                }),
-                const Divider(height: 1),
-              ],
+                      final event = GameEvent(
+                        id: doc.id,
+                        name: data['name'] ?? 'イベント',
+                        description: data['description'] ?? '',
+                        type: GameEventType.daily,
+                        status: eventStatus,
+                        startDate: data['eventDate'] != null
+                            ? (data['eventDate'] as Timestamp).toDate()
+                            : DateTime.now(),
+                        endDate: data['endDate'] != null
+                            ? (data['endDate'] as Timestamp).toDate()
+                            : DateTime.now(),
+                        participantCount: data['currentParticipants'] ?? 0,
+                        maxParticipants: data['maxParticipants'] ?? 0,
+                        completionRate: 0.0,
+                      );
+                      return _buildEventTile(context, event);
+                    }),
+                    const Divider(height: 1),
+                  ],
+                );
+              },
             );
           },
         );
@@ -1088,6 +1099,96 @@ class _EnhancedActivityDetailDialogState extends State<EnhancedActivityDetailDia
       return 'イベント';
     } catch (e) {
       return 'イベント';
+    }
+  }
+
+  /// CustomユーザーIDからFirebaseUIDを取得
+  Future<String?> _getFirebaseUidFromCustomId(String customUserId) async {
+    try {
+      // まず、渡されたIDがすでにFirebaseUIDかどうかをチェック
+      // FirebaseUIDは通常28文字で英数字
+      if (customUserId.length == 28 && RegExp(r'^[a-zA-Z0-9]+$').hasMatch(customUserId)) {
+        return customUserId;
+      }
+
+      final userQuery = await FirebaseFirestore.instance
+          .collection('users')
+          .where('userId', isEqualTo: customUserId)
+          .limit(1)
+          .get();
+
+      if (userQuery.docs.isNotEmpty) {
+        return userQuery.docs.first.id;
+      }
+
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// 運営イベントのドキュメントを取得
+  Future<List<DocumentSnapshot>> _getManagedEventDocs(String firebaseUid) async {
+    final allDocs = <String, DocumentSnapshot>{};
+
+    try {
+      // 1. 作成者として作成したイベントを取得
+      final createdEventsQuery = await FirebaseFirestore.instance
+          .collection('events')
+          .where('createdBy', isEqualTo: firebaseUid)
+          .get();
+
+      for (final doc in createdEventsQuery.docs) {
+        allDocs[doc.id] = doc;
+      }
+
+      // 2. 管理者として参加しているイベントを取得
+      try {
+        final managedEventsQuery = await FirebaseFirestore.instance
+            .collection('events')
+            .where('managerIds', arrayContains: firebaseUid)
+            .get();
+
+        for (final doc in managedEventsQuery.docs) {
+          allDocs[doc.id] = doc;
+        }
+      } catch (e) {
+        // managerIdsフィールドが存在しない場合は無視
+      }
+
+      // 3. スポンサーとして参加しているイベントを取得
+      try {
+        final sponsorEventsQuery = await FirebaseFirestore.instance
+            .collection('events')
+            .where('sponsorIds', arrayContains: firebaseUid)
+            .get();
+
+        for (final doc in sponsorEventsQuery.docs) {
+          allDocs[doc.id] = doc;
+        }
+      } catch (e) {
+        // sponsorIdsフィールドが存在しない場合は無視
+      }
+
+      // 日付でソート（新しい順）
+      final sortedDocs = allDocs.values.toList();
+      sortedDocs.sort((a, b) {
+        final aData = a.data() as Map<String, dynamic>;
+        final bData = b.data() as Map<String, dynamic>;
+
+        final aDate = aData['updatedAt'] != null
+            ? (aData['updatedAt'] as Timestamp).toDate()
+            : DateTime.now();
+        final bDate = bData['updatedAt'] != null
+            ? (bData['updatedAt'] as Timestamp).toDate()
+            : DateTime.now();
+
+        return bDate.compareTo(aDate);
+      });
+
+      return sortedDocs.take(50).toList();
+    } catch (e) {
+      return [];
     }
   }
 }

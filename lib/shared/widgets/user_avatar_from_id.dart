@@ -4,6 +4,7 @@ import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../../data/repositories/user_repository.dart';
 import '../../data/models/user_model.dart';
+import '../utils/withdrawn_user_helper.dart';
 import 'user_avatar.dart';
 
 /// ユーザーIDからユーザー情報を取得してアイコンを表示するウィジェット
@@ -118,9 +119,10 @@ class _UserAvatarFromIdState extends ConsumerState<UserAvatarFromId> {
 
     // ユーザーIDが無効な場合やユーザーデータが取得できない場合でも
     // UserAvatarコンポーネントがデフォルトアイコンを表示する
+    // 退会ユーザーの場合はアバターURLをnullにする
     return UserAvatar(
       size: widget.size,
-      avatarUrl: _userData?.photoUrl,
+      avatarUrl: WithdrawnUserHelper.getDisplayAvatarUrl(_userData),
       onTap: widget.onTap,
       overlayIcon: widget.overlayIcon,
       backgroundColor: widget.backgroundColor,

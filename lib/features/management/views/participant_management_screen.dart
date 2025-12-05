@@ -15,6 +15,7 @@ import '../../../data/repositories/user_repository.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/models/game_profile_model.dart';
 import '../../../shared/widgets/app_text_field.dart';
+import '../../../shared/utils/withdrawn_user_helper.dart';
 
 class ParticipantManagementScreen extends ConsumerStatefulWidget {
   final String eventId;
@@ -386,16 +387,14 @@ class _ParticipantManagementScreenState
                         backgroundColor: AppColors.accent.withValues(
                           alpha: 0.1,
                         ),
-                        backgroundImage: userData?.photoUrl != null
-                            ? NetworkImage(userData!.photoUrl!)
+                        backgroundImage: WithdrawnUserHelper.getDisplayAvatarUrl(userData) != null
+                            ? NetworkImage(WithdrawnUserHelper.getDisplayAvatarUrl(userData)!)
                             : null,
-                        child: userData?.photoUrl == null
+                        child: WithdrawnUserHelper.getDisplayAvatarUrl(userData) == null
                             ? Text(
-                                userData?.displayName != null
-                                    ? userData!.displayName
+                                WithdrawnUserHelper.getDisplayUsername(userData)
                                           .substring(0, 1)
-                                          .toUpperCase()
-                                    : 'U',
+                                          .toUpperCase(),
                                 style: TextStyle(
                                   color: AppColors.accent,
                                   fontWeight: FontWeight.w600,
@@ -411,7 +410,7 @@ class _ParticipantManagementScreenState
                           children: [
                             // ゲーム内ユーザー名を主表示
                             Text(
-                              application.gameUsername ?? userData?.displayName ?? '読み込み中...',
+                              application.gameUsername ?? WithdrawnUserHelper.getDisplayUsername(userData),
                               style: const TextStyle(
                                 fontSize: AppDimensions.fontSizeL,
                                 fontWeight: FontWeight.w600,
@@ -421,7 +420,7 @@ class _ParticipantManagementScreenState
                             // 実際のユーザー名をサブ表示（ゲーム内ユーザー名がある場合のみ）
                             if (application.gameUsername != null &&
                                 application.gameUsername!.isNotEmpty &&
-                                userData?.displayName != null)
+                                userData != null)
                               Container(
                                 margin: const EdgeInsets.only(top: AppDimensions.spacingXS),
                                 padding: const EdgeInsets.symmetric(
@@ -436,7 +435,7 @@ class _ParticipantManagementScreenState
                                   ),
                                 ),
                                 child: Text(
-                                  userData!.displayName,
+                                  WithdrawnUserHelper.getDisplayUsername(userData),
                                   style: TextStyle(
                                     fontSize: AppDimensions.fontSizeS,
                                     fontWeight: FontWeight.w500,
@@ -561,8 +560,45 @@ class _ParticipantManagementScreenState
   }
 
   /// ユーザープロフィール表示
-  void _viewUserProfile(String userId) {
-    Navigator.of(context).pushNamed('/user_profile', arguments: userId);
+  /// ユーザープロフィール画面に遷移
+  void _viewUserProfile(String userId) async {
+    try {
+      // ユーザー情報を取得して退会状態を確認
+      final userData = await _userRepository.getUserById(userId);
+      if (userData != null && mounted) {
+        // 退会ユーザーの場合はプロフィール表示を制限
+        if (!userData.isActive) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('退会したユーザーのプロフィールは表示できません'),
+              backgroundColor: AppColors.warning,
+            ),
+          );
+          return;
+        }
+
+        Navigator.of(context).pushNamed(
+          '/user_profile',
+          arguments: userData.userId, // カスタムユーザーIDを使用
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('ユーザー情報が見つかりません'),
+            backgroundColor: AppColors.warning,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('ユーザープロフィールの表示に失敗しました'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildStatusBadge(String status) {
@@ -873,7 +909,7 @@ class _ParticipantManagementScreenState
       context: context,
       eventId: widget.eventId,
       userId: application.userId,
-      userName: userData?.displayName ?? application.gameUsername ?? 'Unknown',
+      userName: WithdrawnUserHelper.getDisplayUsername(userData),
       gameUsername: application.gameUsername,
       userData: userData,
       onGameProfileTap: () => _viewGameProfile(application),

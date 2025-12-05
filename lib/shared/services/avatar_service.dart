@@ -18,35 +18,24 @@ class AvatarService {
   static const String _avatarPathKey = 'user_avatar_path';
 
   Future<File?> pickAndCropAvatar(BuildContext context) async {
-    debugPrint('🚀 AvatarService: pickAndCropAvatar called');
     try {
-      debugPrint('🔄 AvatarService: Showing image source dialog');
       final XFile? pickedFile = await _showImageSourceDialog(context);
-      debugPrint('✅ AvatarService: Image source dialog returned: ${pickedFile?.path}');
 
       if (pickedFile == null) {
-        debugPrint('⚠️ AvatarService: No image was picked');
         return null;
       }
 
-      debugPrint('🔄 AvatarService: Starting image crop with path: ${pickedFile.path}');
       final File? croppedFile = await _cropImage(pickedFile.path, context);
-      debugPrint('✅ AvatarService: Image crop returned: ${croppedFile?.path}');
 
       if (croppedFile != null) {
-        debugPrint('🔄 AvatarService: Saving cropped image to app directory');
         // アプリ内ディレクトリにアバター画像を保存
         final File savedFile = await _saveAvatarToAppDirectory(croppedFile);
         await saveAvatarPath(savedFile.path);
-        debugPrint('✅ AvatarService: Successfully saved avatar to: ${savedFile.path}');
         return savedFile;
-      } else {
-        debugPrint('⚠️ AvatarService: Image cropping was cancelled or failed');
       }
 
       return null;
     } catch (e) {
-      debugPrint('❌ AvatarService: Error picking/cropping avatar: $e');
       return null;
     }
   }
@@ -64,15 +53,12 @@ class AvatarService {
                 leading: const Icon(Icons.camera_alt),
                 title: const Text('カメラで撮影'),
                 onTap: () async {
-                  debugPrint('📸 AvatarService: Camera option selected');
-                  debugPrint('🔄 AvatarService: Calling pickImage from camera');
                   final XFile? photo = await _picker.pickImage(
                     source: ImageSource.camera,
                     imageQuality: 60,
                     maxWidth: 512,
                     maxHeight: 512,
                   );
-                  debugPrint('✅ AvatarService: pickImage from camera returned: ${photo?.path}');
                   if (context.mounted) {
                     Navigator.of(context).pop(photo);
                   }
@@ -82,15 +68,12 @@ class AvatarService {
                 leading: const Icon(Icons.photo_library),
                 title: const Text('ギャラリーから選択'),
                 onTap: () async {
-                  debugPrint('📷 AvatarService: Gallery option selected');
-                  debugPrint('🔄 AvatarService: Calling pickImage from gallery');
                   final XFile? image = await _picker.pickImage(
                     source: ImageSource.gallery,
                     imageQuality: 60,
                     maxWidth: 512,
                     maxHeight: 512,
                   );
-                  debugPrint('✅ AvatarService: pickImage from gallery returned: ${image?.path}');
                   if (context.mounted) {
                     Navigator.of(context).pop(image);
                   }
@@ -110,9 +93,7 @@ class AvatarService {
   }
 
   Future<File?> _cropImage(String imagePath, [BuildContext? context]) async {
-    debugPrint('🔄 AvatarService: _cropImage called with path: $imagePath');
     try {
-      debugPrint('🔄 AvatarService: Starting ImageCropper.cropImage');
       final CroppedFile? croppedFile = await ImageCropper().cropImage(
         sourcePath: imagePath,
         aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
@@ -144,20 +125,14 @@ class AvatarService {
             ),
         ],
       );
-      debugPrint('✅ AvatarService: ImageCropper.cropImage completed: ${croppedFile?.path}');
 
-      final result = croppedFile != null ? File(croppedFile.path) : null;
-      debugPrint('🔄 AvatarService: _cropImage returning: ${result?.path}');
-      return result;
+      return croppedFile != null ? File(croppedFile.path) : null;
     } catch (e) {
-      debugPrint('❌ AvatarService: Error in _cropImage: $e');
       return null;
     }
   }
 
   Future<File> _saveAvatarToAppDirectory(File sourceFile) async {
-    debugPrint('🔄 AvatarService: Starting to save avatar to app directory');
-
     final Directory appDir = await getApplicationDocumentsDirectory();
     final String fileName = 'user_avatar_${DateTime.now().millisecondsSinceEpoch}.jpg';
     final String targetPath = path.join(appDir.path, fileName);
@@ -167,21 +142,12 @@ class AvatarService {
 
     // ファイルサイズをチェック
     final int originalSize = await sourceFile.length();
-    debugPrint('📊 AvatarService: Original file size: ${_formatFileSize(originalSize)}');
 
     // 1MB以上の場合は追加圧縮
     if (originalSize > 1024 * 1024) {
-      debugPrint('⚠️ AvatarService: File too large, applying additional compression');
-      final File compressedFile = await _compressImage(sourceFile, targetPath);
-      final int compressedSize = await compressedFile.length();
-      debugPrint('✅ AvatarService: Compressed file size: ${_formatFileSize(compressedSize)}');
-      return compressedFile;
+      return await _compressImage(sourceFile, targetPath);
     } else {
-      debugPrint('✅ AvatarService: File size acceptable, copying directly');
-      final File copiedFile = await sourceFile.copy(targetPath);
-      final int finalSize = await copiedFile.length();
-      debugPrint('📊 AvatarService: Final file size: ${_formatFileSize(finalSize)}');
-      return copiedFile;
+      return await sourceFile.copy(targetPath);
     }
   }
 
@@ -210,13 +176,10 @@ class AvatarService {
 
   /// 画像を追加圧縮する
   Future<File> _compressImage(File sourceFile, String targetPath) async {
-    debugPrint('🔄 AvatarService: Starting image compression');
     try {
       // 画像を読み込み
       final Uint8List imageBytes = await sourceFile.readAsBytes();
       final ui.Image image = await _decodeImage(imageBytes);
-
-      debugPrint('📏 AvatarService: Original image size: ${image.width}x${image.height}');
 
       // 512x512のサイズに調整（必要に応じて）
       final ui.Image resizedImage = await _resizeImage(image, 512, 512);
@@ -231,10 +194,8 @@ class AvatarService {
       final File compressedFile = File(targetPath);
       await compressedFile.writeAsBytes(byteData.buffer.asUint8List());
 
-      debugPrint('✅ AvatarService: Image compression completed');
       return compressedFile;
     } catch (e) {
-      debugPrint('❌ AvatarService: Error compressing image: $e');
       // 圧縮に失敗した場合は元ファイルをコピー
       return sourceFile.copy(targetPath);
     }

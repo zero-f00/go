@@ -17,6 +17,7 @@ import '../../../data/models/notification_model.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../data/models/user_model.dart';
 import '../../../shared/widgets/app_text_field.dart';
+import '../../../shared/utils/withdrawn_user_helper.dart';
 
 /// イベント参加者管理画面
 class EventParticipantsManagementScreen extends ConsumerStatefulWidget {
@@ -290,12 +291,12 @@ class _EventParticipantsManagementScreenState
                     CircleAvatar(
                       radius: 25,
                       backgroundColor: AppColors.accent.withValues(alpha: 0.1),
-                      backgroundImage: userData?.photoUrl != null
-                          ? NetworkImage(userData!.photoUrl!)
+                      backgroundImage: WithdrawnUserHelper.getDisplayAvatarUrl(userData) != null
+                          ? NetworkImage(WithdrawnUserHelper.getDisplayAvatarUrl(userData)!)
                           : null,
-                      child: userData?.photoUrl == null
+                      child: WithdrawnUserHelper.getDisplayAvatarUrl(userData) == null
                           ? Text(
-                              userData?.displayName != null ? userData!.displayName.substring(0, 1).toUpperCase() : 'U',
+                              WithdrawnUserHelper.getDisplayUsername(userData).substring(0, 1).toUpperCase(),
                               style: TextStyle(
                                 color: AppColors.accent,
                                 fontWeight: FontWeight.w600,
@@ -310,16 +311,16 @@ class _EventParticipantsManagementScreenState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            userData?.displayName ?? '読み込み中...',
+                            userData != null ? WithdrawnUserHelper.getDisplayUsername(userData) : '読み込み中...',
                             style: const TextStyle(
                               fontSize: AppDimensions.fontSizeL,
                               fontWeight: FontWeight.w600,
                               color: AppColors.textDark,
                             ),
                           ),
-                          if (userData?.userId != null)
+                          if (userData != null)
                             Text(
-                              '@${userData!.userId}',
+                              '@${WithdrawnUserHelper.getDisplayUserId(userData)}',
                               style: TextStyle(
                                 fontSize: AppDimensions.fontSizeM,
                                 color: AppColors.textDark,
@@ -1029,6 +1030,17 @@ class _EventParticipantsManagementScreenState
       // ユーザー情報を取得してカスタムユーザーIDで遷移
       final userData = await _getUserData(userId);
       if (userData != null && mounted) {
+        // 退会ユーザーの場合はプロフィール表示を制限
+        if (!userData.isActive) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('退会したユーザーのプロフィールは表示できません'),
+              backgroundColor: AppColors.warning,
+            ),
+          );
+          return;
+        }
+
         Navigator.of(context).pushNamed(
           '/user_profile',
           arguments: userData.userId, // カスタムユーザーIDを使用

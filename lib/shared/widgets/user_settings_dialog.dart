@@ -1145,7 +1145,47 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
       }
 
 
-      // UserDataモデルを作成
+      // アバター画像をFirebase Storageにアップロード（Firestore保存前に実行）
+      String? finalAvatarUrl = _avatarUrl;
+      if (_hasAvatarChanged) {
+        setState(() {
+          _isUploading = true;
+          _uploadProgress = 0.0;
+        });
+        try {
+          if (_avatarFile != null) {
+            // 新しい画像をアップロード
+            finalAvatarUrl = await AvatarStorageService.instance.uploadAvatar(
+              file: _avatarFile!,
+              onProgress: (progress) {
+                if (mounted) {
+                  setState(() {
+                    _uploadProgress = progress;
+                  });
+                }
+              },
+            );
+          } else {
+            // 画像が削除された場合
+            if (_avatarUrl != null) {
+              await AvatarStorageService.instance.deleteAvatar();
+            }
+            finalAvatarUrl = null;
+          }
+          setState(() {
+            _isUploading = false;
+            _avatarUrl = finalAvatarUrl;
+            _hasAvatarChanged = false;
+          });
+        } catch (uploadError) {
+          setState(() {
+            _isUploading = false;
+          });
+          throw Exception('画像のアップロードに失敗しました: $uploadError');
+        }
+      }
+
+      // UserDataモデルを作成（アップロード済みのavatarURLを含む）
       final userData = UserData.create(
         id: currentUser.uid,
         userId: userId,
@@ -1154,7 +1194,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
         bio: _userBioController.text.trim().isEmpty
             ? null
             : _userBioController.text.trim(),
-        photoUrl: null, // Authのアイコンは使わず、ユーザー設定アイコンのみ使用
+        photoUrl: finalAvatarUrl, // アップロード済みのURLを使用
       ).copyWith(
         contact: _contactController.text.trim().isEmpty
             ? null

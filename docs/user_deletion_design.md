@@ -31,11 +31,15 @@
    - ユーザーIDが削除されると、FirebaseコレクションIDが直接表示される可能性
    - 削除されたユーザーの参照で画面が壊れる可能性
 
-3. **個人情報保護上の問題**
+3. **ユーザーID再利用の問題**
+   - 退会後もユーザーIDが保持されると、他のユーザーが同じIDを使用できない
+   - 人気のあるユーザーIDの永続的な占有によるユーザビリティの低下
+
+4. **個人情報保護上の問題**
    - 利用目的のない個人データの継続保持はリスク
    - 本人識別可能な情報の適切な匿名化が必要
 
-4. **複雑なデータ関連性**
+5. **複雑なデータ関連性**
    - ユーザーが作成・関与したデータが多岐にわたる
    - 完全削除すると他のユーザーの体験に影響
 
@@ -148,6 +152,7 @@ Future<void> deactivateUser(String userId) async {
       'isActive': false,
       'updatedAt': Timestamp.now(),
       // 個人識別情報の即座削除
+      'userId': null, // ユーザーIDをnullにして再利用可能にする
       'username': anonymizedUsername,
       'email': null, // 個人識別情報なので即座削除
       'bio': null,
@@ -784,6 +789,7 @@ Future<void> _cleanupRelatedData(String userId, String anonymizedId) async {
 - 運用負荷ゼロ（自動完結）
 - 法的コンプライアンス確保
 - システム安定性維持
+- ユーザーIDの再利用が可能（新規ユーザーが人気IDを取得可能）
 
 ## 緊急対応の必要性
 
@@ -808,6 +814,7 @@ Future<void> _cleanupRelatedData(String userId, String anonymizedId) async {
 - 運用負荷ゼロ（管理作業なし）
 - 法的要件即座充足（個人情報即座削除）
 - システム整合性維持（匿名化データ永続保持）
+- ユーザーID再利用可能（ユーザビリティ向上）
 
 ---
 

@@ -19,6 +19,7 @@ import '../../../shared/utils/event_converter.dart';
 import '../../../shared/widgets/appeal_dialog.dart';
 import '../../../shared/services/violation_service.dart';
 import '../../event_management/views/violation_management_screen.dart';
+import '../../../data/repositories/user_repository.dart';
 
 /// 通知画面
 class NotificationScreen extends ConsumerStatefulWidget {
@@ -992,6 +993,18 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
   /// フレンドリクエストを承認
   Future<void> _acceptFriendRequest(NotificationData notification) async {
     try {
+      // まず申請者が退会していないかチェック
+      final fromUserId = notification.fromUserId;
+      if (fromUserId != null) {
+        final userRepository = UserRepository();
+        final fromUser = await userRepository.getUserById(fromUserId);
+
+        if (fromUser == null || !fromUser.isActive) {
+          _showWithdrawnUserMessage();
+          return;
+        }
+      }
+
       // 未読の場合は既読にする
       if (!notification.isRead) {
         await _markAsRead(notification);
@@ -1002,7 +1015,6 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       if (friendRequestId == null) {
         throw Exception('フレンドリクエストIDが見つかりません');
       }
-
 
       // FriendServiceを使用してリクエストを承認
       final friendService = FriendService.instance;
@@ -1044,6 +1056,18 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
   /// フレンドリクエストを拒否
   Future<void> _rejectFriendRequest(NotificationData notification) async {
     try {
+      // まず申請者が退会していないかチェック
+      final fromUserId = notification.fromUserId;
+      if (fromUserId != null) {
+        final userRepository = UserRepository();
+        final fromUser = await userRepository.getUserById(fromUserId);
+
+        if (fromUser == null || !fromUser.isActive) {
+          _showWithdrawnUserMessage();
+          return;
+        }
+      }
+
       // 未読の場合は既読にする
       if (!notification.isRead) {
         await _markAsRead(notification);
@@ -1054,7 +1078,6 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       if (friendRequestId == null) {
         throw Exception('フレンドリクエストIDが見つかりません');
       }
-
 
       // FriendServiceを使用してリクエストを拒否
       final friendService = FriendService.instance;
@@ -1147,12 +1170,93 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
   /// フレンド申請通知の処理
   Future<void> _handleFriendRequest(NotificationData notification) async {
+    final fromUserId = notification.fromUserId;
+    if (fromUserId == null) {
+      _showErrorMessage('申請者の情報が見つかりません');
+      return;
+    }
 
-    // フレンド申請の詳細情報を表示するダイアログやページに遷移
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('フレンド申請の詳細機能は実装中です'),
-        backgroundColor: AppColors.info,
+    try {
+      // 申請者のユーザー情報を確認
+      final userRepository = UserRepository();
+      final fromUser = await userRepository.getUserById(fromUserId);
+
+      if (fromUser == null || !fromUser.isActive) {
+        // ユーザーが存在しないか退会済みの場合
+        _showWithdrawnUserMessage();
+        return;
+      }
+
+      // 有効なユーザーからのフレンド申請の場合
+      // フレンド申請の詳細ダイアログやページを表示
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('フレンド申請の詳細機能は実装中です'),
+          backgroundColor: AppColors.info,
+        ),
+      );
+    } catch (e) {
+      _showErrorMessage('申請者の情報確認中にエラーが発生しました');
+    }
+  }
+
+  /// 退会したユーザーからの通知に対するメッセージを表示
+  void _showWithdrawnUserMessage() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.cardBackground,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppDimensions.spacingS),
+              decoration: BoxDecoration(
+                color: AppColors.warning.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+              ),
+              child: Icon(
+                Icons.person_off,
+                color: AppColors.warning,
+                size: AppDimensions.iconL,
+              ),
+            ),
+            const SizedBox(width: AppDimensions.spacingM),
+            const Expanded(
+              child: Text(
+                '利用できません',
+                style: TextStyle(
+                  fontSize: AppDimensions.fontSizeL,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: const Text(
+          'この通知の送信者は退会済みのため、フレンド申請を処理できません。',
+          style: TextStyle(
+            fontSize: AppDimensions.fontSizeM,
+            color: AppColors.textSecondary,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.primary,
+              textStyle: const TextStyle(
+                fontSize: AppDimensions.fontSizeM,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            child: const Text('確認'),
+          ),
+        ],
       ),
     );
   }
