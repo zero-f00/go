@@ -105,17 +105,21 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
       }
     }
 
-    setState(() {
-      _isLoadingCounts = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoadingCounts = true;
+      });
+    }
 
     try {
       // 現在のユーザーを取得
       final currentUser = await ref.read(currentUserDataProvider.future);
       if (currentUser == null) {
-        setState(() {
-          _isLoadingCounts = false;
-        });
+        if (mounted) {
+          setState(() {
+            _isLoadingCounts = false;
+          });
+        }
         return;
       }
 
@@ -150,23 +154,27 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
         activeCounts[eventType] = activeEvents;
       }
 
-      setState(() {
-        _eventCounts = counts;
-        _activeEventCounts = activeCounts;
-        _lastCountsLoadTime = DateTime.now();
-        _isLoadingCounts = false;
-      });
+      if (mounted) {
+        setState(() {
+          _eventCounts = counts;
+          _activeEventCounts = activeCounts;
+          _lastCountsLoadTime = DateTime.now();
+          _isLoadingCounts = false;
+        });
+      }
     } catch (e) {
       // エラーが発生した場合はデフォルト値を設定
-      setState(() {
-        _eventCounts = {
-          for (final eventType in EventManagementType.values) eventType: 0,
-        };
+      if (mounted) {
+        setState(() {
+          _eventCounts = {
+            for (final eventType in EventManagementType.values) eventType: 0,
+          };
         _activeEventCounts = {
           for (final eventType in EventManagementType.values) eventType: 0,
         };
         _isLoadingCounts = false;
-      });
+        });
+      }
     }
   }
 

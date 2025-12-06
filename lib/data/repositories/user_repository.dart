@@ -70,7 +70,6 @@ class UserRepository {
     final customUserId = await _userService.getUserId();
     final displayName = await _userService.getUserName();
     final bio = await _userService.getUserBio();
-    final contact = await _userService.getUserContact();
 
     // Authデータとローカルデータを組み合わせてユーザーデータを作成
     final userData = UserData.create(
@@ -173,10 +172,7 @@ class UserRepository {
         }
 
         // 基本ユーザーデータを作成してから更新
-        final baseUserData = await _createUserFromAuth(currentUser);
-        if (baseUserData == null) {
-          throw Exception('ユーザーの作成に失敗しました');
-        }
+        await _createUserFromAuth(currentUser);
       }
 
       // Firestoreを更新（setを使用してupsert動作にする）

@@ -67,7 +67,6 @@ class _UserSearchDialogState extends State<UserSearchDialog> {
     });
 
     try {
-      print('🔍 UserSearchDialog: Searching for users with query: "$query"');
       final results = await _userRepository.searchUsers(query, limit: 10);
 
       setState(() {
@@ -78,9 +77,7 @@ class _UserSearchDialogState extends State<UserSearchDialog> {
         }
       });
 
-      print('✅ UserSearchDialog: Found ${results.length} users');
     } catch (e) {
-      print('❌ UserSearchDialog: Error searching users: $e');
       setState(() {
         _isLoading = false;
         _errorMessage = 'ユーザー検索中にエラーが発生しました';
@@ -90,7 +87,6 @@ class _UserSearchDialogState extends State<UserSearchDialog> {
   }
 
   void _selectUser(UserData user) {
-    print('✅ UserSearchDialog: User selected: ${user.username} (${user.userId})');
     widget.onUserSelected(user);
     Navigator.of(context).pop(user);
   }
