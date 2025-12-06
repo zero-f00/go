@@ -379,10 +379,10 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   }) {
     // 複数行入力の場合は新しいウィジェットを使用
     if (maxLines > 1) {
-      return EnhancedMultilineTextField(
+      return AppTextField(
         controller: controller,
         label: label,
-        hint: hint,
+        hintText: hint,
         isRequired: isRequired,
         maxLines: maxLines,
         validator: validator ?? (isRequired
@@ -402,7 +402,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
          inputFormatters.any((formatter) =>
              formatter is FilteringTextInputFormatter &&
              formatter.filterPattern.toString().contains('digitsOnly')))) {
-      return AppTextFieldNumber(
+      return AppTextField(
         controller: controller,
         label: label,
         hintText: hint,
@@ -1709,6 +1709,20 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
+              _addSelfAsSponsor();
+            },
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.person_add_alt_1, size: 16),
+                SizedBox(width: 8),
+                Text('自分を追加'),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
               _addSponsorFromFriends();
             },
             child: const Row(
@@ -1899,6 +1913,77 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('既に運営者として追加されています')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('ユーザー情報を取得できませんでした')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('エラーが発生しました: ${e.toString()}')),
+      );
+    }
+  }
+
+  Future<void> _addSelfAsSponsor() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ユーザーが認証されていません')),
+      );
+      return;
+    }
+
+    try {
+      // 複数の方法でユーザー情報を取得してみる
+      UserData? selfUserData;
+
+      // 方法1: 現在ログインしているユーザーの情報を直接取得
+      try {
+        final userRepository = UserRepository();
+        selfUserData = await userRepository.getCurrentUser();
+      } catch (e) {
+        // getCurrentUserが失敗した場合は方法2を試す
+      }
+
+      // 方法2: getUserByIdを使用
+      if (selfUserData == null) {
+        try {
+          final userRepository = UserRepository();
+          selfUserData = await userRepository.getUserById(currentUser.uid);
+        } catch (e) {
+          // getUserByIdも失敗した場合は方法3を試す
+        }
+      }
+
+      // 方法3: FirebaseAuthの情報から直接作成
+      if (selfUserData == null) {
+        selfUserData = UserData.create(
+          id: currentUser.uid,
+          userId: currentUser.uid,
+          username: currentUser.displayName ?? 'ユーザー',
+          email: currentUser.email ?? '',
+          photoUrl: currentUser.photoURL,
+        );
+      }
+
+      if (selfUserData != null) {
+        // 重複チェック
+        if (!_selectedSponsors.any((sponsor) => sponsor.id == selfUserData!.id)) {
+          setState(() {
+            _selectedSponsors.add(selfUserData!);
+            // スポンサーは自動的に運営者にも追加
+            if (!_selectedManagers.any((manager) => manager.id == selfUserData!.id)) {
+              _selectedManagers.add(selfUserData!);
+            }
+            // ブロックリストから除外
+            _blockedUsers.removeWhere((blockedUser) => blockedUser.id == selfUserData!.id);
+          });
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('既にスポンサーとして追加されています')),
           );
         }
       } else {
