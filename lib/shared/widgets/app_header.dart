@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../providers/auth_provider.dart';
-import 'app_drawer.dart';
 import 'user_avatar.dart';
 
 class AppHeader extends ConsumerWidget {
@@ -49,7 +48,9 @@ class AppHeader extends ConsumerWidget {
                 height: AppDimensions.headerButtonSize,
                 decoration: BoxDecoration(
                   color: AppColors.overlayLight,
-                  borderRadius: BorderRadius.circular(AppDimensions.headerButtonSize / 2),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.headerButtonSize / 2,
+                  ),
                 ),
                 child: const Icon(
                   Icons.arrow_back,
@@ -77,10 +78,7 @@ class AppHeader extends ConsumerWidget {
 
           // 右側のアクションまたはメニューボタン
           if (actions != null && actions!.isNotEmpty)
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: actions!,
-            )
+            Row(mainAxisSize: MainAxisSize.min, children: actions!)
           else if (showMenuButton && !showUserIcon)
             GestureDetector(
               onTap: onMenuPressed,
@@ -89,7 +87,9 @@ class AppHeader extends ConsumerWidget {
                 height: AppDimensions.headerButtonSize,
                 decoration: BoxDecoration(
                   color: AppColors.overlayLight,
-                  borderRadius: BorderRadius.circular(AppDimensions.headerButtonSize / 2),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.headerButtonSize / 2,
+                  ),
                 ),
                 child: const Icon(
                   Icons.more_vert,
@@ -105,7 +105,12 @@ class AppHeader extends ConsumerWidget {
     );
   }
 
-  Widget _buildUserIcon(BuildContext context, WidgetRef ref, bool isSignedIn, String displayName) {
+  Widget _buildUserIcon(
+    BuildContext context,
+    WidgetRef ref,
+    bool isSignedIn,
+    String displayName,
+  ) {
     final userPhotoUrl = ref.watch(userPhotoUrlProvider);
 
     return UserAvatar(
@@ -119,7 +124,11 @@ class AppHeader extends ConsumerWidget {
     );
   }
 
-  Future<void> _handleUserIconTap(BuildContext context, WidgetRef ref, bool isSignedIn) async {
+  Future<void> _handleUserIconTap(
+    BuildContext context,
+    WidgetRef ref,
+    bool isSignedIn,
+  ) async {
     // ヘッダーアイコンタップで常にサイドメニュー（AppDrawer）を表示
     Scaffold.of(context).openDrawer();
   }
