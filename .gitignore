@@ -127,6 +127,9 @@ functions/.env
 functions/.env.*
 functions/lib/
 functions/dist/
+firebase/functions/node_modules/
+firebase/functions/.env
+firebase/functions/.env.*
 
 # Firebase hosting（使用時）
 .firebase/hosting.*
@@ -247,6 +250,10 @@ firebase/FRIEND_SETUP_GUIDE.md
 *.tmp
 *.temp
 *.draft
+
+# 開発用スクリプト（アイコン生成等）
+create_*.py
+create_*.svg
 
 # プロジェクト固有のメモリファイル（AI開発支援）
 .serena/memories/

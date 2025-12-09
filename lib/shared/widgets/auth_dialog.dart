@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:io' show Platform;
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
@@ -23,9 +25,10 @@ class AuthDialog extends ConsumerStatefulWidget {
 
 class _AuthDialogState extends ConsumerState<AuthDialog> {
   bool _isLoading = false;
+  bool _agreedToTerms = false;
 
   Future<void> _signInWithGoogle() async {
-    if (_isLoading) {
+    if (_isLoading || !_agreedToTerms) {
       return;
     }
 
@@ -42,6 +45,9 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
       final result = await authService.signInWithGoogle();
 
       if (result != null && mounted) {
+        // 利用規約同意を記録
+        await authService.recordTermsAcceptance();
+
         // サインイン成功後、初回ユーザー設定ダイアログを表示
         await _showInitialUserSetup();
       } else {
@@ -61,7 +67,7 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
   }
 
   Future<void> _signInWithApple() async {
-    if (_isLoading) return;
+    if (_isLoading || !_agreedToTerms) return;
 
     setState(() {
       _isLoading = true;
@@ -72,6 +78,9 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
       final result = await authService.signInWithApple();
 
       if (result != null && mounted) {
+        // 利用規約同意を記録
+        await authService.recordTermsAcceptance();
+
         // サインイン成功後、初回ユーザー設定ダイアログを表示
         await _showInitialUserSetup();
       } else {
@@ -133,6 +142,8 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
                     children: [
                       _buildDescription(),
                       const SizedBox(height: AppDimensions.spacingXL),
+                      _buildTermsCheckbox(),
+                      const SizedBox(height: AppDimensions.spacingL),
                       _buildSignInButtons(),
                       const SizedBox(height: AppDimensions.spacingL),
                       _buildSkipButton(),
@@ -196,6 +207,98 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
     );
   }
 
+  Widget _buildTermsCheckbox() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingS),
+      child: Row(
+        children: [
+          Checkbox(
+            value: _agreedToTerms,
+            onChanged: (value) {
+              setState(() {
+                _agreedToTerms = value ?? false;
+              });
+            },
+            activeColor: AppColors.accent,
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _agreedToTerms = !_agreedToTerms;
+                });
+              },
+              child: RichText(
+                text: TextSpan(
+                  style: const TextStyle(
+                    fontSize: AppDimensions.fontSizeS,
+                    color: AppColors.textSecondary,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: '利用規約',
+                      style: const TextStyle(
+                        color: AppColors.accent,
+                        decoration: TextDecoration.underline,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = _showTermsOfService,
+                    ),
+                    const TextSpan(text: 'と'),
+                    TextSpan(
+                      text: 'プライバシーポリシー',
+                      style: const TextStyle(
+                        color: AppColors.accent,
+                        decoration: TextDecoration.underline,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = _showPrivacyPolicy,
+                    ),
+                    const TextSpan(text: 'に同意します'),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showTermsOfService() async {
+    final uri = Uri.parse('https://sites.google.com/view/go-mobile-terms-of-service/home');
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          _showErrorDialog('利用規約のページを開けませんでした。');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        _showErrorDialog('利用規約のページを開く際にエラーが発生しました。');
+      }
+    }
+  }
+
+  Future<void> _showPrivacyPolicy() async {
+    final uri = Uri.parse('https://sites.google.com/view/go-mobile-privacy-policy/home');
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          _showErrorDialog('プライバシーポリシーのページを開けませんでした。');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        _showErrorDialog('プライバシーポリシーのページを開く際にエラーが発生しました。');
+      }
+    }
+  }
+
   Widget _buildSignInButtons() {
     return Column(
       children: [
@@ -213,7 +316,7 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
       width: double.infinity,
       height: 56,
       child: ElevatedButton.icon(
-        onPressed: _isLoading ? null : _signInWithGoogle,
+        onPressed: (_isLoading || !_agreedToTerms) ? null : _signInWithGoogle,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,
           foregroundColor: AppColors.textPrimary,
@@ -250,7 +353,7 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
       width: double.infinity,
       height: 56,
       child: ElevatedButton.icon(
-        onPressed: _isLoading ? null : _signInWithApple,
+        onPressed: (_isLoading || !_agreedToTerms) ? null : _signInWithApple,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.black,
           foregroundColor: Colors.white,

@@ -35,22 +35,25 @@ class FriendService {
         throw Exception('自分自身にフレンドリクエストを送信することはできません');
       }
 
+      // 既にフレンドでないかチェック（先にチェックする）
+      final isAlreadyFriend = await areFriends(fromUserId, toUserId);
+      if (isAlreadyFriend) {
+        throw Exception('既にフレンドです');
+      }
+
       // 既存のリクエストがないかチェック
       final existingRequest = await _getExistingRequest(fromUserId, toUserId);
       if (existingRequest != null) {
         if (existingRequest.isPending) {
           throw Exception('既にフレンドリクエストを送信済みです');
         } else if (existingRequest.isAccepted) {
-          throw Exception('既にフレンドです');
-        } else if (existingRequest.isRejected) {
-          // 拒否されたリクエストがある場合は、新しいリクエストの送信を許可
+          // acceptedステータスでもフレンド関係が存在しない場合は
+          // フレンド解除済みなので再申請を許可
+          // （上のareFriendsチェックで既にフレンドでないことは確認済み）
+        } else if (existingRequest.isRejected || existingRequest.isRemoved) {
+          // 拒否されたリクエストまたはフレンド解除されたリクエストがある場合は、
+          // 新しいリクエストの送信を許可
         }
-      }
-
-      // 既にフレンドでないかチェック
-      final isAlreadyFriend = await areFriends(fromUserId, toUserId);
-      if (isAlreadyFriend) {
-        throw Exception('既にフレンドです');
       }
 
       // フレンドリクエストを作成
@@ -71,10 +74,11 @@ class FriendService {
       if (fromUserData != null && toUserData != null) {
         // 受信者のFirebase UIDを使用して通知を送信
         final toUserFirebaseUid = toUserData.id; // UserData.id = Firebase UID
+        final fromUserFirebaseUid = fromUserData.id; // UserData.id = Firebase UID
 
         await NotificationService.instance.sendFriendRequestNotification(
           toUserId: toUserFirebaseUid, // Firebase UIDを使用
-          fromUserId: fromUserId,
+          fromUserId: fromUserFirebaseUid, // Firebase UIDを使用
           fromUserName: fromUserData.username,
           friendRequestId: requestId,
         );
@@ -139,7 +143,7 @@ class FriendService {
 
         await NotificationService.instance.sendFriendAcceptedNotification(
           toUserId: fromUserFirebaseUid, // Firebase UIDを使用
-          fromUserId: request.toUserId,
+          fromUserId: toUserData.id, // Firebase UIDを使用
           fromUserName: toUserData.username,
         );
       }
@@ -195,7 +199,7 @@ class FriendService {
 
         await NotificationService.instance.sendFriendRejectedNotification(
           toUserId: fromUserFirebaseUid, // Firebase UIDを使用
-          fromUserId: request.toUserId,
+          fromUserId: toUserData.id, // Firebase UIDを使用
           fromUserName: toUserData.username,
         );
       }
@@ -223,10 +227,45 @@ class FriendService {
 
       await snapshot.docs.first.reference.delete();
 
+      // 対応するフレンドリクエストのステータスを'removed'に更新
+      // （再度フレンド申請を可能にするため）
+      await _updateFriendRequestStatusToRemoved(userId1, userId2);
+
       return true;
     } catch (e) {
       ErrorHandlerService.logError('フレンドの削除', e);
       return false;
+    }
+  }
+
+  /// フレンド解除時にフレンドリクエストのステータスを'removed'に更新
+  Future<void> _updateFriendRequestStatusToRemoved(String userId1, String userId2) async {
+    try {
+      // userId1 -> userId2 方向のリクエストを検索
+      final query1 = friendRequestsCollection
+          .where('fromUserId', isEqualTo: userId1)
+          .where('toUserId', isEqualTo: userId2)
+          .where('status', isEqualTo: 'accepted');
+
+      // userId2 -> userId1 方向のリクエストを検索
+      final query2 = friendRequestsCollection
+          .where('fromUserId', isEqualTo: userId2)
+          .where('toUserId', isEqualTo: userId1)
+          .where('status', isEqualTo: 'accepted');
+
+      final snapshots = await Future.wait([query1.get(), query2.get()]);
+
+      for (final snapshot in snapshots) {
+        for (final doc in snapshot.docs) {
+          await doc.reference.update({
+            'status': 'removed',
+            'removedAt': FieldValue.serverTimestamp(),
+          });
+        }
+      }
+    } catch (e) {
+      // エラーが発生してもフレンド削除自体は成功しているのでログのみ
+      ErrorHandlerService.logError('フレンドリクエストステータスの更新', e);
     }
   }
 

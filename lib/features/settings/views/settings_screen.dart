@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/constants/app_strings.dart';
@@ -365,19 +366,55 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  void _onTermsOfServiceTap(BuildContext context) {
-    // TODO: 利用規約画面への遷移
-    _showComingSoon(context, '利用規約');
+  Future<void> _onTermsOfServiceTap(BuildContext context) async {
+    final uri = Uri.parse('https://sites.google.com/view/go-mobile-terms-of-service/home');
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        if (context.mounted) {
+          _showErrorDialog(context, '利用規約のページを開けませんでした。');
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        _showErrorDialog(context, '利用規約のページを開く際にエラーが発生しました。');
+      }
+    }
   }
 
-  void _onPrivacyPolicyTap(BuildContext context) {
-    // TODO: プライバシーポリシー画面への遷移
-    _showComingSoon(context, 'プライバシーポリシー');
+  Future<void> _onPrivacyPolicyTap(BuildContext context) async {
+    final uri = Uri.parse('https://sites.google.com/view/go-mobile-privacy-policy/home');
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        if (context.mounted) {
+          _showErrorDialog(context, 'プライバシーポリシーのページを開けませんでした。');
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        _showErrorDialog(context, 'プライバシーポリシーのページを開く際にエラーが発生しました。');
+      }
+    }
   }
 
-  void _onContactTap(BuildContext context) {
-    // TODO: お問い合わせ画面への遷移
-    _showComingSoon(context, 'お問い合わせ');
+  Future<void> _onContactTap(BuildContext context) async {
+    final uri = Uri.parse('https://forms.gle/3zueBZCCpERfLUFk7');
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        if (context.mounted) {
+          _showErrorDialog(context, 'お問い合わせフォームを開けませんでした。');
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        _showErrorDialog(context, 'お問い合わせフォームを開く際にエラーが発生しました。');
+      }
+    }
   }
 
   void _showComingSoon(BuildContext context, String feature) {
@@ -386,6 +423,22 @@ class SettingsScreen extends ConsumerWidget {
       builder: (context) => AlertDialog(
         title: Text(feature),
         content: Text('$feature機能は今後実装予定です。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showErrorDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('エラー'),
+        content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),

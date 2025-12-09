@@ -52,6 +52,15 @@ class UserData extends Equatable {
   /// プロフィールで過去参加済みイベントを表示するかどうか
   final bool showParticipatedEvents;
 
+  /// 利用規約に同意したかどうか
+  final bool termsAccepted;
+
+  /// 同意した利用規約のバージョン
+  final String? termsVersion;
+
+  /// 利用規約に同意した日時
+  final DateTime? termsAcceptedAt;
+
   const UserData({
     required this.id,
     required this.userId,
@@ -69,6 +78,9 @@ class UserData extends Equatable {
     this.showParticipatingEvents = true,
     this.showManagedEvents = true,
     this.showParticipatedEvents = true,
+    this.termsAccepted = false,
+    this.termsVersion,
+    this.termsAcceptedAt,
   });
 
   /// 新規ユーザー作成用ファクトリ
@@ -125,6 +137,11 @@ class UserData extends Equatable {
       showParticipatingEvents: json['showParticipatingEvents'] as bool? ?? true,
       showManagedEvents: json['showManagedEvents'] as bool? ?? true,
       showParticipatedEvents: json['showParticipatedEvents'] as bool? ?? true,
+      termsAccepted: json['termsAccepted'] as bool? ?? false,
+      termsVersion: json['termsVersion'] as String?,
+      termsAcceptedAt: json['termsAcceptedAt'] != null
+          ? (json['termsAcceptedAt'] as Timestamp).toDate()
+          : null,
     );
   }
 
@@ -146,6 +163,11 @@ class UserData extends Equatable {
       'showParticipatingEvents': showParticipatingEvents,
       'showManagedEvents': showManagedEvents,
       'showParticipatedEvents': showParticipatedEvents,
+      'termsAccepted': termsAccepted,
+      'termsVersion': termsVersion,
+      'termsAcceptedAt': termsAcceptedAt != null
+          ? Timestamp.fromDate(termsAcceptedAt!)
+          : null,
     };
   }
 
@@ -166,6 +188,9 @@ class UserData extends Equatable {
     bool? showParticipatingEvents,
     bool? showManagedEvents,
     bool? showParticipatedEvents,
+    bool? termsAccepted,
+    String? termsVersion,
+    DateTime? termsAcceptedAt,
   }) {
     return UserData(
       id: id, // IDは変更不可
@@ -184,6 +209,9 @@ class UserData extends Equatable {
       showParticipatingEvents: showParticipatingEvents ?? this.showParticipatingEvents,
       showManagedEvents: showManagedEvents ?? this.showManagedEvents,
       showParticipatedEvents: showParticipatedEvents ?? this.showParticipatedEvents,
+      termsAccepted: termsAccepted ?? this.termsAccepted,
+      termsVersion: termsVersion ?? this.termsVersion,
+      termsAcceptedAt: termsAcceptedAt ?? this.termsAcceptedAt,
     );
   }
 
@@ -255,6 +283,9 @@ class UserData extends Equatable {
         showParticipatingEvents,
         showManagedEvents,
         showParticipatedEvents,
+        termsAccepted,
+        termsVersion,
+        termsAcceptedAt,
       ];
 
   @override
@@ -276,6 +307,9 @@ class UpdateUserRequest {
   final bool? showParticipatingEvents;
   final bool? showManagedEvents;
   final bool? showParticipatedEvents;
+  final bool? termsAccepted;
+  final String? termsVersion;
+  final DateTime? termsAcceptedAt;
 
   const UpdateUserRequest({
     this.username,
@@ -289,6 +323,9 @@ class UpdateUserRequest {
     this.showParticipatingEvents,
     this.showManagedEvents,
     this.showParticipatedEvents,
+    this.termsAccepted,
+    this.termsVersion,
+    this.termsAcceptedAt,
   });
 
   /// 更新するデータがあるかどうか
@@ -303,7 +340,10 @@ class UpdateUserRequest {
       showHostedEvents != null ||
       showParticipatingEvents != null ||
       showManagedEvents != null ||
-      showParticipatedEvents != null;
+      showParticipatedEvents != null ||
+      termsAccepted != null ||
+      termsVersion != null ||
+      termsAcceptedAt != null;
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = {};
@@ -326,6 +366,11 @@ class UpdateUserRequest {
     }
     if (showParticipatedEvents != null) {
       data['showParticipatedEvents'] = showParticipatedEvents;
+    }
+    if (termsAccepted != null) data['termsAccepted'] = termsAccepted;
+    if (termsVersion != null) data['termsVersion'] = termsVersion;
+    if (termsAcceptedAt != null) {
+      data['termsAcceptedAt'] = Timestamp.fromDate(termsAcceptedAt!);
     }
 
     // 更新日時は自動設定

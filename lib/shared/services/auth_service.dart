@@ -5,6 +5,9 @@ import 'package:flutter/foundation.dart';
 import 'dart:io';
 import '../constants/app_strings.dart';
 import 'avatar_service.dart';
+import 'push_notification_service.dart';
+import 'event_reminder_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Firebase Authentication Service
 /// 公式ドキュメントに従った実装
@@ -86,6 +89,9 @@ class AuthService {
       // Sign in to Firebase with the Google credential
       final userCredential = await _auth.signInWithCredential(credential);
 
+      // サインイン成功後の処理
+      await _onSignInSuccess();
+
       return userCredential;
     } catch (e, stackTrace) {
 
@@ -138,6 +144,8 @@ class AuthService {
       // Sign in to Firebase with the Apple credential
       final userCredential = await _auth.signInWithCredential(oAuthCredential);
 
+      // サインイン成功後の処理
+      await _onSignInSuccess();
 
       return userCredential;
     } catch (e) {
@@ -146,9 +154,30 @@ class AuthService {
     }
   }
 
+  /// サインイン成功後の共通処理
+  Future<void> _onSignInSuccess() async {
+    try {
+      // イベントリマインダーサービスを開始
+      EventReminderService.instance.startReminderService();
+    } catch (e) {
+      // Silent error handling
+    }
+  }
+
   /// Sign out from all providers
   Future<void> signOut() async {
     try {
+      // イベントリマインダーサービスを停止
+      EventReminderService.instance.stopReminderService();
+
+      // Clear FCM token before signing out
+      final user = currentUser;
+      if (user != null) {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
+          'fcmToken': FieldValue.delete(),
+          'fcmTokenUpdatedAt': FieldValue.delete(),
+        });
+      }
 
       // Clear avatar cache
       await AvatarService.instance.deleteAvatar();
@@ -184,4 +213,26 @@ class AuthService {
 
   /// Check if user is signed in
   bool get isSignedIn => currentUser != null;
+
+  /// Record terms of service acceptance
+  Future<void> recordTermsAcceptance() async {
+    final user = currentUser;
+    if (user == null) return;
+
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final now = DateTime.now();
+
+      await firestore.collection('users').doc(user.uid).set({
+        'termsAccepted': true,
+        'termsVersion': '2025-12-08', // Current version
+        'termsAcceptedAt': Timestamp.fromDate(now),
+        'updatedAt': Timestamp.fromDate(now),
+      }, SetOptions(merge: true));
+
+      print('✅ Terms acceptance recorded for user: ${user.uid}');
+    } catch (e) {
+      print('❌ Failed to record terms acceptance: $e');
+    }
+  }
 }

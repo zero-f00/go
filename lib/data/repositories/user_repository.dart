@@ -131,6 +131,7 @@ class UserRepository {
     try {
       final query = _firestore.usersCollection
           .where('userId', isEqualTo: customUserId)
+          .where('isActive', isEqualTo: true) // アクティブなユーザーのみ取得
           .limit(1);
 
       final snapshot = await _firestore.executeQuery(query);

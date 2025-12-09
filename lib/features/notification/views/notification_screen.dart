@@ -520,6 +520,10 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         icon = Icons.event_note;
         iconColor = AppColors.primary;
         break;
+      case NotificationType.eventUpdated:
+        icon = Icons.edit;
+        iconColor = AppColors.info;
+        break;
       case NotificationType.eventDraftReverted:
         icon = Icons.event_busy;
         iconColor = AppColors.warning;
@@ -1003,18 +1007,6 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
   /// フレンドリクエストを承認
   Future<void> _acceptFriendRequest(NotificationData notification) async {
     try {
-      // まず申請者が退会していないかチェック
-      final fromUserId = notification.fromUserId;
-      if (fromUserId != null) {
-        final userRepository = UserRepository();
-        final fromUser = await userRepository.getUserById(fromUserId);
-
-        if (fromUser == null || !fromUser.isActive) {
-          _showWithdrawnUserMessage();
-          return;
-        }
-      }
-
       // 未読の場合は既読にする
       if (!notification.isRead) {
         await _markAsRead(notification);
@@ -1066,18 +1058,6 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
   /// フレンドリクエストを拒否
   Future<void> _rejectFriendRequest(NotificationData notification) async {
     try {
-      // まず申請者が退会していないかチェック
-      final fromUserId = notification.fromUserId;
-      if (fromUserId != null) {
-        final userRepository = UserRepository();
-        final fromUser = await userRepository.getUserById(fromUserId);
-
-        if (fromUser == null || !fromUser.isActive) {
-          _showWithdrawnUserMessage();
-          return;
-        }
-      }
-
       // 未読の場合は既読にする
       if (!notification.isRead) {
         await _markAsRead(notification);
@@ -1189,7 +1169,8 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
     try {
       // 申請者のユーザー情報を確認
       final userRepository = UserRepository();
-      final fromUser = await userRepository.getUserById(fromUserId);
+      // fromUserIdはカスタムID（例: go_swift_fox_1234）なのでgetUserByCustomIdを使用
+      final fromUser = await userRepository.getUserByCustomId(fromUserId);
 
       if (fromUser == null || !fromUser.isActive) {
         // ユーザーが存在しないか退会済みの場合

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'firebase_options.dart';
 import 'shared/services/app_initialization_service.dart';
 import 'features/main/views/main_screen.dart';
@@ -30,12 +31,15 @@ import 'features/calendar/views/event_calendar_screen.dart';
 import 'features/event_participant/views/participant_group_view_screen.dart';
 import 'features/event_participant/views/participant_list_view_screen.dart';
 import 'features/event_participant/views/violation_report_screen.dart';
+import 'features/notification/views/notification_screen.dart';
 import 'shared/services/participation_service.dart';
+import 'shared/services/navigation_service.dart';
 import 'shared/constants/app_strings.dart';
 import 'shared/constants/app_colors.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   // 画面方向を縦画面のみに固定
   await SystemChrome.setPreferredOrientations([
@@ -59,8 +63,13 @@ void main() async {
     // アプリ初期化処理（ゲストユーザーキャッシュクリア等）
     await AppInitializationService.initialize();
 
+    // 初期化完了後にスプラッシュ画面を削除
+    FlutterNativeSplash.remove();
+
   } catch (e, stackTrace) {
     // Firebase初期化に失敗してもアプリを続行
+    // スプラッシュ画面を削除
+    FlutterNativeSplash.remove();
   }
 
   runApp(const ProviderScope(child: MyApp()));
@@ -75,6 +84,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: AppStrings.appTitle,
+      navigatorKey: NavigationService.navigatorKey,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
         useMaterial3: true,
@@ -93,6 +103,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/settings': (context) => const SettingsScreen(),
         '/friends': (context) => const FriendsScreen(),
+        '/notifications': (context) => const NotificationScreen(),
         '/user_profile': (context) {
           final args = ModalRoute.of(context)?.settings.arguments;
           if (args is Map<String, dynamic>) {

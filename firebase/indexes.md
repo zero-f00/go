@@ -37,6 +37,7 @@
 | violations | eventId | 昇順 | status | 昇順 | reportedAt | 降順 | コレクション | 必須作成 | **未作成** | イベント別ステータス付き違反記録（ViolationService使用） |
 | violations | eventId | 昇順 | severity | 昇順 | reportedAt | 降順 | コレクション | 必須作成 | **未作成** | イベント別重要度付き違反記録（ViolationService使用） |
 | match_results | eventId | 昇順 | createdAt | 降順 | - | - | コレクション | 必須作成 | **未作成** | イベント別試合結果一覧（MatchResultService使用） |
+| events | status | 昇順 | eventDate | 昇順 | - | - | コレクション | **🔥緊急作成🔥** | **要即時対応** | イベントリマインダー用（EventReminderService使用） |
 
 ### 単一フィールドインデックス（Firebase Console > インデックス > 単一フィールド タブ）
 
@@ -199,6 +200,23 @@ notificationsCollection
 matchResultsCollection
   .where('eventId', isEqualTo: eventId)
   .orderBy('createdAt', descending: true)
+```
+
+### イベントリマインダー検索
+```dart
+// 公開中のイベントでリマインダー送信対象を検索
+eventsCollection
+  .where('status', isEqualTo: 'published')
+  .where('eventDate', isGreaterThanOrEqualTo: oneHourLater)
+  .where('eventDate', isLessThanOrEqualTo: twentyFiveHoursLater)
+
+// 注意: このクエリは複合インデックスが必要
+// インデックス作成URL: https://console.firebase.google.com/v1/r/project/go-mobile-cb9f1/firestore/indexes?create_composite=Ck5wcm9qZWN0cy9nby1tb2JpbGUtY2I5ZjEvZGF0YWJhc2VzLyhkZWZhdWx0KS9jb2xsZWN0aW9uR3JvdXBzL2V2ZW50cy9pbmRleGVzL18QARoKCgZzdGF0dXMQARoNCglldmVudERhdGUQARoMCghfX25hbWVfXxAB
+
+// 現在の暫定実装（クライアント側フィルタリング）
+eventsCollection
+  .where('status', isEqualTo: 'published')
+  // その後クライアント側でeventDateをフィルタリング
 ```
 
 ### グループ管理検索
@@ -377,3 +395,4 @@ participationApplicationsCollection
 | 2024-11-27 | match_results複合インデックス追加、event_groups単一フィールドへ移動 | Claude | 試合結果管理は複合インデックス、グループ管理は単一フィールドで十分 |
 | 2025-12-02 | event_groups複合クエリをメモリ内ソートに変更 | Claude | グループ情報画面エラー対応、orderBy削除で複合インデックス要件回避 |
 | 2025-12-05 | 退会ユーザー対応実装に伴うインデックス考慮事項追加 | Claude | 退会ユーザー機能実装、既存インデックス影響なし・追加要件なし確認 |
+| 2025-12-08 | EventReminderService用複合インデックス追加 | Claude | イベントリマインダー機能実装、status+eventDate複合インデックス要件追加 |
