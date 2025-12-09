@@ -6,6 +6,7 @@ enum FriendRequestStatus {
   pending,   // 承認待ち
   accepted,  // 承認済み
   rejected,  // 拒否
+  removed,   // フレンド解除済み
 }
 
 /// フレンドリクエストデータモデル
@@ -156,6 +157,9 @@ class FriendRequest extends Equatable {
 
   /// リクエストが拒否されたかどうか
   bool get isRejected => status == FriendRequestStatus.rejected;
+
+  /// フレンド解除されたかどうか
+  bool get isRemoved => status == FriendRequestStatus.removed;
 
   @override
   List<Object?> get props => [

@@ -248,6 +248,7 @@ class FirestoreService {
     try {
       final query = usersCollection
           .where('userId', isEqualTo: customUserId)
+          .where('isActive', isEqualTo: true) // アクティブなユーザーのみチェック
           .limit(1);
 
       final snapshot = await query.get();

@@ -5,8 +5,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../data/models/event_model.dart';
 import '../../data/models/notification_model.dart';
 import '../../data/repositories/shared_game_repository.dart';
+import '../../data/repositories/user_repository.dart';
+import '../utils/event_change_detector.dart';
 import 'image_upload_service.dart';
 import 'notification_service.dart';
+import 'participation_service.dart';
 
 /// Firestoreイベント操作の例外クラス
 class EventServiceException implements Exception {
@@ -222,6 +225,7 @@ class EventService {
     File? newImageFile,
     String? currentImagePath,
     Function(double)? onUploadProgress,
+    bool sendNotifications = true, // 通知送信フラグ（デフォルト: true）
   }) async {
     try {
 
@@ -273,6 +277,7 @@ class EventService {
         additionalInfo: eventInput.additionalInfo,
         hasParticipationFee: eventInput.hasParticipationFee,
         participationFeeText: eventInput.participationFeeText,
+        participationFeeSupplement: eventInput.participationFeeSupplement,
         hasPrize: eventInput.hasPrize,
         prizeContent: eventInput.prizeContent,
         sponsorIds: eventInput.sponsorIds,
@@ -290,9 +295,25 @@ class EventService {
         updatedAt: DateTime.now(),
         participantIds: existingEvent.participantIds,
         status: existingEvent.status,
+        eventPassword: eventInput.eventPassword,
       );
 
+      // 変更検知を実行
+      final changeResult = EventChangeDetector.detectChanges(existingEvent, updatedEvent);
+
+      // Firestoreを更新
       await eventRef.update(updatedEvent.toFirestore());
+
+      // 通知を送信（変更があり、通知送信が有効で、イベントが公開中の場合のみ）
+      if (sendNotifications &&
+          changeResult.shouldNotify &&
+          updatedEvent.status == EventStatus.published) {
+        await _sendEventUpdateNotifications(
+          event: updatedEvent,
+          changeResult: changeResult,
+        );
+      }
+
     } catch (e) {
       throw EventServiceException(
         'イベントの更新に失敗しました',
@@ -795,6 +816,87 @@ class EventService {
       );
     } catch (e) {
       // 通知送信失敗は非致命的
+    }
+  }
+
+  /// イベント更新通知を送信
+  static Future<void> _sendEventUpdateNotifications({
+    required Event event,
+    required EventChangeResult changeResult,
+  }) async {
+    try {
+      print('🔔 EventService: Sending event update notifications for event: ${event.name}');
+      print('🔔 EventService: Changes detected: ${changeResult.generateSummaryText()}');
+
+      // 更新者の情報を取得
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        print('❌ EventService: No authenticated user found for notification sending');
+        return;
+      }
+
+      final updatedByUserId = currentUser.uid;
+      String updatedByUserName = currentUser.displayName ?? currentUser.email ?? 'ユーザー';
+
+      // UserRepositoryから更新者の詳細情報を取得を試行
+      try {
+        final userRepository = UserRepository();
+        final userData = await userRepository.getUserById(updatedByUserId);
+        if (userData != null && userData.username.isNotEmpty) {
+          updatedByUserName = userData.username;
+        }
+      } catch (e) {
+        // ユーザー情報取得失敗時はFirebaseAuthの情報を使用
+        print('⚠️ EventService: Failed to get user details, using Firebase info: $e');
+      }
+
+      // 参加者リストを取得
+      final participantIds = await _getEventParticipantIds(event.id);
+
+      // 運営者リストを作成
+      final managerIds = <String>[];
+      managerIds.addAll(event.managerIds);
+      if (event.createdBy.isNotEmpty && !managerIds.contains(event.createdBy)) {
+        managerIds.add(event.createdBy);
+      }
+
+      print('🔔 EventService: Participants: ${participantIds.length}, Managers: ${managerIds.length}');
+
+      // 通知を送信
+      final success = await NotificationService.instance.sendEventUpdateNotifications(
+        eventId: event.id,
+        eventName: event.name,
+        updatedByUserId: updatedByUserId,
+        updatedByUserName: updatedByUserName,
+        participantIds: participantIds,
+        managerIds: managerIds,
+        changesSummary: changeResult.generateSummaryText(),
+        changesDetail: changeResult.generateDetailText(),
+        hasCriticalChanges: changeResult.hasCriticalChanges,
+      );
+
+      if (success) {
+        print('✅ EventService: Event update notifications sent successfully');
+      } else {
+        print('❌ EventService: Failed to send some event update notifications');
+      }
+
+    } catch (e) {
+      print('❌ EventService: Error sending event update notifications: $e');
+      // 通知送信の失敗はイベント更新処理をブロックしない
+    }
+  }
+
+  /// イベントの参加者IDリストを取得
+  static Future<List<String>> _getEventParticipantIds(String eventId) async {
+    try {
+      // ParticipationServiceを使用して承認済み参加者を取得
+      final participantIds = await ParticipationService.getApprovedParticipants(eventId);
+      print('🔔 EventService: Retrieved ${participantIds.length} approved participants for event: $eventId');
+      return participantIds;
+    } catch (e) {
+      print('❌ EventService: Error getting event participants: $e');
+      return [];
     }
   }
 }

@@ -340,6 +340,7 @@ class AppTextFieldMultiline extends StatelessWidget {
   final String? Function(String?)? validator;
   final bool enabled;
   final String? doneButtonText;
+  final void Function(String)? onChanged;
 
   const AppTextFieldMultiline({
     super.key,
@@ -353,6 +354,7 @@ class AppTextFieldMultiline extends StatelessWidget {
     this.validator,
     this.enabled = true,
     this.doneButtonText,
+    this.onChanged,
   });
 
   @override
@@ -369,6 +371,7 @@ class AppTextFieldMultiline extends StatelessWidget {
       enabled: enabled,
       doneButtonText: doneButtonText,
       keyboardType: TextInputType.multiline,
+      onChanged: onChanged,
     );
   }
 }

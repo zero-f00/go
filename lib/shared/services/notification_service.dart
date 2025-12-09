@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../data/models/notification_model.dart';
+import 'push_notification_service.dart';
 
 /// 通知管理サービス
 class NotificationService {
@@ -15,14 +17,69 @@ class NotificationService {
   /// 通知を作成
   Future<bool> createNotification(NotificationData notification) async {
     try {
-
-      final docRef = await _firestore
+      // Firestoreに通知を保存
+      await _firestore
           .collection(_collectionName)
           .add(notification.toFirestore());
+
+      // プッシュ通知も送信
+      await _sendPushNotification(notification);
+
+      // バッジ数を更新
+      await _updateBadgeCount(notification.toUserId);
 
       return true;
     } catch (e) {
       return false;
+    }
+  }
+
+  /// プッシュ通知を送信
+  Future<void> _sendPushNotification(NotificationData notification) async {
+    try {
+      // 実際のプッシュ通知送信（サーバーサイド実装が必要）
+      await PushNotificationService.sendPushNotification(
+        toUserId: notification.toUserId,
+        title: notification.title,
+        body: notification.message,
+        data: {
+          'type': notification.type.name,
+          'notificationId': notification.id,
+          ...?notification.data,
+        },
+      );
+
+      // 受信者が現在ログインしている場合のみローカル通知を表示
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null && currentUser.uid == notification.toUserId) {
+        final pushService = PushNotificationService.instance;
+        if (pushService.isInitialized) {
+          await pushService.showTestLocalNotification(
+            title: notification.title,
+            body: notification.message,
+            data: {
+              'type': notification.type.name,
+              'notificationId': notification.id,
+              ...?notification.data,
+            },
+          );
+        }
+      }
+    } catch (e) {
+      print('❌ NotificationService: Error sending push notification: $e');
+    }
+  }
+
+  /// バッジ数を更新
+  Future<void> _updateBadgeCount(String userId) async {
+    try {
+      final pushService = PushNotificationService.instance;
+      if (pushService.isInitialized) {
+        // PushNotificationServiceのupdateBadgeCountメソッドを呼び出し
+        await pushService.updateBadgeCount();
+      }
+    } catch (e) {
+      print('❌ NotificationService: Error updating badge count: $e');
     }
   }
 
@@ -460,6 +517,9 @@ class NotificationService {
           break;
         case 'event_reminder':
           notificationType = NotificationType.eventReminder;
+          break;
+        case 'event_updated':
+          notificationType = NotificationType.eventUpdated;
           break;
         case 'violation_reported':
           notificationType = NotificationType.violationReported;
@@ -1043,5 +1103,152 @@ class NotificationService {
     );
 
     return await createNotification(notification);
+  }
+
+  /// イベントリマインダー通知を送信
+  Future<bool> sendEventReminderNotification({
+    required String toUserId,
+    required String eventId,
+    required String eventName,
+    required DateTime eventDate,
+    int? hoursUntilEvent,
+  }) async {
+    try {
+      final String timeText = hoursUntilEvent != null
+          ? '${hoursUntilEvent}時間後'
+          : 'まもなく';
+
+      final notification = NotificationData(
+        toUserId: toUserId,
+        fromUserId: null, // システム通知
+        type: NotificationType.eventReminder,
+        title: 'イベントリマインダー',
+        message: 'イベント「$eventName」が$timeText に開始されます。',
+        isRead: false,
+        createdAt: DateTime.now(),
+        data: {
+          'eventId': eventId,
+          'eventName': eventName,
+          'eventDate': eventDate.toIso8601String(),
+          'hoursUntilEvent': hoursUntilEvent,
+        },
+      );
+
+      return await createNotification(notification);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// イベント更新通知を送信
+  Future<bool> sendEventUpdateNotification({
+    required String toUserId,
+    required String eventId,
+    required String eventName,
+    required String updatedByUserId,
+    required String updatedByUserName,
+    required String changesSummary,
+    required String changesDetail,
+    required bool hasCriticalChanges,
+    Map<String, dynamic>? additionalData,
+  }) async {
+    try {
+      final String title = hasCriticalChanges
+          ? 'イベント内容の重要な変更'
+          : 'イベント内容が更新されました';
+
+      final String message = 'イベント「$eventName」が$updatedByUserName により更新されました。\n\n'
+          '変更内容：$changesSummary\n\n'
+          'タップして詳細を確認してください。';
+
+      final notification = NotificationData(
+        toUserId: toUserId,
+        fromUserId: updatedByUserId,
+        type: NotificationType.eventUpdated,
+        title: title,
+        message: message,
+        isRead: false,
+        createdAt: DateTime.now(),
+        data: {
+          'eventId': eventId,
+          'eventName': eventName,
+          'updatedByUserId': updatedByUserId,
+          'updatedByUserName': updatedByUserName,
+          'changesSummary': changesSummary,
+          'changesDetail': changesDetail,
+          'hasCriticalChanges': hasCriticalChanges,
+          'action': 'view_event_details',
+          ...?additionalData,
+        },
+      );
+
+      return await createNotification(notification);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// イベント更新通知を参加者と運営者に一括送信
+  Future<bool> sendEventUpdateNotifications({
+    required String eventId,
+    required String eventName,
+    required String updatedByUserId,
+    required String updatedByUserName,
+    required List<String> participantIds,
+    required List<String> managerIds,
+    required String changesSummary,
+    required String changesDetail,
+    required bool hasCriticalChanges,
+  }) async {
+    try {
+      // 通知対象者リストを作成（重複を除去）
+      final Set<String> recipients = {};
+      recipients.addAll(participantIds);
+      recipients.addAll(managerIds);
+
+      // 更新者自身は除外
+      recipients.remove(updatedByUserId);
+
+      if (recipients.isEmpty) {
+        print('📝 NotificationService: No notification recipients found');
+        return true; // 通知対象者がいない場合は成功として扱う
+      }
+
+      print('📝 NotificationService: Sending notifications to ${recipients.length} recipients');
+
+      // 各受信者に通知を送信
+      int successCount = 0;
+      for (final recipientId in recipients) {
+        try {
+          final success = await sendEventUpdateNotification(
+            toUserId: recipientId,
+            eventId: eventId,
+            eventName: eventName,
+            updatedByUserId: updatedByUserId,
+            updatedByUserName: updatedByUserName,
+            changesSummary: changesSummary,
+            changesDetail: changesDetail,
+            hasCriticalChanges: hasCriticalChanges,
+            additionalData: {
+              'isParticipant': participantIds.contains(recipientId),
+              'isManager': managerIds.contains(recipientId),
+            },
+          );
+
+          if (success) {
+            successCount++;
+          }
+        } catch (e) {
+          // 個別の送信失敗は続行
+          print('❌ NotificationService: Failed to send event update notification to user $recipientId: $e');
+        }
+      }
+
+      // 半数以上成功していれば成功とみなす
+      return successCount >= (recipients.length / 2).ceil();
+    } catch (e) {
+      print('❌ NotificationService: Error sending event update notifications: $e');
+      return false;
+    }
   }
 }
