@@ -57,11 +57,12 @@ extension AppDelegate {
   override func userNotificationCenter(_ center: UNUserNotificationCenter,
                               willPresent notification: UNNotification,
                               withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-    // Show banner, badge, and sound even when app is in foreground
+    // Show banner and sound even when app is in foreground
+    // Note: .badge is removed to let Dart/AppBadgePlus manage badge count
     if #available(iOS 14.0, *) {
-      completionHandler([.banner, .badge, .sound])
+      completionHandler([.banner, .sound])
     } else {
-      completionHandler([.alert, .badge, .sound])
+      completionHandler([.alert, .sound])
     }
   }
 

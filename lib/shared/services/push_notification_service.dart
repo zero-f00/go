@@ -42,8 +42,6 @@ class PushNotificationService {
     try {
       if (_isInitialized) return true;
 
-      print('🔔 PushNotificationService: Initializing...');
-
       // 通知権限をリクエスト
       await _requestPermissions();
 
@@ -60,27 +58,16 @@ class PushNotificationService {
       FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
       _isInitialized = true;
-      print('✅ PushNotificationService: Initialization completed');
-
-      // 初期化完了後に再度FCMトークンを表示
-      if (_fcmToken != null) {
-        print('🎯 FCM TOKEN FOR FIREBASE CONSOLE TEST:');
-        print(_fcmToken!);
-        print('🎯 END TOKEN');
-      }
 
       return true;
     } catch (e) {
-      print('❌ PushNotificationService: Initialization failed: $e');
       return false;
     }
   }
 
   /// 通知権限をリクエスト
   Future<void> _requestPermissions() async {
-    print('🔔 PushNotificationService: Requesting permissions...');
-
-    final settings = await _messaging.requestPermission(
+    await _messaging.requestPermission(
       alert: true,
       announcement: false,
       badge: true,
@@ -89,25 +76,10 @@ class PushNotificationService {
       provisional: false,
       sound: true,
     );
-
-    print(
-      '🔔 PushNotificationService: Permission status: ${settings.authorizationStatus}',
-    );
-
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('✅ PushNotificationService: Permissions granted');
-    } else if (settings.authorizationStatus ==
-        AuthorizationStatus.provisional) {
-      print('⚠️ PushNotificationService: Provisional permissions granted');
-    } else {
-      print('❌ PushNotificationService: Permissions denied');
-    }
   }
 
   /// ローカル通知を初期化
   Future<void> _initializeLocalNotifications() async {
-    print('🔔 PushNotificationService: Initializing local notifications...');
-
     const androidSettings = AndroidInitializationSettings(
       '@mipmap/ic_launcher',
     );
@@ -126,35 +98,24 @@ class PushNotificationService {
       initSettings,
       onDidReceiveNotificationResponse: _onNotificationTapped,
     );
-
-    print('✅ PushNotificationService: Local notifications initialized');
   }
 
   /// FCMトークンを取得
   Future<void> _getFCMToken() async {
     try {
-      print('🔔 PushNotificationService: Getting FCM token...');
-
       _fcmToken = await _messaging.getToken();
 
       if (_fcmToken != null) {
-        print(
-          '✅ PushNotificationService: FCM token obtained: ${_fcmToken!.substring(0, 20)}...',
-        );
-        print('📋 Complete FCM Token for testing: $_fcmToken');
         await _saveTokenToFirestore(_fcmToken!);
-      } else {
-        print('❌ PushNotificationService: Failed to get FCM token');
       }
 
       // トークン更新をリッスン
       _messaging.onTokenRefresh.listen((newToken) async {
-        print('🔄 PushNotificationService: FCM token refreshed');
         _fcmToken = newToken;
         await _saveTokenToFirestore(newToken);
       });
     } catch (e) {
-      print('❌ PushNotificationService: Error getting FCM token: $e');
+      // トークン取得エラー
     }
   }
 
@@ -162,29 +123,20 @@ class PushNotificationService {
   Future<void> _saveTokenToFirestore(String token) async {
     try {
       final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        print(
-          '⚠️ PushNotificationService: No authenticated user, skipping token save',
-        );
-        return;
-      }
+      if (user == null) return;
 
       await _firestore.collection('users').doc(user.uid).update({
         'fcmToken': token,
         'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
         'devicePlatform': Platform.operatingSystem,
       });
-
-      print('✅ PushNotificationService: FCM token saved to Firestore');
     } catch (e) {
-      print('❌ PushNotificationService: Error saving FCM token: $e');
+      // トークン保存エラー
     }
   }
 
   /// メッセージハンドラーをセットアップ
   void _setupMessageHandlers() {
-    print('🔔 PushNotificationService: Setting up message handlers...');
-
     // フォアグラウンドメッセージ
     FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
 
@@ -193,71 +145,47 @@ class PushNotificationService {
 
     // アプリ起動時の初期メッセージチェック
     _checkForInitialMessage();
-
-    print('✅ PushNotificationService: Message handlers setup completed');
   }
 
   /// フォアグラウンドメッセージを処理
   Future<void> _handleForegroundMessage(RemoteMessage message) async {
     try {
-      print('📱 PushNotificationService: Foreground message received');
-      print('   Title: ${message.notification?.title}');
-      print('   Body: ${message.notification?.body}');
-      print('   Data: ${message.data}');
-
       // フォアグラウンドでもローカル通知を表示
       // これにより、アプリが開いている時でもバナー通知が表示される
       await _showLocalNotification(message);
 
       // バッジ数を更新
       await updateBadgeCount();
-
-      print('✅ PushNotificationService: Foreground notification displayed');
     } catch (e) {
-      print('❌ PushNotificationService: Error handling foreground message: $e');
+      // フォアグラウンドメッセージ処理エラー
     }
   }
 
   /// バックグラウンドメッセージを処理
   Future<void> handleBackgroundMessage(RemoteMessage message) async {
-    try {
-      print('📱 PushNotificationService: Background message received');
-      print('   Title: ${message.notification?.title}');
-      print('   Body: ${message.notification?.body}');
-      print('   Data: ${message.data}');
-
-      // バックグラウンドでのデータ処理のみ
-      // 通知表示はOSが自動処理
-    } catch (e) {
-      print('❌ PushNotificationService: Error handling background message: $e');
-    }
+    // バックグラウンドでのデータ処理のみ
+    // 通知表示はOSが自動処理
   }
 
   /// 通知タップ時の処理
   void _handleNotificationTap(RemoteMessage message) {
     try {
-      print('👆 PushNotificationService: Notification tapped');
-      print('   Data: ${message.data}');
-
       // 通知データに基づいて適切な画面に遷移
       _navigateBasedOnNotificationData(message.data);
     } catch (e) {
-      print('❌ PushNotificationService: Error handling notification tap: $e');
+      // 通知タップ処理エラー
     }
   }
 
   /// ローカル通知応答時の処理
   void _onNotificationTapped(NotificationResponse response) {
     try {
-      print('👆 PushNotificationService: Local notification tapped');
-      print('   Payload: ${response.payload}');
-
       if (response.payload != null) {
         // ペイロードをパースして画面遷移
         _parsePayloadAndNavigate(response.payload!);
       }
     } catch (e) {
-      print('❌ PushNotificationService: Error handling notification tap: $e');
+      // ローカル通知タップ処理エラー
     }
   }
 
@@ -265,7 +193,6 @@ class PushNotificationService {
   void _checkForInitialMessage() {
     FirebaseMessaging.instance.getInitialMessage().then((message) {
       if (message != null) {
-        print('🚀 PushNotificationService: App launched from notification');
         _handleNotificationTap(message);
       }
     });
@@ -291,7 +218,7 @@ class PushNotificationService {
 
       const iosDetails = DarwinNotificationDetails(
         presentAlert: true,
-        presentBadge: true,
+        presentBadge: false, // バッジはAppBadgePlusで管理するため無効化
         presentSound: true,
       );
 
@@ -311,10 +238,8 @@ class PushNotificationService {
         notificationDetails,
         payload: payload,
       );
-
-      print('✅ PushNotificationService: Local notification displayed');
     } catch (e) {
-      print('❌ PushNotificationService: Error showing local notification: $e');
+      // ローカル通知表示エラー
     }
   }
 
@@ -323,7 +248,6 @@ class PushNotificationService {
     try {
       return jsonEncode(message.data);
     } catch (e) {
-      print('❌ PushNotificationService: Error creating payload: $e');
       return '{}'; // 空のJSONを返す
     }
   }
@@ -331,8 +255,6 @@ class PushNotificationService {
   /// ペイロードをパースして画面遷移
   void _parsePayloadAndNavigate(String payload) {
     try {
-      print('🔍 PushNotificationService: Parsing payload for navigation: $payload');
-
       if (payload.isEmpty) {
         // 空の場合は通知画面に遷移
         NavigationService.instance.navigateToNotifications();
@@ -343,7 +265,6 @@ class PushNotificationService {
       final Map<String, dynamic> data = jsonDecode(payload);
       _navigateBasedOnNotificationData(data);
     } catch (e) {
-      print('❌ PushNotificationService: Error parsing payload: $e');
       // エラーの場合は通知画面に遷移
       NavigationService.instance.navigateToNotifications();
     }
@@ -353,7 +274,6 @@ class PushNotificationService {
   void _navigateBasedOnNotificationData(Map<String, dynamic> data) {
     try {
       final type = data['type'] as String?;
-      print('🔍 PushNotificationService: Navigating based on type: $type');
 
       switch (type) {
         case 'friendRequest':
@@ -387,7 +307,6 @@ class PushNotificationService {
           break;
       }
     } catch (e) {
-      print('❌ PushNotificationService: Error navigating: $e');
       // エラーの場合も通知画面へ
       NavigationService.instance.navigateToNotifications();
     }
@@ -404,10 +323,9 @@ class PushNotificationService {
 
       if (Platform.isIOS || Platform.isAndroid) {
         await AppBadgePlus.updateBadge(unreadCount);
-        print('✅ PushNotificationService: Badge count updated: $unreadCount');
       }
     } catch (e) {
-      print('❌ PushNotificationService: Error updating badge count: $e');
+      // バッジ更新エラー
     }
   }
 
@@ -416,10 +334,9 @@ class PushNotificationService {
     try {
       if (Platform.isIOS || Platform.isAndroid) {
         await AppBadgePlus.updateBadge(0);
-        print('✅ PushNotificationService: Badge cleared');
       }
     } catch (e) {
-      print('❌ PushNotificationService: Error clearing badge: $e');
+      // バッジクリアエラー
     }
   }
 
@@ -438,7 +355,6 @@ class PushNotificationService {
           .get();
 
       if (!userDoc.exists) {
-        print('❌ PushNotificationService: User document not found');
         return false;
       }
 
@@ -446,24 +362,14 @@ class PushNotificationService {
       final fcmToken = userData['fcmToken'] as String?;
 
       if (fcmToken == null) {
-        print('❌ PushNotificationService: FCM token not found for user');
         return false;
       }
 
       // TODO: 実際のプッシュ通知送信はFirebase Functionsまたは
       // サーバーサイドで実装する必要があります
-      print('📤 PushNotificationService: Push notification request prepared');
-      print('   Token: ${fcmToken.substring(0, 20)}...');
-      print('   Title: $title');
-      print('   Body: $body');
-      print('   Data: $data');
-      print('🎯 COMPLETE FCM TOKEN FOR FIREBASE CONSOLE:');
-      print(fcmToken);
-      print('🎯 END TOKEN - Copy this for Firebase Console test');
 
       return true;
     } catch (e) {
-      print('❌ PushNotificationService: Error sending push notification: $e');
       return false;
     }
   }
@@ -475,8 +381,6 @@ class PushNotificationService {
     Map<String, dynamic>? data,
   }) async {
     try {
-      print('🔔 PushNotificationService: Showing test local notification');
-
       const androidDetails = AndroidNotificationDetails(
         'go_notifications',
         'Go Game Events',
@@ -494,7 +398,7 @@ class PushNotificationService {
 
       const iosDetails = DarwinNotificationDetails(
         presentAlert: true,
-        presentBadge: true,
+        presentBadge: false, // バッジはAppBadgePlusで管理するため無効化
         presentSound: true,
       );
 
@@ -512,16 +416,13 @@ class PushNotificationService {
         notificationDetails,
         payload: payload,
       );
-
-      print('✅ PushNotificationService: Test local notification displayed');
     } catch (e) {
-      print('❌ PushNotificationService: Error showing test local notification: $e');
+      // テスト通知表示エラー
     }
   }
 
   /// サービスをクリーンアップ
   void dispose() {
-    print('🧹 PushNotificationService: Disposing...');
     _isInitialized = false;
   }
 }
