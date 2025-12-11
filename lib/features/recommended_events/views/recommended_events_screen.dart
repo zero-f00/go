@@ -6,6 +6,7 @@ import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
 import '../../../shared/widgets/event_card.dart';
 import '../../../shared/widgets/unified_calendar_widget.dart';
+import '../../../shared/services/recommendation_service.dart';
 import '../../game_event_management/models/game_event.dart';
 import '../../event_detail/views/event_detail_screen.dart';
 
@@ -37,17 +38,55 @@ class _RecommendedEventsScreenState
   /// 選択中のゲームID（nullの場合は全て表示）
   String? _selectedGameId;
 
+  /// 全イベントリスト（再取得後のデータ）
+  List<GameEvent> _allEvents = [];
+
   /// フィルタリング後のイベントリスト
   List<GameEvent> _filteredEvents = [];
 
   /// 検索クエリ
   final _searchController = TextEditingController();
 
+  /// ローディング状態
+  bool _isLoading = true;
+
   @override
   void initState() {
     super.initState();
+    _allEvents = widget.initialEvents;
     _filteredEvents = widget.initialEvents;
     _searchController.addListener(_applyFilters);
+    // 画面を開いた時に最新データを再取得
+    _refreshEvents();
+  }
+
+  /// 最新のおすすめイベントを再取得
+  Future<void> _refreshEvents() async {
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // RecommendationServiceから最新データを取得
+      final stream = RecommendationService.getRecommendedEvents(widget.firebaseUid);
+      final events = await stream.first;
+
+      if (mounted) {
+        setState(() {
+          _allEvents = events;
+          _isLoading = false;
+        });
+        _applyFilters();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -61,7 +100,7 @@ class _RecommendedEventsScreenState
     final query = _searchController.text.toLowerCase();
 
     setState(() {
-      _filteredEvents = widget.initialEvents.where((event) {
+      _filteredEvents = _allEvents.where((event) {
         // ゲームフィルター
         if (_selectedGameId != null && event.gameId != _selectedGameId) {
           return false;
@@ -97,7 +136,7 @@ class _RecommendedEventsScreenState
     // イベントからユニークなゲーム情報を抽出
     final gameMap = <String, _GameFilterItem>{};
 
-    for (final event in widget.initialEvents) {
+    for (final event in _allEvents) {
       if (event.gameId != null && !gameMap.containsKey(event.gameId)) {
         gameMap[event.gameId!] = _GameFilterItem(
           gameId: event.gameId!,
@@ -302,7 +341,7 @@ class _RecommendedEventsScreenState
             padding: const EdgeInsets.only(right: AppDimensions.spacingS),
             child: FilterChip(
               label: Text(
-                'すべて (${widget.initialEvents.length})',
+                'すべて (${_allEvents.length})',
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeS,
                   color: _selectedGameId == null
@@ -429,23 +468,36 @@ class _RecommendedEventsScreenState
 
   /// イベントリスト
   Widget _buildEventList() {
+    // ローディング中
+    if (_isLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(AppDimensions.spacingXL),
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     if (_filteredEvents.isEmpty) {
       return _buildEmptyState();
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
-      itemCount: _filteredEvents.length,
-      itemBuilder: (context, index) {
-        final event = _filteredEvents[index];
-        return Padding(
-          padding: const EdgeInsets.only(bottom: AppDimensions.spacingM),
-          child: EventCard(
-            event: event,
-            onTap: () => _navigateToEventDetail(event),
-          ),
-        );
-      },
+    return RefreshIndicator(
+      onRefresh: _refreshEvents,
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+        itemCount: _filteredEvents.length,
+        itemBuilder: (context, index) {
+          final event = _filteredEvents[index];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: AppDimensions.spacingM),
+            child: EventCard(
+              event: event,
+              onTap: () => _navigateToEventDetail(event),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -531,10 +583,10 @@ class _RecommendedEventsScreenState
     // フィルターが適用されたイベントを使用
     final eventsToShow =
         _selectedGameId != null
-            ? widget.initialEvents
+            ? _allEvents
                 .where((e) => e.gameId == _selectedGameId)
                 .toList()
-            : widget.initialEvents;
+            : _allEvents;
 
     for (final event in eventsToShow) {
       final date = DateTime(
