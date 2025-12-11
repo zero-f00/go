@@ -2021,12 +2021,12 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
   /// 編集用招待ユーザーリストの読み込み
   void _loadInvitedUsersForEditing(List<String> invitedUserIds) async {
-    final userRepository = UserRepository();
     final List<UserData> invitedUsers = [];
 
     for (String userId in invitedUserIds) {
       try {
-        final user = await userRepository.getUserByCustomId(userId);
+        // invitedUserIdsにはFirebase UIDが保存されているため、getUserByIdを使用
+        final user = await _loadUserData(userId);
         if (user != null) {
           invitedUsers.add(user);
         }
@@ -2079,7 +2079,13 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           options: ['パブリック', '招待制'],
           onChanged: (value) {
             setState(() {
+              final previousVisibility = _visibility;
               _visibility = value!;
+              // 招待制からパブリックに変更した場合、招待制の設定をクリア
+              if (previousVisibility == '招待制' && _visibility == 'パブリック') {
+                _eventPasswordController.clear();
+                _invitedUsers.clear();
+              }
             });
           },
           isRequired: true,
@@ -2408,7 +2414,15 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       },
     );
 
-    if (date != null && mounted) {
+    if (date == null) {
+      // 日付選択がキャンセルされた場合もフォーカスを解除
+      if (mounted) {
+        FocusScope.of(context).unfocus();
+      }
+      return;
+    }
+
+    if (mounted) {
       // 時刻の初期値を設定
       TimeOfDay initialTime = TimeOfDay.now();
 
@@ -2454,7 +2468,15 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         },
       );
 
-      if (time != null && mounted) {
+      if (time == null) {
+        // 時刻選択がキャンセルされた場合もフォーカスを解除
+        if (mounted) {
+          FocusScope.of(context).unfocus();
+        }
+        return;
+      }
+
+      if (mounted) {
         final selectedDateTime = DateTime(
           date.year,
           date.month,
@@ -2472,6 +2494,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                 backgroundColor: AppColors.error,
               ),
             );
+            FocusScope.of(context).unfocus();
             return;
           }
         }
@@ -2489,6 +2512,9 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
             _registrationDeadline = selectedDateTime;
           }
         });
+
+        // ダイアログ終了後にフォーカスを解除して、意図しないテキストフィールドへのフォーカス移動を防ぐ
+        FocusScope.of(context).unfocus();
       }
     }
   }
@@ -3044,7 +3070,10 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       sponsorIds: _selectedSponsors.map((sponsor) => sponsor.id).toList(),
       managerIds: _selectedManagers.map((manager) => manager.id).toList(),
       blockedUserIds: _blockedUsers.map((user) => user.id).toList(),
-      invitedUserIds: _invitedUsers.map((user) => user.id).toList(),
+      // パブリックの場合は招待ユーザーIDをクリア
+      invitedUserIds: _visibility == '招待制'
+          ? _invitedUsers.map((user) => user.id).toList()
+          : [],
       visibility: overrideStatus == EventStatus.draft
           ? EventVisibility.private
           : _convertVisibilityToEnum(_visibility),

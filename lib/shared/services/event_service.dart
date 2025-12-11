@@ -303,8 +303,28 @@ class EventService {
       // 変更検知を実行
       final changeResult = EventChangeDetector.detectChanges(existingEvent, updatedEvent);
 
+      // 招待制からパブリックに変更された場合の特別処理
+      final visibilityChangedToPublic =
+          existingEvent.visibility == EventVisibility.inviteOnly &&
+          updatedEvent.visibility == EventVisibility.public;
+
       // Firestoreを更新
       await eventRef.update(updatedEvent.toFirestore());
+
+      // 招待制→パブリック変更時は招待通知を無効化し、招待データをクリア
+      if (visibilityChangedToPublic) {
+        // 招待通知を無効化（通知内容を更新して、パスワード入力ダイアログが表示されないようにする）
+        await NotificationService.instance.invalidateEventInviteNotifications(
+          eventId: eventId,
+          eventName: updatedEvent.name,
+        );
+
+        // invitedUserIdsをクリア（パブリックでは不要）
+        await eventRef.update({
+          'invitedUserIds': [],
+          'eventPassword': null,
+        });
+      }
 
       // 通知を送信（変更があり、通知送信が有効で、イベントが公開中の場合のみ）
       if (sendNotifications &&
@@ -889,12 +909,12 @@ class EventService {
     }
   }
 
-  /// イベントの参加者IDリストを取得
+  /// イベントの参加者IDリストを取得（承認済み + 申請中）
   static Future<List<String>> _getEventParticipantIds(String eventId) async {
     try {
-      // ParticipationServiceを使用して承認済み参加者を取得
-      final participantIds = await ParticipationService.getApprovedParticipants(eventId);
-      print('🔔 EventService: Retrieved ${participantIds.length} approved participants for event: $eventId');
+      // ParticipationServiceを使用して承認済み + 申請中の参加者を取得
+      final participantIds = await ParticipationService.getApprovedAndPendingApplicants(eventId);
+      print('🔔 EventService: Retrieved ${participantIds.length} approved/pending participants for event: $eventId');
       return participantIds;
     } catch (e) {
       print('❌ EventService: Error getting event participants: $e');

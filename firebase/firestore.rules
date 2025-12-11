@@ -49,6 +49,26 @@ service cloud.firestore {
 
       allow update, delete: if request.auth != null
         && request.auth.uid == resource.data.createdBy;
+
+      // 参加者サブコレクション（招待制イベントの参加申請用）
+      match /participants/{participantId} {
+        // 認証されたユーザーは読み取り可能（イベント管理者は参加者一覧を確認）
+        allow read: if request.auth != null;
+
+        // 参加申請の作成：認証済みユーザーが自分の申請を作成
+        // participantId は userId と同じでなければならない
+        allow create: if request.auth != null
+          && request.auth.uid == participantId
+          && request.resource.data.userId == participantId;
+
+        // 参加申請の更新：イベント作成者または管理者のみ（承認/拒否用）
+        allow update: if request.auth != null
+          && isEventCreatorOrManager(eventId);
+
+        // 参加申請の削除：申請者本人またはイベント作成者・管理者
+        allow delete: if request.auth != null
+          && (request.auth.uid == participantId || isEventCreatorOrManager(eventId));
+      }
     }
 
     // イベントコレクション全体へのクエリアクセス（おすすめイベント機能用）
@@ -408,6 +428,13 @@ service cloud.firestore {
             get(/databases/$(database)/documents/gameEvents/$(eventId)).data.createdBy == request.auth.uid);
   }
 
+  // ヘルパー関数：ユーザーがイベントの作成者または管理者かチェック（参加者サブコレクション用）
+  function isEventCreatorOrManager(eventId) {
+    let eventData = get(/databases/$(database)/documents/events/$(eventId)).data;
+    return request.auth.uid == eventData.createdBy ||
+           (eventData.keys().hasAny(['managerIds']) && request.auth.uid in eventData.managerIds);
+  }
+
   // ヘルパー関数：ステータス関連フィールドのみ変更されているかチェック
   function onlyStatusFieldsChanged() {
     let allowedFields = ['status', 'rejectionReason'];
@@ -496,3 +523,8 @@ service cloud.firestore {
 //             - users, events, games, gameEvents, shared_games コレクションでゲストユーザーにread/list権限を付与
 //             - 理由: ゲストユーザーでも検索機能（ユーザー検索、イベント検索、ゲーム検索）を利用可能にするため
 //             - セキュリティ考慮: 公開情報のみアクセス可能、書き込み操作は引き続き認証が必要
+// 2024-12-11: 招待制イベント参加申請機能のpermission-deniedエラー修正
+//             - events/{eventId}/participants/{participantId} サブコレクションのルールを追加
+//             - 認証済みユーザーは自分の参加申請を作成可能
+//             - イベント作成者・管理者は参加申請の更新（承認/拒否）が可能
+//             - isEventCreatorOrManager() ヘルパー関数を追加

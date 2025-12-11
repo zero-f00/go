@@ -283,6 +283,7 @@ class ParticipationService {
     required ParticipationApplication application,
     required ParticipationStatus status,
     String? adminMessage,
+    String? adminUserId, // 承認/拒否を行った管理者のID
   }) async {
     try {
       // イベント情報を取得
@@ -293,17 +294,31 @@ class ParticipationService {
 
       final event = Event.fromFirestore(eventDoc);
 
-      final notificationType = status == ParticipationStatus.approved
-          ? NotificationType.eventApproved
-          : NotificationType.eventRejected;
+      // ステータスに応じた通知内容を設定
+      NotificationType notificationType;
+      String title;
+      String message;
 
-      final title = status == ParticipationStatus.approved
-          ? 'イベント参加承認'
-          : 'イベント参加申込結果';
-
-      final message = status == ParticipationStatus.approved
-          ? '「${event.name}」への参加が承認されました${adminMessage != null ? '\n管理者メッセージ: $adminMessage' : ''}'
-          : '「${event.name}」への参加申込が承認されませんでした${adminMessage != null ? '\n理由: $adminMessage' : ''}';
+      switch (status) {
+        case ParticipationStatus.approved:
+          notificationType = NotificationType.eventApproved;
+          title = 'イベント参加承認';
+          message = '「${event.name}」への参加が承認されました${adminMessage != null ? '\n管理者メッセージ: $adminMessage' : ''}';
+          break;
+        case ParticipationStatus.rejected:
+          notificationType = NotificationType.eventRejected;
+          title = 'イベント参加申込結果';
+          message = '「${event.name}」への参加申込が承認されませんでした${adminMessage != null ? '\n理由: $adminMessage' : ''}';
+          break;
+        case ParticipationStatus.pending:
+          notificationType = NotificationType.eventUpdated;
+          title = 'イベント参加申込ステータス変更';
+          message = '「${event.name}」への参加申込が申請中に戻されました${adminMessage != null ? '\n理由: $adminMessage' : ''}';
+          break;
+        default:
+          // その他のステータスは通知しない
+          return;
+      }
 
       await NotificationService.instance.createNotification(
         NotificationData(
@@ -323,8 +338,94 @@ class ParticipationService {
           },
         ),
       );
+
+      // 運営者全員にも通知（承認/拒否を行った管理者以外）
+      await _sendApplicationResultNotificationToManagers(
+        event: event,
+        application: application,
+        status: status,
+        adminMessage: adminMessage,
+        excludeUserId: adminUserId,
+      );
     } catch (e) {
       // 通知送信の失敗は承認処理自体の失敗とはしない
+    }
+  }
+
+  /// 参加申込の承認/拒否結果を運営者全員に通知
+  static Future<void> _sendApplicationResultNotificationToManagers({
+    required Event event,
+    required ParticipationApplication application,
+    required ParticipationStatus status,
+    String? adminMessage,
+    String? excludeUserId, // 承認/拒否を行った管理者は除外
+  }) async {
+    try {
+      // 管理者リストを作成（作成者 + 共同編集者）
+      final managers = <String>{};
+
+      // 作成者を追加
+      if (event.createdBy.isNotEmpty) {
+        managers.add(event.createdBy);
+      }
+
+      // 共同編集者を追加
+      for (final managerId in event.managerIds) {
+        managers.add(managerId);
+      }
+
+      // 承認/拒否を行った管理者と申請者本人を除外
+      managers.remove(excludeUserId);
+      managers.remove(application.userId);
+
+      if (managers.isEmpty) {
+        return;
+      }
+
+      // ステータスに応じたアクションテキストを設定
+      String actionText;
+      switch (status) {
+        case ParticipationStatus.approved:
+          actionText = '承認';
+          break;
+        case ParticipationStatus.rejected:
+          actionText = '拒否';
+          break;
+        case ParticipationStatus.pending:
+          actionText = '申請中に差し戻し';
+          break;
+        default:
+          return;
+      }
+      final title = 'イベント参加申込$actionText';
+      final message = '${application.userDisplayName}さんの「${event.name}」への参加申込が${actionText}されました';
+
+      // 各管理者に通知を送信
+      for (final managerId in managers) {
+        await NotificationService.instance.createNotification(
+          NotificationData(
+            toUserId: managerId,
+            fromUserId: excludeUserId ?? event.createdBy,
+            type: NotificationType.eventApplication,
+            title: title,
+            message: message,
+            isRead: false,
+            createdAt: DateTime.now(),
+            data: {
+              'eventId': event.id,
+              'eventName': event.name,
+              'applicationId': application.id,
+              'applicantUserId': application.userId,
+              'applicantName': application.userDisplayName,
+              'status': status.name,
+              'adminMessage': adminMessage,
+              'isResultNotification': true,
+            },
+          ),
+        );
+      }
+    } catch (e) {
+      // 通知送信の失敗は処理自体の失敗とはしない
     }
   }
 
@@ -398,6 +499,7 @@ class ParticipationService {
     ParticipationStatus status, {
     String? rejectionReason, // 後方互換性のため残す
     String? adminMessage, // 管理者メッセージ（承認・拒否両方で使用）
+    String? adminUserId, // 承認/拒否を行った管理者のID
   }) async {
     try {
 
@@ -438,11 +540,12 @@ class ParticipationService {
         await _removeFromParticipants(app.eventId, app.userId);
       }
 
-      // 申込者に結果を通知
+      // 申込者に結果を通知（運営者への通知も内部で行われる）
       await _sendApplicationResultNotification(
         application: app,
         status: status,
         adminMessage: message,
+        adminUserId: adminUserId,
       );
 
       return true;
@@ -553,6 +656,42 @@ class ParticipationService {
           .collection('participationApplications')
           .where('eventId', isEqualTo: eventId)
           .where('status', isEqualTo: 'approved')
+          .get();
+
+      return querySnapshot.docs
+          .map((doc) => doc.data()['userId'] as String)
+          .toList();
+    } catch (e) {
+      // エラー時は安全のため空リストを返す
+      return [];
+    }
+  }
+
+  /// 申請中ユーザーのIDリストを取得
+  static Future<List<String>> getPendingApplicants(String eventId) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection('participationApplications')
+          .where('eventId', isEqualTo: eventId)
+          .where('status', isEqualTo: 'pending')
+          .get();
+
+      return querySnapshot.docs
+          .map((doc) => doc.data()['userId'] as String)
+          .toList();
+    } catch (e) {
+      // エラー時は安全のため空リストを返す
+      return [];
+    }
+  }
+
+  /// 承認済み + 申請中のユーザーIDリストを取得
+  static Future<List<String>> getApprovedAndPendingApplicants(String eventId) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection('participationApplications')
+          .where('eventId', isEqualTo: eventId)
+          .where('status', whereIn: ['approved', 'pending'])
           .get();
 
       return querySnapshot.docs

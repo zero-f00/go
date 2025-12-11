@@ -144,7 +144,7 @@ class GameEvent {
       feeSupplement: data['feeSupplement'] as String?,
       platforms: List<String>.from(data['platforms'] as List<dynamic>? ?? []),
       approvalMethod: data['approvalMethod'] as String? ?? '自動承認',
-      visibility: data['visibility'] as String? ?? 'パブリック',
+      visibility: _parseVisibility(data['visibility']),
       language: data['language'] as String? ?? '日本語',
       hasAgeRestriction: data['hasAgeRestriction'] as bool? ?? false,
       hasStreaming: data['hasStreaming'] as bool? ?? false,
@@ -161,6 +161,23 @@ class GameEvent {
     );
 
     return gameEvent;
+  }
+
+  /// visibilityの英語表記を日本語表記に変換
+  static String _parseVisibility(dynamic value) {
+    if (value == null) return 'パブリック';
+    switch (value.toString()) {
+      case 'inviteOnly':
+      case '招待制':
+        return '招待制';
+      case 'private':
+      case 'プライベート':
+        return 'プライベート';
+      case 'public':
+      case 'パブリック':
+      default:
+        return 'パブリック';
+    }
   }
 }
 

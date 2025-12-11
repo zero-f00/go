@@ -351,6 +351,55 @@ class NotificationService {
     }
   }
 
+  /// イベントの招待通知を無効化（visibility変更時に使用）
+  /// 招待制からパブリックに変更された場合、既存の招待通知を無効化する
+  Future<bool> invalidateEventInviteNotifications({
+    required String eventId,
+    required String eventName,
+  }) async {
+    try {
+      // イベントIDでeventInvite通知を検索
+      final querySnapshot = await _firestore
+          .collection(_collectionName)
+          .where('type', isEqualTo: 'eventInvite')
+          .get();
+
+      if (querySnapshot.docs.isEmpty) return true;
+
+      final batch = _firestore.batch();
+      int updateCount = 0;
+
+      for (final doc in querySnapshot.docs) {
+        final data = doc.data();
+        final notificationData = data['data'] as Map<String, dynamic>?;
+
+        // eventIdが一致する通知のみ更新
+        if (notificationData != null && notificationData['eventId'] == eventId) {
+          // 通知タイプを一般的なイベント更新に変更し、無効化フラグを設定
+          batch.update(doc.reference, {
+            'type': 'eventUpdated',
+            'title': 'イベント公開設定変更',
+            'message': '「$eventName」の公開設定がパブリックに変更されました。パスワードなしで参加申請できます。',
+            'data': {
+              ...notificationData,
+              'inviteInvalidated': true,
+              'invalidatedAt': Timestamp.now(),
+              'originalType': 'eventInvite',
+            },
+          });
+          updateCount++;
+        }
+      }
+
+      if (updateCount > 0) {
+        await batch.commit();
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   /// ユーザーの通知をリアルタイムで監視
   Stream<List<NotificationData>> watchUserNotifications(String userId) {
     return _firestore

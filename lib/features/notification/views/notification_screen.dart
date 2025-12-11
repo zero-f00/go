@@ -13,6 +13,7 @@ import '../../../shared/services/notification_service.dart';
 import '../../../shared/services/error_handler_service.dart';
 import '../../../shared/services/event_service.dart';
 import '../../../shared/services/friend_service.dart';
+import '../../../shared/services/participation_service.dart';
 import '../../../data/models/notification_model.dart';
 import '../../../shared/widgets/user_avatar_from_id.dart';
 import '../../event_detail/views/event_detail_screen.dart';
@@ -724,6 +725,16 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       return;
     }
 
+    if (notification.type == NotificationType.eventReminder) {
+      _handleEventReminderNotification(notification);
+      return;
+    }
+
+    if (notification.type == NotificationType.eventDraftReverted) {
+      _handleEventDraftRevertedNotification(notification);
+      return;
+    }
+
     // その他の通知タイプの処理をここに追加
   }
 
@@ -964,36 +975,53 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
       final userId = authState.value!.uid;
 
-      // EventServiceを使用してパスワード検証と参加申請を送信
-      await EventService.submitEventJoinRequest(
+      // ユーザー表示名を取得
+      final userData = await ref.read(currentUserDataProvider.future);
+      final userDisplayName = userData?.displayName ?? 'ユーザー';
+
+      // ParticipationServiceを使用してパスワード検証と参加申請を送信
+      // これによりパブリックイベントと同じ流れで処理され、運営者への通知も送信される
+      final result = await ParticipationService.applyToEvent(
         eventId: eventId,
-        password: password,
         userId: userId,
+        userDisplayName: userDisplayName,
+        password: password,
       );
 
-      // 申請成功時に通知の状態を更新
-      await _updateNotificationApplicationStatus(
-        notification,
-        'submitted'
-      );
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('イベント参加申請を送信しました'),
-            backgroundColor: AppColors.success,
-          ),
+      if (result == ParticipationResult.success) {
+        // 申請成功時に通知の状態を更新
+        await _updateNotificationApplicationStatus(
+          notification,
+          'submitted'
         );
 
-        // 動的更新により自動で状態が反映されるため手動再読み込み不要
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('イベント参加申請を送信しました'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+
+          // 動的更新により自動で状態が反映されるため手動再読み込み不要
+        }
+      } else {
+        // 申請失敗
+        if (mounted) {
+          final errorMessage = _getParticipationErrorMessage(result);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
         String errorMessage = 'エラーが発生しました';
         if (e is EventServiceException) {
           errorMessage = e.message;
-        } else if (e.toString().contains('password')) {
-          errorMessage = 'パスワードが正しくありません';
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1003,6 +1031,27 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
           ),
         );
       }
+    }
+  }
+
+  /// ParticipationResultに応じたエラーメッセージを返す
+  String _getParticipationErrorMessage(ParticipationResult result) {
+    switch (result) {
+      case ParticipationResult.eventNotFound:
+        return 'イベントが見つかりませんでした';
+      case ParticipationResult.cannotApply:
+        return 'このイベントには参加申請できません';
+      case ParticipationResult.alreadyApplied:
+        return '既に参加申請済みです';
+      case ParticipationResult.incorrectPassword:
+        return 'パスワードが正しくありません';
+      case ParticipationResult.permissionDenied:
+        return '権限がありません';
+      case ParticipationResult.networkError:
+        return 'ネットワークエラーが発生しました';
+      case ParticipationResult.unknownError:
+      case ParticipationResult.success:
+        return 'エラーが発生しました';
     }
   }
 
@@ -1573,6 +1622,77 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       }
     } catch (e) {
       _showErrorMessage('エラーが発生しました');
+    }
+  }
+
+  /// イベントリマインダー通知の処理
+  Future<void> _handleEventReminderNotification(NotificationData notification) async {
+    final data = notification.data;
+    if (data == null || data['eventId'] == null) {
+      _showErrorMessage('イベント情報が見つかりません');
+      return;
+    }
+
+    final eventId = data['eventId'] as String;
+
+    try {
+      // イベント情報を取得
+      final event = await EventService.getEventById(eventId);
+      if (event == null) {
+        _showErrorMessage('イベント情報が見つかりません');
+        return;
+      }
+
+      // GameEventに変換
+      final gameEvent = await EventConverter.eventToGameEvent(event);
+
+      // イベント詳細画面へ遷移
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EventDetailScreen(event: gameEvent),
+          ),
+        );
+      }
+    } catch (e) {
+      _showErrorMessage('エラーが発生しました');
+    }
+  }
+
+  /// イベント下書き化通知の処理
+  Future<void> _handleEventDraftRevertedNotification(NotificationData notification) async {
+    final data = notification.data;
+    if (data == null || data['eventId'] == null) {
+      _showErrorMessage('イベント情報が見つかりません');
+      return;
+    }
+
+    final eventId = data['eventId'] as String;
+
+    try {
+      // イベント情報を取得
+      final event = await EventService.getEventById(eventId);
+      if (event == null) {
+        // 下書き化されたイベントは取得できない可能性があるため、メッセージを表示
+        _showErrorMessage('このイベントは下書き状態のため詳細を表示できません');
+        return;
+      }
+
+      // GameEventに変換
+      final gameEvent = await EventConverter.eventToGameEvent(event);
+
+      // イベント詳細画面へ遷移
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EventDetailScreen(event: gameEvent),
+          ),
+        );
+      }
+    } catch (e) {
+      _showErrorMessage('このイベントは下書き状態のため詳細を表示できません');
     }
   }
 

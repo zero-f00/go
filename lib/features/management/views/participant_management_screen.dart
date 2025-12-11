@@ -455,6 +455,11 @@ class _ParticipantManagementScreenState
                     const SizedBox(height: AppDimensions.spacingL),
                     _buildActionButtons(application),
                   ],
+                  // 承認済みまたは拒否済みの場合は差し戻しボタンを表示
+                  if (status == 'approved' || status == 'rejected') ...[
+                    const SizedBox(height: AppDimensions.spacingL),
+                    _buildReturnToPendingButton(application, status),
+                  ],
                 ],
               ),
             ),
@@ -824,6 +829,9 @@ class _ParticipantManagementScreenState
 
     if (result != null) {
       try {
+        // 現在のユーザーIDを取得（自己通知除外のため）
+        final currentUserId = ref.read(currentFirebaseUserProvider)?.uid;
+
         // 申請を検索してIDを取得
         final applications = await ParticipationService.getEventApplications(
           widget.eventId,
@@ -836,6 +844,7 @@ class _ParticipantManagementScreenState
           application.id,
           ParticipationStatus.approved,
           adminMessage: result.isNotEmpty ? result : null,
+          adminUserId: currentUserId,
         );
 
         if (success && mounted) {
@@ -867,6 +876,8 @@ class _ParticipantManagementScreenState
 
     if (result != null) {
       try {
+        // 現在のユーザーIDを取得（自己通知除外のため）
+        final currentUserId = ref.read(currentFirebaseUserProvider)?.uid;
         // 申請を検索してIDを取得
         final applications = await ParticipationService.getEventApplications(
           widget.eventId,
@@ -879,6 +890,7 @@ class _ParticipantManagementScreenState
           application.id,
           ParticipationStatus.rejected,
           adminMessage: result.isNotEmpty ? result : null,
+          adminUserId: currentUserId,
         );
 
         if (success && mounted) {
@@ -915,6 +927,90 @@ class _ParticipantManagementScreenState
       onGameProfileTap: () => _viewGameProfile(application),
       onUserProfileTap: () => _viewUserProfile(application.userId),
     );
+  }
+
+  /// 申請中に戻すボタン
+  Widget _buildReturnToPendingButton(ParticipationApplication application, String status) {
+    final isFromApproval = status == 'approved';
+    final buttonText = isFromApproval ? '承認を取り消して申請中に戻す' : '拒否を取り消して申請中に戻す';
+
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: () => _returnToPending(application, isFromApproval),
+        icon: const Icon(Icons.undo, size: 18),
+        label: Text(buttonText),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.warning,
+          side: BorderSide(color: AppColors.warning),
+          padding: const EdgeInsets.all(AppDimensions.spacingM),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 申請中に戻す処理
+  Future<void> _returnToPending(ParticipationApplication application, bool isFromApproval) async {
+    final title = isFromApproval ? '承認を取り消しますか？' : '拒否を取り消しますか？';
+    final confirmMessage = isFromApproval
+        ? 'この参加者の承認を取り消して申請中に戻します。理由を入力してください（任意）。'
+        : 'この参加者の拒否を取り消して申請中に戻します。理由を入力してください（任意）。';
+
+    final message = await showDialog<String?>(
+      context: context,
+      builder: (context) => _ReturnToPendingDialog(
+        title: title,
+        message: confirmMessage,
+      ),
+    );
+
+    if (message == null) return; // キャンセルされた場合
+
+    try {
+      // 現在のユーザーIDを取得（自己通知除外のため）
+      final currentUserId = ref.read(currentFirebaseUserProvider)?.uid;
+
+      final success = await ParticipationService.updateApplicationStatus(
+        application.id,
+        ParticipationStatus.pending,
+        adminMessage: message.isEmpty
+            ? (isFromApproval ? '承認が取り消されました' : '拒否が取り消されました')
+            : message,
+        adminUserId: currentUserId,
+      );
+
+      if (success && mounted) {
+        final successMessage = isFromApproval
+            ? '承認を取り消して申請中に戻しました'
+            : '拒否を取り消して申請中に戻しました';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(successMessage),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      } else if (mounted) {
+        final errorMessage = isFromApproval
+            ? '承認取り消しに失敗しました'
+            : '拒否取り消しに失敗しました';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        final errorMessage = isFromApproval
+            ? '承認取り消しに失敗しました'
+            : '拒否取り消しに失敗しました';
+        ErrorHandlerService.showErrorDialog(context, errorMessage);
+      }
+    }
   }
 }
 
@@ -1003,6 +1099,97 @@ class _ApprovalDialogState extends State<_ApprovalDialog> {
           child: Text(
             widget.isRejection ? '拒否' : '承認',
             style: const TextStyle(
+              fontSize: AppDimensions.fontSizeM,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// 申請中に戻すダイアログ
+class _ReturnToPendingDialog extends StatefulWidget {
+  final String title;
+  final String message;
+
+  const _ReturnToPendingDialog({
+    required this.title,
+    required this.message,
+  });
+
+  @override
+  State<_ReturnToPendingDialog> createState() => _ReturnToPendingDialogState();
+}
+
+class _ReturnToPendingDialogState extends State<_ReturnToPendingDialog> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: AppColors.cardBackground,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+      ),
+      title: Text(
+        widget.title,
+        style: const TextStyle(
+          fontSize: AppDimensions.fontSizeL,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textDark,
+        ),
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            widget.message,
+            style: const TextStyle(
+              fontSize: AppDimensions.fontSizeM,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingL),
+          AppTextFieldMultiline(
+            controller: _controller,
+            hintText: '理由を入力（任意）...',
+            maxLines: 3,
+            doneButtonText: '完了',
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(
+            'キャンセル',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: AppDimensions.fontSizeM,
+            ),
+          ),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.of(context).pop(_controller.text.trim()),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.warning,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+            ),
+          ),
+          child: const Text(
+            '申請中に戻す',
+            style: TextStyle(
               fontSize: AppDimensions.fontSizeM,
               fontWeight: FontWeight.w600,
             ),

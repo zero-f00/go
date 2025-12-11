@@ -11,6 +11,7 @@ class KeyboardOverlayWidget extends StatefulWidget {
   final String? doneText;
   final VoidCallback? onDone;
   final bool showToolbar;
+  final FocusNode? focusNode; // 監視対象のFocusNode
 
   const KeyboardOverlayWidget({
     super.key,
@@ -18,6 +19,7 @@ class KeyboardOverlayWidget extends StatefulWidget {
     this.doneText = '完了',
     this.onDone,
     this.showToolbar = true,
+    this.focusNode,
   });
 
   @override
@@ -29,7 +31,43 @@ class _KeyboardOverlayWidgetState extends State<KeyboardOverlayWidget> {
   final LayerLink _layerLink = LayerLink();
 
   @override
+  void initState() {
+    super.initState();
+    // FocusNodeが渡されている場合はそれを監視
+    widget.focusNode?.addListener(_onFocusNodeChange);
+  }
+
+  @override
+  void didUpdateWidget(KeyboardOverlayWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.focusNode != widget.focusNode) {
+      oldWidget.focusNode?.removeListener(_onFocusNodeChange);
+      widget.focusNode?.addListener(_onFocusNodeChange);
+    }
+  }
+
+  void _onFocusNodeChange() {
+    if (!widget.showToolbar) return;
+
+    final hasFocus = widget.focusNode?.hasFocus ?? false;
+    if (hasFocus) {
+      _showKeyboardToolbar();
+    } else {
+      _hideKeyboardToolbar();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // FocusNodeが渡されている場合はFocusウィジェットを使わない
+    if (widget.focusNode != null) {
+      return CompositedTransformTarget(
+        link: _layerLink,
+        child: widget.child,
+      );
+    }
+
+    // FocusNodeが渡されていない場合は従来のFocusウィジェットを使用（後方互換性）
     return CompositedTransformTarget(
       link: _layerLink,
       child: Focus(
@@ -45,7 +83,13 @@ class _KeyboardOverlayWidgetState extends State<KeyboardOverlayWidget> {
     if (hasFocus) {
       _showKeyboardToolbar();
     } else {
-      _hideKeyboardToolbar();
+      // フォーカスが外れた時は遅延を入れて確実にオーバーレイを削除
+      // これによりフォーカス移動時のちらつきを防止しつつ、確実に非表示にする
+      Future.microtask(() {
+        if (mounted && _overlayEntry != null) {
+          _hideKeyboardToolbar();
+        }
+      });
     }
   }
 
@@ -86,6 +130,7 @@ class _KeyboardOverlayWidgetState extends State<KeyboardOverlayWidget> {
 
   @override
   void dispose() {
+    widget.focusNode?.removeListener(_onFocusNodeChange);
     _hideKeyboardToolbar();
     super.dispose();
   }
@@ -244,6 +289,7 @@ class _EnhancedMultilineTextFieldState
         const SizedBox(height: AppDimensions.spacingS),
         KeyboardOverlayWidget(
           doneText: widget.doneButtonText,
+          focusNode: _focusNode, // FocusNodeを渡して正確にフォーカス状態を監視
           child: TextFormField(
             controller: widget.controller,
             focusNode: _focusNode,

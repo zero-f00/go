@@ -553,20 +553,18 @@ class _EventParticipantsManagementScreenState
 
     try {
 
+      // 現在のユーザーIDを取得（自己通知除外のため）
+      final currentUserId = ref.read(currentFirebaseUserProvider)?.uid;
+
       final result = await ParticipationService.updateApplicationStatus(
         application.id,
         ParticipationStatus.approved,
         adminMessage: message.isEmpty ? null : message,
+        adminUserId: currentUserId,
       );
 
       if (result && mounted) {
-        // 通知を送信
-        await _sendNotificationToUser(
-          application.userId,
-          application.userDisplayName,
-          true,
-          message,
-        );
+        // 通知はParticipationService内で一元管理されるため、ここでは送信しない
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -597,21 +595,18 @@ class _EventParticipantsManagementScreenState
     if (message == null) return; // キャンセルされた場合
 
     try {
+      // 現在のユーザーIDを取得（自己通知除外のため）
+      final currentUserId = ref.read(currentFirebaseUserProvider)?.uid;
 
       final result = await ParticipationService.updateApplicationStatus(
         application.id,
         ParticipationStatus.rejected,
         adminMessage: message.isEmpty ? null : message,
+        adminUserId: currentUserId,
       );
 
       if (result && mounted) {
-        // 通知を送信
-        await _sendNotificationToUser(
-          application.userId,
-          application.userDisplayName,
-          false,
-          message,
-        );
+        // 通知はParticipationService内で一元管理されるため、ここでは送信しない
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -1116,12 +1111,16 @@ class _EventParticipantsManagementScreenState
     if (message == null) return;
 
     try {
+      // 現在のユーザーIDを取得
+      final currentUserId = ref.read(currentFirebaseUserProvider)?.uid;
+
       final result = await ParticipationService.updateApplicationStatus(
         application.id,
         ParticipationStatus.pending,
         adminMessage: message.isEmpty
             ? (isFromApproval ? '承認が取り消されました' : '拒否が取り消されました')
             : message,
+        adminUserId: currentUserId,
       );
 
       if (result && mounted) {

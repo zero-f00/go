@@ -1,20 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../game_event_management/views/game_event_management_screen.dart';
 import '../../search/views/search_screen.dart';
 import '../../notification/views/notification_screen.dart';
 import '../../management/views/management_screen.dart';
 import '../../../shared/widgets/app_bottom_navigation.dart';
 import '../../../shared/widgets/app_drawer.dart';
+import '../../../shared/providers/notification_provider.dart';
+import '../../../shared/services/push_notification_service.dart';
+import '../../../data/models/notification_model.dart';
 
-class MainScreen extends StatefulWidget {
+class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
 
   @override
-  State<MainScreen> createState() => _MainScreenState();
+  ConsumerState<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends ConsumerState<MainScreen> {
   int _currentIndex = 0;
+
+  // 前回の通知リストを保持（新着通知検出用）
+  List<String> _previousNotificationIds = [];
+  bool _isFirstLoad = true;
 
   List<Widget> get _screens => [
     GameEventManagementScreen(
@@ -64,6 +72,16 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 通知の変更を監視して、新しい通知が来たらローカル通知を表示
+    ref.listen<AsyncValue<List<NotificationData>>>(
+      userNotificationsProvider,
+      (previous, next) {
+        next.whenData((notifications) {
+          _handleNewNotifications(notifications);
+        });
+      },
+    );
+
     return Scaffold(
       body: _screens[_currentIndex],
       drawer: const AppDrawer(),
@@ -72,5 +90,59 @@ class _MainScreenState extends State<MainScreen> {
         onTap: _onTabTapped,
       ),
     );
+  }
+
+  /// 新しい通知を検出してローカル通知を表示
+  void _handleNewNotifications(List<NotificationData> notifications) {
+    if (notifications.isEmpty) {
+      _previousNotificationIds = [];
+      _isFirstLoad = false;
+      return;
+    }
+
+    final currentIds = notifications.map((n) => n.id).whereType<String>().toList();
+
+    // 初回ロード時は通知リストを初期化するだけ
+    if (_isFirstLoad) {
+      _previousNotificationIds = currentIds;
+      _isFirstLoad = false;
+      return;
+    }
+
+    // 新しい通知を検出（現在のリストにあるが、前回のリストにないもの）
+    final newNotifications = notifications.where((n) {
+      final id = n.id;
+      return id != null && !_previousNotificationIds.contains(id);
+    }).toList();
+
+    // 未読の新しい通知のみバナーで表示
+    for (final notification in newNotifications) {
+      if (!notification.isRead) {
+        _showLocalNotificationBanner(notification);
+      }
+    }
+
+    // 通知リストを更新
+    _previousNotificationIds = currentIds;
+  }
+
+  /// ローカル通知バナーを表示
+  Future<void> _showLocalNotificationBanner(NotificationData notification) async {
+    try {
+      final pushService = PushNotificationService.instance;
+      if (pushService.isInitialized) {
+        await pushService.showTestLocalNotification(
+          title: notification.title,
+          body: notification.message,
+          data: {
+            'type': notification.type.name,
+            'notificationId': notification.id,
+            ...?notification.data,
+          },
+        );
+      }
+    } catch (e) {
+      // ローカル通知表示エラー
+    }
   }
 }

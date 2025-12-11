@@ -30,6 +30,7 @@ class AppTextField extends StatefulWidget {
   final Function(String)? onChanged;
   final Function(String)? onSubmitted;
   final bool showKeyboardToolbar;
+  final bool forceShowKeyboardToolbar; // 単一行でも強制的にツールバーを表示（数字キーボード用）
   final String? doneButtonText;
 
   const AppTextField({
@@ -57,6 +58,7 @@ class AppTextField extends StatefulWidget {
     this.onChanged,
     this.onSubmitted,
     this.showKeyboardToolbar = true,
+    this.forceShowKeyboardToolbar = false,
     this.doneButtonText,
   });
 
@@ -148,9 +150,17 @@ class _AppTextFieldState extends State<AppTextField> {
     );
 
     // キーボードツールバーが必要な場合は包む
-    if (widget.showKeyboardToolbar) {
+    // 単一行入力の場合は、TextInputAction.nextで次フィールドに移動できるため
+    // 「完了」ツールバーは不要（iOS/Androidのベストプラクティスに準拠）
+    // 複数行入力の場合は、改行キーと閉じる機能を分離するためツールバーが必要
+    // ただし、数字キーボードなど特殊なケースではforceShowKeyboardToolbarで強制表示可能
+    final shouldShowToolbar = widget.showKeyboardToolbar &&
+        (_isMultiline() || widget.forceShowKeyboardToolbar);
+
+    if (shouldShowToolbar) {
       return KeyboardOverlayWidget(
         doneText: widget.doneButtonText ?? '完了',
+        focusNode: _focusNode, // FocusNodeを渡して正確にフォーカス状態を監視
         child: textField,
       );
     }
@@ -422,7 +432,7 @@ class AppTextFieldNumber extends StatelessWidget {
       enabled: enabled,
       suffixIcon: suffixIcon,
       prefixIcon: prefixIcon,
-      showKeyboardToolbar: true, // 数字入力でも完了ボタンを表示
+      forceShowKeyboardToolbar: true, // iOSの数字キーボードには「完了」がないため強制表示
       textInputAction: TextInputAction.next,
     );
   }
