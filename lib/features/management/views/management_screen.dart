@@ -23,11 +23,12 @@ import '../../../data/models/user_model.dart';
 import '../../../data/models/event_model.dart';
 import '../../../shared/widgets/past_events_selection_dialog.dart';
 import '../../../shared/services/participation_service.dart';
-import '../../calendar/views/event_calendar_screen.dart';
 import '../../calendar/views/host_event_calendar_screen.dart';
 import '../../../shared/widgets/game_icon.dart';
+import '../../../shared/widgets/unified_calendar_widget.dart';
 import '../../../shared/services/game_service.dart';
 import '../../../shared/services/recommendation_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ManagementScreen extends ConsumerStatefulWidget {
@@ -69,6 +70,9 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
   // ダイアログの重複表示を防ぐためのフラグ
   bool _isDialogShowing = false;
 
+  // 参加イベントタブの表示モード: true=リスト, false=カレンダー
+  bool _isParticipantListView = true;
+
   @override
   void initState() {
     super.initState();
@@ -77,6 +81,13 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
       length: 2, // 参加予定と過去のイベント
       vsync: this,
     );
+
+    // タブ切り替え時にUIを更新（ヘッダーのアクションボタン表示切り替え用）
+    _tabController.addListener(() {
+      if (mounted) {
+        setState(() {});
+      }
+    });
 
     // イベント数を読み込み（初回のため強制読み込み）
     _loadEventCounts(forceRefresh: true);
@@ -229,6 +240,10 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
                 showBackButton: false,
                 showUserIcon: true,
                 onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                // 参加イベントタブが選択されている場合のみ表示切り替えボタンを表示
+                actions: _tabController.index == 1
+                    ? [_buildViewToggleButton()]
+                    : null,
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(
@@ -282,6 +297,12 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
 
   // 参加イベント管理タブ
   Widget _buildParticipantEventTab() {
+    // カレンダー表示の場合
+    if (!_isParticipantListView) {
+      return _buildParticipantCalendarView();
+    }
+
+    // リスト表示の場合
     return Container(
       margin: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -317,56 +338,31 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
     );
   }
 
-  /// 参加イベント用タブバーとカレンダー表示ボタン
+  /// 参加イベント用タブバー（カレンダー表示ボタンは削除、ヘッダー右上に移動）
   Widget _buildParticipationTabBar() {
     if (_participantTabController == null) {
       return const SizedBox.shrink();
     }
-    return Column(
-      children: [
-        // カレンダー表示ボタン
-        Container(
-          width: double.infinity,
-          margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
-          child: ElevatedButton.icon(
-            onPressed: _navigateToCalendar,
-            icon: const Icon(Icons.calendar_month, size: 20),
-            label: const Text('カレンダー表示'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(
-                vertical: AppDimensions.spacingM,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-              ),
-            ),
-          ),
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingL),
+      child: TabBar(
+        controller: _participantTabController!,
+        indicator: BoxDecoration(
+          color: AppColors.accent,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusS),
         ),
-        // タブバー
-        Container(
-          margin: const EdgeInsets.only(bottom: AppDimensions.spacingL),
-          child: TabBar(
-            controller: _participantTabController!,
-            indicator: BoxDecoration(
-              color: AppColors.accent,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-            ),
-            indicatorSize: TabBarIndicatorSize.tab,
-            labelColor: Colors.white,
-            unselectedLabelColor: AppColors.textDark,
-            labelStyle: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: AppDimensions.fontSizeM,
-            ),
-            tabs: const [
-              Tab(text: '参加予定'),
-              Tab(text: '過去のイベント'),
-            ],
-          ),
+        indicatorSize: TabBarIndicatorSize.tab,
+        labelColor: Colors.white,
+        unselectedLabelColor: AppColors.textDark,
+        labelStyle: const TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: AppDimensions.fontSizeM,
         ),
-      ],
+        tabs: const [
+          Tab(text: '参加予定'),
+          Tab(text: '過去のイベント'),
+        ],
+      ),
     );
   }
 
@@ -508,7 +504,6 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
     required bool isUpcoming,
   }) async {
     final List<Event> events = [];
-    final now = DateTime.now();
 
     for (final application in applications) {
       try {
@@ -523,14 +518,12 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
           final currentTime = DateTime.now();
           final isEventInFuture = event.eventDate.isAfter(currentTime);
 
-
           if (isUpcoming == isEventInFuture) {
             events.add(event);
           }
         }
       } catch (e) {
-        // イベント取得エラーは無視
-        print('Debug: Error loading event ${application.eventId}: $e');
+        // イベント取得エラーは無視（デバッグ用ログは本番では不要）
       }
     }
 
@@ -724,35 +717,227 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
     Navigator.of(context).pushNamed('/event_detail', arguments: eventId);
   }
 
-  /// カレンダー画面に遷移
-  void _navigateToCalendar() async {
-    final currentUser = await ref.read(currentUserDataProvider.future);
-    if (currentUser == null) return;
+  /// 参加イベントタブ用の表示切り替えボタン（おすすめイベント画面と同じUI）
+  Widget _buildViewToggleButton() {
+    return Container(
+      margin: const EdgeInsets.only(right: AppDimensions.spacingM),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundWhite.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildToggleItem(
+            icon: Icons.list,
+            isSelected: _isParticipantListView,
+            onTap: () => setState(() => _isParticipantListView = true),
+            tooltip: 'リスト表示',
+          ),
+          _buildToggleItem(
+            icon: Icons.calendar_month,
+            isSelected: !_isParticipantListView,
+            onTap: () => setState(() => _isParticipantListView = false),
+            tooltip: 'カレンダー表示',
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// トグルアイテム（おすすめイベント画面と同じUI）
+  Widget _buildToggleItem({
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required String tooltip,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingM,
+            vertical: AppDimensions.spacingS,
+          ),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppColors.backgroundWhite
+                : AppColors.backgroundTransparent,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+          ),
+          child: Icon(
+            icon,
+            size: AppDimensions.iconM,
+            color: isSelected ? AppColors.primary : AppColors.textWhite,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 参加イベントカレンダービュー（UnifiedCalendarWidgetを直接使用）
+  Widget _buildParticipantCalendarView() {
+    return UnifiedCalendarWidget(
+      title: '参加予定カレンダー',
+      onLoadEvents: _loadParticipationEventsForCalendar,
+      onEventTap: _navigateToEventDetailFromCalendar,
+      emptyMessage: 'この日は参加予定のイベントがありません',
+      emptyIcon: Icons.event_busy,
+      getEventStatusColor: (event) {
+        switch (event.status) {
+          case GameEventStatus.upcoming:
+            return AppColors.info;
+          case GameEventStatus.active:
+          case GameEventStatus.published:
+            return AppColors.success;
+          default:
+            return AppColors.textSecondary;
+        }
+      },
+    );
+  }
+
+  /// カレンダー用の参加イベントデータを読み込み
+  Future<Map<DateTime, List<GameEvent>>> _loadParticipationEventsForCalendar() async {
+    final eventMap = <DateTime, List<GameEvent>>{};
 
     try {
-      // 現在のユーザーの参加申請を取得
-      final applications = await ParticipationService.getUserApplications(
-        currentUser.id,
-      );
+      final currentUser = await ref.read(currentUserDataProvider.future);
+      if (currentUser == null) return eventMap;
 
-      if (mounted) {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) =>
-                EventCalendarScreen(applications: applications),
-          ),
-        );
+      final applications = await ParticipationService.getUserApplications(currentUser.id);
+      final approvedApplications = applications
+          .where((app) => app.status == ParticipationStatus.approved)
+          .toList();
+
+      for (final application in approvedApplications) {
+        final gameEvent = await _getGameEventFromApplication(application);
+        if (gameEvent != null) {
+          final date = DateTime(
+            gameEvent.startDate.year,
+            gameEvent.startDate.month,
+            gameEvent.startDate.day,
+          );
+
+          if (!eventMap.containsKey(date)) {
+            eventMap[date] = [];
+          }
+          eventMap[date]!.add(gameEvent);
+        }
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('カレンダーの読み込みに失敗しました'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
+      // エラー時は空のマップを返す
     }
+
+    return eventMap;
+  }
+
+  /// アプリケーションからGameEventを取得
+  Future<GameEvent?> _getGameEventFromApplication(ParticipationApplication application) async {
+    try {
+      // まず gameEvents コレクションから取得を試みる
+      final gameEventDoc = await FirebaseFirestore.instance
+          .collection('gameEvents')
+          .doc(application.eventId)
+          .get();
+
+      if (gameEventDoc.exists && gameEventDoc.data() != null) {
+        final gameEventData = gameEventDoc.data()!;
+        final status = gameEventData['status'] as String?;
+        // 下書き状態のイベントは表示しない
+        if (status == 'draft') return null;
+        return GameEvent.fromFirestore(gameEventData, gameEventDoc.id);
+      }
+
+      // 次に events コレクションから取得を試みる
+      final eventDoc = await FirebaseFirestore.instance
+          .collection('events')
+          .doc(application.eventId)
+          .get();
+
+      if (eventDoc.exists && eventDoc.data() != null) {
+        final eventData = eventDoc.data()!;
+        final status = eventData['status'] as String?;
+        // 下書き状態のイベントは表示しない
+        if (status == 'draft') return null;
+        return _convertEventDataToGameEvent(eventData, application.eventId);
+      }
+
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// EventデータをGameEventに変換
+  GameEvent _convertEventDataToGameEvent(Map<String, dynamic> eventData, String eventId) {
+    return GameEvent(
+      id: eventId,
+      name: eventData['name'] ?? 'イベント',
+      subtitle: eventData['subtitle'],
+      description: eventData['description'] ?? '',
+      type: _mapEventTypeFromString(eventData['type']),
+      status: GameEventStatus.active,
+      startDate: (eventData['eventDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      endDate: (eventData['eventDate'] as Timestamp?)?.toDate().add(const Duration(hours: 2)) ?? DateTime.now().add(const Duration(hours: 2)),
+      participantCount: (eventData['participantIds'] as List?)?.length ?? 0,
+      maxParticipants: eventData['maxParticipants'] ?? 10,
+      completionRate: 0.0,
+      hasFee: eventData['hasParticipationFee'] ?? false,
+      rewards: const <String, double>{},
+      gameId: eventData['gameId'],
+      gameName: eventData['gameName'],
+      gameIconUrl: eventData['gameIconUrl'],
+      imageUrl: eventData['imageUrl'],
+      rules: eventData['rules'],
+      registrationDeadline: (eventData['registrationDeadline'] as Timestamp?)?.toDate(),
+      prizeContent: eventData['prizeContent'],
+      contactInfo: eventData['contactInfo'],
+      policy: eventData['policy'],
+      additionalInfo: eventData['additionalInfo'],
+      streamingUrls: List<String>.from(eventData['streamingUrls'] ?? []),
+      minAge: eventData['minAge'],
+      feeAmount: eventData['feeAmount']?.toDouble(),
+      platforms: List<String>.from(eventData['platforms'] ?? []),
+      approvalMethod: eventData['approvalMethod'] ?? 'manual',
+      visibility: eventData['visibility'] ?? 'public',
+      language: eventData['language'] ?? 'ja',
+      hasAgeRestriction: eventData['hasAgeRestriction'] ?? false,
+      hasStreaming: eventData['hasStreaming'] ?? false,
+      eventTags: List<String>.from(eventData['eventTags'] ?? []),
+      sponsors: List<String>.from(eventData['sponsorIds'] ?? []),
+      managers: List<String>.from(eventData['managerIds'] ?? []),
+      createdBy: eventData['createdBy'],
+      createdByName: eventData['createdByName'],
+    );
+  }
+
+  /// イベントタイプ文字列をGameEventTypeに変換
+  GameEventType _mapEventTypeFromString(String? eventType) {
+    switch (eventType) {
+      case 'daily':
+        return GameEventType.daily;
+      case 'weekly':
+        return GameEventType.weekly;
+      case 'special':
+        return GameEventType.special;
+      case 'seasonal':
+        return GameEventType.seasonal;
+      default:
+        return GameEventType.daily;
+    }
+  }
+
+  /// カレンダーからイベント詳細画面へ遷移
+  void _navigateToEventDetailFromCalendar(GameEvent event) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => EventDetailScreen(event: event),
+      ),
+    );
   }
 
   /// 主催イベント用カレンダー画面に遷移

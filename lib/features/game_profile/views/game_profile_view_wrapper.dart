@@ -283,11 +283,16 @@ class _GameProfileViewWrapperState extends ConsumerState<GameProfileViewWrapper>
   }
 
   Widget _buildContent() {
-    return GameProfileViewScreen(
-      profile: _gameProfile!,
-      userData: _userData,
-      gameName: _gameData?.name,
-      gameIconUrl: _gameData?.iconUrl,
+    // GameProfileViewScreenのコンテンツ部分のみを表示
+    // （GameProfileViewScreenはScaffoldとヘッダーを持つため、直接埋め込むと二重ヘッダーになる）
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      child: GameProfileViewContent(
+        profile: _gameProfile!,
+        userData: _userData,
+        gameName: _gameData?.name,
+        gameIconUrl: _gameData?.iconUrl,
+      ),
     );
   }
 }

@@ -631,27 +631,31 @@ class _UnifiedCalendarWidgetState extends State<UnifiedCalendarWidget> {
       valueListenable: _selectedEvents,
       builder: (context, events, _) {
         if (events.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingXL),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    widget.emptyIcon ?? Icons.event_busy,
-                    size: AppDimensions.iconXL,
-                    color: AppColors.textLight,
-                  ),
-                  const SizedBox(height: AppDimensions.spacingM),
-                  Text(
-                    widget.emptyMessage ?? 'この日はイベントがありません',
-                    style: const TextStyle(
-                      fontSize: AppDimensions.fontSizeM,
-                      color: AppColors.textSecondary,
+          // SingleChildScrollViewでラップしてオーバーフローを防止
+          return SingleChildScrollView(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(AppDimensions.spacingXL),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      widget.emptyIcon ?? Icons.event_busy,
+                      size: AppDimensions.iconXL,
+                      color: AppColors.textLight,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+                    const SizedBox(height: AppDimensions.spacingM),
+                    Text(
+                      widget.emptyMessage ?? 'この日はイベントがありません',
+                      style: const TextStyle(
+                        fontSize: AppDimensions.fontSizeM,
+                        color: AppColors.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
               ),
             ),
           );

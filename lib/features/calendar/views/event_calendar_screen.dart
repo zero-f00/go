@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../shared/constants/app_colors.dart';
-import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
 import '../../../shared/widgets/unified_calendar_widget.dart';
@@ -12,10 +10,13 @@ import '../../event_detail/views/event_detail_screen.dart';
 
 class EventCalendarScreen extends ConsumerStatefulWidget {
   final List<ParticipationApplication> applications;
+  /// 埋め込みモード（Scaffold/ヘッダーなしで表示）
+  final bool isEmbedded;
 
   const EventCalendarScreen({
     super.key,
     required this.applications,
+    this.isEmbedded = false,
   });
 
   @override
@@ -23,8 +24,6 @@ class EventCalendarScreen extends ConsumerStatefulWidget {
 }
 
 class _EventCalendarScreenState extends ConsumerState<EventCalendarScreen> {
-  final Map<String, String?> _gameIconCache = {};
-
   /// 参加予定イベントを読み込み
   Future<Map<DateTime, List<GameEvent>>> _loadParticipationEvents() async {
     final events = <DateTime, List<GameEvent>>{};
@@ -168,6 +167,12 @@ class _EventCalendarScreenState extends ConsumerState<EventCalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 埋め込みモードの場合はカレンダーウィジェットのみ返す
+    if (widget.isEmbedded) {
+      return _buildCalendarContent();
+    }
+
+    // 通常モードの場合はScaffold付きで返す
     return Scaffold(
       body: AppGradientBackground(
         child: SafeArea(
@@ -179,19 +184,24 @@ class _EventCalendarScreenState extends ConsumerState<EventCalendarScreen> {
                 onBackPressed: () => Navigator.of(context).pop(),
               ),
               Expanded(
-                child: UnifiedCalendarWidget(
-                  title: '参加予定カレンダー',
-                  onLoadEvents: _loadParticipationEvents,
-                  onEventTap: _showEventDetails,
-                  normalizeDate: _normalizeDate,
-                  emptyMessage: 'この日はイベントがありません',
-                  emptyIcon: Icons.event_busy,
-                ),
+                child: _buildCalendarContent(),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  /// カレンダーコンテンツを構築
+  Widget _buildCalendarContent() {
+    return UnifiedCalendarWidget(
+      title: '参加予定カレンダー',
+      onLoadEvents: _loadParticipationEvents,
+      onEventTap: _showEventDetails,
+      normalizeDate: _normalizeDate,
+      emptyMessage: 'この日はイベントがありません',
+      emptyIcon: Icons.event_busy,
     );
   }
 
