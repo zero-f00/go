@@ -27,6 +27,8 @@ import '../../calendar/views/event_calendar_screen.dart';
 import '../../calendar/views/host_event_calendar_screen.dart';
 import '../../../shared/widgets/game_icon.dart';
 import '../../../shared/services/game_service.dart';
+import '../../../shared/services/recommendation_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ManagementScreen extends ConsumerStatefulWidget {
   final bool shouldNavigateToEventCreation;
@@ -1172,9 +1174,17 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const EventCreationScreen()),
-    ).then((_) {
+    ).then((result) {
       // イベント作成後にカウントを強制再読み込み
       _loadEventCounts(forceRefresh: true);
+
+      // イベントが作成された場合（resultがeventId）、おすすめイベントを更新
+      if (result != null) {
+        final firebaseUid = FirebaseAuth.instance.currentUser?.uid;
+        if (firebaseUid != null) {
+          ref.invalidate(recommendedEventsProvider(firebaseUid));
+        }
+      }
     });
   }
 
@@ -1301,9 +1311,17 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
             builder: (context) =>
                 EventCreationScreen(editingEvent: copiedGameEvent),
           ),
-        ).then((_) {
+        ).then((result) {
           // イベント作成後にカウントを強制再読み込み
           _loadEventCounts(forceRefresh: true);
+
+          // イベントが作成された場合、おすすめイベントを更新
+          if (result != null) {
+            final firebaseUid = FirebaseAuth.instance.currentUser?.uid;
+            if (firebaseUid != null) {
+              ref.invalidate(recommendedEventsProvider(firebaseUid));
+            }
+          }
         });
 
         // 成功メッセージを表示

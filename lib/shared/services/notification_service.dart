@@ -373,6 +373,22 @@ class NotificationService {
         .map((snapshot) => snapshot.docs.length);
   }
 
+  /// 未読通知数を直接取得（キャッシュを使わずサーバーから取得）
+  Future<int> getUnreadNotificationCountFromServer(String userId) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection(_collectionName)
+          .where('toUserId', isEqualTo: userId)
+          .where('isRead', isEqualTo: false)
+          .get(const GetOptions(source: Source.server));
+
+      return querySnapshot.docs.length;
+    } catch (e) {
+      // サーバーから取得できない場合はキャッシュから取得
+      return getUnreadNotificationCount(userId);
+    }
+  }
+
   /// イベント参加承認通知を送信
   Future<bool> sendEventApprovedNotification({
     required String toUserId,

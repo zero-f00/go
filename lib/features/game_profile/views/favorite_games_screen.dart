@@ -14,6 +14,8 @@ import '../../../data/models/user_model.dart';
 import '../providers/game_profile_provider.dart';
 import '../../../data/models/game_profile_model.dart';
 import '../../../shared/services/game_profile_service.dart';
+import '../../../shared/services/recommendation_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'game_profile_edit_screen.dart';
 
 /// お気に入りのゲーム管理画面
@@ -991,6 +993,12 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
       ref.invalidate(currentUserDataProvider);
       ref.invalidate(gameProfileListProvider);
 
+      // おすすめイベントを更新（お気に入りゲームが変わったため）
+      final firebaseUid = FirebaseAuth.instance.currentUser?.uid;
+      if (firebaseUid != null) {
+        ref.invalidate(recommendedEventsProvider(firebaseUid));
+      }
+
       if (mounted) {
         _showSuccessSnackBar('${gamesToDelete.length}つのゲームを削除しました');
       }
@@ -1027,6 +1035,12 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
 
               final userDataNotifier = ref.read(userDataNotifierProvider.notifier);
               await userDataNotifier.updateUserData(updateRequest);
+
+              // おすすめイベントを更新（お気に入りゲームが変わったため）
+              final firebaseUid = FirebaseAuth.instance.currentUser?.uid;
+              if (firebaseUid != null) {
+                ref.invalidate(recommendedEventsProvider(firebaseUid));
+              }
 
               // データを再読み込み
               _loadData();

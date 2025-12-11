@@ -21,6 +21,7 @@ import '../../../shared/widgets/appeal_dialog.dart';
 import '../../../shared/services/violation_service.dart';
 import '../../event_management/views/violation_management_screen.dart';
 import '../../../data/repositories/user_repository.dart';
+import '../../../shared/services/push_notification_service.dart';
 
 /// 通知画面
 class NotificationScreen extends ConsumerStatefulWidget {
@@ -38,7 +39,22 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
   @override
   void initState() {
     super.initState();
-    // 動的更新のため、initStateでのデータ読み込みは不要
+    // 通知画面を開いた時にバッジを同期
+    _syncBadgeOnOpen();
+  }
+
+  /// 通知画面を開いた時にバッジを同期
+  Future<void> _syncBadgeOnOpen() async {
+    try {
+      // 少し遅延を入れてProviderが初期化されるのを待つ
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (!mounted) return;
+
+      // OSバッジを更新
+      await PushNotificationService.instance.updateBadgeCount();
+    } catch (e) {
+      // エラーは無視
+    }
   }
 
   /// 通知を既読にする
@@ -53,6 +69,13 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       });
 
       await NotificationService.instance.markAsRead(notification.id!);
+
+      // プロバイダーを明示的にリフレッシュして同期
+      ref.invalidate(unreadNotificationCountProvider);
+      ref.invalidate(userNotificationsProvider);
+
+      // OSバッジも更新
+      await PushNotificationService.instance.updateBadgeCount();
     } catch (e) {
       setState(() {
         _readNotifications.remove(notification.id!);
@@ -249,8 +272,21 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
       if (unreadIds.isNotEmpty) {
         await NotificationService.instance.markMultipleAsRead(unreadIds);
+
+        // ローカルの既読追跡セットを更新
+        setState(() {
+          _readNotifications.addAll(unreadIds);
+        });
+
+        // プロバイダーを明示的にリフレッシュして同期
+        ref.invalidate(unreadNotificationCountProvider);
+        ref.invalidate(userNotificationsProvider);
+
+        // OSバッジも更新
+        await PushNotificationService.instance.updateBadgeCount();
       }
     } catch (e) {
+      // エラーハンドリング
     }
   }
 

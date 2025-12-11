@@ -15,10 +15,15 @@ import '../../../shared/services/friend_service.dart';
 import '../../../shared/services/user_event_service.dart';
 import '../../../shared/services/social_stats_service.dart';
 import '../../../shared/models/game.dart';
-import '../../../shared/widgets/event_card.dart';
+import '../../../shared/widgets/compact_event_card.dart';
+import '../../../shared/widgets/generic_event_list_screen.dart';
 import '../../../shared/services/event_filter_service.dart';
+import '../../../shared/services/participation_service.dart';
 import '../../../features/game_profile/providers/game_profile_provider.dart';
-import '../../../shared/services/game_profile_service.dart';
+import '../../../features/game_event_management/models/game_event.dart';
+import '../../../data/models/event_model.dart';
+import '../../../shared/utils/event_converter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../shared/widgets/auth_dialog.dart';
 
 /// ユーザープロフィール表示画面
@@ -252,6 +257,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           _buildFriendActionButton(),
           _buildFavoriteGamesSection(),
           if (_userData != null) ...[
+            _buildManagedEventsSection(),
+            _buildParticipatingEventsSection(),
             _buildParticipatedEventsSection(),
           ],
         ],
@@ -983,22 +990,21 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     }
   }
 
-
-
-  /// 過去参加済みイベントセクションを構築
-  Widget _buildParticipatedEventsSection() {
-    if (!_userData!.showParticipatedEvents) {
+  /// 運営者イベントセクションを構築（主催＋共同編集者）
+  Widget _buildManagedEventsSection() {
+    // showHostedEventsまたはshowManagedEventsがtrueの場合に表示
+    if (!_userData!.showHostedEvents && !_userData!.showManagedEvents) {
       return const SizedBox.shrink();
     }
 
-    final participatedEventsAsync = ref.watch(
-      publicParticipatedEventsProvider((
+    final managedEventsAsync = ref.watch(
+      publicManagedEventsProvider((
         userId: _userData!.userId,
-        showParticipatedEvents: _userData!.showParticipatedEvents,
+        showManagedEvents: _userData!.showHostedEvents || _userData!.showManagedEvents,
       )),
     );
 
-    return participatedEventsAsync.when(
+    return managedEventsAsync.when(
       data: (events) {
         // NGユーザーのイベントを除外
         final currentUser = ref.watch(currentFirebaseUserProvider);
@@ -1027,13 +1033,13 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
               Row(
                 children: [
                   Icon(
-                    Icons.history,
-                    color: AppColors.textSecondary,
+                    Icons.admin_panel_settings,
+                    color: AppColors.accent,
                     size: AppDimensions.iconM,
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
                   const Text(
-                    '過去参加済みイベント',
+                    '運営者としてのイベント',
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeL,
                       fontWeight: FontWeight.w700,
@@ -1041,72 +1047,45 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                     ),
                   ),
                   const Spacer(),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.spacingS,
-                      vertical: AppDimensions.spacingXS,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.textSecondary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radiusS,
+                  if (filteredEvents.isNotEmpty)
+                    TextButton(
+                      onPressed: () => _navigateToManagedEventsList(filteredEvents),
+                      child: const Text(
+                        'もっと見る',
+                        style: TextStyle(
+                          fontSize: AppDimensions.fontSizeS,
+                          color: AppColors.accent,
+                        ),
                       ),
                     ),
-                    child: Text(
-                      '${events.length}件',
-                      style: const TextStyle(
-                        fontSize: AppDimensions.fontSizeS,
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
                 ],
               ),
-              const SizedBox(height: AppDimensions.spacingL),
-              if (events.isEmpty)
-                Container(
-                  padding: const EdgeInsets.all(AppDimensions.spacingL),
-                  child: Center(
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.event_busy_outlined,
-                          size: AppDimensions.iconL,
-                          color: AppColors.textLight,
-                        ),
-                        const SizedBox(height: AppDimensions.spacingS),
-                        Text(
-                          '過去に参加したイベントはありません',
-                          style: const TextStyle(
-                            fontSize: AppDimensions.fontSizeM,
-                            color: AppColors.textLight,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+              const SizedBox(height: AppDimensions.spacingS),
+              if (filteredEvents.isEmpty)
+                _buildEmptyEventState(
+                  icon: Icons.admin_panel_settings,
+                  message: '運営者として関わるイベントはありません',
                 )
               else
                 SizedBox(
-                  height: 400,
+                  height: 200,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     physics: const BouncingScrollPhysics(),
-                    itemCount: (events.length > 5) ? 5 : events.length,
+                    itemCount: (filteredEvents.length > 3) ? 3 : filteredEvents.length,
                     itemBuilder: (context, index) {
                       return Container(
-                        width: 320,
+                        width: 300,
                         margin: const EdgeInsets.only(
                           right: AppDimensions.spacingM,
                         ),
-                        child: EventCard(
-                          event: events[index],
+                        child: CompactEventCard(
+                          event: filteredEvents[index],
                           onTap: () {
                             Navigator.pushNamed(
                               context,
                               '/event_detail',
-                              arguments: events[index].id,
+                              arguments: filteredEvents[index].id,
                             );
                           },
                         ),
@@ -1114,24 +1093,446 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                     },
                   ),
                 ),
-              if (events.length > 5)
-                Container(
-                  margin: const EdgeInsets.only(top: AppDimensions.spacingS),
-                  alignment: Alignment.center,
-                  child: Text(
-                    '他 ${events.length - 5} 件のイベント',
-                    style: const TextStyle(
+            ],
+          ),
+        );
+      },
+      loading: () => _buildEventSectionLoading('運営者としてのイベント', Icons.admin_panel_settings),
+      error: (error, _) => const SizedBox.shrink(),
+    );
+  }
+
+  /// 運営者イベント一覧画面への遷移
+  void _navigateToManagedEventsList(List<dynamic> events) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => GenericEventListScreen(
+          title: '運営者としてのイベント',
+          events: events.cast(),
+          onEventTap: (event) {
+            Navigator.pushNamed(
+              context,
+              '/event_detail',
+              arguments: event.id,
+            );
+          },
+          emptyTitle: '運営者として関わるイベントはありません',
+          emptyMessage: 'イベントを作成するか、\n共同編集者として招待されると表示されます',
+          emptyIcon: Icons.admin_panel_settings,
+        ),
+      ),
+    );
+  }
+
+  /// 参加予定イベントセクションを構築
+  Widget _buildParticipatingEventsSection() {
+    if (!_userData!.showParticipatingEvents) {
+      return const SizedBox.shrink();
+    }
+
+    // ParticipationServiceを使用して参加申請を取得
+    return FutureBuilder<List<ParticipationApplication>>(
+      future: ParticipationService.getUserApplicationsWithBothIds(
+        firebaseUid: _userData!.id,
+        customUserId: _userData!.userId,
+      ),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return _buildEventSectionLoading('参加予定イベント', Icons.event_available);
+        }
+
+        if (snapshot.hasError) {
+          return const SizedBox.shrink();
+        }
+
+        final applications = snapshot.data ?? [];
+        final approvedApplications = applications
+            .where((app) => app.status == ParticipationStatus.approved)
+            .toList();
+
+        return FutureBuilder<List<GameEvent>>(
+          future: _getUpcomingEventsFromApplications(approvedApplications),
+          builder: (context, eventSnapshot) {
+            if (eventSnapshot.connectionState == ConnectionState.waiting) {
+              return _buildEventSectionLoading('参加予定イベント', Icons.event_available);
+            }
+
+            final events = eventSnapshot.data ?? [];
+
+            // NGユーザーのイベントを除外
+            final currentUser = ref.watch(currentFirebaseUserProvider);
+            final filteredEvents = EventFilterService.filterBlockedUserEvents(
+              events,
+              currentUser?.uid,
+            );
+
+            return _buildParticipatingEventsContent(filteredEvents, approvedApplications);
+          },
+        );
+      },
+    );
+  }
+
+  /// 参加予定イベントの内容を構築
+  Widget _buildParticipatingEventsContent(
+    List<GameEvent> filteredEvents,
+    List<ParticipationApplication> approvedApplications,
+  ) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.cardShadow,
+            blurRadius: AppDimensions.cardElevation,
+            offset: const Offset(0, AppDimensions.shadowOffsetY),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.event_available,
+                color: AppColors.primary,
+                size: AppDimensions.iconM,
+              ),
+              const SizedBox(width: AppDimensions.spacingS),
+              const Text(
+                '参加予定イベント',
+                style: TextStyle(
+                  fontSize: AppDimensions.fontSizeL,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textDark,
+                ),
+              ),
+              const Spacer(),
+              if (approvedApplications.isNotEmpty)
+                TextButton.icon(
+                  onPressed: () => _navigateToParticipatingEventsList(approvedApplications),
+                  icon: const Icon(
+                    Icons.calendar_today,
+                    size: AppDimensions.iconS,
+                    color: AppColors.accent,
+                  ),
+                  label: const Text(
+                    'カレンダーで見る',
+                    style: TextStyle(
                       fontSize: AppDimensions.fontSizeS,
-                      color: AppColors.textSecondary,
+                      color: AppColors.accent,
                     ),
                   ),
                 ),
             ],
           ),
+          const SizedBox(height: AppDimensions.spacingS),
+          if (filteredEvents.isEmpty)
+            _buildEmptyEventState(
+              icon: Icons.event_available,
+              message: '参加予定のイベントはありません',
+            )
+          else
+            SizedBox(
+              height: 200,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                itemCount: (filteredEvents.length > 3) ? 3 : filteredEvents.length,
+                itemBuilder: (context, index) {
+                  return Container(
+                    width: 300,
+                    margin: const EdgeInsets.only(
+                      right: AppDimensions.spacingM,
+                    ),
+                    child: CompactEventCard(
+                      event: filteredEvents[index],
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/event_detail',
+                          arguments: filteredEvents[index].id,
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// 承認済み申請から参加予定イベントを取得
+  Future<List<GameEvent>> _getUpcomingEventsFromApplications(
+    List<ParticipationApplication> applications,
+  ) async {
+    if (applications.isEmpty) return [];
+
+    final List<GameEvent> events = [];
+    final now = DateTime.now();
+
+    for (final application in applications) {
+      final event = await _getEventFromApplication(application);
+      if (event != null && event.startDate.isAfter(now.subtract(const Duration(days: 1)))) {
+        events.add(event);
+      }
+    }
+
+    events.sort((a, b) => a.startDate.compareTo(b.startDate));
+    return events;
+  }
+
+  /// 申請からイベントを取得
+  Future<GameEvent?> _getEventFromApplication(ParticipationApplication application) async {
+    try {
+      // まず gameEvents コレクションから取得を試みる
+      final gameEventDoc = await FirebaseFirestore.instance
+          .collection('gameEvents')
+          .doc(application.eventId)
+          .get();
+
+      if (gameEventDoc.exists && gameEventDoc.data() != null) {
+        final data = gameEventDoc.data()!;
+        // 下書きや非公開イベントは表示しない
+        if (!_isEventVisibleInList(data)) {
+          return null;
+        }
+        return GameEvent.fromFirestore(data, gameEventDoc.id);
+      }
+
+      // 次に events コレクションから取得を試みる
+      final eventDoc = await FirebaseFirestore.instance
+          .collection('events')
+          .doc(application.eventId)
+          .get();
+
+      if (eventDoc.exists && eventDoc.data() != null) {
+        final data = eventDoc.data()!;
+        // 下書きや非公開イベントは表示しない
+        if (!_isEventVisibleInList(data)) {
+          return null;
+        }
+        final event = Event.fromFirestore(eventDoc);
+        return await EventConverter.eventToGameEvent(event);
+      }
+
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// イベントが一覧に表示可能かどうか
+  bool _isEventVisibleInList(Map<String, dynamic> eventData) {
+    final status = eventData['status'] as String?;
+    final visibility = eventData['visibility'] as String?;
+
+    // 下書き状態のイベントは表示しない
+    if (status == 'draft') {
+      return false;
+    }
+
+    // 非公開イベントは表示しない
+    if (visibility == 'private') {
+      return false;
+    }
+
+    return status == 'published' || status == 'scheduled' || status == 'active';
+  }
+
+  /// 参加予定イベント一覧画面（カレンダー）への遷移
+  void _navigateToParticipatingEventsList(List<ParticipationApplication> applications) {
+    Navigator.of(context).pushNamed(
+      '/event_calendar',
+      arguments: {
+        'applications': applications,
+      },
+    );
+  }
+
+  /// 過去参加済みイベントセクションを構築
+  Widget _buildParticipatedEventsSection() {
+    if (!_userData!.showParticipatedEvents) {
+      return const SizedBox.shrink();
+    }
+
+    // ParticipationServiceを使用して参加申請を取得
+    return FutureBuilder<List<ParticipationApplication>>(
+      future: ParticipationService.getUserApplicationsWithBothIds(
+        firebaseUid: _userData!.id,
+        customUserId: _userData!.userId,
+      ),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return _buildEventSectionLoading('過去参加済みイベント', Icons.history);
+        }
+
+        if (snapshot.hasError) {
+          return const SizedBox.shrink();
+        }
+
+        final applications = snapshot.data ?? [];
+        final approvedApplications = applications
+            .where((app) => app.status == ParticipationStatus.approved)
+            .toList();
+
+        return FutureBuilder<List<GameEvent>>(
+          future: _getPastEventsFromApplications(approvedApplications),
+          builder: (context, eventSnapshot) {
+            if (eventSnapshot.connectionState == ConnectionState.waiting) {
+              return _buildEventSectionLoading('過去参加済みイベント', Icons.history);
+            }
+
+            final events = eventSnapshot.data ?? [];
+
+            // NGユーザーのイベントを除外
+            final currentUser = ref.watch(currentFirebaseUserProvider);
+            final filteredEvents = EventFilterService.filterBlockedUserEvents(
+              events,
+              currentUser?.uid,
+            );
+
+            return _buildParticipatedEventsContent(filteredEvents);
+          },
         );
       },
-      loading: () => const SizedBox.shrink(),
-      error: (error, _) => const SizedBox.shrink(),
+    );
+  }
+
+  /// 過去参加済みイベントの内容を構築
+  Widget _buildParticipatedEventsContent(List<GameEvent> filteredEvents) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.cardShadow,
+            blurRadius: AppDimensions.cardElevation,
+            offset: const Offset(0, AppDimensions.shadowOffsetY),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.history,
+                color: AppColors.textSecondary,
+                size: AppDimensions.iconM,
+              ),
+              const SizedBox(width: AppDimensions.spacingS),
+              const Text(
+                '過去参加済みイベント',
+                style: TextStyle(
+                  fontSize: AppDimensions.fontSizeL,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textDark,
+                ),
+              ),
+              const Spacer(),
+              if (filteredEvents.isNotEmpty)
+                TextButton(
+                  onPressed: () => _navigateToParticipatedEventsList(filteredEvents),
+                  child: const Text(
+                    'もっと見る',
+                    style: TextStyle(
+                      fontSize: AppDimensions.fontSizeS,
+                      color: AppColors.accent,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacingS),
+          if (filteredEvents.isEmpty)
+            _buildEmptyEventState(
+              icon: Icons.history,
+              message: '過去に参加したイベントはありません',
+            )
+          else
+            SizedBox(
+              height: 200,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                itemCount: (filteredEvents.length > 3) ? 3 : filteredEvents.length,
+                itemBuilder: (context, index) {
+                  return Container(
+                    width: 300,
+                    margin: const EdgeInsets.only(
+                      right: AppDimensions.spacingM,
+                    ),
+                    child: CompactEventCard(
+                      event: filteredEvents[index],
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/event_detail',
+                          arguments: filteredEvents[index].id,
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// 承認済み申請から過去参加済みイベントを取得
+  Future<List<GameEvent>> _getPastEventsFromApplications(
+    List<ParticipationApplication> applications,
+  ) async {
+    if (applications.isEmpty) return [];
+
+    final List<GameEvent> events = [];
+    final now = DateTime.now();
+
+    for (final application in applications) {
+      final event = await _getEventFromApplication(application);
+      // 過去のイベント（開始日が現在より前）のみ取得
+      if (event != null && event.startDate.isBefore(now)) {
+        events.add(event);
+      }
+    }
+
+    // 新しい順にソート
+    events.sort((a, b) => b.startDate.compareTo(a.startDate));
+    return events;
+  }
+
+  /// 過去参加済みイベント一覧画面への遷移
+  void _navigateToParticipatedEventsList(List<dynamic> events) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => GenericEventListScreen(
+          title: '過去参加済みイベント',
+          events: events.cast(),
+          onEventTap: (event) {
+            Navigator.pushNamed(
+              context,
+              '/event_detail',
+              arguments: event.id,
+            );
+          },
+          emptyTitle: '過去に参加したイベントはありません',
+          emptyMessage: 'イベントに参加すると\nこちらに履歴が表示されます',
+          emptyIcon: Icons.history,
+        ),
+      ),
     );
   }
 
@@ -1174,5 +1575,88 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         );
       }
     }
+  }
+
+  /// イベントセクションの空状態を構築
+  Widget _buildEmptyEventState({
+    required IconData icon,
+    required String message,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingL),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: AppDimensions.iconXL,
+              color: AppColors.textLight,
+            ),
+            const SizedBox(height: AppDimensions.spacingS),
+            Text(
+              message,
+              style: const TextStyle(
+                fontSize: AppDimensions.fontSizeM,
+                color: AppColors.textLight,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// イベントセクションのローディング状態を構築
+  Widget _buildEventSectionLoading(String title, IconData icon) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.cardShadow,
+            blurRadius: AppDimensions.cardElevation,
+            offset: const Offset(0, AppDimensions.shadowOffsetY),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                icon,
+                color: AppColors.accent,
+                size: AppDimensions.iconM,
+              ),
+              const SizedBox(width: AppDimensions.spacingS),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: AppDimensions.fontSizeL,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacingL),
+          const Center(
+            child: SizedBox(
+              height: 40,
+              width: 40,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -10,13 +10,103 @@ import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
 import '../../../shared/widgets/user_avatar.dart';
 import '../../../shared/widgets/account_withdrawal_dialog.dart';
+import '../../../data/models/user_model.dart';
 
 /// 設定画面
-class SettingsScreen extends ConsumerWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  // プライバシー設定の状態
+  bool _showManagedEvents = true;
+  bool _showParticipatingEvents = true;
+  bool _showParticipatedEvents = true;
+  bool _isLoadingPrivacySettings = true;
+  bool _isSavingPrivacySettings = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPrivacySettings();
+  }
+
+  /// プライバシー設定を読み込む
+  Future<void> _loadPrivacySettings() async {
+    final userData = await ref.read(currentUserDataProvider.future);
+    if (userData != null && mounted) {
+      setState(() {
+        _showManagedEvents = userData.showHostedEvents || userData.showManagedEvents;
+        _showParticipatingEvents = userData.showParticipatingEvents;
+        _showParticipatedEvents = userData.showParticipatedEvents;
+        _isLoadingPrivacySettings = false;
+      });
+    } else {
+      setState(() {
+        _isLoadingPrivacySettings = false;
+      });
+    }
+  }
+
+  /// プライバシー設定を保存する
+  Future<void> _savePrivacySetting({
+    bool? showManagedEvents,
+    bool? showParticipatingEvents,
+    bool? showParticipatedEvents,
+  }) async {
+    final currentUser = ref.read(currentFirebaseUserProvider);
+    if (currentUser == null) return;
+
+    setState(() {
+      _isSavingPrivacySettings = true;
+    });
+
+    try {
+      final userRepository = ref.read(userRepositoryProvider);
+      final request = UpdateUserRequest(
+        showHostedEvents: showManagedEvents,
+        showManagedEvents: showManagedEvents,
+        showParticipatingEvents: showParticipatingEvents,
+        showParticipatedEvents: showParticipatedEvents,
+      );
+
+      await userRepository.updateUser(currentUser.uid, request);
+
+      // プロバイダーをリフレッシュして最新データを反映
+      ref.invalidate(currentUserDataProvider);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('設定を保存しました'),
+            backgroundColor: AppColors.primary,
+            duration: Duration(seconds: 1),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('設定の保存に失敗しました: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSavingPrivacySettings = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: AppGradientBackground(
         child: SafeArea(
@@ -49,11 +139,13 @@ class SettingsScreen extends ConsumerWidget {
                         children: [
                           _buildUnifiedHeader(),
                           const SizedBox(height: AppDimensions.spacingL),
-                          _buildAccountSection(context, ref),
+                          _buildAccountSection(context),
                           const SizedBox(height: AppDimensions.spacingL),
-                          _buildAppInfoSection(context, ref),
+                          _buildPrivacySettingsSection(context),
                           const SizedBox(height: AppDimensions.spacingL),
-                          _buildAccountManagementSection(context, ref),
+                          _buildAppInfoSection(context),
+                          const SizedBox(height: AppDimensions.spacingL),
+                          _buildAccountManagementSection(context),
                         ],
                       ),
                     ),
@@ -89,7 +181,7 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildAccountSection(BuildContext context, WidgetRef ref) {
+  Widget _buildAccountSection(BuildContext context) {
     final isSignedIn = ref.watch(isSignedInProvider);
     final displayName = ref.watch(displayNameProvider);
     final userPhotoUrl = ref.watch(userPhotoUrlProvider);
@@ -163,7 +255,7 @@ class SettingsScreen extends ConsumerWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () => _showSignOutConfirmation(context, ref),
+                onPressed: () => _showSignOutConfirmation(context),
                 icon: const Icon(Icons.logout),
                 label: const Text('サインアウト'),
                 style: ElevatedButton.styleFrom(
@@ -182,7 +274,180 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildAppInfoSection(BuildContext context, WidgetRef ref) {
+  /// プライバシー設定セクション
+  Widget _buildPrivacySettingsSection(BuildContext context) {
+    final isSignedIn = ref.watch(isSignedInProvider);
+
+    if (!isSignedIn) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundLight,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.visibility,
+                color: AppColors.accent,
+                size: AppDimensions.iconM,
+              ),
+              const SizedBox(width: AppDimensions.spacingS),
+              const Text(
+                'プロフィール公開設定',
+                style: TextStyle(
+                  fontSize: AppDimensions.fontSizeL,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacingS),
+          const Text(
+            '他のユーザーがあなたのプロフィールで閲覧できる情報を設定します',
+            style: TextStyle(
+              fontSize: AppDimensions.fontSizeS,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingL),
+          if (_isLoadingPrivacySettings)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(AppDimensions.spacingL),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          else ...[
+            _buildPrivacyToggle(
+              icon: Icons.admin_panel_settings,
+              title: '運営者としてのイベント',
+              description: '主催・共同編集者として関わるイベントを表示',
+              value: _showManagedEvents,
+              onChanged: (value) {
+                setState(() {
+                  _showManagedEvents = value;
+                });
+                _savePrivacySetting(showManagedEvents: value);
+              },
+            ),
+            const SizedBox(height: AppDimensions.spacingM),
+            _buildPrivacyToggle(
+              icon: Icons.event_available,
+              title: '参加予定イベント',
+              description: '参加予定のイベントを表示',
+              value: _showParticipatingEvents,
+              onChanged: (value) {
+                setState(() {
+                  _showParticipatingEvents = value;
+                });
+                _savePrivacySetting(showParticipatingEvents: value);
+              },
+            ),
+            const SizedBox(height: AppDimensions.spacingM),
+            _buildPrivacyToggle(
+              icon: Icons.history,
+              title: '過去参加済みイベント',
+              description: '過去に参加したイベントを表示',
+              value: _showParticipatedEvents,
+              onChanged: (value) {
+                setState(() {
+                  _showParticipatedEvents = value;
+                });
+                _savePrivacySetting(showParticipatedEvents: value);
+              },
+            ),
+          ],
+          if (_isSavingPrivacySettings)
+            const Padding(
+              padding: EdgeInsets.only(top: AppDimensions.spacingM),
+              child: Center(
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// プライバシー設定のトグルスイッチ
+  Widget _buildPrivacyToggle({
+    required IconData icon,
+    required String title,
+    required String description,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(AppDimensions.spacingM),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+        border: Border.all(color: AppColors.borderLight),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(AppDimensions.spacingS),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+            ),
+            child: Icon(
+              icon,
+              color: AppColors.primary,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: AppDimensions.spacingM),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: AppDimensions.fontSizeM,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textDark,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  description,
+                  style: const TextStyle(
+                    fontSize: AppDimensions.fontSizeXS,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeTrackColor: AppColors.primary.withValues(alpha: 0.5),
+            activeThumbColor: AppColors.primary,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAppInfoSection(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -449,7 +714,7 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _showSignOutConfirmation(BuildContext context, WidgetRef ref) async {
+  Future<void> _showSignOutConfirmation(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -470,11 +735,11 @@ class SettingsScreen extends ConsumerWidget {
     );
 
     if (confirmed == true) {
-      await _performSignOut(context, ref);
+      await _performSignOut(context);
     }
   }
 
-  Future<void> _performSignOut(BuildContext context, WidgetRef ref) async {
+  Future<void> _performSignOut(BuildContext context) async {
     try {
       final authService = ref.read(authServiceProvider);
 
@@ -530,7 +795,7 @@ class SettingsScreen extends ConsumerWidget {
 
 
   /// アカウント管理セクション
-  Widget _buildAccountManagementSection(BuildContext context, WidgetRef ref) {
+  Widget _buildAccountManagementSection(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingL),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_strings.dart';
 import '../../../shared/constants/app_dimensions.dart';
@@ -16,19 +17,20 @@ import '../../../shared/services/game_service.dart';
 import '../../../shared/services/event_service.dart';
 import '../../../shared/utils/event_converter.dart';
 import '../../../shared/services/event_filter_service.dart';
+import '../../../shared/providers/auth_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class SearchScreen extends StatefulWidget {
+class SearchScreen extends ConsumerStatefulWidget {
   final bool shouldFocusSearchField;
 
   const SearchScreen({super.key, this.shouldFocusSearchField = false});
 
   @override
-  State<SearchScreen> createState() => _SearchScreenState();
+  ConsumerState<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen> {
+class _SearchScreenState extends ConsumerState<SearchScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
@@ -53,6 +55,11 @@ class _SearchScreenState extends State<SearchScreen> {
   bool _isSearchingEvents = false;
   String? _eventSearchErrorMessage;
 
+  // お気に入りゲーム関連の状態
+  List<Game> _favoriteGames = [];
+  bool _isFavoriteGamesLoading = false;
+  Game? _selectedFavoriteGame;
+
   // UI状態
   bool _isSearchFieldFocused = false;
 
@@ -73,6 +80,57 @@ class _SearchScreenState extends State<SearchScreen> {
     if (widget.shouldFocusSearchField) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _searchFocusNode.requestFocus();
+      });
+    }
+
+    // お気に入りゲームを読み込み
+    _loadFavoriteGames();
+  }
+
+  /// お気に入りゲームを読み込み
+  Future<void> _loadFavoriteGames() async {
+    setState(() {
+      _isFavoriteGamesLoading = true;
+    });
+
+    try {
+      final authState = ref.read(authStateProvider);
+
+      User? user;
+      authState.when(
+        data: (data) => user = data,
+        loading: () => user = null,
+        error: (_, __) => user = null,
+      );
+
+      if (user == null) {
+        setState(() {
+          _favoriteGames = [];
+          _isFavoriteGamesLoading = false;
+        });
+        return;
+      }
+
+      final userRepository = UserRepository();
+      final userData = await userRepository.getUserById(user!.uid);
+
+      if (userData?.favoriteGameIds.isNotEmpty == true) {
+        final favoriteGames = await GameService.instance.getFavoriteGames(userData!.favoriteGameIds);
+        setState(() {
+          _favoriteGames = favoriteGames;
+        });
+      } else {
+        setState(() {
+          _favoriteGames = [];
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _favoriteGames = [];
+      });
+    } finally {
+      setState(() {
+        _isFavoriteGamesLoading = false;
       });
     }
   }
@@ -202,6 +260,42 @@ class _SearchScreenState extends State<SearchScreen> {
         _isLoadingEvents = false;
       });
     }
+  }
+
+  /// お気に入りゲームを選択して関連イベントを取得
+  Future<void> _selectFavoriteGame(Game game) async {
+    setState(() {
+      _selectedFavoriteGame = game;
+      _isLoadingEvents = true;
+      _relatedEvents = [];
+    });
+
+    try {
+      final events = await EventService.getEventsByGameId(game.id);
+      final gameEvents = await EventConverter.eventsToGameEvents(events);
+
+      // NGユーザーのイベントを除外
+      final currentUser = FirebaseAuth.instance.currentUser;
+      final filteredEvents = EventFilterService.filterBlockedUserEvents(gameEvents, currentUser?.uid);
+
+      setState(() {
+        _relatedEvents = filteredEvents;
+        _isLoadingEvents = false;
+      });
+
+    } catch (e) {
+      setState(() {
+        _isLoadingEvents = false;
+      });
+    }
+  }
+
+  /// お気に入りゲーム選択をリセット
+  void _resetFavoriteGameSelection() {
+    setState(() {
+      _selectedFavoriteGame = null;
+      _relatedEvents = [];
+    });
   }
 
   /// イベント検索を実行
@@ -389,6 +483,7 @@ class _SearchScreenState extends State<SearchScreen> {
                               _eventSearchResults = [];
                               _eventSearchErrorMessage = null;
                               _isSearchingEvents = false;
+                              _selectedFavoriteGame = null;
                               // 既に入力されているテキストで検索を実行
                               if (_searchController.text.isNotEmpty) {
                                 _performSearch();
@@ -477,13 +572,203 @@ class _SearchScreenState extends State<SearchScreen> {
               _performSearch();
             },
           ),
+          // お気に入りゲームフィルター（イベント検索時のみ表示）
+          if (_selectedSearchType == 'イベント') ...[
+            const SizedBox(height: AppDimensions.spacingM),
+            _buildFavoriteGamesFilter(),
+          ],
         ],
+      ),
+    );
+  }
+
+  /// お気に入りゲームフィルターを構築
+  Widget _buildFavoriteGamesFilter() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.favorite,
+              color: AppColors.primary,
+              size: AppDimensions.iconS,
+            ),
+            const SizedBox(width: AppDimensions.spacingS),
+            const Text(
+              'お気に入りゲームで絞り込み',
+              style: TextStyle(
+                fontSize: AppDimensions.fontSizeM,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppDimensions.spacingS),
+        if (_isFavoriteGamesLoading)
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.all(AppDimensions.spacingS),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                ),
+              ),
+            ),
+          )
+        else if (_favoriteGames.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(AppDimensions.spacingM),
+            decoration: BoxDecoration(
+              color: AppColors.backgroundLight,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  color: AppColors.textLight,
+                  size: AppDimensions.iconS,
+                ),
+                const SizedBox(width: AppDimensions.spacingS),
+                const Expanded(
+                  child: Text(
+                    'お気に入りゲームを登録するとここに表示されます',
+                    style: TextStyle(
+                      fontSize: AppDimensions.fontSizeS,
+                      color: AppColors.textLight,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          SizedBox(
+            height: 40,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _favoriteGames.length,
+              itemBuilder: (context, index) {
+                final game = _favoriteGames[index];
+                final isSelected = _selectedFavoriteGame?.id == game.id;
+                return _buildFavoriteGameChip(game, isSelected);
+              },
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// お気に入りゲームチップを構築
+  Widget _buildFavoriteGameChip(Game game, bool isSelected) {
+    return Container(
+      margin: const EdgeInsets.only(right: AppDimensions.spacingS),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            if (isSelected) {
+              _resetFavoriteGameSelection();
+            } else {
+              _selectFavoriteGame(game);
+            }
+          },
+          borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingM,
+              vertical: AppDimensions.spacingXS,
+            ),
+            decoration: BoxDecoration(
+              color: isSelected ? AppColors.primary : AppColors.backgroundLight,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+              border: Border.all(
+                color: isSelected ? AppColors.primary : AppColors.border,
+                width: isSelected ? 2 : 1,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (game.iconUrl != null)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusXS),
+                    child: Image.network(
+                      game.iconUrl!,
+                      width: 24,
+                      height: 24,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            color: AppColors.overlayLight,
+                            borderRadius: BorderRadius.circular(AppDimensions.radiusXS),
+                          ),
+                          child: Icon(
+                            Icons.videogame_asset,
+                            color: isSelected ? Colors.white : AppColors.textSecondary,
+                            size: 14,
+                          ),
+                        );
+                      },
+                    ),
+                  )
+                else
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: AppColors.overlayLight,
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusXS),
+                    ),
+                    child: Icon(
+                      Icons.videogame_asset,
+                      color: isSelected ? Colors.white : AppColors.textSecondary,
+                      size: 14,
+                    ),
+                  ),
+                const SizedBox(width: AppDimensions.spacingS),
+                Text(
+                  game.name,
+                  style: TextStyle(
+                    fontSize: AppDimensions.fontSizeS,
+                    fontWeight: FontWeight.w600,
+                    color: isSelected ? Colors.white : AppColors.textDark,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (isSelected) ...[
+                  const SizedBox(width: AppDimensions.spacingXS),
+                  Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
 
 
   Widget _buildSearchResults() {
+    // お気に入りゲームが選択されている場合は関連イベントを表示
+    if (_selectedSearchType == 'イベント' && _selectedFavoriteGame != null) {
+      return _buildFavoriteGameEventsView();
+    }
+
     switch (_selectedSearchType) {
       case 'ユーザー':
         return _buildUserSearchResults();
@@ -494,6 +779,296 @@ class _SearchScreenState extends State<SearchScreen> {
       default:
         return _buildDefaultSearchResults();
     }
+  }
+
+  /// お気に入りゲームの関連イベント表示
+  Widget _buildFavoriteGameEventsView() {
+    return Column(
+      children: [
+        // 選択されたゲーム情報（コンパクト表示）
+        Container(
+          padding: const EdgeInsets.all(AppDimensions.spacingL),
+          decoration: BoxDecoration(
+            color: AppColors.cardBackground,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.cardShadow,
+                blurRadius: AppDimensions.cardElevation,
+                offset: const Offset(0, AppDimensions.shadowOffsetY),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // 戻るボタン
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: _resetFavoriteGameSelection,
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppDimensions.spacingS),
+                    child: Icon(
+                      Icons.arrow_back,
+                      color: AppColors.primary,
+                      size: AppDimensions.iconM,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppDimensions.spacingS),
+              // ゲーム情報
+              ClipRRect(
+                borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                child: _selectedFavoriteGame!.iconUrl != null
+                    ? Image.network(
+                        _selectedFavoriteGame!.iconUrl!,
+                        width: 40,
+                        height: 40,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return _buildCompactFavoriteGameIcon();
+                        },
+                      )
+                    : _buildCompactFavoriteGameIcon(),
+              ),
+              const SizedBox(width: AppDimensions.spacingM),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _selectedFavoriteGame!.name,
+                      style: const TextStyle(
+                        fontSize: AppDimensions.fontSizeL,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textDark,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (_selectedFavoriteGame!.developer.isNotEmpty) ...[
+                      const SizedBox(height: AppDimensions.spacingXS / 2),
+                      Text(
+                        _selectedFavoriteGame!.developer,
+                        style: const TextStyle(
+                          fontSize: AppDimensions.fontSizeS,
+                          color: AppColors.textSecondary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingS,
+                  vertical: AppDimensions.spacingXS,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.favorite,
+                      color: AppColors.primary,
+                      size: 14,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'お気に入り',
+                      style: TextStyle(
+                        fontSize: AppDimensions.fontSizeXS,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppDimensions.spacingM),
+        // 関連イベント
+        Expanded(
+          child: _buildFavoriteGameRelatedEventsSection(),
+        ),
+      ],
+    );
+  }
+
+  /// コンパクトなお気に入りゲームアイコン
+  Widget _buildCompactFavoriteGameIcon() {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: AppColors.overlayLight,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+      ),
+      child: Icon(
+        Icons.videogame_asset,
+        color: AppColors.textSecondary,
+        size: AppDimensions.iconS,
+      ),
+    );
+  }
+
+  /// お気に入りゲームの関連イベントセクション
+  Widget _buildFavoriteGameRelatedEventsSection() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.cardShadow,
+            blurRadius: AppDimensions.cardElevation,
+            offset: const Offset(0, AppDimensions.shadowOffsetY),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(AppDimensions.spacingL),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.event,
+                  color: AppColors.primary,
+                  size: AppDimensions.iconM,
+                ),
+                const SizedBox(width: AppDimensions.spacingS),
+                Expanded(
+                  child: Text(
+                    '${_selectedFavoriteGame?.name ?? ""}の関連イベント',
+                    style: const TextStyle(
+                      fontSize: AppDimensions.fontSizeL,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textDark,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (_isLoadingEvents) ...[
+                  const SizedBox(width: AppDimensions.spacingS),
+                  SizedBox(
+                    width: AppDimensions.iconS,
+                    height: AppDimensions.iconS,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          Expanded(
+            child: _buildFavoriteGameRelatedEventsContent(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// お気に入りゲームの関連イベントコンテンツ
+  Widget _buildFavoriteGameRelatedEventsContent() {
+    if (_isLoadingEvents) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimensions.spacingXL),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+              ),
+              const SizedBox(height: AppDimensions.spacingL),
+              Text(
+                'イベントを読み込み中...',
+                style: const TextStyle(
+                  fontSize: AppDimensions.fontSizeL,
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_relatedEvents.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimensions.spacingXL),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.event_busy,
+                size: AppDimensions.iconXXL,
+                color: AppColors.overlayMedium,
+              ),
+              const SizedBox(height: AppDimensions.spacingL),
+              Text(
+                '関連イベントはありません',
+                style: const TextStyle(
+                  fontSize: AppDimensions.fontSizeL,
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: AppDimensions.spacingS),
+              Text(
+                'このゲームに関連する公開イベント\nが見つかりませんでした',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: AppDimensions.fontSizeM,
+                  color: AppColors.textLight,
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.only(
+        left: AppDimensions.spacingL,
+        right: AppDimensions.spacingL,
+        bottom: AppDimensions.spacingL,
+      ),
+      itemCount: _relatedEvents.length,
+      itemBuilder: (context, index) {
+        final event = _relatedEvents[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: AppDimensions.spacingM),
+          child: EventCard(
+            event: event,
+            onTap: () {
+              Navigator.pushNamed(
+                context,
+                '/event_detail',
+                arguments: event.id,
+              );
+            },
+          ),
+        );
+      },
+    );
   }
 
   /// ユーザー検索結果を表示

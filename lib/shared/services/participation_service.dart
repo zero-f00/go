@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -364,13 +365,7 @@ class ParticipationService {
           .orderBy('appliedAt', descending: true);
 
       return query.snapshots()
-          .handleError((error) {
-            if (error is FirebaseException) {
-            }
-            throw error;
-          })
           .map((snapshot) {
-
             try {
               final applications = snapshot.docs
                   .map((doc) {
@@ -380,9 +375,17 @@ class ParticipationService {
 
               return applications;
             } catch (e) {
-              throw e;
+              // パース中のエラー時は空のリストを返す
+              return <ParticipationApplication>[];
             }
-          });
+          })
+          .transform(StreamTransformer<List<ParticipationApplication>, List<ParticipationApplication>>.fromHandlers(
+            handleData: (data, sink) => sink.add(data),
+            handleError: (error, stackTrace, sink) {
+              // Firestoreクエリエラー時は空のリストを返す
+              sink.add(<ParticipationApplication>[]);
+            },
+          ));
     } catch (e) {
       // エラーの場合は空のStreamを返す
       return Stream.value(<ParticipationApplication>[]);
@@ -582,8 +585,6 @@ final userParticipationStatusProvider = StreamProvider.family<ParticipationAppli
         return ParticipationApplication.fromFirestore(snapshot.docs.first);
       })
       .handleError((error, stackTrace) {
-        print('Error in userParticipationStatusProvider: $error');
-        print('StackTrace: $stackTrace');
         // エラーを再throwして、UI側でエラーハンドリングできるようにする
         throw error;
       });

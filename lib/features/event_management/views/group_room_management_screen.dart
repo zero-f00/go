@@ -290,111 +290,104 @@ class _GroupRoomManagementScreenState
 
   /// 空の状態を表示
   Widget _buildEmptyState() {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
-      child: Column(
-        children: [
-          // 空の状態のメインコンテナ
-          Expanded(
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppDimensions.spacingXL),
-              decoration: BoxDecoration(
-                color: AppColors.cardBackground,
-                borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.cardShadow,
-                    blurRadius: AppDimensions.cardElevation,
-                    offset: const Offset(0, AppDimensions.shadowOffsetY),
-                  ),
-                ],
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(AppDimensions.spacingXL),
+        decoration: BoxDecoration(
+          color: AppColors.cardBackground,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.cardShadow,
+              blurRadius: AppDimensions.cardElevation,
+              offset: const Offset(0, AppDimensions.shadowOffsetY),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.group_add,
+              size: 80,
+              color: AppColors.textDark.withValues(alpha: 0.3),
+            ),
+            const SizedBox(height: AppDimensions.spacingL),
+            Text(
+              'まだグループがありません',
+              style: TextStyle(
+                fontSize: AppDimensions.fontSizeL,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textDark,
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.group_add,
-                    size: 80,
-                    color: AppColors.textDark.withValues(alpha: 0.3),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingL),
-                  Text(
-                    'まだグループがありません',
-                    style: TextStyle(
-                      fontSize: AppDimensions.fontSizeL,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textDark,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: AppDimensions.spacingM),
-                  Text(
-                    'チーム戦を開催するために\nグループ（チーム）を作成しましょう',
-                    style: TextStyle(
-                      fontSize: AppDimensions.fontSizeM,
-                      color: AppColors.textDark.withValues(alpha: 0.7),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXL),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppDimensions.spacingM),
+            Text(
+              'チーム戦を開催するために\nグループ（チーム）を作成しましょう',
+              style: TextStyle(
+                fontSize: AppDimensions.fontSizeM,
+                color: AppColors.textDark.withValues(alpha: 0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppDimensions.spacingXL),
 
-                  // 未割り当て参加者がいる場合の警告表示
-                  if (_unassignedParticipants.isNotEmpty) ...[
-                    Container(
-                      padding: const EdgeInsets.all(AppDimensions.spacingM),
-                      decoration: BoxDecoration(
-                        color: AppColors.warning.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                        border: Border.all(
-                          color: AppColors.warning.withValues(alpha: 0.3),
+            // 未割り当て参加者がいる場合の警告表示
+            if (_unassignedParticipants.isNotEmpty) ...[
+              Container(
+                padding: const EdgeInsets.all(AppDimensions.spacingM),
+                decoration: BoxDecoration(
+                  color: AppColors.warning.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                  border: Border.all(
+                    color: AppColors.warning.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          color: AppColors.warning,
+                          size: AppDimensions.iconS,
                         ),
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.info_outline,
-                                color: AppColors.warning,
-                                size: AppDimensions.iconS,
-                              ),
-                              const SizedBox(width: AppDimensions.spacingS),
-                              Flexible(
-                                child: Text(
-                                  '${_unassignedParticipants.length}名の承認済み参加者が\nグループ未割り当てです',
-                                  style: TextStyle(
-                                    fontSize: AppDimensions.fontSizeM,
-                                    color: AppColors.warning,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: AppDimensions.spacingM),
-                          TextButton.icon(
-                            onPressed: _showUnassignedParticipantsDialog,
-                            icon: Icon(Icons.visibility, color: AppColors.accent),
-                            label: Text(
-                              '未割り当て参加者を確認',
-                              style: TextStyle(
-                                color: AppColors.accent,
-                                fontWeight: FontWeight.w600,
-                              ),
+                        const SizedBox(width: AppDimensions.spacingS),
+                        Flexible(
+                          child: Text(
+                            '${_unassignedParticipants.length}名の承認済み参加者が\nグループ未割り当てです',
+                            style: TextStyle(
+                              fontSize: AppDimensions.fontSizeM,
+                              color: AppColors.warning,
+                              fontWeight: FontWeight.w600,
                             ),
+                            textAlign: TextAlign.center,
                           ),
-                        ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppDimensions.spacingM),
+                    TextButton.icon(
+                      onPressed: _showUnassignedParticipantsDialog,
+                      icon: Icon(Icons.visibility, color: AppColors.accent),
+                      label: Text(
+                        '未割り当て参加者を確認',
+                        style: TextStyle(
+                          color: AppColors.accent,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
-                ],
+                ),
               ),
-            ),
-          ),
-        ],
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -1073,26 +1066,28 @@ class _GroupRoomManagementScreenState
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('新しいグループを作成'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                labelText: 'グループ名',
-                hintText: '例：チームA',
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: 'グループ名',
+                  hintText: '例：チームA',
+                ),
               ),
-            ),
-            const SizedBox(height: AppDimensions.spacingM),
-            TextField(
-              controller: descriptionController,
-              decoration: const InputDecoration(
-                labelText: 'グループ説明（任意）',
-                hintText: '例：攻撃担当のメンバー',
+              const SizedBox(height: AppDimensions.spacingM),
+              TextField(
+                controller: descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'グループ説明（任意）',
+                  hintText: '例：攻撃担当のメンバー',
+                ),
+                maxLines: 2,
               ),
-              maxLines: 2,
-            ),
-          ],
+            ],
+          ),
         ),
         actions: [
           TextButton(

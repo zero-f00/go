@@ -248,8 +248,15 @@ class UserEventService {
       return;
     }
 
+    // カスタムユーザーIDをFirebase UIDに変換
+    final firebaseUid = await _getFirebaseUidFromCustomUserId(userId);
+    if (firebaseUid == null) {
+      yield [];
+      return;
+    }
+
     // パブリック表示専用：下書きやプライベートイベントを除外
-    yield* _getPublicOnlyManagedEvents(userId);
+    yield* _getPublicOnlyManagedEvents(firebaseUid);
   }
 
   /// パブリック表示専用の管理イベント取得（下書きとプライベートを除外）
@@ -257,20 +264,22 @@ class UserEventService {
     try {
       final allEvents = <String, GameEvent>{};
 
-      // 1. eventsコレクションからmanagerIds配列を検索（公開済みのみ）
+      // 1. eventsコレクションから主催者イベントを取得
       try {
-        final eventsWhereManagerQuery = await _firestore
+        final eventsHostedQuery = await _firestore
             .collection('events')
-            .where('managerIds', arrayContains: userId)
-            .where('status', isEqualTo: 'published')
-            .where('visibility', isEqualTo: 'public')
-            .limit(20)
+            .where('createdBy', isEqualTo: userId)
+            .limit(30)
             .get();
 
-        for (final doc in eventsWhereManagerQuery.docs) {
+        for (final doc in eventsHostedQuery.docs) {
           try {
-            final event = GameEvent.fromFirestore(doc.data(), doc.id);
-            allEvents[event.id] = event;
+            final data = doc.data();
+            // 下書きと非公開イベントは除外
+            if (_isEventPubliclyVisible(data)) {
+              final event = GameEvent.fromFirestore(data, doc.id);
+              allEvents[event.id] = event;
+            }
           } catch (e) {
             // 変換エラーは無視して続行
           }
@@ -279,42 +288,79 @@ class UserEventService {
         // クエリエラーは無視して続行
       }
 
-      // 2. eventsコレクションから主催者イベントを取得（公開済みのみ）
+      // 2. eventsコレクションからmanagerIds配列を検索
       try {
-        final eventsHostedQuery = await _firestore
+        final eventsWhereManagerQuery = await _firestore
             .collection('events')
-            .where('createdBy', isEqualTo: userId)
-            .where('status', isEqualTo: 'published')
-            .where('visibility', isEqualTo: 'public')
-            .limit(20)
+            .where('managerIds', arrayContains: userId)
+            .limit(30)
             .get();
 
-        for (final doc in eventsHostedQuery.docs) {
-          final event = GameEvent.fromFirestore(doc.data(), doc.id);
-          allEvents[event.id] = event;
+        for (final doc in eventsWhereManagerQuery.docs) {
+          try {
+            final data = doc.data();
+            // 下書きと非公開イベントは除外
+            if (_isEventPubliclyVisible(data)) {
+              final event = GameEvent.fromFirestore(data, doc.id);
+              allEvents[event.id] = event;
+            }
+          } catch (e) {
+            // 変換エラーは無視して続行
+          }
         }
       } catch (e) {
         // クエリエラーは無視して続行
       }
 
-      // 3. gameEventsコレクションから主催者イベントを取得（アクティブのみ）
+      // 3. gameEventsコレクションから主催者イベントを取得
       try {
         final gameEventsHostedQuery = await _firestore
             .collection('gameEvents')
             .where('createdBy', isEqualTo: userId)
-            .where('status', isEqualTo: 'active')
-            .limit(20)
+            .limit(30)
             .get();
 
         for (final doc in gameEventsHostedQuery.docs) {
-          final event = GameEvent.fromFirestore(doc.data(), doc.id);
-          allEvents[event.id] = event;
+          try {
+            final data = doc.data();
+            // 下書きと非公開イベントは除外
+            if (_isEventPubliclyVisible(data)) {
+              final event = GameEvent.fromFirestore(data, doc.id);
+              allEvents[event.id] = event;
+            }
+          } catch (e) {
+            // 変換エラーは無視して続行
+          }
         }
       } catch (e) {
         // クエリエラーは無視して続行
       }
 
-      // IDでソートして返す
+      // 4. gameEventsコレクションからmanagerIds配列を検索
+      try {
+        final gameEventsManagedQuery = await _firestore
+            .collection('gameEvents')
+            .where('managerIds', arrayContains: userId)
+            .limit(30)
+            .get();
+
+        for (final doc in gameEventsManagedQuery.docs) {
+          try {
+            final data = doc.data();
+            // 下書きと非公開イベントは除外
+            if (_isEventPubliclyVisible(data)) {
+              final event = GameEvent.fromFirestore(data, doc.id);
+              allEvents[event.id] = event;
+            }
+          } catch (e) {
+            // 変換エラーは無視して続行
+          }
+        }
+      } catch (e) {
+        // クエリエラーは無視して続行
+      }
+
+      // 日付でソートして返す
       final events = allEvents.values.toList();
       events.sort((a, b) => b.startDate.compareTo(a.startDate));
       yield events;
@@ -322,6 +368,25 @@ class UserEventService {
     } catch (e) {
       yield [];
     }
+  }
+
+  /// イベントが公開表示可能かどうかを判定
+  static bool _isEventPubliclyVisible(Map<String, dynamic> data) {
+    final status = data['status'] as String?;
+    final visibility = data['visibility'] as String?;
+
+    // 下書き状態のイベントは表示しない
+    if (status == 'draft') {
+      return false;
+    }
+
+    // 非公開イベントは表示しない
+    if (visibility == 'private') {
+      return false;
+    }
+
+    // published, scheduled, active, upcoming, completed など、公開状態のイベントを表示
+    return true;
   }
 
   /// パブリック表示専用の参加予定イベント取得（下書きとプライベートを除外）
