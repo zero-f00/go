@@ -43,6 +43,10 @@ class GameEvent {
   final List<String> managers;
   final List<String> blockedUsers;
 
+  // 招待制イベント用
+  final String? eventPassword;
+  final List<String> invitedUserIds;
+
   // 主催者情報
   final String? createdBy;
   final String? createdByName;
@@ -91,6 +95,8 @@ class GameEvent {
     this.sponsors = const [],
     this.managers = const [],
     this.blockedUsers = const [],
+    this.eventPassword,
+    this.invitedUserIds = const [],
     this.createdBy,
     this.createdByName,
     this.cancellationReason,
@@ -146,6 +152,8 @@ class GameEvent {
       sponsors: List<String>.from(data['sponsorIds'] as List<dynamic>? ?? []),
       managers: List<String>.from(data['managerIds'] as List<dynamic>? ?? []),
       blockedUsers: List<String>.from(data['blockedUserIds'] as List<dynamic>? ?? []),
+      eventPassword: data['eventPassword'] as String?,
+      invitedUserIds: List<String>.from(data['invitedUserIds'] as List<dynamic>? ?? []),
       createdBy: data['createdBy'] as String?,
       createdByName: data['createdByName'] as String?,
       cancellationReason: data['cancellationReason'] as String?,

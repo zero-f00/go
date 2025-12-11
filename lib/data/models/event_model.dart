@@ -38,6 +38,7 @@ class Event {
   final List<String> sponsorIds;
   final List<String> managerIds;
   final List<String> blockedUserIds;
+  final List<String> invitedUserIds; // 招待制イベントの招待ユーザーID
   final EventVisibility visibility;
   final List<String> eventTags;
   final String language;
@@ -76,6 +77,7 @@ class Event {
     required this.sponsorIds,
     required this.managerIds,
     required this.blockedUserIds,
+    this.invitedUserIds = const [],
     required this.visibility,
     required this.eventTags,
     required this.language,
@@ -119,6 +121,7 @@ class Event {
       sponsorIds: List<String>.from(data['sponsorIds'] ?? []),
       managerIds: List<String>.from(data['managerIds'] ?? []),
       blockedUserIds: List<String>.from(data['blockedUserIds'] ?? []),
+      invitedUserIds: List<String>.from(data['invitedUserIds'] ?? []),
       visibility: _parseVisibility(data['visibility']),
       eventTags: List<String>.from(data['eventTags'] ?? []),
       language: data['language'] ?? '日本語',
@@ -162,6 +165,7 @@ class Event {
       'sponsorIds': sponsorIds,
       'managerIds': managerIds,
       'blockedUserIds': blockedUserIds,
+      'invitedUserIds': invitedUserIds,
       'visibility': visibility.name,
       'eventTags': eventTags,
       'language': language,
@@ -245,6 +249,7 @@ class Event {
     List<String>? sponsorIds,
     List<String>? managerIds,
     List<String>? blockedUserIds,
+    List<String>? invitedUserIds,
     EventVisibility? visibility,
     List<String>? eventTags,
     String? language,
@@ -283,6 +288,7 @@ class Event {
       sponsorIds: sponsorIds ?? this.sponsorIds,
       managerIds: managerIds ?? this.managerIds,
       blockedUserIds: blockedUserIds ?? this.blockedUserIds,
+      invitedUserIds: invitedUserIds ?? this.invitedUserIds,
       visibility: visibility ?? this.visibility,
       eventTags: eventTags ?? this.eventTags,
       language: language ?? this.language,
@@ -364,6 +370,7 @@ class EventInput {
   final List<String> sponsorIds;
   final List<String> managerIds;
   final List<String> blockedUserIds;
+  final List<String> invitedUserIds; // 招待制イベントの招待ユーザーID
   final EventVisibility visibility;
   final List<String> eventTags;
   final String language;
@@ -393,6 +400,7 @@ class EventInput {
     required this.sponsorIds,
     required this.managerIds,
     required this.blockedUserIds,
+    this.invitedUserIds = const [],
     required this.visibility,
     required this.eventTags,
     required this.language,

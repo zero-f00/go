@@ -132,11 +132,9 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       }
 
       // イベントパスワードの初期化（招待制の場合）
-      // GameEventモデルにeventPasswordフィールドが存在する場合のみ
-      // TODO: GameEventモデルにeventPasswordが追加された時点で有効化する
-      // if (event.eventPassword != null && event.eventPassword!.isNotEmpty) {
-      //   _eventPasswordController.text = event.eventPassword!;
-      // }
+      if (event.eventPassword != null && event.eventPassword!.isNotEmpty) {
+        _eventPasswordController.text = event.eventPassword!;
+      }
 
       // フォーム状態の初期値設定
       _hasPrize = event.rewards.isNotEmpty;
@@ -178,9 +176,11 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       if (event.blockedUsers.isNotEmpty) {
         _loadBlockedUsersForEditing(event.blockedUsers);
       }
-      // if (event.invitedUsers != null) {
-      //   _loadInvitedUsersForEditing(event.invitedUsers!);
-      // }
+
+      // 招待ユーザーの初期化
+      if (event.invitedUserIds.isNotEmpty) {
+        _loadInvitedUsersForEditing(event.invitedUserIds);
+      }
     }
   }
 
@@ -2019,6 +2019,29 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     });
   }
 
+  /// 編集用招待ユーザーリストの読み込み
+  void _loadInvitedUsersForEditing(List<String> invitedUserIds) async {
+    final userRepository = UserRepository();
+    final List<UserData> invitedUsers = [];
+
+    for (String userId in invitedUserIds) {
+      try {
+        final user = await userRepository.getUserByCustomId(userId);
+        if (user != null) {
+          invitedUsers.add(user);
+        }
+      } catch (e) {
+        // ユーザーが見つからない場合は無視
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _invitedUsers = invitedUsers;
+      });
+    }
+  }
+
   Future<void> _addInvitedUser() async {
     await UserSearchDialog.show(
       context,
@@ -3021,6 +3044,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       sponsorIds: _selectedSponsors.map((sponsor) => sponsor.id).toList(),
       managerIds: _selectedManagers.map((manager) => manager.id).toList(),
       blockedUserIds: _blockedUsers.map((user) => user.id).toList(),
+      invitedUserIds: _invitedUsers.map((user) => user.id).toList(),
       visibility: overrideStatus == EventStatus.draft
           ? EventVisibility.private
           : _convertVisibilityToEnum(_visibility),

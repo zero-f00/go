@@ -85,6 +85,8 @@ class EventConverter {
       sponsors: event.sponsorIds, // スポンサーIDをそのまま設定
       managers: _buildManagersList(event), // 作成者とmanagerIdsを統合したリスト
       blockedUsers: event.blockedUserIds, // NGユーザーIDを設定
+      eventPassword: event.eventPassword, // 招待制イベントのパスワード
+      invitedUserIds: event.invitedUserIds, // 招待ユーザーID
       createdBy: event.createdBy, // 作成者情報を追加
       cancellationReason: event.cancellationReason, // 中止理由を追加
       cancelledAt: event.cancelledAt, // 中止日時を追加
@@ -294,7 +296,8 @@ class EventConverter {
       prizeContent: gameEvent.prizeContent,
       sponsorIds: gameEvent.sponsors ?? [],
       managerIds: gameEvent.managers ?? [],
-      blockedUserIds: const [],
+      blockedUserIds: gameEvent.blockedUsers,
+      invitedUserIds: gameEvent.invitedUserIds,
       visibility: _mapStringToEventVisibility(gameEvent.visibility ?? 'パブリック'),
       eventTags: gameEvent.eventTags ?? [],
       language: gameEvent.language ?? '日本語',
@@ -307,7 +310,7 @@ class EventConverter {
       updatedAt: DateTime.now(), // 仮の値
       participantIds: const [],
       status: _mapGameEventStatusToEventStatus(gameEvent.status),
-      eventPassword: null, // GameEventモデルにはパスワードフィールドがない
+      eventPassword: gameEvent.eventPassword, // 招待制イベントのパスワード
       cancellationReason: gameEvent.cancellationReason, // 中止理由を追加
       cancelledAt: gameEvent.cancelledAt, // 中止日時を追加
     );
