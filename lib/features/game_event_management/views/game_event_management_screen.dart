@@ -21,6 +21,7 @@ import '../../../data/models/event_model.dart';
 import '../../../shared/widgets/activity_stats_card.dart';
 import '../../../shared/services/user_event_service.dart';
 import '../../../shared/widgets/auth_dialog.dart';
+import '../../recommended_events/views/recommended_events_screen.dart';
 
 class GameEventManagementScreen extends ConsumerStatefulWidget {
   final VoidCallback? onNavigateToSearch;
@@ -716,7 +717,7 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
                     const SizedBox(),
                     if (events.isNotEmpty)
                       TextButton(
-                        onPressed: () => _navigateToRecommendedEvents(events),
+                        onPressed: () => _navigateToRecommendedEvents(events, firebaseUid),
                         child: const Text(
                           'もっと見る',
                           style: TextStyle(
@@ -834,17 +835,12 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
 
 
   /// おすすめイベント一覧画面へ遷移
-  void _navigateToRecommendedEvents(List<GameEvent> recommendedEvents) {
+  void _navigateToRecommendedEvents(List<GameEvent> recommendedEvents, String firebaseUid) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => GenericEventListScreen(
-          title: 'おすすめイベント',
-          events: recommendedEvents,
-          onEventTap: (event) => _showEventDetails(event),
-          emptyTitle: 'おすすめイベントがありません',
-          emptyMessage: 'お気に入りのゲームを登録すると\n関連するイベントが表示されます。',
-          emptyIcon: Icons.recommend,
-          searchHint: 'イベント名やゲーム名で検索...',
+        builder: (context) => RecommendedEventsScreen(
+          initialEvents: recommendedEvents,
+          firebaseUid: firebaseUid,
         ),
       ),
     );

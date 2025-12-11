@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../services/notification_service.dart';
 import '../../data/models/event_model.dart';
-import '../../shared/services/participation_service.dart';
 
 /// イベントリマインダーサービス
 /// 参加者にイベント開催前に自動的にリマインダー通知を送信
 class EventReminderService {
-  static final EventReminderService _instance = EventReminderService._internal();
+  static final EventReminderService _instance =
+      EventReminderService._internal();
   factory EventReminderService() => _instance;
   EventReminderService._internal();
 
@@ -19,8 +18,6 @@ class EventReminderService {
 
   /// リマインダーサービスを開始
   void startReminderService() {
-    print('🔔 EventReminderService: Starting reminder service...');
-
     // 30分ごとにリマインダーチェックを実行
     _reminderTimer = Timer.periodic(const Duration(minutes: 30), (timer) {
       _checkAndSendReminders();
@@ -32,7 +29,6 @@ class EventReminderService {
 
   /// リマインダーサービスを停止
   void stopReminderService() {
-    print('🔔 EventReminderService: Stopping reminder service...');
     _reminderTimer?.cancel();
     _reminderTimer = null;
   }
@@ -40,8 +36,6 @@ class EventReminderService {
   /// リマインダーをチェックして送信
   Future<void> _checkAndSendReminders() async {
     try {
-      print('🔔 EventReminderService: Checking for upcoming events...');
-
       final now = DateTime.now();
 
       // 今から1時間後〜25時間後の範囲のイベントを取得
@@ -58,16 +52,16 @@ class EventReminderService {
       final filteredDocs = eventsQuery.docs.where((doc) {
         final data = doc.data() as Map<String, dynamic>;
         final eventDate = (data['eventDate'] as Timestamp).toDate();
-        return eventDate.isAfter(oneHourLater) && eventDate.isBefore(twentyFiveHoursLater);
+        return eventDate.isAfter(oneHourLater) &&
+            eventDate.isBefore(twentyFiveHoursLater);
       }).toList();
 
       for (final eventDoc in filteredDocs) {
         final event = Event.fromFirestore(eventDoc);
         await _processEventReminders(event, now);
       }
-
     } catch (e) {
-      print('❌ EventReminderService: Error checking reminders: $e');
+      // リマインダーチェックエラー
     }
   }
 
@@ -81,21 +75,19 @@ class EventReminderService {
       List<int> reminderHours = [24, 1]; // 24時間前と1時間前
 
       for (final reminderHour in reminderHours) {
-        if (hoursUntilEvent <= reminderHour && hoursUntilEvent > (reminderHour - 1)) {
+        if (hoursUntilEvent <= reminderHour &&
+            hoursUntilEvent > (reminderHour - 1)) {
           await _sendEventReminders(event, reminderHour);
         }
       }
-
     } catch (e) {
-      print('❌ EventReminderService: Error processing event reminders: $e');
+      // イベントリマインダー処理エラー
     }
   }
 
   /// イベントの参加者にリマインダーを送信
   Future<void> _sendEventReminders(Event event, int hoursUntilEvent) async {
     try {
-      print('🔔 EventReminderService: Sending ${hoursUntilEvent}h reminders for event: ${event.name}');
-
       // このリマインダーが既に送信済みかチェック
       final reminderKey = '${event.id}_${hoursUntilEvent}h';
       final reminderDoc = await _firestore
@@ -104,7 +96,6 @@ class EventReminderService {
           .get();
 
       if (reminderDoc.exists) {
-        print('🔔 EventReminderService: Reminder already sent for $reminderKey');
         return;
       }
 
@@ -112,7 +103,6 @@ class EventReminderService {
       final participants = await _getEventParticipants(event.id);
 
       if (participants.isEmpty) {
-        print('🔔 EventReminderService: No participants for event: ${event.name}');
         return;
       }
 
@@ -126,10 +116,8 @@ class EventReminderService {
             eventDate: event.eventDate,
             hoursUntilEvent: hoursUntilEvent,
           );
-
-          print('✅ EventReminderService: Sent reminder to user: $participantId');
         } catch (e) {
-          print('❌ EventReminderService: Failed to send reminder to user $participantId: $e');
+          // 個別ユーザーへの通知送信エラー
         }
       }
 
@@ -142,11 +130,8 @@ class EventReminderService {
         'sentAt': FieldValue.serverTimestamp(),
         'participantCount': participants.length,
       });
-
-      print('✅ EventReminderService: Reminder batch completed for event: ${event.name}');
-
     } catch (e) {
-      print('❌ EventReminderService: Error sending event reminders: $e');
+      // イベントリマインダー送信エラー
     }
   }
 
@@ -163,9 +148,7 @@ class EventReminderService {
       return applicationsQuery.docs
           .map((doc) => doc.data()['userId'] as String)
           .toList();
-
     } catch (e) {
-      print('❌ EventReminderService: Error getting participants: $e');
       return [];
     }
   }
@@ -175,15 +158,13 @@ class EventReminderService {
     try {
       final eventDoc = await _firestore.collection('events').doc(eventId).get();
       if (!eventDoc.exists) {
-        print('❌ EventReminderService: Event not found: $eventId');
         return;
       }
 
       final event = Event.fromFirestore(eventDoc);
       await _processEventReminders(event, DateTime.now());
-
     } catch (e) {
-      print('❌ EventReminderService: Error triggering manual reminder: $e');
+      // 手動リマインダートリガーエラー
     }
   }
 
@@ -192,15 +173,13 @@ class EventReminderService {
     try {
       final eventDoc = await _firestore.collection('events').doc(eventId).get();
       if (!eventDoc.exists) {
-        print('❌ EventReminderService: Event not found: $eventId');
         return;
       }
 
       final event = Event.fromFirestore(eventDoc);
       await _sendEventReminders(event, hoursUntilEvent);
-
     } catch (e) {
-      print('❌ EventReminderService: Error sending test reminder: $e');
+      // テストリマインダー送信エラー
     }
   }
 
@@ -213,13 +192,10 @@ class EventReminderService {
           .orderBy('sentAt', descending: true)
           .get();
 
-      return remindersQuery.docs.map((doc) => {
-        'id': doc.id,
-        ...doc.data() as Map<String, dynamic>,
-      }).toList();
-
+      return remindersQuery.docs
+          .map((doc) => {'id': doc.id, ...doc.data() as Map<String, dynamic>})
+          .toList();
     } catch (e) {
-      print('❌ EventReminderService: Error getting reminder history: $e');
       return [];
     }
   }
@@ -236,13 +212,13 @@ class EventReminderService {
 
       return settingsDoc.exists ? settingsDoc.data() : null;
     } catch (e) {
-      print('❌ EventReminderService: Error getting reminder settings: $e');
       return null;
     }
   }
 
   /// リマインダー設定を更新（将来の拡張用）
-  Future<void> updateReminderSettings(String userId, {
+  Future<void> updateReminderSettings(
+    String userId, {
     bool? enabled,
     List<int>? reminderHours,
     bool? emailNotifications,
@@ -253,8 +229,10 @@ class EventReminderService {
 
       if (enabled != null) settings['enabled'] = enabled;
       if (reminderHours != null) settings['reminderHours'] = reminderHours;
-      if (emailNotifications != null) settings['emailNotifications'] = emailNotifications;
-      if (pushNotifications != null) settings['pushNotifications'] = pushNotifications;
+      if (emailNotifications != null)
+        settings['emailNotifications'] = emailNotifications;
+      if (pushNotifications != null)
+        settings['pushNotifications'] = pushNotifications;
 
       settings['updatedAt'] = FieldValue.serverTimestamp();
 
@@ -264,9 +242,8 @@ class EventReminderService {
           .collection('settings')
           .doc('reminders')
           .set(settings, SetOptions(merge: true));
-
     } catch (e) {
-      print('❌ EventReminderService: Error updating reminder settings: $e');
+      // リマインダー設定更新エラー
     }
   }
 }

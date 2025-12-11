@@ -131,128 +131,153 @@ class RecommendationService {
   }
 
   /// お気に入りゲームに関連するイベントを取得
+  /// 各ゲームから均等にイベントを取得するため、ゲームごとに個別クエリを実行
   static Stream<List<GameEvent>> _getFavoriteGameEvents(List<String> gameIds) async* {
     try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      final currentUserId = currentUser?.uid;
+      final now = DateTime.now();
 
-      // eventsコレクションとgameEventsコレクションの両方から検索
-      final eventsQuery = _firestore
-          .collection('events')
-          .where('gameId', whereIn: gameIds)
-          .limit(15);
+      final events = <GameEvent>[];
+      final eventIds = <String>{};
 
-      final gameEventsQuery = _firestore
-          .collection('gameEvents')
-          .where('gameId', whereIn: gameIds)
-          .limit(15);
+      // 各お気に入りゲームごとにイベントを取得（均等に取得するため）
+      // 1ゲームあたり最大5件取得し、合計で最大15件程度を目指す
+      final eventsPerGame = gameIds.isNotEmpty ? (15 / gameIds.length).ceil().clamp(3, 10) : 5;
 
+      for (final gameId in gameIds) {
+        try {
+          // eventsコレクションから取得
+          // 複合インデックスの問題を避けるため、シンプルなクエリを使用し、
+          // フィルタリングはクライアント側で行う
+          final eventsQuery = await _firestore
+              .collection('events')
+              .where('gameId', isEqualTo: gameId)
+              .limit(eventsPerGame * 3) // フィルタリング後に十分な数を確保するため多めに取得
+              .get();
 
-      yield* eventsQuery.snapshots().asyncMap((eventsSnapshot) async {
-        // gameEventsコレクションからも取得
-        final gameEventsSnapshot = await gameEventsQuery.get();
+          for (final doc in eventsQuery.docs) {
+            try {
+              final data = doc.data();
 
-        final currentUser = FirebaseAuth.instance.currentUser;
-        final currentUserId = currentUser?.uid;
-        final now = DateTime.now();
+              // 重複チェック
+              if (eventIds.contains(doc.id)) {
+                continue;
+              }
 
-        final events = <GameEvent>[];
-        final eventIds = <String>{};
+              // 下書きや非公開のイベントは除外
+              final status = data['status'] as String?;
+              final visibility = data['visibility'] as String?;
 
-        // eventsコレクションからの処理
-        for (final doc in eventsSnapshot.docs) {
-          try {
-            final data = doc.data();
+              // 公開可能なステータス: published, upcoming, active
+              final validStatuses = ['published', 'upcoming', 'active'];
+              if (status != null && !validStatuses.contains(status)) {
+                continue;
+              }
 
-            // 重複チェック
-            if (eventIds.contains(doc.id)) {
-              continue;
-            }
+              // 公開範囲が設定されている場合、publicのみ表示
+              if (visibility != null && visibility != 'public') {
+                continue;
+              }
 
-            // 1. 自分が作成者のイベントは除外
-            if (currentUserId != null && data['createdBy'] == currentUserId) {
-              continue;
-            }
+              // 1. 自分が作成者のイベントは除外
+              if (currentUserId != null && data['createdBy'] == currentUserId) {
+                continue;
+              }
 
-            // 2. 自分が管理者のイベントは除外
-            final managerIds = data['managerIds'] as List?;
-            if (currentUserId != null && managerIds != null && managerIds.contains(currentUserId)) {
-              continue;
-            }
+              // 2. 自分が管理者のイベントは除外
+              final managerIds = data['managerIds'] as List?;
+              if (currentUserId != null && managerIds != null && managerIds.contains(currentUserId)) {
+                continue;
+              }
 
-            // 3. 申込期限が過ぎているイベントは除外
-            final registrationDeadline = (data['registrationDeadline'] as Timestamp?)?.toDate();
-            if (registrationDeadline != null && registrationDeadline.isBefore(now)) {
-              continue;
-            }
+              // 3. 申込期限が過ぎているイベントは除外
+              final registrationDeadline = (data['registrationDeadline'] as Timestamp?)?.toDate();
+              if (registrationDeadline != null && registrationDeadline.isBefore(now)) {
+                continue;
+              }
 
-            // 4. イベント開始時刻が過ぎているイベントも除外
-            final startDate = (data['startDate'] as Timestamp?)?.toDate();
-            if (startDate != null && startDate.isBefore(now)) {
-              continue;
-            }
+              // 4. イベント開始時刻が過ぎているイベントも除外
+              final startDate = (data['startDate'] as Timestamp?)?.toDate();
+              if (startDate != null && startDate.isBefore(now)) {
+                continue;
+              }
 
-            if (data['status'] == 'published' && data['visibility'] == 'public') {
               final event = Event.fromFirestore(doc);
               final gameEvent = await EventConverter.eventToGameEvent(event);
               events.add(gameEvent);
               eventIds.add(doc.id);
-            } else {
+            } catch (e) {
+              // 個別イベントのエラーは無視
             }
-          } catch (e) {
           }
-        }
 
-        // gameEventsコレクションからの処理
-        for (final doc in gameEventsSnapshot.docs) {
-          try {
-            final data = doc.data();
+          // gameEventsコレクションからも取得
+          // 複合インデックスの問題を避けるため、シンプルなクエリを使用
+          final gameEventsQuery = await _firestore
+              .collection('gameEvents')
+              .where('gameId', isEqualTo: gameId)
+              .limit(eventsPerGame * 3)
+              .get();
 
-            // 重複チェック
-            if (eventIds.contains(doc.id)) {
-              continue;
-            }
+          for (final doc in gameEventsQuery.docs) {
+            try {
+              final data = doc.data();
 
-            // 1. 自分が作成者のイベントは除外
-            if (currentUserId != null && data['createdBy'] == currentUserId) {
-              continue;
-            }
+              // 重複チェック
+              if (eventIds.contains(doc.id)) {
+                continue;
+              }
 
-            // 2. 自分が管理者のイベントは除外
-            final managerIds = data['managers'] as List?;
-            if (currentUserId != null && managerIds != null && managerIds.contains(currentUserId)) {
-              continue;
-            }
+              // ステータスチェック: active, upcoming, publishedを許可
+              final status = data['status'] as String?;
+              final validStatuses = ['active', 'upcoming', 'published'];
+              if (status != null && !validStatuses.contains(status)) {
+                continue;
+              }
 
-            // 3. 申込期限が過ぎているイベントは除外（gameEventsの場合はregistrationDeadlineフィールド名を確認）
-            final registrationDeadline = (data['registrationDeadline'] as Timestamp?)?.toDate();
-            if (registrationDeadline != null && registrationDeadline.isBefore(now)) {
-              continue;
-            }
+              // 1. 自分が作成者のイベントは除外
+              if (currentUserId != null && data['createdBy'] == currentUserId) {
+                continue;
+              }
 
-            // 4. イベント開始時刻が過ぎているイベントも除外
-            final startDate = (data['startDate'] as Timestamp?)?.toDate();
-            if (startDate != null && startDate.isBefore(now)) {
-              continue;
-            }
+              // 2. 自分が管理者のイベントは除外
+              final managerIds = data['managers'] as List?;
+              if (currentUserId != null && managerIds != null && managerIds.contains(currentUserId)) {
+                continue;
+              }
 
-            if (data['status'] == 'active') {
+              // 3. 申込期限が過ぎているイベントは除外
+              final registrationDeadline = (data['registrationDeadline'] as Timestamp?)?.toDate();
+              if (registrationDeadline != null && registrationDeadline.isBefore(now)) {
+                continue;
+              }
+
+              // 4. イベント開始時刻が過ぎているイベントも除外
+              final startDate = (data['startDate'] as Timestamp?)?.toDate();
+              if (startDate != null && startDate.isBefore(now)) {
+                continue;
+              }
+
               final gameEvent = GameEvent.fromFirestore(data, doc.id);
               events.add(gameEvent);
               eventIds.add(doc.id);
-            } else {
+            } catch (e) {
+              // 個別イベントのエラーは無視
             }
-          } catch (e) {
           }
+        } catch (e) {
+          // 個別ゲームのクエリエラーは無視して次のゲームへ
         }
+      }
 
+      // 開催日時順にソート
+      events.sort((a, b) => a.startDate.compareTo(b.startDate));
 
-        // 開催日時順にソート
-        events.sort((a, b) => a.startDate.compareTo(b.startDate));
+      // NGユーザーのイベントを除外
+      final filteredEvents = EventFilterService.filterBlockedUserEvents(events, currentUserId);
 
-        // NGユーザーのイベントを除外
-        final filteredEvents = EventFilterService.filterBlockedUserEvents(events, currentUserId);
-
-        return filteredEvents;
-      });
+      yield filteredEvents;
     } catch (e, stackTrace) {
       yield [];
     }
