@@ -11,15 +11,32 @@ class NavigationService {
 
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
+  /// MainScreenのタブ切り替え用コールバック
+  void Function(int index)? _onTabChanged;
+
+  /// タブ切り替えコールバックを設定
+  void setTabChangeCallback(void Function(int index) callback) {
+    _onTabChanged = callback;
+  }
+
+  /// タブ切り替えコールバックをクリア
+  void clearTabChangeCallback() {
+    _onTabChanged = null;
+  }
+
   /// 現在のコンテキストを取得
   BuildContext? get currentContext => navigatorKey.currentContext;
 
-  /// 通知画面に遷移
+  /// 通知画面に遷移（MainScreenの通知タブに切り替え）
   void navigateToNotifications() {
+    if (_onTabChanged == null) return;
+
+    // ルートまでポップしてからタブを切り替え
     final context = currentContext;
     if (context != null) {
-      Navigator.of(context).pushNamed('/notifications');
+      Navigator.of(context).popUntil((route) => route.isFirst);
     }
+    _onTabChanged!(2); // 通知タブのインデックス
   }
 
   /// イベント詳細画面に遷移

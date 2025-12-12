@@ -8,6 +8,7 @@ import '../../../shared/widgets/app_bottom_navigation.dart';
 import '../../../shared/widgets/app_drawer.dart';
 import '../../../shared/providers/notification_provider.dart';
 import '../../../shared/services/push_notification_service.dart';
+import '../../../shared/services/navigation_service.dart';
 import '../../../data/models/notification_model.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
@@ -37,6 +38,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   @override
   void initState() {
     super.initState();
+
+    // NavigationServiceにタブ切り替えコールバックを設定
+    NavigationService.instance.setTabChangeCallback(_onTabTapped);
+
     // 画面インスタンスを初期化時に一度だけ生成
     _screens = [
       GameEventManagementScreen(
@@ -80,6 +85,13 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     setState(() {
       _currentIndex = index;
     });
+  }
+
+  @override
+  void dispose() {
+    // NavigationServiceのコールバックをクリア
+    NavigationService.instance.clearTabChangeCallback();
+    super.dispose();
   }
 
   @override

@@ -30,7 +30,6 @@ import 'features/game_event_management/models/game_event.dart';
 import 'features/event_participant/views/participant_group_view_screen.dart';
 import 'features/event_participant/views/participant_list_view_screen.dart';
 import 'features/event_participant/views/violation_report_screen.dart';
-import 'features/notification/views/notification_screen.dart';
 import 'shared/services/navigation_service.dart';
 import 'shared/constants/app_strings.dart';
 import 'shared/constants/app_colors.dart';
@@ -101,7 +100,6 @@ class MyApp extends StatelessWidget {
       routes: {
         '/settings': (context) => const SettingsScreen(),
         '/friends': (context) => const FriendsScreen(),
-        '/notifications': (context) => const NotificationScreen(),
         '/user_profile': (context) {
           final args = ModalRoute.of(context)?.settings.arguments;
           if (args is Map<String, dynamic>) {
