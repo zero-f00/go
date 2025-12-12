@@ -40,10 +40,13 @@ class EventDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
+  // イベントデータをステートとして保持（編集後の更新に対応）
+  late GameEvent _currentEvent;
 
   @override
   void initState() {
     super.initState();
+    _currentEvent = widget.event;
 
     // 通知画面から参加者管理への遷移フラグがある場合、
     // 画面描画後に運営ダッシュボードに遷移する
@@ -61,8 +64,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         context,
         '/event_management_dashboard',
         arguments: {
-          'eventId': widget.event.id,
-          'eventName': widget.event.name,
+          'eventId': _currentEvent.id,
+          'eventName': _currentEvent.name,
           'shouldNavigateToParticipantManagement': widget.shouldNavigateToParticipantManagement,
         },
       );
@@ -118,9 +121,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         final customUserId = userData.userId;
 
         // Firebase UIDとカスタムユーザーIDの両方をチェック
-        final isManagerByUid = widget.event.managers.contains(currentUserId);
-        final isManagerByCustomId = widget.event.managers.contains(customUserId);
-        final isCreator = widget.event.createdBy == currentUserId;
+        final isManagerByUid = _currentEvent.managers.contains(currentUserId);
+        final isManagerByCustomId = _currentEvent.managers.contains(customUserId);
+        final isCreator = _currentEvent.createdBy == currentUserId;
 
         return isManagerByUid || isManagerByCustomId || isCreator;
       },
@@ -136,7 +139,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       return Stream.value(false);
     }
 
-    return ParticipationService.getEventApplications(widget.event.id).map((applications) {
+    return ParticipationService.getEventApplications(_currentEvent.id).map((applications) {
       return applications.any((app) =>
         app.userId == currentUser.uid &&
         app.status == ParticipationStatus.approved
@@ -152,7 +155,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
           child: Column(
             children: [
               AppHeader(
-                title: widget.event.name,
+                title: _currentEvent.name,
                 showBackButton: true,
                 onBackPressed: () => _handleBackPressed(),
               ),
@@ -161,7 +164,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                   padding: const EdgeInsets.all(AppDimensions.spacingL),
                   children: [
                     // 1. イベント画像セクション
-                    if (widget.event.imageUrl != null && widget.event.imageUrl!.isNotEmpty) ...[
+                    if (_currentEvent.imageUrl != null && _currentEvent.imageUrl!.isNotEmpty) ...[
                       _buildEventImageSection(),
                       const SizedBox(height: AppDimensions.spacingL),
                     ],
@@ -171,19 +174,19 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                     const SizedBox(height: AppDimensions.spacingL),
 
                     // 2.5. 中止情報（中止されたイベントの場合のみ表示）
-                    if (widget.event.status == GameEventStatus.cancelled) ...[
+                    if (_currentEvent.status == GameEventStatus.cancelled) ...[
                       _buildCancellationInfoSection(),
                       const SizedBox(height: AppDimensions.spacingL),
                     ],
 
                     // 3. イベントタグ（タグがある場合のみ表示）
-                    if (widget.event.eventTags.isNotEmpty) ...[
+                    if (_currentEvent.eventTags.isNotEmpty) ...[
                       _buildEventTagsSection(),
                       const SizedBox(height: AppDimensions.spacingL),
                     ],
 
                     // 4. ルール（入力済みの場合のみ表示）
-                    if (widget.event.rules != null && widget.event.rules!.isNotEmpty) ...[
+                    if (_currentEvent.rules != null && _currentEvent.rules!.isNotEmpty) ...[
                       _buildRulesSection(),
                       const SizedBox(height: AppDimensions.spacingL),
                     ],
@@ -201,19 +204,19 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                     const SizedBox(height: AppDimensions.spacingL),
 
                     // 8. 追加情報・注意事項（入力済みの場合のみ表示）
-                    if (widget.event.additionalInfo != null && widget.event.additionalInfo!.isNotEmpty) ...[
+                    if (_currentEvent.additionalInfo != null && _currentEvent.additionalInfo!.isNotEmpty) ...[
                       _buildAdditionalInfoSection(),
                       const SizedBox(height: AppDimensions.spacingL),
                     ],
 
                     // 9. 参加費用（参加費ありの場合のみ表示）
-                    if (widget.event.hasFee) ...[
+                    if (_currentEvent.hasFee) ...[
                       _buildParticipationFeeSection(),
                       const SizedBox(height: AppDimensions.spacingL),
                     ],
 
                     // 10. 賞金・スポンサー情報（入力済みの場合のみ表示）
-                    if (widget.event.prizeContent != null && widget.event.prizeContent!.isNotEmpty) ...[
+                    if (_currentEvent.prizeContent != null && _currentEvent.prizeContent!.isNotEmpty) ...[
                       _buildPrizeSection(),
                       const SizedBox(height: AppDimensions.spacingL),
                     ],
@@ -229,13 +232,13 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                     ],
 
                     // 12. 配信プレイヤー（配信予定がある場合のみ表示）
-                    if (widget.event.hasStreaming && widget.event.streamingUrls.isNotEmpty) ...[
+                    if (_currentEvent.hasStreaming && _currentEvent.streamingUrls.isNotEmpty) ...[
                       _buildStreamingPlayerSection(),
                       const SizedBox(height: AppDimensions.spacingL),
                     ],
 
                     // 14. キャンセル・変更ポリシー（入力済みの場合のみ表示）
-                    if (widget.event.policy != null && widget.event.policy!.isNotEmpty) ...[
+                    if (_currentEvent.policy != null && _currentEvent.policy!.isNotEmpty) ...[
                       _buildPolicySection(),
                       const SizedBox(height: AppDimensions.spacingL),
                     ],
@@ -314,9 +317,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (widget.event.subtitle != null) ...[
+                  if (_currentEvent.subtitle != null) ...[
                     Text(
-                      widget.event.subtitle!,
+                      _currentEvent.subtitle!,
                       style: const TextStyle(
                         fontSize: AppDimensions.fontSizeL,
                         fontWeight: FontWeight.w600,
@@ -326,7 +329,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                     const SizedBox(height: AppDimensions.spacingS),
                   ],
                   Text(
-                    widget.event.description,
+                    _currentEvent.description,
                     style: const TextStyle(
                       fontSize: AppDimensions.fontSizeM,
                       color: AppColors.textDark,
@@ -344,22 +347,22 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
           runSpacing: AppDimensions.spacingS,
           children: [
             // スペシャルタイプ以外のみ表示
-            if (widget.event.type.displayName != 'スペシャル' &&
-                widget.event.type.displayName != 'special' &&
-                widget.event.type != GameEventType.special) ...[
+            if (_currentEvent.type.displayName != 'スペシャル' &&
+                _currentEvent.type.displayName != 'special' &&
+                _currentEvent.type != GameEventType.special) ...[
               _buildInfoChip(
-                widget.event.type.displayName,
+                _currentEvent.type.displayName,
                 Icons.category,
                 AppColors.primary,
               ),
             ],
             _buildInfoChip(
-              widget.event.status.displayName,
+              _currentEvent.status.displayName,
               Icons.radio_button_checked,
-              _getStatusColor(widget.event.status),
+              _getStatusColor(_currentEvent.status),
             ),
-            _buildInfoChip(widget.event.visibility, Icons.visibility, AppColors.info),
-            _buildInfoChip(widget.event.language, Icons.language, AppColors.accent),
+            _buildInfoChip(_currentEvent.visibility, Icons.visibility, AppColors.info),
+            _buildInfoChip(_currentEvent.language, Icons.language, AppColors.accent),
           ],
         ),
       ],
@@ -429,12 +432,12 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
               ),
             ],
           ),
-          if (widget.event.cancellationReason != null &&
-              widget.event.cancellationReason!.isNotEmpty) ...[
+          if (_currentEvent.cancellationReason != null &&
+              _currentEvent.cancellationReason!.isNotEmpty) ...[
             const SizedBox(height: AppDimensions.spacingM),
             _buildCancellationReasonDisplay(),
           ],
-          if (widget.event.cancelledAt != null) ...[
+          if (_currentEvent.cancelledAt != null) ...[
             const SizedBox(height: AppDimensions.spacingM),
             Row(
               children: [
@@ -445,7 +448,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                 ),
                 const SizedBox(width: AppDimensions.spacingXS),
                 Text(
-                  '中止日時: ${widget.event.cancelledAt!.month}/${widget.event.cancelledAt!.day} ${widget.event.cancelledAt!.hour.toString().padLeft(2, '0')}:${widget.event.cancelledAt!.minute.toString().padLeft(2, '0')}',
+                  '中止日時: ${_currentEvent.cancelledAt!.month}/${_currentEvent.cancelledAt!.day} ${_currentEvent.cancelledAt!.hour.toString().padLeft(2, '0')}:${_currentEvent.cancelledAt!.minute.toString().padLeft(2, '0')}',
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     color: AppColors.textSecondary,
@@ -461,7 +464,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
   /// 中止理由の詳細表示
   Widget _buildCancellationReasonDisplay() {
-    final reason = widget.event.cancellationReason!;
+    final reason = _currentEvent.cancellationReason!;
 
     // 理由が「詳細: 」を含む場合、主要理由と詳細を分離
     String primaryReason = reason;
@@ -605,7 +608,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         Wrap(
           spacing: AppDimensions.spacingS,
           runSpacing: AppDimensions.spacingS,
-          children: widget.event.eventTags
+          children: _currentEvent.eventTags
               .map((tag) => Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.spacingM,
@@ -647,12 +650,12 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       title: 'スケジュール',
       icon: Icons.schedule,
       children: [
-        _buildInfoRow('開催日時', dateFormat.format(widget.event.startDate), Icons.event),
-        if (widget.event.registrationDeadline != null) ...[
+        _buildInfoRow('開催日時', dateFormat.format(_currentEvent.startDate), Icons.event),
+        if (_currentEvent.registrationDeadline != null) ...[
           const SizedBox(height: AppDimensions.spacingM),
           _buildInfoRow(
             '申込期限',
-            dateFormat.format(widget.event.registrationDeadline!),
+            dateFormat.format(_currentEvent.registrationDeadline!),
             Icons.event_busy,
           ),
         ],
@@ -665,7 +668,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       title: 'ゲーム情報',
       icon: Icons.videogame_asset,
       children: [
-        if (widget.event.gameName != null) ...[
+        if (_currentEvent.gameName != null) ...[
           Row(
             children: [
               Container(
@@ -676,14 +679,14 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                   color: AppColors.surface,
                   border: Border.all(color: AppColors.border),
                 ),
-                child: widget.event.gameIconUrl != null && widget.event.gameIconUrl!.isNotEmpty
+                child: _currentEvent.gameIconUrl != null && _currentEvent.gameIconUrl!.isNotEmpty
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                         child: Image.network(
-                          widget.event.gameIconUrl!,
+                          _currentEvent.gameIconUrl!,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
-                            print('❌ EventDetail: Failed to load game icon: ${widget.event.gameIconUrl}');
+                            print('❌ EventDetail: Failed to load game icon: ${_currentEvent.gameIconUrl}');
                             return _buildGameIconFallback();
                           },
                           loadingBuilder: (context, child, loadingProgress) {
@@ -709,7 +712,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
               const SizedBox(width: AppDimensions.spacingM),
               Expanded(
                 child: Text(
-                  widget.event.gameName!,
+                  _currentEvent.gameName!,
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeL,
                     fontWeight: FontWeight.w600,
@@ -719,12 +722,12 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
               ),
             ],
           ),
-          if (widget.event.platforms.isNotEmpty) ...[
+          if (_currentEvent.platforms.isNotEmpty) ...[
             const SizedBox(height: AppDimensions.spacingM),
             Wrap(
               spacing: AppDimensions.spacingS,
               runSpacing: AppDimensions.spacingXS,
-              children: widget.event.platforms.map((platform) {
+              children: _currentEvent.platforms.map((platform) {
                 return _buildInfoChip(
                   platform,
                   Icons.devices,
@@ -783,7 +786,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       icon: Icons.emoji_events,
       children: [
         Text(
-          widget.event.prizeContent!,
+          _currentEvent.prizeContent!,
           style: const TextStyle(
             fontSize: AppDimensions.fontSizeM,
             color: AppColors.textDark,
@@ -823,7 +826,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
             ],
           ),
         ),
-        if (widget.event.sponsors.isNotEmpty) ...[
+        if (_currentEvent.sponsors.isNotEmpty) ...[
           const SizedBox(height: AppDimensions.spacingM),
           _buildSponsorInfo(),
         ],
@@ -838,15 +841,15 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       icon: Icons.payments,
       children: [
         // 参加費金額表示：feeText（文字列）を優先し、なければfeeAmount（数値）を使用
-        if (widget.event.feeText != null && widget.event.feeText!.isNotEmpty) ...[
-          _buildInfoRow('参加金額', widget.event.feeText!, Icons.payments),
+        if (_currentEvent.feeText != null && _currentEvent.feeText!.isNotEmpty) ...[
+          _buildInfoRow('参加金額', _currentEvent.feeText!, Icons.payments),
           const SizedBox(height: AppDimensions.spacingM),
-        ] else if (widget.event.feeAmount != null) ...[
-          _buildInfoRow('参加金額', '${widget.event.feeAmount!.round()}円', Icons.payments),
+        ] else if (_currentEvent.feeAmount != null) ...[
+          _buildInfoRow('参加金額', '${_currentEvent.feeAmount!.round()}円', Icons.payments),
           const SizedBox(height: AppDimensions.spacingM),
         ],
         // 参加費補足情報表示
-        if (widget.event.feeSupplement != null && widget.event.feeSupplement!.isNotEmpty) ...[
+        if (_currentEvent.feeSupplement != null && _currentEvent.feeSupplement!.isNotEmpty) ...[
           Text(
             '参加費用補足',
             style: const TextStyle(
@@ -857,7 +860,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
           ),
           const SizedBox(height: AppDimensions.spacingS),
           Text(
-            widget.event.feeSupplement!,
+            _currentEvent.feeSupplement!,
             style: const TextStyle(
               fontSize: AppDimensions.fontSizeM,
               color: AppColors.textDark,
@@ -889,7 +892,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
           ],
         ),
         const SizedBox(height: AppDimensions.spacingS),
-        _buildClickableUserTagsList(widget.event.sponsors),
+        _buildClickableUserTagsList(_currentEvent.sponsors),
       ],
     );
   }
@@ -899,12 +902,12 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       title: '参加情報',
       icon: Icons.group,
       children: [
-        _buildInfoRow('募集人数', '${widget.event.maxParticipants}人', Icons.group),
+        _buildInfoRow('募集人数', '${_currentEvent.maxParticipants}人', Icons.group),
         const SizedBox(height: AppDimensions.spacingM),
-        _buildInfoRow('現在の参加者数', '${widget.event.participantCount}人', Icons.people),
-        if (widget.event.hasAgeRestriction && widget.event.minAge != null) ...[
+        _buildInfoRow('現在の参加者数', '${_currentEvent.participantCount}人', Icons.people),
+        if (_currentEvent.hasAgeRestriction && _currentEvent.minAge != null) ...[
           const SizedBox(height: AppDimensions.spacingM),
-          _buildInfoRow('年齢制限', '${widget.event.minAge}歳以上', Icons.child_care),
+          _buildInfoRow('年齢制限', '${_currentEvent.minAge}歳以上', Icons.child_care),
         ],
       ],
     );
@@ -916,7 +919,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       icon: Icons.gavel,
       children: [
         Text(
-          widget.event.rules!,
+          _currentEvent.rules!,
           style: const TextStyle(
             fontSize: AppDimensions.fontSizeM,
             color: AppColors.textDark,
@@ -933,7 +936,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       icon: Icons.live_tv,
       children: [
         StreamingPlayerWidget(
-          streamingUrls: widget.event.streamingUrls,
+          streamingUrls: _currentEvent.streamingUrls,
           autoPlay: false,
           showControls: true,
         ),
@@ -948,7 +951,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       icon: Icons.policy,
       children: [
         Text(
-          widget.event.policy!,
+          _currentEvent.policy!,
           style: const TextStyle(
             fontSize: AppDimensions.fontSizeM,
             color: AppColors.textDark,
@@ -965,7 +968,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       icon: Icons.info_outline,
       children: [
         Text(
-          widget.event.additionalInfo!,
+          _currentEvent.additionalInfo!,
           style: const TextStyle(
             fontSize: AppDimensions.fontSizeM,
             color: AppColors.textDark,
@@ -979,13 +982,13 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
   Widget _buildManagementInfoSection() {
     // 運営者リストを構築（managers + createdBy）
     final allManagers = <String>[];
-    if (widget.event.managers.isNotEmpty) {
-      allManagers.addAll(widget.event.managers);
+    if (_currentEvent.managers.isNotEmpty) {
+      allManagers.addAll(_currentEvent.managers);
     }
-    if (widget.event.createdBy != null &&
-        widget.event.createdBy!.isNotEmpty &&
-        !allManagers.contains(widget.event.createdBy!)) {
-      allManagers.add(widget.event.createdBy!);
+    if (_currentEvent.createdBy != null &&
+        _currentEvent.createdBy!.isNotEmpty &&
+        !allManagers.contains(_currentEvent.createdBy!)) {
+      allManagers.add(_currentEvent.createdBy!);
     }
 
     return _buildSectionContainer(
@@ -1006,7 +1009,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
           _buildClickableUserTagsList(allManagers),
         ],
         // スポンサー情報
-        if (widget.event.sponsors.isNotEmpty) ...[
+        if (_currentEvent.sponsors.isNotEmpty) ...[
           if (allManagers.isNotEmpty) const SizedBox(height: AppDimensions.spacingM),
           const Text(
             'スポンサー',
@@ -1017,7 +1020,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
             ),
           ),
           const SizedBox(height: AppDimensions.spacingS),
-          _buildClickableUserTagsList(widget.event.sponsors),
+          _buildClickableUserTagsList(_currentEvent.sponsors),
         ],
       ],
     );
@@ -1025,10 +1028,22 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
   /// 管理者専用情報セクション
   Widget _buildAdminOnlySection() {
+    // 日付フォーマッター
+    DateFormat dateFormat;
+    try {
+      dateFormat = DateFormat('yyyy/MM/dd HH:mm', 'ja_JP');
+    } catch (e) {
+      dateFormat = DateFormat('yyyy/MM/dd HH:mm');
+    }
+
     return _buildSectionContainer(
       title: '管理者専用情報',
       icon: Icons.security,
       children: [
+        // イベント管理情報セクション
+        _buildEventManagementInfoSection(dateFormat),
+        const SizedBox(height: AppDimensions.spacingL),
+
         // 公開範囲表示
         _buildInfoRow(
           '公開範囲',
@@ -1037,7 +1052,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         ),
 
         // イベントパスワード設定状況（招待制の場合）
-        if (widget.event.visibility == '招待制') ...[
+        if (_currentEvent.visibility == '招待制') ...[
           const SizedBox(height: AppDimensions.spacingM),
           _buildInfoRow(
             'パスワード設定',
@@ -1047,7 +1062,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         ],
 
         // 招待ユーザー一覧（TODO: 実際のデータが必要）
-        if (widget.event.visibility == '招待制') ...[
+        if (_currentEvent.visibility == '招待制') ...[
           const SizedBox(height: AppDimensions.spacingM),
           const Text(
             '招待ユーザー',
@@ -1101,6 +1116,138 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         _buildBlockedUsersSection(),
       ],
     );
+  }
+
+  /// イベント管理情報セクション（作成者・作成日時・最終更新者・最終更新日時）
+  Widget _buildEventManagementInfoSection(DateFormat dateFormat) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 作成者
+        if (_currentEvent.createdBy != null) ...[
+          const Text(
+            '作成者',
+            style: TextStyle(
+              fontSize: AppDimensions.fontSizeM,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textDark,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingS),
+          _buildSingleUserTag(_currentEvent.createdBy!),
+        ],
+
+        // 作成日時
+        if (_currentEvent.createdAt != null) ...[
+          const SizedBox(height: AppDimensions.spacingM),
+          const Text(
+            '作成日時',
+            style: TextStyle(
+              fontSize: AppDimensions.fontSizeM,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textDark,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingS),
+          Text(
+            dateFormat.format(_currentEvent.createdAt!),
+            style: const TextStyle(
+              fontSize: AppDimensions.fontSizeM,
+              color: AppColors.textDark,
+            ),
+          ),
+        ],
+
+        // 最終更新者（更新されている場合のみ表示）
+        if (_currentEvent.lastUpdatedBy != null) ...[
+          const SizedBox(height: AppDimensions.spacingM),
+          const Text(
+            '最終更新者',
+            style: TextStyle(
+              fontSize: AppDimensions.fontSizeM,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textDark,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingS),
+          _buildSingleUserTag(_currentEvent.lastUpdatedBy!),
+        ],
+
+        // 最終更新日時
+        if (_currentEvent.updatedAt != null) ...[
+          const SizedBox(height: AppDimensions.spacingM),
+          const Text(
+            '最終更新日時',
+            style: TextStyle(
+              fontSize: AppDimensions.fontSizeM,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textDark,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingS),
+          Text(
+            dateFormat.format(_currentEvent.updatedAt!),
+            style: const TextStyle(
+              fontSize: AppDimensions.fontSizeM,
+              color: AppColors.textDark,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// 単一ユーザーのUserTagを構築
+  Widget _buildSingleUserTag(String userId) {
+    return FutureBuilder<UserData?>(
+      future: _fetchUserFromId(userId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox(
+            width: AppDimensions.iconM,
+            height: AppDimensions.iconM,
+            child: CircularProgressIndicator(strokeWidth: 2.0),
+          );
+        }
+
+        if (snapshot.hasError || snapshot.data == null) {
+          return Text(
+            userId,
+            style: const TextStyle(
+              fontSize: AppDimensions.fontSizeS,
+              color: AppColors.textSecondary,
+            ),
+          );
+        }
+
+        final user = snapshot.data!;
+        return GestureDetector(
+          onTap: () => _navigateToUserProfile(user.id),
+          child: UserTag(
+            user: user,
+            showRemoveButton: false,
+            size: AppDimensions.iconL,
+          ),
+        );
+      },
+    );
+  }
+
+  /// 単一ユーザーIDからUserDataを取得
+  Future<UserData?> _fetchUserFromId(String userId) async {
+    final userRepository = UserRepository();
+    try {
+      // Firebase UIDで検索を試行
+      UserData? user = await userRepository.getUserById(userId);
+      if (user != null) {
+        return user;
+      }
+      // カスタムIDで検索
+      user = await userRepository.getUserByCustomId(userId);
+      return user;
+    } catch (e) {
+      return null;
+    }
   }
 
   Widget _buildInfoRow(String label, String value, IconData icon) {
@@ -1166,8 +1313,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         ),
 
         // 動的参加申し込みボタン（管理者も参加申込み可能）
-        if (widget.event.status == GameEventStatus.upcoming ||
-            widget.event.status == GameEventStatus.active) ...[
+        if (_currentEvent.status == GameEventStatus.upcoming ||
+            _currentEvent.status == GameEventStatus.active) ...[
           _buildParticipationButton(),
           const SizedBox(height: AppDimensions.spacingM),
         ],
@@ -1397,18 +1544,35 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
   }
 
   /// イベント編集画面への遷移
-  void _navigateToEventEdit(BuildContext context) {
-    Navigator.of(context).pushNamed('/event_edit', arguments: widget.event).then((_) {
-      // 編集から戻った場合、必要に応じて画面を更新
-      // TODO: イベントの更新後にデータを再読み込みする処理を実装
-    });
+  void _navigateToEventEdit(BuildContext context) async {
+    final result = await Navigator.of(context).pushNamed('/event_edit', arguments: _currentEvent);
+
+    // 編集が行われた場合（eventIdが返された場合）、イベントデータを再取得
+    if (result != null && result is String && mounted) {
+      await _refreshEventData(result);
+    }
+  }
+
+  /// イベントデータを再取得して画面を更新
+  Future<void> _refreshEventData(String eventId) async {
+    try {
+      final event = await EventService.getEventById(eventId);
+      if (event != null && mounted) {
+        final gameEvent = await EventConverter.eventToGameEvent(event);
+        setState(() {
+          _currentEvent = gameEvent;
+        });
+      }
+    } catch (e) {
+      // エラー時は何もしない（現在のデータを維持）
+    }
   }
 
   /// 運営ダッシュボード画面への遷移
   void _navigateToOperationsDashboard(BuildContext context) {
     Navigator.of(context).pushNamed(
       '/operations_dashboard',
-      arguments: {'eventId': widget.event.id, 'eventName': widget.event.name},
+      arguments: {'eventId': _currentEvent.id, 'eventName': _currentEvent.name},
     );
   }
 
@@ -1614,8 +1778,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     Navigator.of(context).pushNamed(
       '/participant_group_view',
       arguments: {
-        'eventId': widget.event.id,
-        'eventName': widget.event.name,
+        'eventId': _currentEvent.id,
+        'eventName': _currentEvent.name,
       },
     );
   }
@@ -1624,8 +1788,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     Navigator.of(context).pushNamed(
       '/participant_list_view',
       arguments: {
-        'eventId': widget.event.id,
-        'eventName': widget.event.name,
+        'eventId': _currentEvent.id,
+        'eventName': _currentEvent.name,
       },
     );
   }
@@ -1634,8 +1798,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => ParticipantMatchResultsScreen(
-          eventId: widget.event.id,
-          eventName: widget.event.name,
+          eventId: _currentEvent.id,
+          eventName: _currentEvent.name,
         ),
       ),
     );
@@ -1645,8 +1809,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     Navigator.of(context).pushNamed(
       '/violation_report',
       arguments: {
-        'eventId': widget.event.id,
-        'eventName': widget.event.name,
+        'eventId': _currentEvent.id,
+        'eventName': _currentEvent.name,
       },
     );
   }
@@ -1655,7 +1819,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
   Future<void> _showParticipationDialog() async {
     try {
       // GameEventをEventに変換
-      final eventData = await EventConverter.gameEventToEvent(widget.event);
+      final eventData = await EventConverter.gameEventToEvent(_currentEvent);
 
       if (mounted) {
         final result = await showDialog<bool>(
@@ -1707,7 +1871,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
         // 参加申し込み状況を監視
         final participationStatus = ref.watch(
-          userParticipationStatusProvider((eventId: widget.event.id, userId: user.id))
+          userParticipationStatusProvider((eventId: _currentEvent.id, userId: user.id))
         );
 
         return participationStatus.when(
@@ -1962,7 +2126,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                         onPressed: () {
                           // プロバイダーを無効化して再読み込み
                           ref.invalidate(userParticipationStatusProvider((
-                            eventId: widget.event.id,
+                            eventId: _currentEvent.id,
                             userId: user.id
                           )));
                         },
@@ -2036,14 +2200,14 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
   /// 公開設定の表示名を取得
   String _getVisibilityDisplayName() {
-    return widget.event.visibility;
+    return _currentEvent.visibility;
   }
 
 
   /// イベント画像セクションを構築
   Widget _buildEventImageSection() {
     return ZoomableImageWidget(
-      imageUrl: widget.event.imageUrl!,
+      imageUrl: _currentEvent.imageUrl!,
       width: double.infinity,
       height: 200,
       fit: BoxFit.cover,
@@ -2061,7 +2225,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
   /// NGユーザー（ブロック済みユーザー）一覧を構築
   Widget _buildBlockedUsersSection() {
-    if (widget.event.blockedUsers.isEmpty) {
+    if (_currentEvent.blockedUsers.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(AppDimensions.spacingM),
         decoration: BoxDecoration(
@@ -2091,7 +2255,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       );
     }
 
-    return _buildClickableUserTagsList(widget.event.blockedUsers, isBlockedUsers: true);
+    return _buildClickableUserTagsList(_currentEvent.blockedUsers, isBlockedUsers: true);
   }
 
   /// クリック可能なユーザータグリストを構築（UserTagデザイン + プロフィール遷移）
@@ -2204,20 +2368,20 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       if (mounted) {
         UserActionModal.show(
           context: context,
-          eventId: widget.event.id,
-          eventName: widget.event.name,
+          eventId: _currentEvent.id,
+          eventName: _currentEvent.name,
           userId: userId,
           userName: userData.displayName ?? userData.username,
           userData: userData,
-          gameId: widget.event.gameId,
+          gameId: _currentEvent.gameId,
           onGameProfileTap: () {
             // ゲームプロフィール表示
-            if (widget.event.gameId != null) {
+            if (_currentEvent.gameId != null) {
               Navigator.of(context).pushNamed(
                 '/game_profile_view',
                 arguments: {
                   'userId': userId,
-                  'gameId': widget.event.gameId!,
+                  'gameId': _currentEvent.gameId!,
                 },
               );
             }

@@ -50,6 +50,10 @@ class GameEvent {
   // 主催者情報
   final String? createdBy;
   final String? createdByName;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final String? lastUpdatedBy;
+  final String? lastUpdatedByName;
 
   // 中止情報
   final String? cancellationReason;
@@ -99,6 +103,10 @@ class GameEvent {
     this.invitedUserIds = const [],
     this.createdBy,
     this.createdByName,
+    this.createdAt,
+    this.updatedAt,
+    this.lastUpdatedBy,
+    this.lastUpdatedByName,
     this.cancellationReason,
     this.cancelledAt,
   });
@@ -156,6 +164,10 @@ class GameEvent {
       invitedUserIds: List<String>.from(data['invitedUserIds'] as List<dynamic>? ?? []),
       createdBy: data['createdBy'] as String?,
       createdByName: data['createdByName'] as String?,
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
+      lastUpdatedBy: data['lastUpdatedBy'] as String?,
+      lastUpdatedByName: data['lastUpdatedByName'] as String?,
       cancellationReason: data['cancellationReason'] as String?,
       cancelledAt: (data['cancelledAt'] as Timestamp?)?.toDate(),
     );

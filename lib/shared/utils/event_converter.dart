@@ -88,6 +88,11 @@ class EventConverter {
       eventPassword: event.eventPassword, // 招待制イベントのパスワード
       invitedUserIds: event.invitedUserIds, // 招待ユーザーID
       createdBy: event.createdBy, // 作成者情報を追加
+      createdByName: event.createdByName, // 作成者名を追加
+      createdAt: event.createdAt, // 作成日時を追加
+      updatedAt: event.updatedAt, // 更新日時を追加
+      lastUpdatedBy: event.lastUpdatedBy, // 最終更新者IDを追加
+      lastUpdatedByName: event.lastUpdatedByName, // 最終更新者名を追加
       cancellationReason: event.cancellationReason, // 中止理由を追加
       cancelledAt: event.cancelledAt, // 中止日時を追加
     );
@@ -306,8 +311,11 @@ class EventConverter {
       streamingUrls: gameEvent.streamingUrls,
       policy: gameEvent.policy,
       createdBy: gameEvent.createdBy ?? '',
-      createdAt: DateTime.now(), // 仮の値
-      updatedAt: DateTime.now(), // 仮の値
+      createdByName: gameEvent.createdByName,
+      createdAt: gameEvent.createdAt ?? DateTime.now(),
+      updatedAt: gameEvent.updatedAt ?? DateTime.now(),
+      lastUpdatedBy: gameEvent.lastUpdatedBy,
+      lastUpdatedByName: gameEvent.lastUpdatedByName,
       participantIds: const [],
       status: _mapGameEventStatusToEventStatus(gameEvent.status),
       eventPassword: gameEvent.eventPassword, // 招待制イベントのパスワード

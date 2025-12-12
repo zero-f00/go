@@ -27,12 +27,10 @@ import 'features/event_management/views/user_detail_management_screen.dart';
 import 'features/event_management/views/payment_management_screen.dart';
 import 'features/game_profile/views/favorite_games_screen.dart';
 import 'features/game_event_management/models/game_event.dart';
-import 'features/calendar/views/event_calendar_screen.dart';
 import 'features/event_participant/views/participant_group_view_screen.dart';
 import 'features/event_participant/views/participant_list_view_screen.dart';
 import 'features/event_participant/views/violation_report_screen.dart';
 import 'features/notification/views/notification_screen.dart';
-import 'shared/services/participation_service.dart';
 import 'shared/services/navigation_service.dart';
 import 'shared/constants/app_strings.dart';
 import 'shared/constants/app_colors.dart';
@@ -210,12 +208,6 @@ class MyApp extends StatelessWidget {
           }
         },
         '/favorite-games': (context) => const FavoriteGamesScreen(),
-        '/event_calendar': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
-          return EventCalendarScreen(
-            applications: args['applications'] as List<ParticipationApplication>,
-          );
-        },
         '/participant_group_view': (context) {
           final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
           return ParticipantGroupViewScreen(

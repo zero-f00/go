@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 enum EventManagementType {
   /// 作成したイベント
   createdEvents,
@@ -13,6 +15,20 @@ enum EventManagementType {
 }
 
 extension EventManagementTypeExtension on EventManagementType {
+  /// アイコンを取得
+  IconData get icon {
+    switch (this) {
+      case EventManagementType.createdEvents:
+        return Icons.event;
+      case EventManagementType.collaborativeEvents:
+        return Icons.group;
+      case EventManagementType.draftEvents:
+        return Icons.drafts;
+      case EventManagementType.pastEvents:
+        return Icons.history;
+    }
+  }
+
   /// 画面タイトルを取得
   String get title {
     switch (this) {

@@ -69,6 +69,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     'ゲーム名',
   ];
 
+  // 前回のお気に入りゲームIDリスト（変更検出用）
+  List<String> _lastFavoriteGameIds = [];
+
+  // 認証状態が確定してデータを読み込んだかどうか
+  bool _hasInitialDataLoaded = false;
+
   @override
   void initState() {
     super.initState();
@@ -83,8 +89,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       });
     }
 
-    // お気に入りゲームを読み込み
-    _loadFavoriteGames();
+    // 認証状態が確定するまでお気に入りゲームの読み込みを待機
+    // buildメソッド内のref.listenで認証状態を監視してデータを読み込む
   }
 
   /// お気に入りゲームを読み込み
@@ -118,10 +124,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         final favoriteGames = await GameService.instance.getFavoriteGames(userData!.favoriteGameIds);
         setState(() {
           _favoriteGames = favoriteGames;
+          _lastFavoriteGameIds = List.from(userData.favoriteGameIds);
         });
       } else {
         setState(() {
           _favoriteGames = [];
+          _lastFavoriteGameIds = [];
         });
       }
     } catch (e) {
@@ -133,6 +141,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         _isFavoriteGamesLoading = false;
       });
     }
+  }
+
+  /// 2つのリストが等しいかどうかを比較
+  bool _listEquals(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
   }
 
   void _onSearchFocusChanged() {
@@ -359,6 +376,44 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ユーザーデータの変更を監視してお気に入りゲームを再読み込み
+    ref.listen<AsyncValue<UserData?>>(currentUserDataProvider, (previous, next) {
+      next.whenData((userData) {
+        if (userData != null) {
+          // 初回読み込み（認証状態が確定した時）
+          if (!_hasInitialDataLoaded) {
+            _hasInitialDataLoaded = true;
+            _loadFavoriteGames();
+            return;
+          }
+          // お気に入りゲームIDが変更された場合のみ再読み込み
+          final currentFavoriteIds = userData.favoriteGameIds;
+          if (!_listEquals(currentFavoriteIds, _lastFavoriteGameIds)) {
+            _lastFavoriteGameIds = List.from(currentFavoriteIds);
+            _loadFavoriteGames();
+          }
+        } else {
+          // ログアウト時はフラグをリセット
+          _hasInitialDataLoaded = false;
+          setState(() {
+            _favoriteGames = [];
+            _lastFavoriteGameIds = [];
+          });
+        }
+      });
+    });
+
+    // 初回ビルド時に既にログイン状態であればデータを読み込む
+    final currentUserAsync = ref.read(currentUserDataProvider);
+    if (!_hasInitialDataLoaded && currentUserAsync.hasValue && currentUserAsync.value != null) {
+      _hasInitialDataLoaded = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _loadFavoriteGames();
+        }
+      });
+    }
+
     return Scaffold(
       key: _scaffoldKey,
       drawer: const AppDrawer(),

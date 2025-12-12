@@ -180,12 +180,6 @@ class EventCard extends StatelessWidget {
             right: AppDimensions.spacingM,
             child: _buildStatusBadgeOverlay(),
           ),
-          if (event.createdByName != null)
-            Positioned(
-              bottom: AppDimensions.spacingM,
-              left: AppDimensions.spacingM,
-              child: _buildOrganizerTagOverlay(),
-            ),
         ],
       ),
     );
@@ -212,38 +206,6 @@ class EventCard extends StatelessWidget {
           color: Colors.white,
           fontWeight: FontWeight.w600,
         ),
-      ),
-    );
-  }
-
-  Widget _buildOrganizerTagOverlay() {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingS,
-        vertical: AppDimensions.spacingXS,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.7),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.person,
-            size: 12,
-            color: Colors.white,
-          ),
-          const SizedBox(width: AppDimensions.spacingXS / 2),
-          Text(
-            '主催: ${event.createdByName!}',
-            style: const TextStyle(
-              fontSize: AppDimensions.fontSizeXS,
-              color: Colors.white,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -351,10 +313,6 @@ class EventCard extends StatelessWidget {
                   ],
                 ],
               ),
-              if (event.createdByName != null && !hasImage) ...[
-                const SizedBox(height: AppDimensions.spacingXS),
-                _buildOrganizerTag(),
-              ],
             ],
           ),
         ),
@@ -389,42 +347,6 @@ class EventCard extends StatelessWidget {
           color: _getStatusColor(event.status),
           fontWeight: FontWeight.w600,
         ),
-      ),
-    );
-  }
-
-  Widget _buildOrganizerTag() {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingS,
-        vertical: AppDimensions.spacingXS,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.2),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.person,
-            size: 12,
-            color: AppColors.primary,
-          ),
-          const SizedBox(width: AppDimensions.spacingXS / 2),
-          Text(
-            '主催: ${event.createdByName!}',
-            style: const TextStyle(
-              fontSize: AppDimensions.fontSizeXS,
-              color: AppColors.primary,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
       ),
     );
   }

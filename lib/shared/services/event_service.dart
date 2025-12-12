@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
 import '../../data/models/event_model.dart';
 import '../../data/models/notification_model.dart';
 import '../../data/repositories/shared_game_repository.dart';
@@ -55,14 +54,14 @@ class EventService {
     required String createdByUserId,
   }) async {
     try {
-
       // 招待されたユーザーのデータを取得
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) {
         return;
       }
 
-      final createdByName = currentUser.displayName ?? currentUser.email ?? 'ユーザー';
+      final createdByName =
+          currentUser.displayName ?? currentUser.email ?? 'ユーザー';
 
       // 各招待ユーザーに通知を送信
       for (final userId in invitedUserIds) {
@@ -88,12 +87,8 @@ class EventService {
           // 個別の送信失敗は続行
         }
       }
-
     } catch (e) {
-      throw EventServiceException(
-        'イベント招待の送信に失敗しました',
-        originalException: e,
-      );
+      throw EventServiceException('イベント招待の送信に失敗しました', originalException: e);
     }
   }
 
@@ -106,14 +101,12 @@ class EventService {
     Function(double)? onUploadProgress,
   }) async {
     try {
-
       // Firebase Authentication の確認
       final currentUser = FirebaseAuth.instance.currentUser;
 
       if (currentUser == null) {
         throw EventServiceException('ユーザーが認証されていません');
       }
-
 
       // ドキュメント参照を作成（IDを事前生成）
       final eventRef = _firestore.collection(_eventsCollection).doc();
@@ -141,6 +134,9 @@ class EventService {
 
       // ゲーム名を取得
       final gameName = await _getGameNameById(eventInput.gameId);
+
+      // 作成者名を取得
+      final createdByName = currentUser.displayName ?? currentUser.email ?? 'ユーザー';
 
       final event = Event(
         id: eventId,
@@ -173,6 +169,7 @@ class EventService {
         streamingUrls: eventInput.streamingUrls,
         policy: eventInput.policy,
         createdBy: createdBy,
+        createdByName: createdByName,
         createdAt: now,
         updatedAt: now,
         participantIds: [], // 初期状態は空
@@ -191,14 +188,12 @@ class EventService {
         rethrow;
       }
 
-
       return EventCreationResult(
         eventId: eventId,
         imageUrl: imageUrl,
         imagePath: imagePath,
       );
     } catch (e) {
-
       // 画像のクリーンアップ（エラー時）
       if (imageFile != null) {
         try {
@@ -208,14 +203,10 @@ class EventService {
             eventRef.id,
           );
           await ImageUploadService.deleteImage(tempImageResult.filePath);
-        } catch (cleanupError) {
-        }
+        } catch (cleanupError) {}
       }
 
-      throw EventServiceException(
-        'イベントの作成に失敗しました',
-        originalException: e,
-      );
+      throw EventServiceException('イベントの作成に失敗しました', originalException: e);
     }
   }
 
@@ -229,8 +220,10 @@ class EventService {
     bool sendNotifications = true, // 通知送信フラグ（デフォルト: true）
   }) async {
     try {
-
       final eventRef = _firestore.collection(_eventsCollection).doc(eventId);
+
+      // 現在のユーザー情報を取得
+      final currentUser = FirebaseAuth.instance.currentUser;
 
       // 既存のイベントを取得
       final existingEvent = await getEventById(eventId);
@@ -247,8 +240,7 @@ class EventService {
         if (currentImagePath != null && currentImagePath.isNotEmpty) {
           try {
             await ImageUploadService.deleteImage(currentImagePath);
-          } catch (deleteError) {
-          }
+          } catch (deleteError) {}
         }
 
         // 新しい画像をアップロード
@@ -260,6 +252,10 @@ class EventService {
         imageUrl = imageResult.downloadUrl;
         imagePath = imageResult.filePath;
       }
+
+      // 最終更新者情報を設定
+      final lastUpdatedBy = currentUser?.uid;
+      final lastUpdatedByName = currentUser?.displayName ?? currentUser?.email ?? 'ユーザー';
 
       // 更新されたイベントオブジェクトを作成
       final updatedEvent = Event(
@@ -293,15 +289,21 @@ class EventService {
         streamingUrls: eventInput.streamingUrls,
         policy: eventInput.policy,
         createdBy: existingEvent.createdBy,
+        createdByName: existingEvent.createdByName,
         createdAt: existingEvent.createdAt,
         updatedAt: DateTime.now(),
+        lastUpdatedBy: lastUpdatedBy,
+        lastUpdatedByName: lastUpdatedByName,
         participantIds: existingEvent.participantIds,
         status: existingEvent.status,
         eventPassword: eventInput.eventPassword,
       );
 
       // 変更検知を実行
-      final changeResult = EventChangeDetector.detectChanges(existingEvent, updatedEvent);
+      final changeResult = EventChangeDetector.detectChanges(
+        existingEvent,
+        updatedEvent,
+      );
 
       // 招待制からパブリックに変更された場合の特別処理
       final visibilityChangedToPublic =
@@ -320,10 +322,7 @@ class EventService {
         );
 
         // invitedUserIdsをクリア（パブリックでは不要）
-        await eventRef.update({
-          'invitedUserIds': [],
-          'eventPassword': null,
-        });
+        await eventRef.update({'invitedUserIds': [], 'eventPassword': null});
       }
 
       // 通知を送信（変更があり、通知送信が有効で、イベントが公開中の場合のみ）
@@ -335,36 +334,33 @@ class EventService {
           changeResult: changeResult,
         );
       }
-
     } catch (e) {
-      throw EventServiceException(
-        'イベントの更新に失敗しました',
-        originalException: e,
-      );
+      throw EventServiceException('イベントの更新に失敗しました', originalException: e);
     }
   }
 
   /// イベントステータスを更新
-  static Future<void> updateEventStatus(String eventId, EventStatus status) async {
+  static Future<void> updateEventStatus(
+    String eventId,
+    EventStatus status,
+  ) async {
     try {
-
       await _firestore.collection(_eventsCollection).doc(eventId).update({
         'status': status.name,
         'updatedAt': Timestamp.fromDate(DateTime.now()),
       });
-
     } catch (e) {
-      throw EventServiceException(
-        'イベントステータスの更新に失敗しました',
-        originalException: e,
-      );
+      throw EventServiceException('イベントステータスの更新に失敗しました', originalException: e);
     }
   }
 
   /// イベントをIDで取得
   static Future<Event?> getEventById(String eventId) async {
     try {
-      final doc = await _firestore.collection(_eventsCollection).doc(eventId).get();
+      final doc = await _firestore
+          .collection(_eventsCollection)
+          .doc(eventId)
+          .get();
 
       if (!doc.exists) {
         return null;
@@ -373,27 +369,57 @@ class EventService {
       final event = Event.fromFirestore(doc);
       return event;
     } catch (e) {
-      throw EventServiceException(
-        'イベントの取得に失敗しました',
-        originalException: e,
-      );
+      throw EventServiceException('イベントの取得に失敗しました', originalException: e);
     }
   }
 
-  /// ユーザーが作成したイベント一覧を取得
-  static Future<List<Event>> getUserCreatedEvents(String userId, {int limit = 20}) async {
+  /// ユーザーが作成または運営者として関わるイベント一覧を取得
+  static Future<List<Event>> getUserCreatedEvents(
+    String userId, {
+    int limit = 100,
+  }) async {
     try {
-
-      final query = await _firestore
+      // 1. 自分が作成したイベントを取得
+      final createdQuery = await _firestore
           .collection(_eventsCollection)
           .where('createdBy', isEqualTo: userId)
           .orderBy('createdAt', descending: true)
           .limit(limit)
           .get();
 
-      final events = query.docs.map((doc) => Event.fromFirestore(doc)).toList();
+      final createdEvents = createdQuery.docs
+          .map((doc) => Event.fromFirestore(doc))
+          .toList();
 
-      return events;
+      // 2. 運営者として追加されているイベントを取得
+      // arrayContainsとorderByの組み合わせは複合インデックスが必要なため、
+      // orderByを省略してクライアント側でソート
+      final managedQuery = await _firestore
+          .collection(_eventsCollection)
+          .where('managerIds', arrayContains: userId)
+          .limit(limit)
+          .get();
+
+      final managedEvents = managedQuery.docs
+          .map((doc) => Event.fromFirestore(doc))
+          .toList();
+
+      // 3. 重複を除いてマージ
+      final Map<String, Event> eventMap = {};
+      for (final event in createdEvents) {
+        eventMap[event.id] = event;
+      }
+      for (final event in managedEvents) {
+        if (!eventMap.containsKey(event.id)) {
+          eventMap[event.id] = event;
+        }
+      }
+
+      // 4. 作成日時でソート（降順）
+      final allEvents = eventMap.values.toList();
+      allEvents.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+      return allEvents;
     } catch (e) {
       throw EventServiceException(
         'ユーザーのイベント一覧の取得に失敗しました',
@@ -412,7 +438,6 @@ class EventService {
     DateTime? toDate,
   }) async {
     try {
-
       Query query = _firestore
           .collection(_eventsCollection)
           .where('status', isEqualTo: 'published')
@@ -430,10 +455,16 @@ class EventService {
 
       // 日付範囲でフィルタ
       if (fromDate != null) {
-        query = query.where('eventDate', isGreaterThanOrEqualTo: Timestamp.fromDate(fromDate));
+        query = query.where(
+          'eventDate',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(fromDate),
+        );
       }
       if (toDate != null) {
-        query = query.where('eventDate', isLessThanOrEqualTo: Timestamp.fromDate(toDate));
+        query = query.where(
+          'eventDate',
+          isLessThanOrEqualTo: Timestamp.fromDate(toDate),
+        );
       }
 
       // ソートとページング
@@ -446,21 +477,19 @@ class EventService {
       query = query.limit(limit);
 
       final querySnapshot = await query.get();
-      final events = querySnapshot.docs.map((doc) => Event.fromFirestore(doc)).toList();
+      final events = querySnapshot.docs
+          .map((doc) => Event.fromFirestore(doc))
+          .toList();
 
       return events;
     } catch (e) {
-      throw EventServiceException(
-        '公開イベントの取得に失敗しました',
-        originalException: e,
-      );
+      throw EventServiceException('公開イベントの取得に失敗しました', originalException: e);
     }
   }
 
   /// イベントを削除（画像も含む）
   static Future<void> deleteEvent(String eventId) async {
     try {
-
       // イベント情報を取得
       final event = await getEventById(eventId);
       if (event == null) {
@@ -474,18 +503,14 @@ class EventService {
         if (imagePath != null) {
           try {
             await ImageUploadService.deleteImage(imagePath);
-          } catch (imageError) {
-          }
+          } catch (imageError) {}
         }
       }
 
       // Firestoreドキュメントを削除
       await _firestore.collection(_eventsCollection).doc(eventId).delete();
     } catch (e) {
-      throw EventServiceException(
-        'イベントの削除に失敗しました',
-        originalException: e,
-      );
+      throw EventServiceException('イベントの削除に失敗しました', originalException: e);
     }
   }
 
@@ -540,14 +565,12 @@ class EventService {
     int limit = 20,
   }) async {
     try {
-
       // TODO: 将来的にはAlgolia等の検索エンジンと連携
       // 現在は基本的な検索を実装
       Query query = _firestore
           .collection(_eventsCollection)
           .where('status', isEqualTo: 'published')
           .where('visibility', isEqualTo: 'public');
-
 
       if (platforms != null && platforms.isNotEmpty) {
         query = query.where('platforms', arrayContainsAny: platforms);
@@ -561,29 +584,30 @@ class EventService {
 
       final querySnapshot = await query.get();
 
-      final allEvents = querySnapshot.docs.map((doc) => Event.fromFirestore(doc)).toList();
+      final allEvents = querySnapshot.docs
+          .map((doc) => Event.fromFirestore(doc))
+          .toList();
 
       // クライアントサイドでキーワード検索（暫定）
       final filteredEvents = allEvents.where((event) {
-        final searchText = '${event.name} ${event.description} ${event.gameName ?? ''}'.toLowerCase();
+        final searchText =
+            '${event.name} ${event.description} ${event.gameName ?? ''}'
+                .toLowerCase();
         return searchText.contains(keyword.toLowerCase());
       }).toList();
 
-
-
       return filteredEvents;
     } catch (e) {
-      throw EventServiceException(
-        'イベントの検索に失敗しました',
-        originalException: e,
-      );
+      throw EventServiceException('イベントの検索に失敗しました', originalException: e);
     }
   }
 
   /// ゲームIDに関連するイベント一覧を取得
-  static Future<List<Event>> getEventsByGameId(String gameId, {int limit = 20}) async {
+  static Future<List<Event>> getEventsByGameId(
+    String gameId, {
+    int limit = 20,
+  }) async {
     try {
-
       final query = await _firestore
           .collection(_eventsCollection)
           .where('gameId', isEqualTo: gameId)
@@ -593,16 +617,11 @@ class EventService {
           .limit(limit)
           .get();
 
-
       final events = query.docs.map((doc) => Event.fromFirestore(doc)).toList();
-
 
       return events;
     } catch (e) {
-      throw EventServiceException(
-        'ゲーム関連イベントの取得に失敗しました',
-        originalException: e,
-      );
+      throw EventServiceException('ゲーム関連イベントの取得に失敗しました', originalException: e);
     }
   }
 
@@ -613,9 +632,9 @@ class EventService {
         .doc(eventId)
         .snapshots()
         .map((doc) {
-      if (!doc.exists) return null;
-      return Event.fromFirestore(doc);
-    });
+          if (!doc.exists) return null;
+          return Event.fromFirestore(doc);
+        });
   }
 
   /// 公開イベント一覧のリアルタイム監視
@@ -641,8 +660,10 @@ class EventService {
         .orderBy('eventDate', descending: false)
         .limit(limit)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => Event.fromFirestore(doc)).toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => Event.fromFirestore(doc)).toList(),
+        );
   }
 
   /// イベントのパスワードを検証し、参加申請を送信
@@ -652,9 +673,11 @@ class EventService {
     required String userId,
   }) async {
     try {
-
       // イベントデータを取得
-      final eventDoc = await _firestore.collection(_eventsCollection).doc(eventId).get();
+      final eventDoc = await _firestore
+          .collection(_eventsCollection)
+          .doc(eventId)
+          .get();
       if (!eventDoc.exists) {
         throw EventServiceException('イベントが見つかりません');
       }
@@ -690,24 +713,21 @@ class EventService {
           .collection('participants')
           .doc(userId)
           .set({
-        'userId': userId,
-        'status': 'pending', // pending, approved, rejected
-        'appliedAt': FieldValue.serverTimestamp(),
-        'approvedAt': null,
-        'rejectedAt': null,
-        'approvedBy': null,
-        'rejectedBy': null,
-      });
+            'userId': userId,
+            'status': 'pending', // pending, approved, rejected
+            'appliedAt': FieldValue.serverTimestamp(),
+            'approvedAt': null,
+            'rejectedAt': null,
+            'approvedBy': null,
+            'rejectedBy': null,
+          });
 
       return true;
     } catch (e) {
       if (e is EventServiceException) {
         rethrow;
       }
-      throw EventServiceException(
-        '参加申請の送信に失敗しました',
-        originalException: e,
-      );
+      throw EventServiceException('参加申請の送信に失敗しました', originalException: e);
     }
   }
 
@@ -718,17 +738,16 @@ class EventService {
     required String approvedBy,
   }) async {
     try {
-
       await _firestore
           .collection(_eventsCollection)
           .doc(eventId)
           .collection('participants')
           .doc(userId)
           .update({
-        'status': 'approved',
-        'approvedAt': FieldValue.serverTimestamp(),
-        'approvedBy': approvedBy,
-      });
+            'status': 'approved',
+            'approvedAt': FieldValue.serverTimestamp(),
+            'approvedBy': approvedBy,
+          });
 
       // 承認通知を送信
       await _sendJoinRequestStatusNotification(
@@ -739,10 +758,7 @@ class EventService {
 
       return true;
     } catch (e) {
-      throw EventServiceException(
-        '参加申請の承認に失敗しました',
-        originalException: e,
-      );
+      throw EventServiceException('参加申請の承認に失敗しました', originalException: e);
     }
   }
 
@@ -753,17 +769,16 @@ class EventService {
     required String rejectedBy,
   }) async {
     try {
-
       await _firestore
           .collection(_eventsCollection)
           .doc(eventId)
           .collection('participants')
           .doc(userId)
           .update({
-        'status': 'rejected',
-        'rejectedAt': FieldValue.serverTimestamp(),
-        'rejectedBy': rejectedBy,
-      });
+            'status': 'rejected',
+            'rejectedAt': FieldValue.serverTimestamp(),
+            'rejectedBy': rejectedBy,
+          });
 
       // 拒否通知を送信
       await _sendJoinRequestStatusNotification(
@@ -774,26 +789,27 @@ class EventService {
 
       return true;
     } catch (e) {
-      throw EventServiceException(
-        '参加申請の拒否に失敗しました',
-        originalException: e,
-      );
+      throw EventServiceException('参加申請の拒否に失敗しました', originalException: e);
     }
   }
 
   /// イベントの参加申請一覧を取得
-  static Stream<List<Map<String, dynamic>>> getJoinRequestsStream(String eventId) {
+  static Stream<List<Map<String, dynamic>>> getJoinRequestsStream(
+    String eventId,
+  ) {
     return _firestore
         .collection(_eventsCollection)
         .doc(eventId)
         .collection('participants')
         .orderBy('appliedAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) {
-              final data = doc.data();
-              data['id'] = doc.id;
-              return data;
-            }).toList());
+        .map(
+          (snapshot) => snapshot.docs.map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id;
+            return data;
+          }).toList(),
+        );
   }
 
   /// 参加申請状況の通知を送信
@@ -804,7 +820,10 @@ class EventService {
   }) async {
     try {
       // イベント情報を取得
-      final eventDoc = await _firestore.collection(_eventsCollection).doc(eventId).get();
+      final eventDoc = await _firestore
+          .collection(_eventsCollection)
+          .doc(eventId)
+          .get();
       if (!eventDoc.exists) return;
 
       final eventData = eventDoc.data() as Map<String, dynamic>;
@@ -829,11 +848,7 @@ class EventService {
           message: message,
           isRead: false,
           createdAt: DateTime.now(),
-          data: {
-            'eventId': eventId,
-            'eventName': eventName,
-            'status': status,
-          },
+          data: {'eventId': eventId, 'eventName': eventName, 'status': status},
         ),
       );
     } catch (e) {
@@ -847,18 +862,25 @@ class EventService {
     required EventChangeResult changeResult,
   }) async {
     try {
-      print('🔔 EventService: Sending event update notifications for event: ${event.name}');
-      print('🔔 EventService: Changes detected: ${changeResult.generateSummaryText()}');
+      print(
+        '🔔 EventService: Sending event update notifications for event: ${event.name}',
+      );
+      print(
+        '🔔 EventService: Changes detected: ${changeResult.generateSummaryText()}',
+      );
 
       // 更新者の情報を取得
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) {
-        print('❌ EventService: No authenticated user found for notification sending');
+        print(
+          '❌ EventService: No authenticated user found for notification sending',
+        );
         return;
       }
 
       final updatedByUserId = currentUser.uid;
-      String updatedByUserName = currentUser.displayName ?? currentUser.email ?? 'ユーザー';
+      String updatedByUserName =
+          currentUser.displayName ?? currentUser.email ?? 'ユーザー';
 
       // UserRepositoryから更新者の詳細情報を取得を試行
       try {
@@ -869,7 +891,9 @@ class EventService {
         }
       } catch (e) {
         // ユーザー情報取得失敗時はFirebaseAuthの情報を使用
-        print('⚠️ EventService: Failed to get user details, using Firebase info: $e');
+        print(
+          '⚠️ EventService: Failed to get user details, using Firebase info: $e',
+        );
       }
 
       // 参加者リストを取得
@@ -882,27 +906,29 @@ class EventService {
         managerIds.add(event.createdBy);
       }
 
-      print('🔔 EventService: Participants: ${participantIds.length}, Managers: ${managerIds.length}');
+      print(
+        '🔔 EventService: Participants: ${participantIds.length}, Managers: ${managerIds.length}',
+      );
 
       // 通知を送信
-      final success = await NotificationService.instance.sendEventUpdateNotifications(
-        eventId: event.id,
-        eventName: event.name,
-        updatedByUserId: updatedByUserId,
-        updatedByUserName: updatedByUserName,
-        participantIds: participantIds,
-        managerIds: managerIds,
-        changesSummary: changeResult.generateSummaryText(),
-        changesDetail: changeResult.generateDetailText(),
-        hasCriticalChanges: changeResult.hasCriticalChanges,
-      );
+      final success = await NotificationService.instance
+          .sendEventUpdateNotifications(
+            eventId: event.id,
+            eventName: event.name,
+            updatedByUserId: updatedByUserId,
+            updatedByUserName: updatedByUserName,
+            participantIds: participantIds,
+            managerIds: managerIds,
+            changesSummary: changeResult.generateSummaryText(),
+            changesDetail: changeResult.generateDetailText(),
+            hasCriticalChanges: changeResult.hasCriticalChanges,
+          );
 
       if (success) {
         print('✅ EventService: Event update notifications sent successfully');
       } else {
         print('❌ EventService: Failed to send some event update notifications');
       }
-
     } catch (e) {
       print('❌ EventService: Error sending event update notifications: $e');
       // 通知送信の失敗はイベント更新処理をブロックしない
@@ -913,8 +939,11 @@ class EventService {
   static Future<List<String>> _getEventParticipantIds(String eventId) async {
     try {
       // ParticipationServiceを使用して承認済み + 申請中の参加者を取得
-      final participantIds = await ParticipationService.getApprovedAndPendingApplicants(eventId);
-      print('🔔 EventService: Retrieved ${participantIds.length} approved/pending participants for event: $eventId');
+      final participantIds =
+          await ParticipationService.getApprovedAndPendingApplicants(eventId);
+      print(
+        '🔔 EventService: Retrieved ${participantIds.length} approved/pending participants for event: $eventId',
+      );
       return participantIds;
     } catch (e) {
       print('❌ EventService: Error getting event participants: $e');

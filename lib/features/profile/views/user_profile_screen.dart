@@ -25,6 +25,7 @@ import '../../../data/models/event_model.dart';
 import '../../../shared/utils/event_converter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../shared/widgets/auth_dialog.dart';
+import '../../calendar/views/participating_events_screen.dart';
 
 /// ユーザープロフィール表示画面
 class UserProfileScreen extends ConsumerStatefulWidget {
@@ -1213,15 +1214,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
               ),
               const Spacer(),
               if (approvedApplications.isNotEmpty)
-                TextButton.icon(
+                TextButton(
                   onPressed: () => _navigateToParticipatingEventsList(approvedApplications),
-                  icon: const Icon(
-                    Icons.calendar_today,
-                    size: AppDimensions.iconS,
-                    color: AppColors.accent,
-                  ),
-                  label: const Text(
-                    'カレンダーで見る',
+                  child: const Text(
+                    'もっと見る',
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeS,
                       color: AppColors.accent,
@@ -1346,13 +1342,31 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     return status == 'published' || status == 'scheduled' || status == 'active';
   }
 
-  /// 参加予定イベント一覧画面（カレンダー）への遷移
-  void _navigateToParticipatingEventsList(List<ParticipationApplication> applications) {
-    Navigator.of(context).pushNamed(
-      '/event_calendar',
-      arguments: {
-        'applications': applications,
-      },
+  /// 参加予定イベント一覧画面への遷移
+  void _navigateToParticipatingEventsList(List<ParticipationApplication> approvedApplications) async {
+    // 承認済み申請からイベント一覧を取得
+    final List<GameEvent> events = [];
+    final now = DateTime.now();
+
+    for (final application in approvedApplications) {
+      final event = await _getEventFromApplication(application);
+      if (event != null && event.startDate.isAfter(now.subtract(const Duration(days: 1)))) {
+        events.add(event);
+      }
+    }
+
+    // 開催日順でソート
+    events.sort((a, b) => a.startDate.compareTo(b.startDate));
+
+    if (!mounted) return;
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ParticipatingEventsScreen(
+          firebaseUid: _userData!.id,
+          initialEvents: events,
+        ),
+      ),
     );
   }
 

@@ -13,7 +13,7 @@ import '../../../shared/widgets/user_settings_dialog.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/constants/event_management_types.dart';
 import '../../event_creation/views/event_creation_screen.dart';
-import '../../../shared/widgets/generic_event_list_screen.dart';
+import '../../../shared/widgets/event_list_screen.dart';
 import '../../../shared/widgets/enhanced_past_events_screen.dart';
 import '../../event_detail/views/event_detail_screen.dart';
 import '../../game_event_management/models/game_event.dart';
@@ -73,6 +73,9 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
   // 参加イベントタブの表示モード: true=リスト, false=カレンダー
   bool _isParticipantListView = true;
 
+  // 認証状態が確定してデータを読み込んだかどうか
+  bool _hasInitialDataLoaded = false;
+
   @override
   void initState() {
     super.initState();
@@ -89,8 +92,8 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
       }
     });
 
-    // イベント数を読み込み（初回のため強制読み込み）
-    _loadEventCounts(forceRefresh: true);
+    // 認証状態が確定するまでイベント数の読み込みを待機
+    // buildメソッド内のref.listenで認証状態を監視してデータを読み込む
 
     // イベント作成画面への自動遷移処理
     if (widget.shouldNavigateToEventCreation) {
@@ -193,12 +196,46 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
 
   @override
   Widget build(BuildContext context) {
-    final isSignedIn = ref.watch(isSignedInProvider);
+    final authState = ref.watch(authStateProvider);
     final needsInitialSetup = ref.watch(needsInitialSetupProvider);
     final userDataAsync = ref.watch(currentUserDataProvider);
     final currentUser = ref.watch(currentFirebaseUserProvider);
 
-    // サインインしていない場合、サインインダイアログを表示
+    // 認証状態の変更を監視し、ログイン状態が確定したらデータを読み込む
+    ref.listen<AsyncValue<UserData?>>(currentUserDataProvider, (previous, next) {
+      next.whenData((userData) {
+        if (userData != null && !_hasInitialDataLoaded) {
+          _hasInitialDataLoaded = true;
+          _loadEventCounts(forceRefresh: false);
+        } else if (userData == null) {
+          // ログアウト時はフラグをリセット
+          _hasInitialDataLoaded = false;
+          setState(() {
+            _eventCounts = {};
+            _activeEventCounts = {};
+            _lastCountsLoadTime = null;
+          });
+        }
+      });
+    });
+
+    // 初回ビルド時に既にログイン状態であればデータを読み込む
+    if (!_hasInitialDataLoaded && userDataAsync.hasValue && userDataAsync.value != null) {
+      _hasInitialDataLoaded = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _loadEventCounts(forceRefresh: false);
+        }
+      });
+    }
+
+    // 認証状態がローディング中の場合は待機画面を表示（サインインダイアログを表示しない）
+    if (authState.isLoading) {
+      return _buildLoadingScreen();
+    }
+
+    // 認証状態が確定し、サインインしていない場合のみサインインダイアログを表示
+    final isSignedIn = authState.hasValue && authState.value != null;
     if (!isSignedIn) {
       if (!_isDialogShowing) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -269,27 +306,38 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
 
   // 主催イベント管理タブ
   Widget _buildHostEventTab() {
-    return Container(
-      margin: const EdgeInsets.all(AppDimensions.spacingL),
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.cardShadow,
-            blurRadius: AppDimensions.cardElevation,
-            offset: const Offset(0, AppDimensions.shadowOffsetY),
+    return RefreshIndicator(
+      onRefresh: () => _loadEventCounts(forceRefresh: true),
+      color: AppColors.accent,
+      backgroundColor: AppColors.cardBackground,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Container(
+          margin: const EdgeInsets.all(AppDimensions.spacingL),
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height - 200,
           ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingL),
-        child: Column(
-          children: [
-            _buildQuickActionsSection(),
-            const SizedBox(height: AppDimensions.spacingM),
-            Expanded(child: _buildManagementOptionsSection()),
-          ],
+          decoration: BoxDecoration(
+            color: AppColors.cardBackground,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.cardShadow,
+                blurRadius: AppDimensions.cardElevation,
+                offset: const Offset(0, AppDimensions.shadowOffsetY),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.spacingL),
+            child: Column(
+              children: [
+                _buildQuickActionsSection(),
+                const SizedBox(height: AppDimensions.spacingM),
+                _buildManagementOptionsSection(),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -1190,71 +1238,65 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
             ],
           ),
           const SizedBox(height: AppDimensions.spacingL),
-          Expanded(
-            child: ListView(
-              children: [
-                _buildManagementOptionWithCount(
-                  title: '作成したイベント',
-                  subtitle: '自分が作成したイベントを管理',
-                  icon: Icons.event,
-                  count: _eventCounts[EventManagementType.createdEvents] ?? 0,
-                  activeCount:
-                      _activeEventCounts[EventManagementType.createdEvents],
-                  onTap: () {
-                    _navigateToEventList(
-                      context,
-                      EventManagementType.createdEvents,
-                    );
-                  },
-                ),
-                const SizedBox(height: AppDimensions.spacingM),
-                _buildManagementOptionWithCount(
-                  title: '共同編集者のイベント',
-                  subtitle: '編集権限を持つイベントを管理',
-                  icon: Icons.group,
-                  count:
-                      _eventCounts[EventManagementType.collaborativeEvents] ??
-                      0,
-                  activeCount:
-                      _activeEventCounts[EventManagementType
-                          .collaborativeEvents],
-                  onTap: () {
-                    _navigateToEventList(
-                      context,
-                      EventManagementType.collaborativeEvents,
-                    );
-                  },
-                ),
-                const SizedBox(height: AppDimensions.spacingM),
-                _buildManagementOptionWithCount(
-                  title: '下書き保存されたイベント',
-                  subtitle: '一時保存されたイベントを管理',
-                  icon: Icons.drafts,
-                  count: _eventCounts[EventManagementType.draftEvents] ?? 0,
-                  activeCount: null,
-                  onTap: () {
-                    _navigateToEventList(
-                      context,
-                      EventManagementType.draftEvents,
-                    );
-                  },
-                ),
-                const SizedBox(height: AppDimensions.spacingM),
-                _buildManagementOptionWithCount(
-                  title: '過去のイベント履歴',
-                  subtitle: '終了したイベントを閲覧・統計確認',
-                  icon: Icons.history,
-                  count: _eventCounts[EventManagementType.pastEvents] ?? 0,
-                  activeCount: null,
-                  onTap: () {
-                    _navigateToEventList(
-                      context,
-                      EventManagementType.pastEvents,
-                    );
-                  },
-                ),
-              ],
-            ),
+          _buildManagementOptionWithCount(
+            title: '作成したイベント',
+            subtitle: '自分が作成したイベントを管理',
+            icon: Icons.event,
+            count: _eventCounts[EventManagementType.createdEvents] ?? 0,
+            activeCount:
+                _activeEventCounts[EventManagementType.createdEvents],
+            onTap: () {
+              _navigateToEventList(
+                context,
+                EventManagementType.createdEvents,
+              );
+            },
+          ),
+          const SizedBox(height: AppDimensions.spacingM),
+          _buildManagementOptionWithCount(
+            title: '共同編集者のイベント',
+            subtitle: '編集権限を持つイベントを管理',
+            icon: Icons.group,
+            count:
+                _eventCounts[EventManagementType.collaborativeEvents] ??
+                0,
+            activeCount:
+                _activeEventCounts[EventManagementType
+                    .collaborativeEvents],
+            onTap: () {
+              _navigateToEventList(
+                context,
+                EventManagementType.collaborativeEvents,
+              );
+            },
+          ),
+          const SizedBox(height: AppDimensions.spacingM),
+          _buildManagementOptionWithCount(
+            title: '下書き保存されたイベント',
+            subtitle: '一時保存されたイベントを管理',
+            icon: Icons.drafts,
+            count: _eventCounts[EventManagementType.draftEvents] ?? 0,
+            activeCount: null,
+            onTap: () {
+              _navigateToEventList(
+                context,
+                EventManagementType.draftEvents,
+              );
+            },
+          ),
+          const SizedBox(height: AppDimensions.spacingM),
+          _buildManagementOptionWithCount(
+            title: '過去のイベント履歴',
+            subtitle: '終了したイベントを閲覧・統計確認',
+            icon: Icons.history,
+            count: _eventCounts[EventManagementType.pastEvents] ?? 0,
+            activeCount: null,
+            onTap: () {
+              _navigateToEventList(
+                context,
+                EventManagementType.pastEvents,
+              );
+            },
           ),
         ],
       ),
@@ -1608,20 +1650,15 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => GenericEventListScreen(
+            builder: (context) => EventListScreen(
               title: eventType.title,
-              events: events,
-              isManagementMode: true, // 管理者モードを有効化
-              onEventTap: (event) {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => EventDetailScreen(event: event),
-                  ),
-                );
-              },
-              emptyTitle: errorMessage ?? eventType.emptyMessage,
-              emptyMessage: errorMessage ?? eventType.emptyDetailMessage,
-              searchHint: '${eventType.title}を検索...',
+              headerIcon: eventType.icon,
+              initialEvents: events,
+              isManagementMode: true,
+              showCalendarToggle: eventType != EventManagementType.draftEvents,
+              emptyMessage: errorMessage ?? eventType.emptyMessage,
+              emptySubMessage: errorMessage ?? eventType.emptyDetailMessage,
+              emptyIcon: eventType.icon,
             ),
           ),
         );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_event.dart';
+import '../../../data/models/user_model.dart';
 import '../../../shared/widgets/enhanced_activity_detail_dialog.dart';
 import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
@@ -22,6 +23,7 @@ import '../../../shared/widgets/activity_stats_card.dart';
 import '../../../shared/services/user_event_service.dart';
 import '../../../shared/widgets/auth_dialog.dart';
 import '../../recommended_events/views/recommended_events_screen.dart';
+import '../../calendar/views/participating_events_screen.dart';
 
 class GameEventManagementScreen extends ConsumerStatefulWidget {
   final VoidCallback? onNavigateToSearch;
@@ -40,8 +42,201 @@ class GameEventManagementScreen extends ConsumerStatefulWidget {
 class _GameEventManagementScreenState extends ConsumerState<GameEventManagementScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  // アクティビティ統計のキャッシュ
+  Map<String, int>? _hostingStats;
+  Map<String, int>? _participationStats;
+  bool _isActivityLoading = true;
+  String? _activityError;
+
+  // 参加予定イベントのキャッシュ
+  List<GameEvent>? _upcomingEvents;
+  List<ParticipationApplication>? _approvedApplications;
+  bool _isUpcomingLoading = true;
+  String? _upcomingError;
+
+  // 最後にデータを取得した時刻（キャッシュ用）
+  DateTime? _lastDataLoadTime;
+  static const _cacheValidityDuration = Duration(minutes: 5);
+
+  // 認証状態が確定してデータを読み込んだかどうか
+  bool _hasInitialDataLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // 認証状態が確定するまでデータ読み込みを待機
+    // buildメソッド内のref.listenで認証状態を監視してデータを読み込む
+  }
+
+  /// 全データを読み込む
+  Future<void> _loadAllData({bool forceRefresh = false}) async {
+    // キャッシュが有効な場合はスキップ（forceRefresh=falseの場合）
+    if (!forceRefresh && _lastDataLoadTime != null) {
+      final elapsed = DateTime.now().difference(_lastDataLoadTime!);
+      if (elapsed < _cacheValidityDuration) {
+        return;
+      }
+    }
+
+    await Future.wait([
+      _loadActivityData(),
+      _loadUpcomingEventsData(),
+    ]);
+
+    _lastDataLoadTime = DateTime.now();
+  }
+
+  /// アクティビティデータを読み込む
+  Future<void> _loadActivityData() async {
+    if (!mounted) return;
+
+    setState(() {
+      _isActivityLoading = true;
+      _activityError = null;
+    });
+
+    try {
+      final currentUser = ref.read(currentUserDataProvider).valueOrNull;
+      final authState = ref.read(authStateProvider);
+
+      // ユーザーデータまたは認証状態が確定していない場合はエラーとして処理
+      if (currentUser == null || !authState.hasValue || authState.value == null) {
+        if (mounted) {
+          setState(() {
+            _isActivityLoading = false;
+          });
+        }
+        return;
+      }
+
+      final firebaseUser = ref.read(currentFirebaseUserProvider);
+      final userIdToUse = firebaseUser?.uid ?? currentUser.userId;
+
+      final results = await Future.wait([
+        UserEventService.getUserActivityStats(userIdToUse),
+        ParticipationService.getUserApplicationsWithBothIds(
+          firebaseUid: firebaseUser?.uid,
+          customUserId: currentUser.userId,
+        ),
+      ]);
+
+      if (mounted) {
+        setState(() {
+          _hostingStats = results[0] as Map<String, int>;
+          final applications = results[1] as List<dynamic>;
+          _participationStats = UserEventService.calculateParticipationStats(applications);
+          _isActivityLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _activityError = e.toString();
+          _isActivityLoading = false;
+        });
+      }
+    }
+  }
+
+  /// 参加予定イベントデータを読み込む
+  Future<void> _loadUpcomingEventsData() async {
+    if (!mounted) return;
+
+    setState(() {
+      _isUpcomingLoading = true;
+      _upcomingError = null;
+    });
+
+    try {
+      final currentUser = ref.read(currentUserDataProvider).valueOrNull;
+      final authState = ref.read(authStateProvider);
+
+      // ユーザーデータまたは認証状態が確定していない場合はエラーとして処理
+      if (currentUser == null || !authState.hasValue || authState.value == null) {
+        if (mounted) {
+          setState(() {
+            _isUpcomingLoading = false;
+          });
+        }
+        return;
+      }
+
+      final firebaseUser = ref.read(currentFirebaseUserProvider);
+
+      final applications = await ParticipationService.getUserApplicationsWithBothIds(
+        firebaseUid: firebaseUser?.uid,
+        customUserId: currentUser.userId,
+      );
+
+      final approvedApps = applications
+          .where((app) => app.status == ParticipationStatus.approved)
+          .toList();
+
+      final events = await _getUpcomingEventsFromApplications(approvedApps);
+
+      if (mounted) {
+        setState(() {
+          _upcomingEvents = events;
+          _approvedApplications = approvedApps;
+          _isUpcomingLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _upcomingError = e.toString();
+          _isUpcomingLoading = false;
+        });
+      }
+    }
+  }
+
+  /// Pull-to-Refresh用のリフレッシュ処理
+  Future<void> _onRefresh() async {
+    await _loadAllData(forceRefresh: true);
+    // Providerのデータも更新（おすすめイベント、運営中のイベント）
+    ref.invalidate(recommendedEventsProvider);
+    ref.invalidate(managedEventsProvider);
+  }
+
   @override
   Widget build(BuildContext context) {
+    // ユーザーデータの変更を監視し、データが取得できたらデータを読み込む
+    // authStateProviderではなくcurrentUserDataProviderを監視することで、
+    // Firestoreからユーザーデータが取得できた時点でデータ読み込みを開始する
+    ref.listen<AsyncValue<UserData?>>(currentUserDataProvider, (previous, next) {
+      next.whenData((userData) {
+        if (userData != null && !_hasInitialDataLoaded) {
+          _hasInitialDataLoaded = true;
+          _loadAllData();
+        } else if (userData == null) {
+          // ログアウトした場合はフラグをリセット
+          _hasInitialDataLoaded = false;
+          setState(() {
+            _hostingStats = null;
+            _participationStats = null;
+            _upcomingEvents = null;
+            _approvedApplications = null;
+            _isActivityLoading = false;
+            _isUpcomingLoading = false;
+            _lastDataLoadTime = null;
+          });
+        }
+      });
+    });
+
+    // 初回ビルド時に既にユーザーデータが取得済みであればデータを読み込む
+    final currentUserData = ref.read(currentUserDataProvider);
+    if (!_hasInitialDataLoaded && currentUserData.hasValue && currentUserData.value != null) {
+      _hasInitialDataLoaded = true;
+      // 次のフレームでデータを読み込む（build中にsetStateを呼ばないため）
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _loadAllData();
+        }
+      });
+    }
+
     return Scaffold(
       key: _scaffoldKey,
       drawer: const AppDrawer(),
@@ -56,21 +251,27 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
                 onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
               ),
               Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppDimensions.spacingM),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildActivitySummary(),
-                      const SizedBox(height: AppDimensions.spacingL),
-                      _buildQuickActions(),
-                      const SizedBox(height: AppDimensions.spacingL),
-                      _buildUpcomingEvents(),
-                      const SizedBox(height: AppDimensions.spacingL),
-                      _buildRecommendedEvents(),
-                      const SizedBox(height: AppDimensions.spacingL),
-                      _buildManagedEvents(),
-                    ],
+                child: RefreshIndicator(
+                  onRefresh: _onRefresh,
+                  color: AppColors.accent,
+                  backgroundColor: AppColors.cardBackground,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(AppDimensions.spacingM),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildActivitySummary(),
+                        const SizedBox(height: AppDimensions.spacingL),
+                        _buildQuickActions(),
+                        const SizedBox(height: AppDimensions.spacingL),
+                        _buildUpcomingEvents(),
+                        const SizedBox(height: AppDimensions.spacingL),
+                        _buildRecommendedEvents(),
+                        const SizedBox(height: AppDimensions.spacingL),
+                        _buildManagedEvents(),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -167,7 +368,7 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
   }
 
 
-  // 参加予定イベント
+  // 参加予定イベント（キャッシュされたデータを使用）
   Widget _buildUpcomingEvents() {
     final currentUserAsync = ref.watch(currentUserDataProvider);
     final authState = ref.watch(authStateProvider);
@@ -194,62 +395,30 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
           );
         }
 
-        final firebaseUser = ref.read(currentFirebaseUserProvider);
-        final userIdToUse = firebaseUser?.uid ?? user.userId;
+        // ローディング中
+        if (_isUpcomingLoading) {
+          return _buildUpcomingEventsLoading();
+        }
 
-        return FutureBuilder<List<ParticipationApplication>>(
-          future: ParticipationService.getUserApplicationsWithBothIds(
-            firebaseUid: firebaseUser?.uid,
-            customUserId: user.userId,
-          ),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return _buildSectionContainer(
-                title: '参加予定イベント',
-                icon: Icons.schedule,
-                children: [
-                  const SizedBox(
-                    height: 100,
-                    child: Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  ),
-                ],
-              );
-            }
+        // エラー発生時
+        if (_upcomingError != null) {
+          return _buildSectionContainer(
+            title: '参加予定イベント',
+            icon: Icons.schedule,
+            children: [
+              EmptyStateView(
+                icon: Icons.error_outline,
+                title: 'エラーが発生しました',
+                message: '参加予定イベントの取得に失敗しました\nしばらくしてから再試行してください',
+              ),
+            ],
+          );
+        }
 
-            if (snapshot.hasError) {
-              return _buildSectionContainer(
-                title: '参加予定イベント',
-                icon: Icons.schedule,
-                children: [
-                  EmptyStateView(
-                    icon: Icons.error_outline,
-                    title: 'エラーが発生しました',
-                    message: '参加予定イベントの取得に失敗しました\nしばらくしてから再試行してください',
-                  ),
-                ],
-              );
-            }
-
-            final applications = snapshot.data ?? [];
-
-            final approvedApplications = applications
-                .where((app) => app.status == ParticipationStatus.approved)
-                .toList();
-            return FutureBuilder<List<GameEvent>>(
-              future: _getUpcomingEventsFromApplications(approvedApplications),
-              builder: (context, eventSnapshot) {
-                if (eventSnapshot.connectionState == ConnectionState.waiting) {
-                  return _buildUpcomingEventsLoading();
-                }
-
-                final upcomingEvents = eventSnapshot.data ?? [];
-                return _buildUpcomingEventsContent(upcomingEvents, approvedApplications);
-              },
-            );
-          },
-        );
+        // キャッシュされたデータを使用
+        final upcomingEvents = _upcomingEvents ?? [];
+        final approvedApplications = _approvedApplications ?? [];
+        return _buildUpcomingEventsContent(upcomingEvents, approvedApplications);
       },
       loading: () => _buildUpcomingEventsLoading(),
       error: (error, stack) => _buildUpcomingEventsError(),
@@ -316,15 +485,10 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
           children: [
             const SizedBox(),
             if (approvedApplications.isNotEmpty)
-              TextButton.icon(
-                onPressed: () => _navigateToEventCalendar(approvedApplications),
-                icon: const Icon(
-                  Icons.calendar_today,
-                  size: AppDimensions.iconS,
-                  color: AppColors.accent,
-                ),
-                label: const Text(
-                  'カレンダーで見る',
+              TextButton(
+                onPressed: () => _navigateToParticipatingEvents(approvedApplications),
+                child: const Text(
+                  'もっと見る',
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     color: AppColors.accent,
@@ -425,13 +589,34 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
     return status == 'published' || status == 'scheduled';
   }
 
-  /// カレンダー画面への遷移
-  void _navigateToEventCalendar(List<ParticipationApplication> applications) {
-    Navigator.of(context).pushNamed(
-      '/event_calendar',
-      arguments: {
-        'applications': applications,
-      },
+  /// 参加予定イベント一覧画面への遷移
+  void _navigateToParticipatingEvents(List<ParticipationApplication> approvedApplications) async {
+    final authState = ref.read(authStateProvider);
+    if (!authState.hasValue || authState.value == null) return;
+
+    // 承認済み申請からイベント一覧を取得
+    final List<GameEvent> events = [];
+    final now = DateTime.now();
+
+    for (final application in approvedApplications) {
+      final event = await _getEventFromApplication(application);
+      if (event != null && event.startDate.isAfter(now.subtract(const Duration(days: 1)))) {
+        events.add(event);
+      }
+    }
+
+    // 開催日順でソート
+    events.sort((a, b) => a.startDate.compareTo(b.startDate));
+
+    if (!mounted) return;
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ParticipatingEventsScreen(
+          firebaseUid: authState.value!.uid,
+          initialEvents: events,
+        ),
+      ),
     );
   }
 
@@ -443,7 +628,7 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
     );
   }
 
-  // アクティビティ状況
+  // アクティビティ状況（キャッシュされたデータを使用）
   Widget _buildActivitySummary() {
     final currentUserAsync = ref.watch(currentUserDataProvider);
     final authState = ref.watch(authStateProvider);
@@ -473,169 +658,177 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
         final firebaseUser = ref.read(currentFirebaseUserProvider);
         final userIdToUse = firebaseUser?.uid ?? user.userId;
 
-        return FutureBuilder<List<dynamic>>(
-          future: Future.wait([
-            UserEventService.getUserActivityStats(userIdToUse),
-            ParticipationService.getUserApplicationsWithBothIds(
-              firebaseUid: firebaseUser?.uid,
-              customUserId: user.userId,
-            ),
-          ]),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return _buildSectionContainer(
-                title: 'あなたのアクティビティ',
-                icon: Icons.analytics,
-                children: [
-                  const SizedBox(
-                    height: 100,
-                    child: Center(
-                      child: CircularProgressIndicator(),
-                    ),
+        // ローディング中
+        if (_isActivityLoading) {
+          return _buildSectionContainer(
+            title: 'あなたのアクティビティ',
+            icon: Icons.analytics,
+            children: [
+              const SizedBox(
+                height: 100,
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            ],
+          );
+        }
+
+        // エラー発生時
+        if (_activityError != null) {
+          return _buildSectionContainer(
+            title: 'あなたのアクティビティ',
+            icon: Icons.analytics,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(AppDimensions.spacingL),
+                child: Text(
+                  'データの取得に失敗しました',
+                  style: TextStyle(
+                    fontSize: AppDimensions.fontSizeM,
+                    color: AppColors.textSecondary,
                   ),
-                ],
-              );
-            }
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          );
+        }
 
-            if (snapshot.hasError) {
-              return _buildSectionContainer(
-                title: 'あなたのアクティビティ',
-                icon: Icons.analytics,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.all(AppDimensions.spacingL),
-                    child: Text(
-                      'データの取得に失敗しました',
-                      style: TextStyle(
-                        fontSize: AppDimensions.fontSizeM,
-                        color: AppColors.textSecondary,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
-              );
-            }
-
-            final data = snapshot.data;
-            if (data == null || data.length < 2) {
-              return _buildSectionContainer(
-                title: 'あなたのアクティビティ',
-                icon: Icons.analytics,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.all(AppDimensions.spacingL),
-                    child: Text(
-                      'データを取得できませんでした',
-                      style: TextStyle(
-                        fontSize: AppDimensions.fontSizeM,
-                        color: AppColors.textSecondary,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
-              );
-            }
-
-            final hostingStats = data[0] as Map<String, int>;
-            final applications = data[1] as List<dynamic>;
-            final participationStats = UserEventService.calculateParticipationStats(applications);
-
+        // データがまだ読み込まれていない場合（初回読み込み待ち）
+        // _hasInitialDataLoadedがfalseの場合は、認証確定後のデータ読み込みを待っている状態
+        if (_hostingStats == null || _participationStats == null) {
+          // まだ初回読み込みが完了していない場合はローディング表示
+          if (!_hasInitialDataLoaded) {
             return _buildSectionContainer(
               title: 'あなたのアクティビティ',
               icon: Icons.analytics,
               children: [
-                // 統計カードのグリッド表示
-                GridView.count(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisCount: 2,
-                  childAspectRatio: 1.2,
-                  crossAxisSpacing: AppDimensions.spacingM,
-                  mainAxisSpacing: AppDimensions.spacingM,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => EnhancedActivityDetailDialog(
-                            title: '今月の参加イベント',
-                            activityType: 'participating',
-                            userId: userIdToUse,
-                          ),
-                        );
-                      },
-                      child: ActivityStatsCard(
-                        title: '今月の参加',
-                        value: '${participationStats['thisMonthApprovedApplications'] ?? 0}',
-                        subtitle: '承認済みイベント',
-                        icon: Icons.event_available,
-                        iconColor: AppColors.success,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => EnhancedActivityDetailDialog(
-                            title: '申し込み中のイベント',
-                            activityType: 'pending',
-                            userId: userIdToUse,
-                          ),
-                        );
-                      },
-                      child: ActivityStatsCard(
-                        title: '申し込み中',
-                        value: '${participationStats['pendingApplications'] ?? 0}',
-                        subtitle: '承認待ち',
-                        icon: Icons.schedule,
-                        iconColor: AppColors.warning,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => EnhancedActivityDetailDialog(
-                            title: '参加履歴',
-                            activityType: 'total',
-                            userId: userIdToUse,
-                          ),
-                        );
-                      },
-                      child: ActivityStatsCard(
-                        title: '総参加数',
-                        value: '${participationStats['approvedApplications'] ?? 0}',
-                        subtitle: 'これまでに参加',
-                        icon: Icons.emoji_events,
-                        iconColor: AppColors.accent,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => EnhancedActivityDetailDialog(
-                            title: '運営イベント',
-                            activityType: 'hosting',
-                            userId: userIdToUse,
-                          ),
-                        );
-                      },
-                      child: ActivityStatsCard(
-                        title: '運営数',
-                        value: '${hostingStats['totalManagedEvents'] ?? hostingStats['totalHostedEvents'] ?? 0}',
-                        subtitle: '運営に携わったイベント',
-                        icon: Icons.admin_panel_settings,
-                        iconColor: AppColors.info,
-                      ),
-                    ),
-                  ],
+                const SizedBox(
+                  height: 100,
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
                 ),
               ],
             );
-          },
+          }
+          // 初回読み込み完了後にデータがnullの場合は取得失敗
+          return _buildSectionContainer(
+            title: 'あなたのアクティビティ',
+            icon: Icons.analytics,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(AppDimensions.spacingL),
+                child: Text(
+                  'データを取得できませんでした',
+                  style: TextStyle(
+                    fontSize: AppDimensions.fontSizeM,
+                    color: AppColors.textSecondary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          );
+        }
+
+        // キャッシュされたデータを使用
+        final hostingStats = _hostingStats!;
+        final participationStats = _participationStats!;
+
+        return _buildSectionContainer(
+          title: 'あなたのアクティビティ',
+          icon: Icons.analytics,
+          children: [
+            // 統計カードのグリッド表示
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              childAspectRatio: 1.2,
+              crossAxisSpacing: AppDimensions.spacingM,
+              mainAxisSpacing: AppDimensions.spacingM,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => EnhancedActivityDetailDialog(
+                        title: '今月の参加イベント',
+                        activityType: 'participating',
+                        userId: userIdToUse,
+                      ),
+                    );
+                  },
+                  child: ActivityStatsCard(
+                    title: '今月の参加',
+                    value: '${participationStats['thisMonthApprovedApplications'] ?? 0}',
+                    subtitle: '承認済みイベント',
+                    icon: Icons.event_available,
+                    iconColor: AppColors.success,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => EnhancedActivityDetailDialog(
+                        title: '申し込み中のイベント',
+                        activityType: 'pending',
+                        userId: userIdToUse,
+                      ),
+                    );
+                  },
+                  child: ActivityStatsCard(
+                    title: '申し込み中',
+                    value: '${participationStats['pendingApplications'] ?? 0}',
+                    subtitle: '承認待ち',
+                    icon: Icons.schedule,
+                    iconColor: AppColors.warning,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => EnhancedActivityDetailDialog(
+                        title: '参加履歴',
+                        activityType: 'total',
+                        userId: userIdToUse,
+                      ),
+                    );
+                  },
+                  child: ActivityStatsCard(
+                    title: '総参加数',
+                    value: '${participationStats['approvedApplications'] ?? 0}',
+                    subtitle: 'これまでに参加',
+                    icon: Icons.emoji_events,
+                    iconColor: AppColors.accent,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => EnhancedActivityDetailDialog(
+                        title: '運営イベント',
+                        activityType: 'hosting',
+                        userId: userIdToUse,
+                      ),
+                    );
+                  },
+                  child: ActivityStatsCard(
+                    title: '運営数',
+                    value: '${hostingStats['totalManagedEvents'] ?? hostingStats['totalHostedEvents'] ?? 0}',
+                    subtitle: '運営に携わったイベント',
+                    icon: Icons.admin_panel_settings,
+                    iconColor: AppColors.info,
+                  ),
+                ),
+              ],
+            ),
+          ],
         );
       },
       loading: () => _buildSectionContainer(

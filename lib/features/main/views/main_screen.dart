@@ -24,23 +24,35 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   List<String> _previousNotificationIds = [];
   bool _isFirstLoad = true;
 
-  List<Widget> get _screens => [
-    GameEventManagementScreen(
-      onNavigateToSearch: () => _navigateToSearch(),
-      onNavigateToEventCreation: () => _navigateToEventCreation(),
-    ),
-    SearchScreen(
-      shouldFocusSearchField: _shouldFocusSearchField,
-    ),
-    const NotificationScreen(),
-    ManagementScreen(
-      shouldNavigateToEventCreation: _shouldNavigateToEventCreation,
-      onEventCreationNavigated: () => _shouldNavigateToEventCreation = false,
-    ),
-  ];
-
+  // フラグはフィールドとして先に定義
   bool _shouldNavigateToEventCreation = false;
   bool _shouldFocusSearchField = false;
+
+  // タブ画面のインスタンスを保持（IndexedStackで状態保持するため）
+  // 注意: SearchScreenとManagementScreenのフラグは初期化時の値が渡されるため、
+  // 動的な変更には対応していない。これらの画面は内部でフラグをチェックする必要がある場合は
+  // コールバックやProviderを使用する。
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    // 画面インスタンスを初期化時に一度だけ生成
+    _screens = [
+      GameEventManagementScreen(
+        onNavigateToSearch: () => _navigateToSearch(),
+        onNavigateToEventCreation: () => _navigateToEventCreation(),
+      ),
+      SearchScreen(
+        shouldFocusSearchField: _shouldFocusSearchField,
+      ),
+      const NotificationScreen(),
+      ManagementScreen(
+        shouldNavigateToEventCreation: _shouldNavigateToEventCreation,
+        onEventCreationNavigated: () => _shouldNavigateToEventCreation = false,
+      ),
+    ];
+  }
 
   void _navigateToEventCreation() {
     setState(() {
@@ -83,7 +95,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     );
 
     return Scaffold(
-      body: _screens[_currentIndex],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _screens,
+      ),
       drawer: const AppDrawer(),
       bottomNavigationBar: AppBottomNavigation(
         currentIndex: _currentIndex,

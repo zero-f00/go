@@ -47,8 +47,11 @@ class Event {
   final List<String> streamingUrls;
   final String? policy;
   final String createdBy;
+  final String? createdByName; // 作成者名
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? lastUpdatedBy; // 最終更新者ID
+  final String? lastUpdatedByName; // 最終更新者名
   final List<String> participantIds; // 将来の参加機能用
   final EventStatus status;
   final String? eventPassword; // 招待制イベントのパスワード
@@ -86,8 +89,11 @@ class Event {
     this.streamingUrls = const [],
     this.policy,
     required this.createdBy,
+    this.createdByName,
     required this.createdAt,
     required this.updatedAt,
+    this.lastUpdatedBy,
+    this.lastUpdatedByName,
     required this.participantIds,
     required this.status,
     this.eventPassword,
@@ -130,8 +136,11 @@ class Event {
       streamingUrls: List<String>.from(data['streamingUrls'] ?? []),
       policy: data['policy'],
       createdBy: data['createdBy'] ?? '',
+      createdByName: data['createdByName'],
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+      lastUpdatedBy: data['lastUpdatedBy'],
+      lastUpdatedByName: data['lastUpdatedByName'],
       participantIds: List<String>.from(data['participantIds'] ?? []),
       status: _parseStatus(data['status']),
       eventPassword: data['eventPassword'],
@@ -174,8 +183,11 @@ class Event {
       'streamingUrls': streamingUrls,
       'policy': policy,
       'createdBy': createdBy,
+      'createdByName': createdByName,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
+      'lastUpdatedBy': lastUpdatedBy,
+      'lastUpdatedByName': lastUpdatedByName,
       'participantIds': participantIds,
       'status': status.name,
       'eventPassword': eventPassword,
@@ -258,8 +270,11 @@ class Event {
     List<String>? streamingUrls,
     String? policy,
     String? createdBy,
+    String? createdByName,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? lastUpdatedBy,
+    String? lastUpdatedByName,
     List<String>? participantIds,
     EventStatus? status,
     String? eventPassword,
@@ -297,8 +312,11 @@ class Event {
       streamingUrls: streamingUrls ?? this.streamingUrls,
       policy: policy ?? this.policy,
       createdBy: createdBy ?? this.createdBy,
+      createdByName: createdByName ?? this.createdByName,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      lastUpdatedBy: lastUpdatedBy ?? this.lastUpdatedBy,
+      lastUpdatedByName: lastUpdatedByName ?? this.lastUpdatedByName,
       participantIds: participantIds ?? this.participantIds,
       status: status ?? this.status,
       eventPassword: eventPassword ?? this.eventPassword,

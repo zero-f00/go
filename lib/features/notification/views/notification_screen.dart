@@ -297,20 +297,17 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       return _buildEmptyState();
     }
 
-    return RefreshIndicator(
-      onRefresh: () async {
-        ref.invalidate(userNotificationsProvider);
-      },
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingL,
-          vertical: AppDimensions.spacingS,
-        ),
-        itemCount: notifications.length,
-        itemBuilder: (context, index) {
-          return _buildNotificationCard(notifications[index]);
-        },
+    // 通知はStreamProviderでリアルタイム監視されているため、
+    // Pull-to-Refreshは不要（Cloud Functionsからの通知は自動的に反映される）
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingL,
+        vertical: AppDimensions.spacingS,
       ),
+      itemCount: notifications.length,
+      itemBuilder: (context, index) {
+        return _buildNotificationCard(notifications[index]);
+      },
     );
   }
 
