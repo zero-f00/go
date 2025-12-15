@@ -949,8 +949,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   /// 自分のプロフィール画面に遷移
   Future<void> _navigateToUserProfile(BuildContext context) async {
     try {
-      final currentUser = ref.read(currentFirebaseUserProvider);
-      if (currentUser == null) {
+      final currentUserData = await ref.read(currentUserDataProvider.future);
+      if (currentUserData == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -962,12 +962,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         return;
       }
 
-      // プロフィール画面に遷移
+      // プロフィール画面に遷移（アプリのカスタムユーザーIDを使用）
       if (mounted) {
         Navigator.pushNamed(
           context,
           '/user_profile',
-          arguments: currentUser.uid,
+          arguments: currentUserData.userId,
         );
       }
     } catch (e) {

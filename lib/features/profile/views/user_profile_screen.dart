@@ -335,72 +335,54 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   /// ソーシャル統計行を構築
   Widget _buildSocialStatsRow() {
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingM),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.accent.withValues(alpha: 0.1),
-            AppColors.primary.withValues(alpha: 0.05),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-        border: Border.all(
-          color: AppColors.accent.withValues(alpha: 0.2),
-          width: 1,
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: GestureDetector(
           onTap: () => _onStatItemTap('フレンド'),
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.spacingS),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingM,
+              vertical: AppDimensions.spacingS,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.backgroundLight,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+              border: Border.all(
+                color: AppColors.border,
+                width: 1,
+              ),
+            ),
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(AppDimensions.spacingS),
-                  decoration: BoxDecoration(
-                    color: AppColors.accent.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                  ),
-                  child: Icon(
-                    Icons.people,
-                    size: AppDimensions.iconL,
-                    color: AppColors.accent,
-                  ),
-                ),
-                const SizedBox(width: AppDimensions.spacingM),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'フレンド',
-                        style: const TextStyle(
-                          fontSize: AppDimensions.fontSizeM,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: AppDimensions.spacingXS),
-                      Text(
-                        '${_socialStats.friendCount}人',
-                        style: const TextStyle(
-                          fontSize: AppDimensions.fontSizeXL,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textDark,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
                 Icon(
-                  Icons.arrow_forward_ios,
-                  size: AppDimensions.iconS,
+                  Icons.people_outline,
                   color: AppColors.textSecondary,
+                  size: AppDimensions.iconS,
+                ),
+                const SizedBox(width: AppDimensions.spacingS),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'フレンド',
+                      style: const TextStyle(
+                        fontSize: AppDimensions.fontSizeXS,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    Text(
+                      '${_socialStats.friendCount}',
+                      style: const TextStyle(
+                        fontSize: AppDimensions.fontSizeS,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -411,18 +393,21 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   }
 
   /// 統計アイテムタップ時の処理
-  void _onStatItemTap(String label) {
+  void _onStatItemTap(String label) async {
     // 自分のプロフィールかどうか確認
-    final currentUserAsync = ref.read(currentUserDataProvider);
-    currentUserAsync.whenOrNull(
-      data: (currentUser) {
-        if (currentUser != null && currentUser.userId == widget.userId) {
-          // 自分のプロフィールの場合はフレンドリスト画面へ
+    try {
+      final currentUser = await ref.read(currentUserDataProvider.future);
+      if (currentUser != null && currentUser.userId == widget.userId) {
+        // 自分のプロフィールの場合はフレンドリスト画面へ
+        if (mounted) {
           Navigator.pushNamed(context, '/friends');
         }
-        // 他人のプロフィールの場合は何もしない（将来的に詳細表示画面を実装）
-      },
-    );
+      }
+      // 他人のプロフィールの場合は何もしない（将来的に詳細表示画面を実装）
+    } catch (e) {
+      // エラーが発生した場合は何もしない
+      debugPrint('フレンドリスト遷移でエラーが発生しました: $e');
+    }
   }
 
   /// SNSリンクセクションを構築
