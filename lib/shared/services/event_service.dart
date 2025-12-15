@@ -666,6 +666,77 @@ class EventService {
         );
   }
 
+  /// ユーザーの参加イベント一覧を効率的に取得（一括取得）
+  static Future<List<Event>> getUserParticipationEvents(
+    String userId, {
+    bool upcomingOnly = false,
+    bool pastOnly = false,
+    int limit = 100,
+  }) async {
+    try {
+      // 参加申請データを取得
+      final applications = await ParticipationService.getUserApplications(userId);
+      final approvedApplications = applications
+          .where((app) => app.status == ParticipationStatus.approved)
+          .toList();
+
+      if (approvedApplications.isEmpty) {
+        return [];
+      }
+
+      // イベントIDを収集
+      final eventIds = approvedApplications.map((app) => app.eventId).toList();
+
+      // Firestoreから一括取得（whereIn使用、最大10件ずつ）
+      final List<Event> allEvents = [];
+      const batchSize = 10; // Firestore whereInの制限
+
+      for (int i = 0; i < eventIds.length; i += batchSize) {
+        final batchIds = eventIds.skip(i).take(batchSize).toList();
+
+        final batchQuery = await _firestore
+            .collection(_eventsCollection)
+            .where(FieldPath.documentId, whereIn: batchIds)
+            .get();
+
+        final batchEvents = batchQuery.docs
+            .map((doc) => Event.fromFirestore(doc))
+            .toList();
+
+        allEvents.addAll(batchEvents);
+      }
+
+      // 日付フィルタリング
+      List<Event> filteredEvents = allEvents;
+      if (upcomingOnly || pastOnly) {
+        final now = DateTime.now();
+        filteredEvents = allEvents.where((event) {
+          final isUpcoming = event.eventDate.isAfter(now);
+          if (upcomingOnly) return isUpcoming;
+          if (pastOnly) return !isUpcoming;
+          return true;
+        }).toList();
+      }
+
+      // ソート（参加予定は昇順、過去は降順）
+      if (upcomingOnly) {
+        filteredEvents.sort((a, b) => a.eventDate.compareTo(b.eventDate));
+      } else if (pastOnly) {
+        filteredEvents.sort((a, b) => b.eventDate.compareTo(a.eventDate));
+      } else {
+        // 全体の場合は開催日降順
+        filteredEvents.sort((a, b) => b.eventDate.compareTo(a.eventDate));
+      }
+
+      return filteredEvents.take(limit).toList();
+    } catch (e) {
+      throw EventServiceException(
+        'ユーザーの参加イベント一覧の取得に失敗しました',
+        originalException: e,
+      );
+    }
+  }
+
   /// イベントのパスワードを検証し、参加申請を送信
   static Future<bool> submitEventJoinRequest({
     required String eventId,

@@ -22,13 +22,12 @@ import '../../../shared/utils/event_converter.dart' as converter;
 import '../../../data/models/user_model.dart';
 import '../../../data/models/event_model.dart';
 import '../../../shared/widgets/past_events_selection_dialog.dart';
-import '../../../shared/services/participation_service.dart';
 import '../../calendar/views/host_event_calendar_screen.dart';
 import '../../../shared/widgets/game_icon.dart';
 import '../../../shared/widgets/unified_calendar_widget.dart';
 import '../../../shared/services/game_service.dart';
 import '../../../shared/services/recommendation_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../shared/providers/participation_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ManagementScreen extends ConsumerStatefulWidget {
@@ -350,30 +349,39 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
   Widget _buildParticipantEventTab() {
     // カレンダー表示の場合
     if (!_isParticipantListView) {
-      return _buildParticipantCalendarView();
+      return RefreshIndicator(
+        onRefresh: _refreshParticipationData,
+        color: AppColors.accent,
+        backgroundColor: AppColors.cardBackground,
+        child: _buildParticipantCalendarView(),
+      );
     }
 
     // リスト表示の場合
-    return Container(
-      margin: const EdgeInsets.all(AppDimensions.spacingL),
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.cardShadow,
-            blurRadius: AppDimensions.cardElevation,
-            offset: const Offset(0, AppDimensions.shadowOffsetY),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingL),
-        child: Column(
-          children: [
-            _buildParticipationTabBar(),
-            Expanded(
-              child: _participantTabController == null
+    return RefreshIndicator(
+      onRefresh: _refreshParticipationData,
+      color: AppColors.accent,
+      backgroundColor: AppColors.cardBackground,
+      child: Container(
+        margin: const EdgeInsets.all(AppDimensions.spacingL),
+        decoration: BoxDecoration(
+          color: AppColors.cardBackground,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.cardShadow,
+              blurRadius: AppDimensions.cardElevation,
+              offset: const Offset(0, AppDimensions.shadowOffsetY),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimensions.spacingL),
+          child: Column(
+            children: [
+              _buildParticipationTabBar(),
+              Expanded(
+                child: _participantTabController == null
                   ? const Center(child: CircularProgressIndicator())
                   : TabBarView(
                       controller: _participantTabController!,
@@ -382,8 +390,9 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
                         _buildPastEventsTab(),
                       ],
                     ),
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -419,64 +428,34 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
 
   /// 参加予定のイベントタブ
   Widget _buildUpcomingEventsTab() {
-    return Padding(
-      padding: const EdgeInsets.all(AppDimensions.spacingM),
-      child: FutureBuilder<UserData?>(
-        future: ref.read(currentUserDataProvider.future),
-        builder: (context, userSnapshot) {
-          if (!userSnapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    // 自動データ読み込みを開始
+    ref.read(participationEventsAutoLoaderProvider);
 
-          final currentUser = userSnapshot.data!;
-          return FutureBuilder<List<ParticipationApplication>>(
-            future: ParticipationService.getUserApplications(currentUser.id),
-            builder: (context, applicationSnapshot) {
-              if (applicationSnapshot.connectionState ==
-                  ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
+    return RefreshIndicator(
+      onRefresh: _refreshParticipationData,
+      color: AppColors.accent,
+      backgroundColor: AppColors.cardBackground,
+      child: Consumer(
+        builder: (context, ref, child) {
+          final upcomingEventsAsync = ref.watch(upcomingParticipationEventsProvider);
 
-              if (!applicationSnapshot.hasData) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              final allApplications = applicationSnapshot.data!;
-              final approvedApplications = allApplications
-                  .where((app) => app.status == ParticipationStatus.approved)
-                  .toList();
-
-              if (approvedApplications.isEmpty) {
-                return _buildEmptyParticipantState(
+          return upcomingEventsAsync.when(
+            data: (events) {
+              if (events.isEmpty) {
+                return _buildScrollableEmptyState(
                   '参加予定のイベントがありません',
                   '新しいイベントに参加してみませんか？',
                   Icons.event_available,
                 );
               }
-              return FutureBuilder<List<Event>>(
-                future: _getEventsFromApplications(
-                  approvedApplications,
-                  isUpcoming: true,
-                ),
-                builder: (context, eventsSnapshot) {
-                  if (eventsSnapshot.connectionState ==
-                      ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  final upcomingEvents = eventsSnapshot.data ?? [];
-                  if (upcomingEvents.isEmpty) {
-                    return _buildEmptyParticipantState(
-                      '参加予定のイベントがありません',
-                      '新しいイベントに参加してみませんか？',
-                      Icons.event_available,
-                    );
-                  }
-
-                  return _buildEventList(upcomingEvents);
-                },
-              );
+              return _buildEventList(events);
             },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stackTrace) => _buildScrollableEmptyState(
+              'データの取得に失敗しました',
+              '再度お試しください',
+              Icons.error_outline,
+            ),
           );
         },
       ),
@@ -485,112 +464,58 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
 
   /// 過去のイベントタブ
   Widget _buildPastEventsTab() {
-    return Padding(
-      padding: const EdgeInsets.all(AppDimensions.spacingM),
-      child: FutureBuilder<UserData?>(
-        future: ref.read(currentUserDataProvider.future),
-        builder: (context, userSnapshot) {
-          if (!userSnapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return RefreshIndicator(
+      onRefresh: _refreshParticipationData,
+      color: AppColors.accent,
+      backgroundColor: AppColors.cardBackground,
+      child: Consumer(
+        builder: (context, ref, child) {
+          final pastEventsAsync = ref.watch(pastParticipationEventsProvider);
 
-          final currentUser = userSnapshot.data!;
-          return FutureBuilder<List<ParticipationApplication>>(
-            future: ParticipationService.getUserApplications(currentUser.id),
-            builder: (context, applicationSnapshot) {
-              if (applicationSnapshot.connectionState ==
-                  ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              if (!applicationSnapshot.hasData) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              final allApplications = applicationSnapshot.data!;
-              final approvedApplications = allApplications
-                  .where((app) => app.status == ParticipationStatus.approved)
-                  .toList();
-
-              if (approvedApplications.isEmpty) {
-                return _buildEmptyParticipantState(
+          return pastEventsAsync.when(
+            data: (events) {
+              if (events.isEmpty) {
+                return _buildScrollableEmptyState(
                   '参加した過去のイベントがありません',
                   'イベントに参加して実績を積み重ねましょう',
                   Icons.history,
                 );
               }
-              return FutureBuilder<List<Event>>(
-                future: _getEventsFromApplications(
-                  approvedApplications,
-                  isUpcoming: false,
-                ),
-                builder: (context, eventsSnapshot) {
-                  if (eventsSnapshot.connectionState ==
-                      ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  final pastEvents = eventsSnapshot.data ?? [];
-                  if (pastEvents.isEmpty) {
-                    return _buildEmptyParticipantState(
-                      '参加した過去のイベントがありません',
-                      'イベントに参加して実績を積み重ねましょう',
-                      Icons.history,
-                    );
-                  }
-
-                  return _buildEventList(pastEvents);
-                },
-              );
+              return _buildEventList(events);
             },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stackTrace) => _buildScrollableEmptyState(
+              'データの取得に失敗しました',
+              '再度お試しください',
+              Icons.error_outline,
+            ),
           );
         },
       ),
     );
   }
 
-  /// 参加申請からイベントを取得
-  Future<List<Event>> _getEventsFromApplications(
-    List<ParticipationApplication> applications, {
-    required bool isUpcoming,
-  }) async {
-    final List<Event> events = [];
+  /// 参加データのリフレッシュ
+  Future<void> _refreshParticipationData() async {
+    await ref.read(participationEventsProvider.notifier).forceRefresh();
+  }
 
-    for (final application in applications) {
-      try {
-        final event = await EventService.getEventById(application.eventId);
-        if (event != null) {
-          // 参加イベントの状態判定
-          // - 参加予定：開催日が現在時刻より未来
-          // - 過去のイベント：開催日が現在時刻より過去
-          // - 申込期限は参加承認後は関係なし
-
-          // 日付比較（時間も含む）
-          final currentTime = DateTime.now();
-          final isEventInFuture = event.eventDate.isAfter(currentTime);
-
-          if (isUpcoming == isEventInFuture) {
-            events.add(event);
-          }
-        }
-      } catch (e) {
-        // イベント取得エラーは無視（デバッグ用ログは本番では不要）
-      }
-    }
-
-    // 参加予定は開催日昇順、過去は開催日降順でソート
-    events.sort((a, b) {
-      return isUpcoming
-          ? a.eventDate.compareTo(b.eventDate)
-          : b.eventDate.compareTo(a.eventDate);
-    });
-
-    return events;
+  /// スクロール可能な空状態（RefreshIndicator用）
+  Widget _buildScrollableEmptyState(String title, String subtitle, IconData icon) {
+    return CustomScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      slivers: [
+        SliverFillRemaining(
+          child: _buildEmptyParticipantState(title, subtitle, icon),
+        ),
+      ],
+    );
   }
 
   /// イベントリスト表示
   Widget _buildEventList(List<Event> events) {
     return ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       itemCount: events.length,
       itemBuilder: (context, index) {
@@ -859,14 +784,36 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
       final currentUser = await ref.read(currentUserDataProvider.future);
       if (currentUser == null) return eventMap;
 
-      final applications = await ParticipationService.getUserApplications(currentUser.id);
-      final approvedApplications = applications
-          .where((app) => app.status == ParticipationStatus.approved)
-          .toList();
+      // 効率的なプロバイダーからデータを取得
+      final cacheAsync = ref.read(participationEventsProvider);
+      final cache = cacheAsync.value;
 
-      for (final application in approvedApplications) {
-        final gameEvent = await _getGameEventFromApplication(application);
-        if (gameEvent != null) {
+      if (cache != null) {
+        // キャッシュされたデータを使用
+        final allEvents = [...cache.upcomingEvents, ...cache.pastEvents];
+
+        for (final event in allEvents) {
+          // EventをGameEventに変換
+          final gameEvent = await converter.EventConverter.eventToGameEvent(event);
+
+          final date = DateTime(
+            gameEvent.startDate.year,
+            gameEvent.startDate.month,
+            gameEvent.startDate.day,
+          );
+
+          if (!eventMap.containsKey(date)) {
+            eventMap[date] = [];
+          }
+          eventMap[date]!.add(gameEvent);
+        }
+      } else {
+        // キャッシュがない場合は一括取得にフォールバック
+        final participationEvents = await EventService.getUserParticipationEvents(currentUser.id);
+
+        for (final event in participationEvents) {
+          final gameEvent = await converter.EventConverter.eventToGameEvent(event);
+
           final date = DateTime(
             gameEvent.startDate.year,
             gameEvent.startDate.month,
@@ -886,45 +833,6 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
     return eventMap;
   }
 
-  /// アプリケーションからGameEventを取得
-  Future<GameEvent?> _getGameEventFromApplication(ParticipationApplication application) async {
-    try {
-      // まず gameEvents コレクションから取得を試みる
-      final gameEventDoc = await FirebaseFirestore.instance
-          .collection('gameEvents')
-          .doc(application.eventId)
-          .get();
-
-      if (gameEventDoc.exists && gameEventDoc.data() != null) {
-        final gameEventData = gameEventDoc.data()!;
-        final status = gameEventData['status'] as String?;
-        // 下書き状態のイベントは表示しない
-        if (status == 'draft') return null;
-        return GameEvent.fromFirestore(gameEventData, gameEventDoc.id);
-      }
-
-      // 次に events コレクションから取得を試みる
-      final eventDoc = await FirebaseFirestore.instance
-          .collection('events')
-          .doc(application.eventId)
-          .get();
-
-      if (eventDoc.exists && eventDoc.data() != null) {
-        final eventData = eventDoc.data()!;
-        final status = eventData['status'] as String?;
-        // 下書き状態のイベントは表示しない
-        if (status == 'draft') return null;
-
-        // EventモデルからGameEventモデルに変換（ゲーム情報を正しく取得するため）
-        final event = Event.fromFirestore(eventDoc);
-        return await converter.EventConverter.eventToGameEvent(event);
-      }
-
-      return null;
-    } catch (e) {
-      return null;
-    }
-  }
 
 
   /// カレンダーからイベント詳細画面へ遷移

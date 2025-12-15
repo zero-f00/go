@@ -155,7 +155,7 @@ class AppStrings {
   static const String invitePasswordRequired = '招待制イベントはパスワードの設定が必須です';
 
   static const String externalSection = '外部連携';
-  static const String contactLabel = '連絡先・コミュニティ';
+  static const String contactLabel = 'コミュニティ・その他';
   static const String streamingLabel = '配信予定';
   static const String streamingUrlLabel = '配信URL';
   static const String streamingUrlHint = 'YouTube、Twitch等の配信URLを入力してください';

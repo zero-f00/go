@@ -2163,8 +2163,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         _buildTextField(
           controller: _contactController,
           label: AppStrings.contactLabel,
-          hint: '例：Discord: @username, Twitter: @username',
-          maxLines: 3,
+          hint: 'イベント公式Discord、コミュニティサイト、配信チャンネル等\n例：公式Discord: https://discord.gg/xxxxx\nコミュニティサイト: https://example.com\nYouTube: @channelname',
+          maxLines: 4,
         ),
         const SizedBox(height: AppDimensions.spacingL),
         _buildSwitchField(
