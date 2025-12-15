@@ -259,12 +259,12 @@ class GameProfileViewContent extends StatelessWidget with GameProfileSNSMixin {
   /// 経験・スキル情報
   Widget _buildExperienceInfo() {
     return _buildSection(
-      title: '経験・スキル',
+      title: 'スキルレベル',
       icon: Icons.emoji_events,
       child: profile.skillLevel != null
           ? _buildInfoCard(
-              '経験レベル',
-              '${profile.skillLevel!.displayName}\n${profile.skillLevel!.description}',
+              profile.skillLevel!.displayName,
+              profile.skillLevel!.description,
               Icons.trending_up,
               backgroundColor: _getExperienceColor(
                 profile.skillLevel!,
@@ -274,7 +274,7 @@ class GameProfileViewContent extends StatelessWidget with GameProfileSNSMixin {
               ).withValues(alpha: 0.3),
               iconColor: _getExperienceColor(profile.skillLevel!),
             )
-          : _buildInfoCard('経験レベル', '未設定', Icons.trending_up),
+          : _buildInfoCard('スキルレベル', '未設定', Icons.trending_up),
     );
   }
 
@@ -284,13 +284,19 @@ class GameProfileViewContent extends StatelessWidget with GameProfileSNSMixin {
       title: 'プレイスタイル',
       icon: Icons.style,
       child: profile.playStyles.isNotEmpty
-          ? _buildInfoCard(
-              'プレイスタイル',
-              profile.playStyles.map((style) => style.displayName).join('、'),
-              Icons.psychology,
-              backgroundColor: AppColors.info.withValues(alpha: 0.1),
-              borderColor: AppColors.info.withValues(alpha: 0.3),
-              iconColor: AppColors.info,
+          ? Column(
+              children: profile.playStyles.map((style) => Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+                child: _buildInfoCard(
+                  style.displayName,
+                  style.description,
+                  Icons.psychology,
+                  backgroundColor: AppColors.info.withValues(alpha: 0.1),
+                  borderColor: AppColors.info.withValues(alpha: 0.3),
+                  iconColor: AppColors.info,
+                ),
+              )).toList(),
             )
           : _buildInfoCard('プレイスタイル', '未設定', Icons.psychology),
     );

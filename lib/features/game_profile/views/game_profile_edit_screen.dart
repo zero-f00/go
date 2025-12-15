@@ -454,7 +454,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
 
   Widget _buildExperienceSection() {
     return _buildSection(
-      title: 'ゲーム歴・レベル',
+      title: 'スキルレベル',
       icon: Icons.trending_up,
       children: [
         SelectionButtonGroup<SkillLevel>(
@@ -472,6 +472,30 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
           optionBuilder: (skillLevel) => skillLevel.displayName,
           tooltipBuilder: (skillLevel) => skillLevel.description,
         ),
+        // 選択されたスキルレベルの説明を表示
+        if (_selectedSkillLevel != null) ...[
+          const SizedBox(height: AppDimensions.spacingM),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppDimensions.spacingM),
+            decoration: BoxDecoration(
+              color: AppColors.info.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+              border: Border.all(
+                color: AppColors.info.withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+            child: Text(
+              _selectedSkillLevel!.description,
+              style: const TextStyle(
+                fontSize: AppDimensions.fontSizeS,
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
         const SizedBox(height: AppDimensions.spacingM),
         TextInputField(
           controller: _rankOrLevelController,
@@ -507,6 +531,45 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
           optionBuilder: (style) => style.displayName,
           tooltipBuilder: (style) => style.description,
         ),
+        // 選択されたプレイスタイルの説明を表示
+        if (_selectedPlayStyles.isNotEmpty) ...[
+          const SizedBox(height: AppDimensions.spacingM),
+          ...(_selectedPlayStyles.map((style) => Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+            padding: const EdgeInsets.all(AppDimensions.spacingM),
+            decoration: BoxDecoration(
+              color: AppColors.accent.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+              border: Border.all(
+                color: AppColors.accent.withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  style.displayName,
+                  style: const TextStyle(
+                    fontSize: AppDimensions.fontSizeS,
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.spacingXS),
+                Text(
+                  style.description,
+                  style: const TextStyle(
+                    fontSize: AppDimensions.fontSizeS,
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+          ))),
+        ],
       ],
     );
   }
@@ -641,7 +704,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
 
   Widget _buildGameSnsSection() {
     return _buildSection(
-      title: 'ゲーム専用SNSアカウント',
+      title: 'SNSアカウント',
       icon: Icons.share,
       children: [
         const Text(

@@ -267,8 +267,8 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
       icon: Icons.emoji_events,
       child: profile.skillLevel != null
         ? _buildInfoCard(
-            'スキルレベル',
-            '${profile.skillLevel!.displayName}\n${profile.skillLevel!.description}',
+            profile.skillLevel!.displayName,
+            profile.skillLevel!.description,
             Icons.trending_up,
             backgroundColor: _getExperienceColor(profile.skillLevel!).withValues(alpha: 0.1),
             borderColor: _getExperienceColor(profile.skillLevel!).withValues(alpha: 0.3),
@@ -284,13 +284,19 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
       title: 'プレイスタイル',
       icon: Icons.style,
       child: profile.playStyles.isNotEmpty
-        ? _buildInfoCard(
-            'プレイスタイル',
-            profile.playStyles.map((style) => style.displayName).join('、'),
-            Icons.psychology,
-            backgroundColor: AppColors.info.withValues(alpha: 0.1),
-            borderColor: AppColors.info.withValues(alpha: 0.3),
-            iconColor: AppColors.info,
+        ? Column(
+            children: profile.playStyles.map((style) => Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+              child: _buildInfoCard(
+                style.displayName,
+                style.description,
+                Icons.psychology,
+                backgroundColor: AppColors.info.withValues(alpha: 0.1),
+                borderColor: AppColors.info.withValues(alpha: 0.3),
+                iconColor: AppColors.info,
+              ),
+            )).toList(),
           )
         : _buildInfoCard('プレイスタイル', '未設定', Icons.psychology),
     );
