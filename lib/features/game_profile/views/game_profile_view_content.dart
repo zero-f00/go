@@ -242,7 +242,7 @@ class GameProfileViewContent extends StatelessWidget with GameProfileSNSMixin {
           const SizedBox(height: AppDimensions.spacingM),
           _buildInfoCard(
             'ゲーム歴',
-            profile.experience?.displayName ?? '未設定',
+            profile.skillLevel?.displayName ?? '未設定',
             Icons.history,
           ),
           const SizedBox(height: AppDimensions.spacingM),
@@ -261,18 +261,18 @@ class GameProfileViewContent extends StatelessWidget with GameProfileSNSMixin {
     return _buildSection(
       title: '経験・スキル',
       icon: Icons.emoji_events,
-      child: profile.experience != null
+      child: profile.skillLevel != null
           ? _buildInfoCard(
               '経験レベル',
-              '${profile.experience!.displayName}\n${profile.experience!.description}',
+              '${profile.skillLevel!.displayName}\n${profile.skillLevel!.description}',
               Icons.trending_up,
               backgroundColor: _getExperienceColor(
-                profile.experience!,
+                profile.skillLevel!,
               ).withValues(alpha: 0.1),
               borderColor: _getExperienceColor(
-                profile.experience!,
+                profile.skillLevel!,
               ).withValues(alpha: 0.3),
-              iconColor: _getExperienceColor(profile.experience!),
+              iconColor: _getExperienceColor(profile.skillLevel!),
             )
           : _buildInfoCard('経験レベル', '未設定', Icons.trending_up),
     );
@@ -507,16 +507,16 @@ class GameProfileViewContent extends StatelessWidget with GameProfileSNSMixin {
     );
   }
 
-  /// 経験レベル色取得
-  Color _getExperienceColor(GameExperience experience) {
-    switch (experience) {
-      case GameExperience.beginner:
+  /// スキルレベル色取得
+  Color _getExperienceColor(SkillLevel skillLevel) {
+    switch (skillLevel) {
+      case SkillLevel.beginner:
         return AppColors.info;
-      case GameExperience.intermediate:
+      case SkillLevel.intermediate:
         return AppColors.warning;
-      case GameExperience.advanced:
+      case SkillLevel.advanced:
         return AppColors.success;
-      case GameExperience.expert:
+      case SkillLevel.expert:
         return AppColors.accent;
     }
   }

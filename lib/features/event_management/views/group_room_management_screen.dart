@@ -1417,7 +1417,7 @@ class _GroupRoomManagementScreenState
         achievements:
             participant.gameProfileData?['achievements']?.toString() ?? '',
         notes: participant.gameProfileData?['description']?.toString() ?? '',
-        experience: _parseGameExperience(
+        skillLevel: _parseSkillLevel(
           participant.gameProfileData?['experienceLevel']?.toString(),
         ),
         playStyles: _parsePlayStyles(
@@ -1456,25 +1456,25 @@ class _GroupRoomManagementScreenState
     );
   }
 
-  /// 経験レベル文字列をGameExperienceに変換
-  GameExperience? _parseGameExperience(String? experienceStr) {
-    if (experienceStr == null) return null;
-    switch (experienceStr.toLowerCase()) {
+  /// 経験レベル文字列をSkillLevelに変換
+  SkillLevel? _parseSkillLevel(String? skillLevelStr) {
+    if (skillLevelStr == null) return null;
+    switch (skillLevelStr.toLowerCase()) {
       case 'beginner':
       case '初心者':
-        return GameExperience.beginner;
+        return SkillLevel.beginner;
       case 'intermediate':
       case '中級者':
-        return GameExperience.intermediate;
+        return SkillLevel.intermediate;
       case 'advanced':
       case '上級者':
-        return GameExperience.advanced;
+        return SkillLevel.advanced;
       case 'expert':
       case 'pro':
       case 'プロ':
-        return GameExperience.expert;
+        return SkillLevel.expert;
       default:
-        return GameExperience.intermediate; // デフォルト
+        return SkillLevel.intermediate; // デフォルト
     }
   }
 

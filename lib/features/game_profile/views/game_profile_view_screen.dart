@@ -252,7 +252,7 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
         children: [
           _buildInfoCard('ランク・レベル', profile.rankOrLevel.isNotEmpty ? profile.rankOrLevel : '未設定', Icons.military_tech),
           const SizedBox(height: AppDimensions.spacingM),
-          _buildInfoCard('ゲーム歴', profile.experience?.displayName ?? '未設定', Icons.history),
+          _buildInfoCard('スキルレベル', profile.skillLevel?.displayName ?? '未設定', Icons.history),
           const SizedBox(height: AppDimensions.spacingM),
           _buildInfoCard('クラン', profile.clan.isNotEmpty ? profile.clan : '未設定', Icons.groups),
         ],
@@ -260,21 +260,21 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
     );
   }
 
-  /// 経験・スキル情報
+  /// スキルレベル情報
   Widget _buildExperienceInfo() {
     return _buildSection(
-      title: '経験・スキル',
+      title: 'スキルレベル',
       icon: Icons.emoji_events,
-      child: profile.experience != null
+      child: profile.skillLevel != null
         ? _buildInfoCard(
-            '経験レベル',
-            '${profile.experience!.displayName}\n${profile.experience!.description}',
+            'スキルレベル',
+            '${profile.skillLevel!.displayName}\n${profile.skillLevel!.description}',
             Icons.trending_up,
-            backgroundColor: _getExperienceColor(profile.experience!).withValues(alpha: 0.1),
-            borderColor: _getExperienceColor(profile.experience!).withValues(alpha: 0.3),
-            iconColor: _getExperienceColor(profile.experience!),
+            backgroundColor: _getExperienceColor(profile.skillLevel!).withValues(alpha: 0.1),
+            borderColor: _getExperienceColor(profile.skillLevel!).withValues(alpha: 0.3),
+            iconColor: _getExperienceColor(profile.skillLevel!),
           )
-        : _buildInfoCard('経験レベル', '未設定', Icons.trending_up),
+        : _buildInfoCard('スキルレベル', '未設定', Icons.trending_up),
     );
   }
 
@@ -549,16 +549,16 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
     );
   }
 
-  /// 経験レベル色取得
-  Color _getExperienceColor(GameExperience experience) {
-    switch (experience) {
-      case GameExperience.beginner:
+  /// スキルレベル色取得
+  Color _getExperienceColor(SkillLevel skillLevel) {
+    switch (skillLevel) {
+      case SkillLevel.beginner:
         return AppColors.info;
-      case GameExperience.intermediate:
+      case SkillLevel.intermediate:
         return AppColors.warning;
-      case GameExperience.advanced:
+      case SkillLevel.advanced:
         return AppColors.success;
-      case GameExperience.expert:
+      case SkillLevel.expert:
         return AppColors.accent;
     }
   }

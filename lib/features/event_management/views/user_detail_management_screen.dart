@@ -89,12 +89,12 @@ class _UserDetailManagementScreenState
               userId: application.userId,
               gameUsername: data['gameUsername'] as String? ?? application.gameUsername ?? '',
               gameUserId: data['gameUserId'] as String? ?? application.gameUserId ?? '',
-              experience: data['experience'] != null
-                ? GameExperience.values.firstWhere(
-                    (e) => e.name == data['experience'],
-                    orElse: () => GameExperience.beginner,
+              skillLevel: data['skillLevel'] != null
+                ? SkillLevel.values.firstWhere(
+                    (e) => e.name == data['skillLevel'],
+                    orElse: () => SkillLevel.beginner,
                   )
-                : GameExperience.beginner,
+                : SkillLevel.beginner,
               playStyles: (data['playStyles'] as List?)
                       ?.map((e) => PlayStyle.values.firstWhere(
                             (style) => style.name == e,
@@ -131,7 +131,7 @@ class _UserDetailManagementScreenState
               userId: application.userId,
               gameUsername: application.gameUsername!,
               gameUserId: application.gameUserId ?? '',
-              experience: GameExperience.beginner,
+              skillLevel: SkillLevel.beginner,
               playStyles: [],
               rankOrLevel: '',
               activityTimes: [],

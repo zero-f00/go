@@ -50,7 +50,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
   late final TextEditingController _voiceChatDetailsController;
 
   // 選択状態
-  GameExperience? _selectedExperience;
+  SkillLevel? _selectedSkillLevel;
   late List<PlayStyle> _selectedPlayStyles;
   late List<ActivityTime> _selectedActivityTimes;
   late bool _useInGameVC;
@@ -103,7 +103,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
     _voiceChatDetailsController = TextEditingController(text: voiceChatDetails);
 
     // 選択状態の初期化
-    _selectedExperience = profile?.experience;
+    _selectedSkillLevel = profile?.skillLevel;
     _selectedPlayStyles = List<PlayStyle>.from(profile?.playStyles ?? []);
     _selectedActivityTimes = List<ActivityTime>.from(
       profile?.activityTimes ?? [],
@@ -128,7 +128,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
           _achievementsController.text = profile.achievements;
           _notesController.text = profile.notes;
           _voiceChatDetailsController.text = profile.voiceChatDetails;
-          _selectedExperience = profile.experience;
+          _selectedSkillLevel = profile.skillLevel;
           _selectedPlayStyles = List<PlayStyle>.from(profile.playStyles);
           _selectedActivityTimes = List<ActivityTime>.from(
             profile.activityTimes,
@@ -457,20 +457,20 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
       title: 'ゲーム歴・レベル',
       icon: Icons.trending_up,
       children: [
-        SelectionButtonGroup<GameExperience>(
-          label: 'ゲーム歴',
-          options: GameExperience.values,
-          selectedOption: _selectedExperience,
-          onSelectionChanged: (experience) {
+        SelectionButtonGroup<SkillLevel>(
+          label: 'スキルレベル',
+          options: SkillLevel.values,
+          selectedOption: _selectedSkillLevel,
+          onSelectionChanged: (skillLevel) {
             setState(() {
               // 既に選択されている場合は選択解除、そうでない場合は選択
-              _selectedExperience = _selectedExperience == experience
+              _selectedSkillLevel = _selectedSkillLevel == skillLevel
                   ? null
-                  : experience;
+                  : skillLevel;
             });
           },
-          optionBuilder: (experience) => experience.displayName,
-          tooltipBuilder: (experience) => experience.description,
+          optionBuilder: (skillLevel) => skillLevel.displayName,
+          tooltipBuilder: (skillLevel) => skillLevel.description,
         ),
         const SizedBox(height: AppDimensions.spacingM),
         TextInputField(
@@ -951,7 +951,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
           gameUsername: _gameUsernameController.text.trim(),
           gameUserId: _gameUserIdController.text.trim(),
           clan: _clanController.text.trim(),
-          experience: _selectedExperience,
+          skillLevel: _selectedSkillLevel,
           playStyles: _selectedPlayStyles,
           rankOrLevel: _rankOrLevelController.text.trim(),
           activityTimes: _selectedActivityTimes,
@@ -976,7 +976,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
           gameUsername: _gameUsernameController.text.trim(),
           gameUserId: _gameUserIdController.text.trim(),
           clan: _clanController.text.trim(),
-          experience: _selectedExperience,
+          skillLevel: _selectedSkillLevel,
           playStyles: _selectedPlayStyles,
           rankOrLevel: _rankOrLevelController.text.trim(),
           activityTimes: _selectedActivityTimes,

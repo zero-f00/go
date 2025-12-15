@@ -102,7 +102,7 @@ class _ParticipantListViewScreenState
               userId: application.userId,
               gameUsername: application.gameUsername!,
               gameUserId: application.gameUserId ?? '',
-              experience: null,
+              skillLevel: null,
               playStyles: [],
               rankOrLevel: '',
               activityTimes: [],

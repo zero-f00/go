@@ -19,8 +19,8 @@ class GameProfile extends Equatable {
   /// ゲーム内ユーザーID
   final String gameUserId;
 
-  /// ゲーム歴
-  final GameExperience? experience;
+  /// スキルレベル
+  final SkillLevel? skillLevel;
 
   /// プレイスタイル
   final List<PlayStyle> playStyles;
@@ -67,7 +67,7 @@ class GameProfile extends Equatable {
     required this.userId,
     required this.gameUsername,
     required this.gameUserId,
-    this.experience,
+    this.skillLevel,
     this.playStyles = const [],
     this.rankOrLevel = '',
     this.activityTimes = const [],
@@ -89,7 +89,7 @@ class GameProfile extends Equatable {
     required String userId,
     required String gameUsername,
     required String gameUserId,
-    GameExperience? experience,
+    SkillLevel? skillLevel,
     List<PlayStyle> playStyles = const [],
     String rankOrLevel = '',
     List<ActivityTime> activityTimes = const [],
@@ -106,7 +106,7 @@ class GameProfile extends Equatable {
       userId: userId,
       gameUsername: gameUsername,
       gameUserId: gameUserId,
-      experience: experience,
+      skillLevel: skillLevel,
       playStyles: playStyles,
       rankOrLevel: rankOrLevel,
       activityTimes: activityTimes,
@@ -132,10 +132,10 @@ class GameProfile extends Equatable {
       userId: data['userId'] as String,
       gameUsername: data['gameUsername'] as String,
       gameUserId: data['gameUserId'] as String,
-      experience: data['experience'] != null
-        ? GameExperience.values.firstWhere(
-            (e) => e.name == data['experience'],
-            orElse: () => GameExperience.beginner,
+      skillLevel: data['skillLevel'] != null
+        ? SkillLevel.values.firstWhere(
+            (e) => e.name == data['skillLevel'],
+            orElse: () => SkillLevel.beginner,
           )
         : null,
       playStyles: (data['playStyles'] as List?)
@@ -173,7 +173,7 @@ class GameProfile extends Equatable {
       'userId': userId,
       'gameUsername': gameUsername,
       'gameUserId': gameUserId,
-      'experience': experience?.name,
+      'skillLevel': skillLevel?.name,
       'playStyles': playStyles.map((style) => style.name).toList(),
       'rankOrLevel': rankOrLevel,
       'activityTimes': activityTimes.map((time) => time.name).toList(),
@@ -198,7 +198,7 @@ class GameProfile extends Equatable {
     String? userId,
     String? gameUsername,
     String? gameUserId,
-    GameExperience? experience,
+    SkillLevel? skillLevel,
     List<PlayStyle>? playStyles,
     String? rankOrLevel,
     List<ActivityTime>? activityTimes,
@@ -219,7 +219,7 @@ class GameProfile extends Equatable {
       userId: userId ?? this.userId,
       gameUsername: gameUsername ?? this.gameUsername,
       gameUserId: gameUserId ?? this.gameUserId,
-      experience: experience ?? this.experience,
+      skillLevel: skillLevel ?? this.skillLevel,
       playStyles: playStyles ?? this.playStyles,
       rankOrLevel: rankOrLevel ?? this.rankOrLevel,
       activityTimes: activityTimes ?? this.activityTimes,
@@ -244,8 +244,8 @@ class GameProfile extends Equatable {
       parts.add('ランク: $rankOrLevel');
     }
 
-    if (experience != null) {
-      parts.add('歴: ${experience!.displayName}');
+    if (skillLevel != null) {
+      parts.add('レベル: ${skillLevel!.displayName}');
     }
 
     if (playStyles.isNotEmpty) {
@@ -262,7 +262,7 @@ class GameProfile extends Equatable {
         userId,
         gameUsername,
         gameUserId,
-        experience,
+        skillLevel,
         playStyles,
         rankOrLevel,
         activityTimes,
@@ -284,37 +284,37 @@ class GameProfile extends Equatable {
   }
 }
 
-/// ゲーム歴
-enum GameExperience {
+/// スキルレベル
+enum SkillLevel {
   beginner,    // 初心者
   intermediate, // 中級者
   advanced,    // 上級者
   expert,      // エキスパート
 }
 
-extension GameExperienceExtension on GameExperience {
+extension SkillLevelExtension on SkillLevel {
   String get displayName {
     switch (this) {
-      case GameExperience.beginner:
+      case SkillLevel.beginner:
         return '初心者';
-      case GameExperience.intermediate:
+      case SkillLevel.intermediate:
         return '中級者';
-      case GameExperience.advanced:
+      case SkillLevel.advanced:
         return '上級者';
-      case GameExperience.expert:
+      case SkillLevel.expert:
         return 'エキスパート';
     }
   }
 
   String get description {
     switch (this) {
-      case GameExperience.beginner:
+      case SkillLevel.beginner:
         return '始めたばかり、基本的な操作を学習中';
-      case GameExperience.intermediate:
+      case SkillLevel.intermediate:
         return '基本操作は慣れて、戦略を学習中';
-      case GameExperience.advanced:
+      case SkillLevel.advanced:
         return '高度な戦略やテクニックを習得済み';
-      case GameExperience.expert:
+      case SkillLevel.expert:
         return 'プロレベル、他の人に教えられる';
     }
   }

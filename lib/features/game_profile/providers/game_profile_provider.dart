@@ -184,11 +184,11 @@ final gameProfileStatsProvider = Provider<GameProfileStats>((ref) {
   );
 });
 
-Map<GameExperience, int> _getExperienceDistribution(List<GameProfile> profiles) {
-  final distribution = <GameExperience, int>{};
+Map<SkillLevel, int> _getExperienceDistribution(List<GameProfile> profiles) {
+  final distribution = <SkillLevel, int>{};
 
-  for (final experience in GameExperience.values) {
-    distribution[experience] = profiles.where((p) => p.experience == experience).length;
+  for (final skillLevel in SkillLevel.values) {
+    distribution[skillLevel] = profiles.where((p) => p.skillLevel == skillLevel).length;
   }
 
   return distribution;
@@ -244,7 +244,7 @@ class TopGameEntry {
 class GameProfileStats {
   final int totalProfiles;
   final int favoriteProfiles;
-  final Map<GameExperience, int> experienceDistribution;
+  final Map<SkillLevel, int> experienceDistribution;
   final List<String> topGames;
 
   const GameProfileStats({
