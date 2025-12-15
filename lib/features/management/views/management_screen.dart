@@ -914,7 +914,10 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
         final status = eventData['status'] as String?;
         // 下書き状態のイベントは表示しない
         if (status == 'draft') return null;
-        return _convertEventDataToGameEvent(eventData, application.eventId);
+
+        // EventモデルからGameEventモデルに変換（ゲーム情報を正しく取得するため）
+        final event = Event.fromFirestore(eventDoc);
+        return await converter.EventConverter.eventToGameEvent(event);
       }
 
       return null;
@@ -923,64 +926,6 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
     }
   }
 
-  /// EventデータをGameEventに変換
-  GameEvent _convertEventDataToGameEvent(Map<String, dynamic> eventData, String eventId) {
-    return GameEvent(
-      id: eventId,
-      name: eventData['name'] ?? 'イベント',
-      subtitle: eventData['subtitle'],
-      description: eventData['description'] ?? '',
-      type: _mapEventTypeFromString(eventData['type']),
-      status: GameEventStatus.active,
-      startDate: (eventData['eventDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      endDate: (eventData['eventDate'] as Timestamp?)?.toDate().add(const Duration(hours: 2)) ?? DateTime.now().add(const Duration(hours: 2)),
-      participantCount: (eventData['participantIds'] as List?)?.length ?? 0,
-      maxParticipants: eventData['maxParticipants'] ?? 10,
-      completionRate: 0.0,
-      hasFee: eventData['hasParticipationFee'] ?? false,
-      rewards: const <String, double>{},
-      gameId: eventData['gameId'],
-      gameName: eventData['gameName'],
-      gameIconUrl: eventData['gameIconUrl'],
-      imageUrl: eventData['imageUrl'],
-      rules: eventData['rules'],
-      registrationDeadline: (eventData['registrationDeadline'] as Timestamp?)?.toDate(),
-      prizeContent: eventData['prizeContent'],
-      contactInfo: eventData['contactInfo'],
-      policy: eventData['policy'],
-      additionalInfo: eventData['additionalInfo'],
-      streamingUrls: List<String>.from(eventData['streamingUrls'] ?? []),
-      minAge: eventData['minAge'],
-      feeAmount: eventData['feeAmount']?.toDouble(),
-      platforms: List<String>.from(eventData['platforms'] ?? []),
-      approvalMethod: eventData['approvalMethod'] ?? 'manual',
-      visibility: eventData['visibility'] ?? 'public',
-      language: eventData['language'] ?? 'ja',
-      hasAgeRestriction: eventData['hasAgeRestriction'] ?? false,
-      hasStreaming: eventData['hasStreaming'] ?? false,
-      eventTags: List<String>.from(eventData['eventTags'] ?? []),
-      sponsors: List<String>.from(eventData['sponsorIds'] ?? []),
-      managers: List<String>.from(eventData['managerIds'] ?? []),
-      createdBy: eventData['createdBy'],
-      createdByName: eventData['createdByName'],
-    );
-  }
-
-  /// イベントタイプ文字列をGameEventTypeに変換
-  GameEventType _mapEventTypeFromString(String? eventType) {
-    switch (eventType) {
-      case 'daily':
-        return GameEventType.daily;
-      case 'weekly':
-        return GameEventType.weekly;
-      case 'special':
-        return GameEventType.special;
-      case 'seasonal':
-        return GameEventType.seasonal;
-      default:
-        return GameEventType.daily;
-    }
-  }
 
   /// カレンダーからイベント詳細画面へ遷移
   void _navigateToEventDetailFromCalendar(GameEvent event) {
