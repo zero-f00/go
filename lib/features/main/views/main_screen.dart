@@ -29,11 +29,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   bool _shouldNavigateToEventCreation = false;
   bool _shouldFocusSearchField = false;
 
-  // タブ画面のインスタンスを保持（IndexedStackで状態保持するため）
-  // 注意: SearchScreenとManagementScreenのフラグは初期化時の値が渡されるため、
-  // 動的な変更には対応していない。これらの画面は内部でフラグをチェックする必要がある場合は
-  // コールバックやProviderを使用する。
-  late final List<Widget> _screens;
+  // 静的な画面は保持し、ManagementScreenのみ動的に構築
+  late final GameEventManagementScreen _gameEventScreen;
+  late final SearchScreen _searchScreen;
+  late final Widget _notificationScreen;
 
   @override
   void initState() {
@@ -42,21 +41,15 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     // NavigationServiceにタブ切り替えコールバックを設定
     NavigationService.instance.setTabChangeCallback(_onTabTapped);
 
-    // 画面インスタンスを初期化時に一度だけ生成
-    _screens = [
-      GameEventManagementScreen(
-        onNavigateToSearch: () => _navigateToSearch(),
-        onNavigateToEventCreation: () => _navigateToEventCreation(),
-      ),
-      SearchScreen(
-        shouldFocusSearchField: _shouldFocusSearchField,
-      ),
-      const NotificationScreen(),
-      ManagementScreen(
-        shouldNavigateToEventCreation: _shouldNavigateToEventCreation,
-        onEventCreationNavigated: () => _shouldNavigateToEventCreation = false,
-      ),
-    ];
+    // 静的な画面を初期化
+    _gameEventScreen = GameEventManagementScreen(
+      onNavigateToSearch: () => _navigateToSearch(),
+      onNavigateToEventCreation: () => _navigateToEventCreation(),
+    );
+    _searchScreen = SearchScreen(
+      shouldFocusSearchField: _shouldFocusSearchField,
+    );
+    _notificationScreen = const NotificationScreen();
   }
 
   void _navigateToEventCreation() {
@@ -109,7 +102,16 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: _screens,
+        children: [
+          _gameEventScreen,
+          _searchScreen,
+          _notificationScreen,
+          ManagementScreen(
+            shouldNavigateToEventCreation: _shouldNavigateToEventCreation,
+            onEventCreationNavigated: () => _shouldNavigateToEventCreation = false,
+            isActive: _currentIndex == 3, // 管理タブ（インデックス3）がアクティブかチェック
+          ),
+        ],
       ),
       drawer: const AppDrawer(),
       bottomNavigationBar: AppBottomNavigation(

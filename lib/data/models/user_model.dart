@@ -52,6 +52,9 @@ class UserData extends Equatable {
   /// プロフィールで過去参加済みイベントを表示するかどうか
   final bool showParticipatedEvents;
 
+  /// SNSアカウント情報
+  final Map<String, String>? socialLinks;
+
   /// 利用規約に同意したかどうか
   final bool termsAccepted;
 
@@ -78,6 +81,7 @@ class UserData extends Equatable {
     this.showParticipatingEvents = true,
     this.showManagedEvents = true,
     this.showParticipatedEvents = true,
+    this.socialLinks,
     this.termsAccepted = false,
     this.termsVersion,
     this.termsAcceptedAt,
@@ -137,6 +141,7 @@ class UserData extends Equatable {
       showParticipatingEvents: json['showParticipatingEvents'] as bool? ?? true,
       showManagedEvents: json['showManagedEvents'] as bool? ?? true,
       showParticipatedEvents: json['showParticipatedEvents'] as bool? ?? true,
+      socialLinks: (json['socialLinks'] as Map<String, dynamic>?)?.cast<String, String>(),
       termsAccepted: json['termsAccepted'] as bool? ?? false,
       termsVersion: json['termsVersion'] as String?,
       termsAcceptedAt: json['termsAcceptedAt'] != null
@@ -163,6 +168,7 @@ class UserData extends Equatable {
       'showParticipatingEvents': showParticipatingEvents,
       'showManagedEvents': showManagedEvents,
       'showParticipatedEvents': showParticipatedEvents,
+      'socialLinks': socialLinks,
       'termsAccepted': termsAccepted,
       'termsVersion': termsVersion,
       'termsAcceptedAt': termsAcceptedAt != null
@@ -188,6 +194,7 @@ class UserData extends Equatable {
     bool? showParticipatingEvents,
     bool? showManagedEvents,
     bool? showParticipatedEvents,
+    Map<String, String>? socialLinks,
     bool? termsAccepted,
     String? termsVersion,
     DateTime? termsAcceptedAt,
@@ -209,6 +216,7 @@ class UserData extends Equatable {
       showParticipatingEvents: showParticipatingEvents ?? this.showParticipatingEvents,
       showManagedEvents: showManagedEvents ?? this.showManagedEvents,
       showParticipatedEvents: showParticipatedEvents ?? this.showParticipatedEvents,
+      socialLinks: socialLinks ?? this.socialLinks,
       termsAccepted: termsAccepted ?? this.termsAccepted,
       termsVersion: termsVersion ?? this.termsVersion,
       termsAcceptedAt: termsAcceptedAt ?? this.termsAcceptedAt,
@@ -283,6 +291,7 @@ class UserData extends Equatable {
         showParticipatingEvents,
         showManagedEvents,
         showParticipatedEvents,
+        socialLinks,
         termsAccepted,
         termsVersion,
         termsAcceptedAt,
@@ -307,6 +316,7 @@ class UpdateUserRequest {
   final bool? showParticipatingEvents;
   final bool? showManagedEvents;
   final bool? showParticipatedEvents;
+  final Map<String, String>? socialLinks;
   final bool? termsAccepted;
   final String? termsVersion;
   final DateTime? termsAcceptedAt;
@@ -323,6 +333,7 @@ class UpdateUserRequest {
     this.showParticipatingEvents,
     this.showManagedEvents,
     this.showParticipatedEvents,
+    this.socialLinks,
     this.termsAccepted,
     this.termsVersion,
     this.termsAcceptedAt,
@@ -341,6 +352,7 @@ class UpdateUserRequest {
       showParticipatingEvents != null ||
       showManagedEvents != null ||
       showParticipatedEvents != null ||
+      socialLinks != null ||
       termsAccepted != null ||
       termsVersion != null ||
       termsAcceptedAt != null;
@@ -367,6 +379,7 @@ class UpdateUserRequest {
     if (showParticipatedEvents != null) {
       data['showParticipatedEvents'] = showParticipatedEvents;
     }
+    if (socialLinks != null) data['socialLinks'] = socialLinks;
     if (termsAccepted != null) data['termsAccepted'] = termsAccepted;
     if (termsVersion != null) data['termsVersion'] = termsVersion;
     if (termsAcceptedAt != null) {

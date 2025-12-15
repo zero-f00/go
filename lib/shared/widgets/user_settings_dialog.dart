@@ -59,6 +59,16 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
   final _userBioController = TextEditingController();
   final _contactController = TextEditingController();
 
+  // SNSアカウント設定
+  final Map<String, TextEditingController> _snsControllers = {
+    'twitter': TextEditingController(),
+    'tiktok': TextEditingController(),
+    'youtube': TextEditingController(),
+    'instagram': TextEditingController(),
+    'twitch': TextEditingController(),
+    'discord': TextEditingController(),
+  };
+
   List<Game> _favoriteGames = [];
   File? _avatarFile; // 一時的な加工後画像（保存前）
   String? _avatarUrl; // Firebase Storage URL
@@ -103,6 +113,14 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
               }
               if (userData.contact != null && userData.contact!.isNotEmpty) {
                 _contactController.text = userData.contact!;
+              }
+              // SNSアカウント情報を読み込み
+              if (userData.socialLinks != null) {
+                userData.socialLinks!.forEach((key, value) {
+                  if (_snsControllers.containsKey(key)) {
+                    _snsControllers[key]!.text = value;
+                  }
+                });
               }
               // お気に入りゲームを非同期で読み込み
               _loadFavoriteGames(userData.favoriteGameIds);
@@ -172,6 +190,10 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
     _userIdController.dispose();
     _userBioController.dispose();
     _contactController.dispose();
+    // SNSコントローラーを破棄
+    for (final controller in _snsControllers.values) {
+      controller.dispose();
+    }
     _marqueeController.dispose();
     super.dispose();
   }
@@ -209,6 +231,8 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
                     _buildFavoriteGamesSection(),
                     const SizedBox(height: AppDimensions.spacingL),
                     _buildContactSection(),
+                    const SizedBox(height: AppDimensions.spacingL),
+                    _buildSnsAccountSection(),
                     if (widget.isInitialSetup) ...[
                       const SizedBox(height: AppDimensions.spacingL),
                       _buildInitialSetupMessage(),
@@ -812,13 +836,13 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
           Row(
             children: [
               Icon(
-                Icons.contact_page,
+                Icons.groups,
                 color: AppColors.accent,
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
               const Text(
-                '連絡先・コミュニティ',
+                'コミュニティ・その他の情報',
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
@@ -840,14 +864,14 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
       children: [
         AppTextFieldMultiline(
           controller: _contactController,
-          label: '連絡先情報',
-          hintText: '例：Discord: @username, Twitter: @username, YouTube: @channel, Steam: steamname, LINE: lineid',
+          label: 'コミュニティ・その他',
+          hintText: '所属コミュニティ、Steam ID、その他の情報\n例：○○クラン所属、Steam: username123、Epic: epicname',
           maxLines: 4,
           doneButtonText: '完了',
         ),
         const SizedBox(height: AppDimensions.spacingS),
         Text(
-          'ゲームイベントの連絡に使用したいプラットフォームやアカウント情報を自由な形式で入力してください。',
+          '所属クラン・ギルド、Steam・Epic等のゲームアカウント、プライベート連絡先などを自由に入力してください。',
           style: TextStyle(
             fontSize: AppDimensions.fontSizeS,
             color: AppColors.textSecondary,
@@ -1325,6 +1349,9 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
         }
       }
 
+      // SNSアカウント情報をバリデーションして収集
+      final Map<String, String> socialLinks = _processSnsAccounts();
+
       // 更新リクエストを作成
       final updateRequest = UpdateUserRequest(
         username: nickname,
@@ -1337,6 +1364,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
             : _contactController.text.trim(),
         favoriteGameIds: _favoriteGames.map((game) => game.id).toList(),
         photoUrl: finalAvatarUrl,
+        socialLinks: socialLinks.isEmpty ? null : socialLinks,
       );
 
       // 新しいプロバイダーシステムを使用して更新
@@ -1436,5 +1464,186 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
         ],
       ),
     );
+  }
+
+  /// SNSアカウント設定セクション
+  Widget _buildSnsAccountSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.share,
+              color: AppColors.accent,
+              size: AppDimensions.iconM,
+            ),
+            const SizedBox(width: AppDimensions.spacingS),
+            const Text(
+              'SNSアカウント',
+              style: TextStyle(
+                fontSize: AppDimensions.fontSizeL,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textDark,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppDimensions.spacingS),
+        const Text(
+          'これらのアカウントは新しいゲームプロフィールのデフォルト値として使用されます。\n各ゲームで個別に設定することも可能です。',
+          style: TextStyle(
+            fontSize: AppDimensions.fontSizeS,
+            color: AppColors.textSecondary,
+          ),
+        ),
+        const SizedBox(height: AppDimensions.spacingM),
+        _buildSnsInput(
+          icon: Icons.close,
+          label: 'X (Twitter)',
+          controller: _snsControllers['twitter']!,
+          placeholder: 'ユーザー名（@なし）',
+        ),
+        const SizedBox(height: AppDimensions.spacingM),
+        _buildSnsInput(
+          icon: Icons.music_note,
+          label: 'TikTok',
+          controller: _snsControllers['tiktok']!,
+          placeholder: 'ユーザー名（@なし）',
+        ),
+        const SizedBox(height: AppDimensions.spacingM),
+        _buildSnsInput(
+          icon: Icons.play_circle_fill,
+          label: 'YouTube',
+          controller: _snsControllers['youtube']!,
+          placeholder: 'チャンネル名（@なし）',
+        ),
+        const SizedBox(height: AppDimensions.spacingM),
+        _buildSnsInput(
+          icon: Icons.camera_alt,
+          label: 'Instagram',
+          controller: _snsControllers['instagram']!,
+          placeholder: 'ユーザー名（@なし）',
+        ),
+        const SizedBox(height: AppDimensions.spacingM),
+        _buildSnsInput(
+          icon: Icons.videogame_asset,
+          label: 'Twitch',
+          controller: _snsControllers['twitch']!,
+          placeholder: 'ユーザー名（@なし）',
+        ),
+        const SizedBox(height: AppDimensions.spacingM),
+        _buildSnsInput(
+          icon: Icons.chat,
+          label: 'Discord',
+          controller: _snsControllers['discord']!,
+          placeholder: 'ユーザー名#1234（#タグ込み）',
+        ),
+      ],
+    );
+  }
+
+  /// SNS入力フィールド
+  Widget _buildSnsInput({
+    required IconData icon,
+    required String label,
+    required TextEditingController controller,
+    required String placeholder,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingM,
+        vertical: AppDimensions.spacingS,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+        border: Border.all(color: AppColors.borderLight),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(AppDimensions.spacingXS),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusXS),
+            ),
+            child: Icon(
+              icon,
+              color: AppColors.primary,
+              size: 16,
+            ),
+          ),
+          const SizedBox(width: AppDimensions.spacingM),
+          SizedBox(
+            width: 80,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: AppDimensions.fontSizeS,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textDark,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppDimensions.spacingS),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              style: const TextStyle(fontSize: AppDimensions.fontSizeM),
+              decoration: InputDecoration(
+                hintText: placeholder,
+                hintStyle: TextStyle(
+                  color: AppColors.textLight,
+                  fontSize: AppDimensions.fontSizeS,
+                ),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+                isDense: true,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// SNSアカウント情報を保存用に加工
+  Map<String, String> _processSnsAccounts() {
+    final Map<String, String> socialLinks = {};
+
+    // 各プラットフォームの処理
+    _snsControllers.forEach((platform, controller) {
+      final value = controller.text.trim();
+      if (value.isEmpty) return;
+
+      String processedValue = value;
+
+      // プラットフォーム固有の処理
+      switch (platform) {
+        case 'twitter':
+        case 'tiktok':
+        case 'youtube':
+        case 'instagram':
+        case 'twitch':
+          // @マークを除去
+          if (processedValue.startsWith('@')) {
+            processedValue = processedValue.substring(1);
+          }
+          break;
+        case 'discord':
+          // Discord新形式は@マークを除去、旧形式はそのまま保存
+          if (!value.contains('#') && value.startsWith('@')) {
+            processedValue = value.substring(1);
+          } else {
+            processedValue = value.trim();
+          }
+          break;
+      }
+
+      socialLinks[platform] = processedValue;
+    });
+
+    return socialLinks;
   }
 }

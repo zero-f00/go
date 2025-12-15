@@ -34,11 +34,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 class ManagementScreen extends ConsumerStatefulWidget {
   final bool shouldNavigateToEventCreation;
   final VoidCallback? onEventCreationNavigated;
+  final bool isActive;
 
   const ManagementScreen({
     super.key,
     this.shouldNavigateToEventCreation = false,
     this.onEventCreationNavigated,
+    this.isActive = true,
   });
 
   @override
@@ -235,11 +237,12 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
     }
 
     // 認証状態が確定し、サインインしていない場合のみサインインダイアログを表示
+    // ただし、この画面がアクティブな場合のみ
     final isSignedIn = authState.hasValue && authState.value != null;
     if (!isSignedIn) {
-      if (!_isDialogShowing) {
+      if (!_isDialogShowing && widget.isActive) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!_isDialogShowing && mounted) {
+          if (!_isDialogShowing && mounted && widget.isActive) {
             _showSignInDialog();
           }
         });
@@ -253,11 +256,11 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
     }
 
     // サインイン済みだが初回設定が未完了の場合、初回設定ダイアログを表示
-    // ただし、userDataがローディング中でない場合のみ
+    // ただし、userDataがローディング中でない場合かつ画面がアクティブな場合のみ
     if (needsInitialSetup && currentUser != null) {
-      if (!_isDialogShowing) {
+      if (!_isDialogShowing && widget.isActive) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!_isDialogShowing && mounted) {
+          if (!_isDialogShowing && mounted && widget.isActive) {
             _showInitialSetupDialog();
           }
         });

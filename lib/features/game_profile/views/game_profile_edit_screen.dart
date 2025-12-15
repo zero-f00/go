@@ -55,11 +55,25 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
   late List<ActivityTime> _selectedActivityTimes;
   late bool _useInGameVC;
 
+  // SNSアカウント用コントローラー
+  late final Map<String, TextEditingController> _gameSnsControllers;
+
   bool _isSubmitting = false;
 
   @override
   void initState() {
     super.initState();
+    // SNSコントローラーを初期化
+    _gameSnsControllers = {
+      'twitter': TextEditingController(),
+      'tiktok': TextEditingController(),
+      'youtube': TextEditingController(),
+      'instagram': TextEditingController(),
+      'twitch': TextEditingController(),
+      'discord': TextEditingController(),
+    };
+
+    // コントローラーを初期化
     _initializeControllers();
   }
 
@@ -96,6 +110,11 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
     );
     _useInGameVC = profile?.useInGameVC ?? false;
 
+    // SNSアカウントの初期化（グローバル→ゲーム専用の順で設定）
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeSnsControllers(profile);
+    });
+
     // 既存プロフィールがあるのにフォームが空の場合の修正処理
     if (profile != null &&
         _gameUsernameController.text.isEmpty &&
@@ -120,6 +139,52 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
     }
   }
 
+  /// SNSコントローラーを初期化（グローバルSNSをデフォルト値として使用）
+  void _initializeSnsControllers(GameProfile? profile) async {
+    try {
+      // まず全てのコントローラーをクリア
+      _gameSnsControllers.forEach((key, controller) {
+        controller.clear();
+      });
+
+      // 現在のユーザーデータ（グローバルSNS）を取得
+      final userData = await ref.read(currentUserDataProvider.future);
+
+      if (mounted) {
+        setState(() {
+          // まずグローバルSNSをデフォルト値として設定
+          if (userData?.socialLinks != null) {
+            userData!.socialLinks!.forEach((key, value) {
+              if (_gameSnsControllers.containsKey(key)) {
+                _gameSnsControllers[key]!.text = value;
+              }
+            });
+          }
+
+          // 既存のゲーム専用SNSがあれば上書き（優先）
+          if (profile?.gameSocialLinks != null) {
+            profile!.gameSocialLinks!.forEach((key, value) {
+              if (_gameSnsControllers.containsKey(key)) {
+                _gameSnsControllers[key]!.text = value;
+              }
+            });
+          }
+        });
+      }
+    } catch (e) {
+      // エラーが発生した場合はゲーム専用SNSのみを使用
+      if (mounted && profile?.gameSocialLinks != null) {
+        setState(() {
+          profile!.gameSocialLinks!.forEach((key, value) {
+            if (_gameSnsControllers.containsKey(key)) {
+              _gameSnsControllers[key]!.text = value;
+            }
+          });
+        });
+      }
+    }
+  }
+
   @override
   void dispose() {
     _gameNameController.dispose();
@@ -131,6 +196,10 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
     _notesController.dispose();
     _voiceChatDetailsController.dispose();
     _scrollController.dispose();
+    // SNSコントローラーを破棄
+    _gameSnsControllers.forEach((key, controller) {
+      controller.dispose();
+    });
     super.dispose();
   }
 
@@ -192,6 +261,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
                                 _buildPlayStyleSection(),
                                 _buildActivityTimeSection(),
                                 _buildVoiceChatSection(),
+                                _buildGameSnsSection(),
                                 _buildAdditionalInfoSection(),
                                 const SizedBox(height: AppDimensions.spacingL),
                                 _buildActionButtons(),
@@ -569,6 +639,129 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
     );
   }
 
+  Widget _buildGameSnsSection() {
+    return _buildSection(
+      title: 'ゲーム専用SNSアカウント',
+      icon: Icons.share,
+      children: [
+        const Text(
+          'このゲーム専用のSNSアカウントがある場合は入力してください',
+          style: TextStyle(
+            fontSize: AppDimensions.fontSizeS,
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: AppDimensions.spacingM),
+        _buildGameSnsInput(
+          icon: Icons.close,
+          label: 'X (Twitter)',
+          controller: _gameSnsControllers['twitter']!,
+          placeholder: 'ユーザー名（@なし）',
+        ),
+        const SizedBox(height: AppDimensions.spacingS),
+        _buildGameSnsInput(
+          icon: Icons.music_note,
+          label: 'TikTok',
+          controller: _gameSnsControllers['tiktok']!,
+          placeholder: 'ユーザー名（@なし）',
+        ),
+        const SizedBox(height: AppDimensions.spacingS),
+        _buildGameSnsInput(
+          icon: Icons.play_circle_fill,
+          label: 'YouTube',
+          controller: _gameSnsControllers['youtube']!,
+          placeholder: 'チャンネル名（@なし）',
+        ),
+        const SizedBox(height: AppDimensions.spacingS),
+        _buildGameSnsInput(
+          icon: Icons.camera_alt,
+          label: 'Instagram',
+          controller: _gameSnsControllers['instagram']!,
+          placeholder: 'ユーザー名（@なし）',
+        ),
+        const SizedBox(height: AppDimensions.spacingS),
+        _buildGameSnsInput(
+          icon: Icons.videogame_asset,
+          label: 'Twitch',
+          controller: _gameSnsControllers['twitch']!,
+          placeholder: 'ユーザー名（@なし）',
+        ),
+        const SizedBox(height: AppDimensions.spacingS),
+        _buildGameSnsInput(
+          icon: Icons.chat,
+          label: 'Discord',
+          controller: _gameSnsControllers['discord']!,
+          placeholder: 'ユーザー名#1234（#タグ込み）',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGameSnsInput({
+    required IconData icon,
+    required String label,
+    required TextEditingController controller,
+    required String placeholder,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingM,
+        vertical: AppDimensions.spacingS,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+        border: Border.all(color: AppColors.borderLight),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(AppDimensions.spacingXS),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusXS),
+            ),
+            child: Icon(
+              icon,
+              color: AppColors.primary,
+              size: 14,
+            ),
+          ),
+          const SizedBox(width: AppDimensions.spacingS),
+          SizedBox(
+            width: 70,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: AppDimensions.fontSizeXS,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textDark,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppDimensions.spacingS),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              style: const TextStyle(fontSize: AppDimensions.fontSizeS),
+              decoration: InputDecoration(
+                hintText: placeholder,
+                hintStyle: TextStyle(
+                  color: AppColors.textLight,
+                  fontSize: AppDimensions.fontSizeXS,
+                ),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+                isDense: true,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSection({
     required String title,
     required IconData icon,
@@ -745,6 +938,9 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
 
       if (widget.isEditing) {
         // 既存プロフィールの更新
+        // ゲーム専用SNSリンクをバリデーションして収集
+        final Map<String, String> gameSocialLinks = await _processGameSnsAccountsAsync();
+
         // userIdが空の場合は現在のユーザーIDで修正
         final userIdToUse = widget.profile!.userId.isEmpty
             ? currentUserData.id
@@ -763,12 +959,16 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
           voiceChatDetails: _voiceChatDetailsController.text.trim(),
           achievements: _achievementsController.text.trim(),
           notes: _notesController.text.trim(),
+          gameSocialLinks: gameSocialLinks.isEmpty ? null : gameSocialLinks,
           updatedAt: DateTime.now(),
         );
         success = await ref
             .read(gameProfileServiceProvider)
             .updateGameProfile(profile);
       } else {
+        // ゲーム専用SNSリンクをバリデーションして収集
+        final Map<String, String> gameSocialLinks = await _processGameSnsAccountsAsync();
+
         // 新規プロフィールの作成
         profile = GameProfile.create(
           gameId: widget.gameId, // 必須：お気に入りゲームIDを使用
@@ -784,6 +984,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
           voiceChatDetails: _voiceChatDetailsController.text.trim(),
           achievements: _achievementsController.text.trim(),
           notes: _notesController.text.trim(),
+          gameSocialLinks: gameSocialLinks.isEmpty ? null : gameSocialLinks,
         );
         success = await ref
             .read(gameProfileServiceProvider)
@@ -945,4 +1146,75 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
       ),
     );
   }
+
+  /// ゲーム専用SNSアカウント情報をバリデーションして保存用に加工
+  Future<Map<String, String>> _processGameSnsAccountsAsync() async {
+    final Map<String, String> gameSocialLinks = {};
+
+    // グローバルSNSデータを取得
+    Map<String, String> globalSocialLinks = {};
+    try {
+      final userData = await ref.read(currentUserDataProvider.future);
+      if (userData?.socialLinks != null) {
+        globalSocialLinks = Map<String, String>.from(userData!.socialLinks!);
+      }
+    } catch (e) {
+      // エラー時はグローバルSNSなしとして処理
+    }
+
+    // 各プラットフォームの処理
+    _gameSnsControllers.forEach((platform, controller) {
+      final value = controller.text.trim();
+      final globalValue = globalSocialLinks[platform] ?? '';
+
+      // プラットフォーム固有の@マーク除去処理
+      String processedValue = value;
+      String processedGlobalValue = globalValue;
+
+      switch (platform) {
+        case 'twitter':
+        case 'tiktok':
+        case 'youtube':
+        case 'instagram':
+        case 'twitch':
+          // @マークを除去
+          if (processedValue.startsWith('@')) {
+            processedValue = processedValue.substring(1);
+          }
+          if (processedGlobalValue.startsWith('@')) {
+            processedGlobalValue = processedGlobalValue.substring(1);
+          }
+          break;
+        case 'discord':
+          // Discord新形式は@マークを除去、旧形式はそのまま保存
+          if (!value.contains('#') && value.startsWith('@')) {
+            processedValue = value.substring(1);
+          } else {
+            processedValue = value.trim();
+          }
+          if (!globalValue.contains('#') && globalValue.startsWith('@')) {
+            processedGlobalValue = globalValue.substring(1);
+          } else {
+            processedGlobalValue = globalValue.trim();
+          }
+          break;
+      }
+
+      // 以下の場合にゲーム専用SNSとして保存する：
+      // 1. 値が空でない かつ グローバル値と異なる
+      // 2. 値が空 かつ グローバル値が存在する（明示的削除）
+      if (processedValue.isNotEmpty && processedValue != processedGlobalValue) {
+        // ケース1: 異なる値を設定
+        gameSocialLinks[platform] = processedValue;
+      } else if (processedValue.isEmpty && processedGlobalValue.isNotEmpty) {
+        // ケース2: 明示的に削除（空文字で保存）
+        gameSocialLinks[platform] = '';
+      }
+      // ケース3: 値が空でグローバル値も空の場合は何もしない
+      // ケース4: グローバル値と同じ値の場合は何もしない（デフォルト使用）
+    });
+
+    return gameSocialLinks;
+  }
+
 }

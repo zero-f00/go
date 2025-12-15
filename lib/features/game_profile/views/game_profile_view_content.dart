@@ -1,23 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
-import '../../../shared/widgets/app_gradient_background.dart';
-import '../../../shared/widgets/app_header.dart';
 import '../../../shared/widgets/game_icon.dart';
 import '../../../data/models/game_profile_model.dart';
 import '../../../data/models/user_model.dart';
 import 'game_profile_view_screen_sns.dart';
 
-/// ゲームプロフィール閲覧画面（読み取り専用）
-class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
+/// ゲームプロフィールコンテンツウィジェット（Scaffold/ヘッダーなし）
+/// GameProfileViewWrapperから埋め込んで使用する
+class GameProfileViewContent extends StatelessWidget with GameProfileSNSMixin {
   final GameProfile profile;
   final UserData? userData;
   final String? gameName;
   final String? gameIconUrl;
 
-  const GameProfileViewScreen({
+  const GameProfileViewContent({
     super.key,
     required this.profile,
     this.userData,
@@ -26,51 +23,31 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      body: AppGradientBackground(
-        child: SafeArea(
-          child: Column(
-            children: [
-              AppHeader(
-                title: 'ゲームプロフィール',
-                showBackButton: true,
-                onBackPressed: () => Navigator.of(context).pop(),
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppDimensions.spacingL),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildUserHeader(context),
-                      const SizedBox(height: AppDimensions.spacingL),
-                      _buildGameInfo(),
-                      const SizedBox(height: AppDimensions.spacingL),
-                      _buildBasicInfo(),
-                      const SizedBox(height: AppDimensions.spacingL),
-                      _buildExperienceInfo(),
-                      const SizedBox(height: AppDimensions.spacingL),
-                      _buildPlayStyleInfo(),
-                      const SizedBox(height: AppDimensions.spacingL),
-                      _buildActivityInfo(),
-                      const SizedBox(height: AppDimensions.spacingL),
-                      _buildSocialLinksInfo(context),
-                      const SizedBox(height: AppDimensions.spacingL),
-                      _buildCommunicationInfo(),
-                      const SizedBox(height: AppDimensions.spacingL),
-                      _buildAchievementsInfo(),
-                      const SizedBox(height: AppDimensions.spacingL),
-                      _buildNotesInfo(),
-                      const SizedBox(height: AppDimensions.spacingXL),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildUserHeader(context),
+        const SizedBox(height: AppDimensions.spacingL),
+        _buildGameInfo(),
+        const SizedBox(height: AppDimensions.spacingL),
+        _buildBasicInfo(),
+        const SizedBox(height: AppDimensions.spacingL),
+        _buildExperienceInfo(),
+        const SizedBox(height: AppDimensions.spacingL),
+        _buildPlayStyleInfo(),
+        const SizedBox(height: AppDimensions.spacingL),
+        _buildActivityInfo(),
+        const SizedBox(height: AppDimensions.spacingL),
+        _buildSocialLinksInfo(context),
+        const SizedBox(height: AppDimensions.spacingL),
+        _buildCommunicationInfo(),
+        const SizedBox(height: AppDimensions.spacingL),
+        _buildAchievementsInfo(),
+        const SizedBox(height: AppDimensions.spacingL),
+        _buildNotesInfo(),
+        const SizedBox(height: AppDimensions.spacingXL),
+      ],
     );
   }
 
@@ -94,7 +71,6 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // セクションタイトル
           Row(
             children: [
               Icon(
@@ -114,7 +90,6 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
             ],
           ),
           const SizedBox(height: AppDimensions.spacingL),
-          // ユーザー情報カード
           InkWell(
             onTap: () => _viewUserProfile(context),
             borderRadius: BorderRadius.circular(AppDimensions.radiusM),
@@ -131,7 +106,6 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
               ),
               child: Row(
                 children: [
-                  // ユーザーアバター
                   CircleAvatar(
                     radius: 32,
                     backgroundColor: AppColors.primary.withValues(alpha: 0.2),
@@ -141,7 +115,9 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
                     child: userData?.photoUrl == null
                         ? Text(
                             userData?.username.isNotEmpty == true
-                                ? userData!.username.substring(0, 1).toUpperCase()
+                                ? userData!.username
+                                      .substring(0, 1)
+                                      .toUpperCase()
                                 : 'U',
                             style: TextStyle(
                               color: AppColors.primary,
@@ -152,7 +128,6 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
                         : null,
                   ),
                   const SizedBox(width: AppDimensions.spacingL),
-                  // ユーザー情報
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,7 +142,9 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
                         ),
                         const SizedBox(height: AppDimensions.spacingXS),
                         Text(
-                          userData?.userId != null ? '@${userData!.userId}' : 'ユーザーIDなし',
+                          userData?.userId != null
+                              ? '@${userData!.userId}'
+                              : 'ユーザーIDなし',
                           style: TextStyle(
                             fontSize: AppDimensions.fontSizeM,
                             color: AppColors.textSecondary,
@@ -176,7 +153,6 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
                       ],
                     ),
                   ),
-                  // タップ可能であることを示すアイコン
                   Icon(
                     Icons.chevron_right,
                     size: AppDimensions.iconM,
@@ -200,9 +176,17 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
         children: [
           _buildGameNameCard(),
           const SizedBox(height: AppDimensions.spacingM),
-          _buildInfoCard('ゲーム内ユーザー名', profile.gameUsername.isNotEmpty ? profile.gameUsername : '未設定', Icons.account_circle),
+          _buildInfoCard(
+            'ゲーム内ユーザー名',
+            profile.gameUsername.isNotEmpty ? profile.gameUsername : '未設定',
+            Icons.account_circle,
+          ),
           const SizedBox(height: AppDimensions.spacingM),
-          _buildInfoCard('ゲーム内ID', profile.gameUserId.isNotEmpty ? profile.gameUserId : '未設定', Icons.fingerprint),
+          _buildInfoCard(
+            'ゲーム内ID',
+            profile.gameUserId.isNotEmpty ? profile.gameUserId : '未設定',
+            Icons.fingerprint,
+          ),
         ],
       ),
     );
@@ -250,11 +234,23 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
       icon: Icons.person,
       child: Column(
         children: [
-          _buildInfoCard('ランク・レベル', profile.rankOrLevel.isNotEmpty ? profile.rankOrLevel : '未設定', Icons.military_tech),
+          _buildInfoCard(
+            'ランク・レベル',
+            profile.rankOrLevel.isNotEmpty ? profile.rankOrLevel : '未設定',
+            Icons.military_tech,
+          ),
           const SizedBox(height: AppDimensions.spacingM),
-          _buildInfoCard('ゲーム歴', profile.experience?.displayName ?? '未設定', Icons.history),
+          _buildInfoCard(
+            'ゲーム歴',
+            profile.experience?.displayName ?? '未設定',
+            Icons.history,
+          ),
           const SizedBox(height: AppDimensions.spacingM),
-          _buildInfoCard('クラン', profile.clan.isNotEmpty ? profile.clan : '未設定', Icons.groups),
+          _buildInfoCard(
+            'クラン',
+            profile.clan.isNotEmpty ? profile.clan : '未設定',
+            Icons.groups,
+          ),
         ],
       ),
     );
@@ -266,15 +262,19 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
       title: '経験・スキル',
       icon: Icons.emoji_events,
       child: profile.experience != null
-        ? _buildInfoCard(
-            '経験レベル',
-            '${profile.experience!.displayName}\n${profile.experience!.description}',
-            Icons.trending_up,
-            backgroundColor: _getExperienceColor(profile.experience!).withValues(alpha: 0.1),
-            borderColor: _getExperienceColor(profile.experience!).withValues(alpha: 0.3),
-            iconColor: _getExperienceColor(profile.experience!),
-          )
-        : _buildInfoCard('経験レベル', '未設定', Icons.trending_up),
+          ? _buildInfoCard(
+              '経験レベル',
+              '${profile.experience!.displayName}\n${profile.experience!.description}',
+              Icons.trending_up,
+              backgroundColor: _getExperienceColor(
+                profile.experience!,
+              ).withValues(alpha: 0.1),
+              borderColor: _getExperienceColor(
+                profile.experience!,
+              ).withValues(alpha: 0.3),
+              iconColor: _getExperienceColor(profile.experience!),
+            )
+          : _buildInfoCard('経験レベル', '未設定', Icons.trending_up),
     );
   }
 
@@ -284,15 +284,15 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
       title: 'プレイスタイル',
       icon: Icons.style,
       child: profile.playStyles.isNotEmpty
-        ? _buildInfoCard(
-            'プレイスタイル',
-            profile.playStyles.map((style) => style.displayName).join('、'),
-            Icons.psychology,
-            backgroundColor: AppColors.info.withValues(alpha: 0.1),
-            borderColor: AppColors.info.withValues(alpha: 0.3),
-            iconColor: AppColors.info,
-          )
-        : _buildInfoCard('プレイスタイル', '未設定', Icons.psychology),
+          ? _buildInfoCard(
+              'プレイスタイル',
+              profile.playStyles.map((style) => style.displayName).join('、'),
+              Icons.psychology,
+              backgroundColor: AppColors.info.withValues(alpha: 0.1),
+              borderColor: AppColors.info.withValues(alpha: 0.3),
+              iconColor: AppColors.info,
+            )
+          : _buildInfoCard('プレイスタイル', '未設定', Icons.psychology),
     );
   }
 
@@ -302,15 +302,25 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
       title: '活動時間帯',
       icon: Icons.schedule,
       child: profile.activityTimes.isNotEmpty
-        ? _buildInfoCard(
-            '活動時間帯',
-            profile.activityTimes.map((time) => time.displayName).join('、'),
-            Icons.access_time,
-            backgroundColor: AppColors.warning.withValues(alpha: 0.1),
-            borderColor: AppColors.warning.withValues(alpha: 0.3),
-            iconColor: AppColors.warning,
-          )
-        : _buildInfoCard('活動時間帯', '未設定', Icons.access_time),
+          ? _buildInfoCard(
+              '活動時間帯',
+              profile.activityTimes.map((time) => time.displayName).join('、'),
+              Icons.access_time,
+              backgroundColor: AppColors.warning.withValues(alpha: 0.1),
+              borderColor: AppColors.warning.withValues(alpha: 0.3),
+              iconColor: AppColors.warning,
+            )
+          : _buildInfoCard('活動時間帯', '未設定', Icons.access_time),
+    );
+  }
+
+  /// SNSアカウント情報
+  Widget _buildSocialLinksInfo(BuildContext context) {
+    return buildSocialLinksInfo(
+      context: context,
+      profile: profile,
+      userData: userData,
+      buildSection: _buildSection,
     );
   }
 
@@ -326,17 +336,21 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
             profile.useInGameVC ? 'ボイスチャット使用可能' : 'ボイスチャット不使用',
             profile.useInGameVC ? Icons.mic : Icons.mic_off,
             backgroundColor: profile.useInGameVC
-              ? AppColors.success.withValues(alpha: 0.1)
-              : AppColors.error.withValues(alpha: 0.1),
+                ? AppColors.success.withValues(alpha: 0.1)
+                : AppColors.error.withValues(alpha: 0.1),
             borderColor: profile.useInGameVC
-              ? AppColors.success.withValues(alpha: 0.3)
-              : AppColors.error.withValues(alpha: 0.3),
-            iconColor: profile.useInGameVC ? AppColors.success : AppColors.error,
+                ? AppColors.success.withValues(alpha: 0.3)
+                : AppColors.error.withValues(alpha: 0.3),
+            iconColor: profile.useInGameVC
+                ? AppColors.success
+                : AppColors.error,
           ),
           const SizedBox(height: AppDimensions.spacingM),
           _buildInfoCard(
             'ボイスチャット詳細',
-            profile.voiceChatDetails.isNotEmpty ? profile.voiceChatDetails : '未設定',
+            profile.voiceChatDetails.isNotEmpty
+                ? profile.voiceChatDetails
+                : '未設定',
             Icons.settings_voice,
           ),
         ],
@@ -401,11 +415,7 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
         children: [
           Row(
             children: [
-              Icon(
-                icon,
-                color: AppColors.accent,
-                size: AppDimensions.iconM,
-              ),
+              Icon(icon, color: AppColors.accent, size: AppDimensions.iconM),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
                 title,
@@ -424,7 +434,7 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
     );
   }
 
-  /// 情報カード構築ヘルパー（運営ダッシュボード風）
+  /// 情報カード構築ヘルパー
   Widget _buildInfoCard(
     String label,
     String value,
@@ -438,14 +448,14 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
-        color: backgroundColor ?? (isNotSet
-          ? AppColors.backgroundLight
-          : AppColors.backgroundLight),
+        color: backgroundColor ?? AppColors.backgroundLight,
         borderRadius: BorderRadius.circular(AppDimensions.radiusM),
         border: Border.all(
-          color: borderColor ?? (isNotSet
-            ? AppColors.border
-            : AppColors.accent.withValues(alpha: 0.3)),
+          color:
+              borderColor ??
+              (isNotSet
+                  ? AppColors.border
+                  : AppColors.accent.withValues(alpha: 0.3)),
           width: 1,
         ),
       ),
@@ -459,7 +469,9 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
             ),
             child: Icon(
               icon,
-              color: iconColor ?? (isNotSet ? AppColors.textLight : AppColors.accent),
+              color:
+                  iconColor ??
+                  (isNotSet ? AppColors.textLight : AppColors.accent),
               size: AppDimensions.iconM,
             ),
           ),
@@ -473,7 +485,9 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     fontWeight: FontWeight.w600,
-                    color: iconColor ?? (isNotSet ? AppColors.textLight : AppColors.accent),
+                    color:
+                        iconColor ??
+                        (isNotSet ? AppColors.textLight : AppColors.accent),
                   ),
                 ),
                 const SizedBox(height: AppDimensions.spacingXS),
@@ -489,62 +503,6 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  /// 情報行構築ヘルパー（旧式）
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: AppDimensions.fontSizeM,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ),
-          const Text(': '),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(
-                fontSize: AppDimensions.fontSizeM,
-                color: AppColors.textDark,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// バッジ構築ヘルパー
-  Widget _buildBadge(String text, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingM,
-        vertical: AppDimensions.spacingS,
-      ),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: AppDimensions.fontSizeM,
-          fontWeight: FontWeight.w500,
-          color: color,
-        ),
       ),
     );
   }
@@ -566,20 +524,9 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
   /// ユーザープロフィール表示
   void _viewUserProfile(BuildContext context) {
     if (userData?.userId != null) {
-      Navigator.of(context).pushNamed(
-        '/user_profile',
-        arguments: userData!.userId,
-      );
+      Navigator.of(
+        context,
+      ).pushNamed('/user_profile', arguments: userData!.userId);
     }
-  }
-
-  /// SNSアカウント情報
-  Widget _buildSocialLinksInfo(BuildContext context) {
-    return buildSocialLinksInfo(
-      context: context,
-      profile: profile,
-      userData: userData,
-      buildSection: _buildSection,
-    );
   }
 }

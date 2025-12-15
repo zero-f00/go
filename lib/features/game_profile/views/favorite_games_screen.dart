@@ -1051,10 +1051,27 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
     );
   }
 
-  void _onGameTap(Game game, GameProfile? existingProfile) {
+  void _onGameTap(Game game, GameProfile? existingProfile) async {
+    // 最新のプロフィールデータを取得
+    GameProfile? latestProfile;
 
-    // gameIdで新規作成用のプロフィールを作成、または既存プロフィールを編集
-    final profileForEdit = existingProfile ?? GameProfile.create(
+    if (existingProfile != null) {
+      try {
+        // 現在のユーザー情報を取得
+        final currentUser = await ref.read(currentUserDataProvider.future);
+        if (currentUser != null) {
+          // データベースから最新データを取得
+          latestProfile = await ref.read(gameProfileServiceProvider)
+              .getGameProfile(currentUser.id, game.id.toString());
+        }
+      } catch (e) {
+        // エラーの場合はキャッシュを使用
+        latestProfile = existingProfile;
+      }
+    }
+
+    // gameIdで新規作成用のプロフィールを作成、または最新プロフィールを編集
+    final profileForEdit = latestProfile ?? GameProfile.create(
       gameId: game.id.toString(),
       userId: '', // 実際の値は編集画面で設定
       gameUsername: '',

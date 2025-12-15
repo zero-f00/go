@@ -34,6 +34,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _loadPrivacySettings();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   /// プライバシー設定を読み込む
   Future<void> _loadPrivacySettings() async {
     final userData = await ref.read(currentUserDataProvider.future);
@@ -50,6 +55,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       });
     }
   }
+
 
   /// プライバシー設定を保存する
   Future<void> _savePrivacySetting({
@@ -216,39 +222,65 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ],
           ),
           const SizedBox(height: AppDimensions.spacingL),
-          // ユーザー情報表示
-          Row(
-            children: [
-              UserAvatar(
-                avatarUrl: userPhotoUrl,
-                size: 60,
-                backgroundColor: AppColors.accent,
-              ),
-              const SizedBox(width: AppDimensions.spacingM),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          // ユーザー情報表示 - タップでプロフィール画面へ遷移
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: isSignedIn ? () => _navigateToUserProfile(context) : null,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+              child: Container(
+                padding: const EdgeInsets.all(AppDimensions.spacingM),
+                child: Row(
                   children: [
-                    Text(
-                      displayName,
-                      style: const TextStyle(
-                        fontSize: AppDimensions.fontSizeL,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textDark,
+                    UserAvatar(
+                      avatarUrl: userPhotoUrl,
+                      size: 60,
+                      backgroundColor: AppColors.accent,
+                    ),
+                    const SizedBox(width: AppDimensions.spacingM),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            displayName,
+                            style: const TextStyle(
+                              fontSize: AppDimensions.fontSizeL,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textDark,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            isSignedIn ? 'サインイン済み' : 'ゲストユーザー',
+                            style: const TextStyle(
+                              fontSize: AppDimensions.fontSizeS,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          if (isSignedIn) ...[
+                            const SizedBox(height: 4),
+                            const Text(
+                              'タップしてプロフィールを表示',
+                              style: TextStyle(
+                                fontSize: AppDimensions.fontSizeXS,
+                                color: AppColors.accent,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      isSignedIn ? 'サインイン済み' : 'ゲストユーザー',
-                      style: const TextStyle(
-                        fontSize: AppDimensions.fontSizeS,
+                    if (isSignedIn)
+                      const Icon(
+                        Icons.arrow_forward_ios,
                         color: AppColors.textSecondary,
+                        size: 16,
                       ),
-                    ),
                   ],
                 ),
               ),
-            ],
+            ),
           ),
           if (isSignedIn) ...[
             const SizedBox(height: AppDimensions.spacingL),
@@ -275,6 +307,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   /// プライバシー設定セクション
+
   Widget _buildPrivacySettingsSection(BuildContext context) {
     final isSignedIn = ref.watch(isSignedInProvider);
 
@@ -682,21 +715,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  void _showComingSoon(BuildContext context, String feature) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(feature),
-        content: Text('$feature機能は今後実装予定です。'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _showErrorDialog(BuildContext context, String message) {
     showDialog(
@@ -734,12 +752,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
     );
 
-    if (confirmed == true) {
-      await _performSignOut(context);
+    if (confirmed == true && mounted) {
+      await _performSignOut();
     }
   }
 
-  Future<void> _performSignOut(BuildContext context) async {
+  Future<void> _performSignOut() async {
     try {
       final authService = ref.read(authServiceProvider);
 
@@ -773,7 +791,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       await Future.delayed(const Duration(milliseconds: 300));
 
 
-      if (context.mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('サインアウトしました'),
@@ -782,7 +800,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         );
       }
     } catch (e) {
-      if (context.mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('サインアウトに失敗しました: $e'),
@@ -926,6 +944,42 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   /// アカウント退会ダイアログを表示
   Future<void> _showAccountWithdrawalDialog(BuildContext context) async {
     await showAccountWithdrawalDialog(context);
+  }
+
+  /// 自分のプロフィール画面に遷移
+  Future<void> _navigateToUserProfile(BuildContext context) async {
+    try {
+      final currentUser = ref.read(currentFirebaseUserProvider);
+      if (currentUser == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('ユーザー情報を取得できませんでした'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+        return;
+      }
+
+      // プロフィール画面に遷移
+      if (mounted) {
+        Navigator.pushNamed(
+          context,
+          '/user_profile',
+          arguments: currentUser.uid,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('プロフィール画面の表示に失敗しました'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 
 }

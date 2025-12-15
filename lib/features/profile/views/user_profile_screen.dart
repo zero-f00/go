@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/constants/app_strings.dart';
@@ -254,6 +256,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       child: Column(
         children: [
           _buildProfileHeader(),
+          _buildSocialLinksSection(),
           _buildUserInfo(),
           _buildFriendActionButton(),
           _buildFavoriteGamesSection(),
@@ -422,6 +425,220 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     );
   }
 
+  /// SNSリンクセクションを構築
+  Widget _buildSocialLinksSection() {
+    if (_userData?.socialLinks == null || _userData!.socialLinks!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.cardShadow,
+            blurRadius: AppDimensions.cardElevation,
+            offset: const Offset(0, AppDimensions.shadowOffsetY),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.share,
+                color: AppColors.accent,
+                size: AppDimensions.iconM,
+              ),
+              const SizedBox(width: AppDimensions.spacingS),
+              const Text(
+                'SNSアカウント',
+                style: TextStyle(
+                  fontSize: AppDimensions.fontSizeL,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacingM),
+          Wrap(
+            spacing: AppDimensions.spacingM,
+            runSpacing: AppDimensions.spacingM,
+            children: _userData!.socialLinks!.entries
+                .map((entry) => _buildSocialLink(entry.key, entry.value))
+                .toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// SNSリンクボタンを構築
+  Widget _buildSocialLink(String platform, String username) {
+    final Map<String, Map<String, dynamic>> platformInfo = {
+      'twitter': {
+        'icon': Icons.close,
+        'label': 'X',
+        'color': const Color(0xFF1DA1F2),
+        'url': 'https://twitter.com/$username',
+        'displayFormat': '@$username',
+      },
+      'tiktok': {
+        'icon': Icons.music_note,
+        'label': 'TikTok',
+        'color': const Color(0xFFFF0050),
+        'url': 'https://www.tiktok.com/@$username',
+        'displayFormat': '@$username',
+      },
+      'youtube': {
+        'icon': Icons.play_circle_fill,
+        'label': 'YouTube',
+        'color': const Color(0xFFFF0000),
+        'url': 'https://youtube.com/@$username',
+        'displayFormat': '@$username',
+      },
+      'instagram': {
+        'icon': Icons.camera_alt,
+        'label': 'Instagram',
+        'color': const Color(0xFFE4405F),
+        'url': 'https://instagram.com/$username',
+        'displayFormat': '@$username',
+      },
+      'twitch': {
+        'icon': Icons.videogame_asset,
+        'label': 'Twitch',
+        'color': const Color(0xFF9146FF),
+        'url': 'https://twitch.tv/$username',
+        'displayFormat': username,
+      },
+      'discord': {
+        'icon': Icons.chat,
+        'label': 'Discord',
+        'color': const Color(0xFF5865F2),
+        'url': 'https://discord.com', // Discord IDはコピー用
+        'displayFormat': username,
+      },
+    };
+
+    final info = platformInfo[platform];
+    if (info == null) return const SizedBox.shrink();
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => platform == 'discord'
+          ? _copyDiscordUsername(username)
+          : _openSocialLink(info['url'] as String),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingM,
+            vertical: AppDimensions.spacingS,
+          ),
+          decoration: BoxDecoration(
+            color: (info['color'] as Color).withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+            border: Border.all(
+              color: (info['color'] as Color).withValues(alpha: 0.3),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                info['icon'] as IconData,
+                color: info['color'] as Color,
+                size: AppDimensions.iconS,
+              ),
+              const SizedBox(width: AppDimensions.spacingXS),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    info['label'] as String,
+                    style: TextStyle(
+                      fontSize: AppDimensions.fontSizeS,
+                      fontWeight: FontWeight.w600,
+                      color: info['color'] as Color,
+                    ),
+                  ),
+                  Text(
+                    info['displayFormat'] as String,
+                    style: TextStyle(
+                      fontSize: AppDimensions.fontSizeXS,
+                      color: (info['color'] as Color).withValues(alpha: 0.8),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// SNSリンクを開く
+  Future<void> _openSocialLink(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('リンクを開けませんでした'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('エラーが発生しました: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Discord IDをクリップボードにコピー
+  Future<void> _copyDiscordUsername(String discordId) async {
+    try {
+      await Clipboard.setData(ClipboardData(text: discordId));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Discord ID "$discordId" をコピーしました'),
+            backgroundColor: AppColors.success,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('コピーに失敗しました'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
   /// ユーザー情報セクションを構築
   Widget _buildUserInfo() {
     if ((_userData!.bio?.isEmpty ?? true) &&
@@ -481,13 +698,13 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
             Row(
               children: [
                 Icon(
-                  Icons.contact_mail,
+                  Icons.info,
                   color: AppColors.primary,
                   size: AppDimensions.iconS,
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
                 const Text(
-                  '連絡先',
+                  'その他の情報',
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     fontWeight: FontWeight.w600,

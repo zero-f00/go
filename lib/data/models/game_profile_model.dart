@@ -52,6 +52,9 @@ class GameProfile extends Equatable {
   /// プロフィールの公開設定
   final bool isPublic;
 
+  /// ゲーム専用SNSアカウント情報
+  final Map<String, String>? gameSocialLinks;
+
   /// プロフィール作成日時
   final DateTime createdAt;
 
@@ -75,6 +78,7 @@ class GameProfile extends Equatable {
     this.clan = '',
     this.isFavorite = false,
     this.isPublic = true,
+    this.gameSocialLinks,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -95,6 +99,7 @@ class GameProfile extends Equatable {
     String notes = '',
     String clan = '',
     bool isPublic = true,
+    Map<String, String>? gameSocialLinks,
   }) {
     return GameProfile(
       gameId: gameId,
@@ -112,6 +117,7 @@ class GameProfile extends Equatable {
       clan: clan,
       isFavorite: false,
       isPublic: isPublic,
+      gameSocialLinks: gameSocialLinks,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
@@ -154,6 +160,7 @@ class GameProfile extends Equatable {
       clan: data['clan'] as String? ?? '',
       isFavorite: data['isFavorite'] as bool? ?? false,
       isPublic: data['isPublic'] as bool? ?? true,
+      gameSocialLinks: (data['gameSocialLinks'] as Map<String, dynamic>?)?.cast<String, String>(),
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
     );
@@ -177,6 +184,7 @@ class GameProfile extends Equatable {
       'clan': clan,
       'isFavorite': isFavorite,
       'isPublic': isPublic,
+      'gameSocialLinks': gameSocialLinks,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
     };
@@ -201,6 +209,7 @@ class GameProfile extends Equatable {
     String? clan,
     bool? isFavorite,
     bool? isPublic,
+    Map<String, String>? gameSocialLinks,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -221,6 +230,7 @@ class GameProfile extends Equatable {
       clan: clan ?? this.clan,
       isFavorite: isFavorite ?? this.isFavorite,
       isPublic: isPublic ?? this.isPublic,
+      gameSocialLinks: gameSocialLinks ?? this.gameSocialLinks,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -263,6 +273,7 @@ class GameProfile extends Equatable {
         clan,
         isFavorite,
         isPublic,
+        gameSocialLinks,
         createdAt,
         updatedAt,
       ];

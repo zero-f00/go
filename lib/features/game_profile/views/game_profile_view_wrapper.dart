@@ -10,8 +10,7 @@ import '../../../shared/models/game.dart';
 import '../providers/game_profile_provider.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/services/game_service.dart';
-import '../../../data/repositories/user_repository.dart';
-import 'game_profile_view_screen.dart';
+import 'game_profile_view_content.dart';
 
 /// ゲームプロフィール表示ラッパー画面
 /// userIdとgameIdからGameProfileを取得して表示画面に渡す
@@ -26,10 +25,12 @@ class GameProfileViewWrapper extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<GameProfileViewWrapper> createState() => _GameProfileViewWrapperState();
+  ConsumerState<GameProfileViewWrapper> createState() =>
+      _GameProfileViewWrapperState();
 }
 
-class _GameProfileViewWrapperState extends ConsumerState<GameProfileViewWrapper> {
+class _GameProfileViewWrapperState
+    extends ConsumerState<GameProfileViewWrapper> {
   GameProfile? _gameProfile;
   UserData? _userData;
   Game? _gameData;
@@ -70,7 +71,10 @@ class _GameProfileViewWrapperState extends ConsumerState<GameProfileViewWrapper>
   Future<void> _loadGameProfile() async {
     try {
       final gameProfileService = ref.read(gameProfileServiceProvider);
-      final profile = await gameProfileService.getGameProfile(widget.userId, widget.gameId);
+      final profile = await gameProfileService.getGameProfile(
+        widget.userId,
+        widget.gameId,
+      );
       if (mounted) {
         setState(() {
           _gameProfile = profile;
@@ -90,7 +94,9 @@ class _GameProfileViewWrapperState extends ConsumerState<GameProfileViewWrapper>
       final userRepository = ref.read(userRepositoryProvider);
 
       // まずカスタムユーザーIDで検索
-      UserData? userData = await userRepository.getUserByCustomId(widget.userId);
+      UserData? userData = await userRepository.getUserByCustomId(
+        widget.userId,
+      );
 
       // 見つからない場合はFirebase UIDで検索
       if (userData == null) {
@@ -144,10 +150,10 @@ class _GameProfileViewWrapperState extends ConsumerState<GameProfileViewWrapper>
                 child: _isLoading
                     ? _buildLoadingState()
                     : _errorMessage != null
-                        ? _buildErrorState()
-                        : _gameProfile != null
-                            ? _buildContent()
-                            : _buildNoProfileState(),
+                    ? _buildErrorState()
+                    : _gameProfile != null
+                    ? _buildContent()
+                    : _buildNoProfileState(),
               ),
             ],
           ),
@@ -208,11 +214,7 @@ class _GameProfileViewWrapperState extends ConsumerState<GameProfileViewWrapper>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.error_outline,
-              size: 48,
-              color: AppColors.error,
-            ),
+            const Icon(Icons.error_outline, size: 48, color: AppColors.error),
             const SizedBox(height: AppDimensions.spacingM),
             Text(
               _errorMessage!,
@@ -287,12 +289,18 @@ class _GameProfileViewWrapperState extends ConsumerState<GameProfileViewWrapper>
     // （GameProfileViewScreenはScaffoldとヘッダーを持つため、直接埋め込むと二重ヘッダーになる）
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
-      child: GameProfileViewContent(
-        profile: _gameProfile!,
-        userData: _userData,
-        gameName: _gameData?.name,
-        gameIconUrl: _gameData?.iconUrl,
-      ),
+      child: _buildProfileContent(),
+    );
+  }
+
+  /// プロフィール内容を構築
+  Widget _buildProfileContent() {
+    // GameProfileViewScreenのbuildメソッドから直接コンテンツ部分を取得
+    return GameProfileViewContent(
+      profile: _gameProfile!,
+      userData: _userData,
+      gameName: _gameData?.name,
+      gameIconUrl: _gameData?.iconUrl,
     );
   }
 }
