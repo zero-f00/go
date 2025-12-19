@@ -407,7 +407,7 @@ class ViolationService {
     int count = 3,
   }) async {
     try {
-      print('🔧 ViolationService: テストデータ作成開始 - $count件');
+      // テストデータ作成開始
 
       final testViolations = [
         ViolationRecord(
@@ -453,10 +453,10 @@ class ViolationService {
 
       for (int i = 0; i < count && i < testViolations.length; i++) {
         await _violationRepository.createViolation(testViolations[i]);
-        print('🔧 ViolationService: テストデータ作成完了 - ${i + 1}件目');
+        // テストデータ作成完了
       }
 
-      print('🔧 ViolationService: 全テストデータ作成完了');
+      // 全テストデータ作成完了
     } catch (e) {
       throw Exception('テストデータの作成に失敗しました: $e');
     }
@@ -466,10 +466,10 @@ class ViolationService {
   Future<bool> checkCollectionExists() async {
     try {
       final testQuery = await _violationRepository.collection.limit(1).get();
-      print('🔧 ViolationService: コレクション確認完了 - ドキュメント数: ${testQuery.docs.length}');
+      // コレクション確認完了
       return true;
     } catch (e) {
-      print('❌ ViolationService: コレクション確認エラー - $e');
+      // コレクション確認エラー
       return false;
     }
   }
@@ -479,7 +479,7 @@ class ViolationService {
     try {
       return await _violationRepository.getViolation(violationId);
     } catch (e) {
-      print('❌ ViolationService: 違反記録取得エラー - $e');
+      // 違反記録取得エラー
       return null;
     }
   }
@@ -491,7 +491,7 @@ class ViolationService {
     required String appellantUserId,
   }) async {
     try {
-      print('🔧 ViolationService: 異議申立提出開始 - violationId: $violationId');
+      // 異議申立提出開始
 
       await _violationRepository.updateViolationById(
         violationId,
@@ -502,9 +502,9 @@ class ViolationService {
         },
       );
 
-      print('✅ ViolationService: 異議申立提出完了');
+      // 異議申立提出完了
     } catch (e) {
-      print('❌ ViolationService: 異議申立提出エラー - $e');
+      // 異議申立提出エラー
       throw Exception('異議申立の提出に失敗しました: $e');
     }
   }
@@ -517,7 +517,7 @@ class ViolationService {
     required String processorUserId,
   }) async {
     try {
-      print('🔧 ViolationService: 異議申立処理開始 - violationId: $violationId, status: ${appealStatus.name}');
+      // 異議申立処理開始
 
       final updateData = {
         'appealStatus': appealStatus.name,
@@ -534,9 +534,9 @@ class ViolationService {
 
       await _violationRepository.updateViolationById(violationId, updateData);
 
-      print('✅ ViolationService: 異議申立処理完了');
+      // 異議申立処理完了
     } catch (e) {
-      print('❌ ViolationService: 異議申立処理エラー - $e');
+      // 異議申立処理エラー
       throw Exception('異議申立の処理に失敗しました: $e');
     }
   }

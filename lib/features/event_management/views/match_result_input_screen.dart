@@ -10,7 +10,6 @@ import '../../../data/models/match_result_model.dart';
 import '../../../shared/services/group_management_service.dart';
 import '../../../shared/widgets/user_avatar_from_id.dart';
 import '../../../shared/widgets/user_action_modal.dart';
-import '../../../shared/widgets/evidence_image_manager.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/services/image_upload_service.dart';
 import 'dart:io';
@@ -205,7 +204,7 @@ class _MatchResultInputScreenState
       }
     } catch (e) {
       // エラーが発生した場合はダミーデータを使用
-      print('チームメンバー取得エラー: $e');
+      // チームメンバー取得エラー
       for (int i = 0; i < widget.match.participants.length; i++) {
         final teamId = widget.match.participants[i];
         _teamMembers[teamId] = ['${teamId}_user1', '${teamId}_user2'];
@@ -239,7 +238,7 @@ class _MatchResultInputScreenState
       });
     } catch (e) {
       // エラーが発生した場合はダミーデータを使用
-      print('個人戦参加者取得エラー: $e');
+      // 個人戦参加者取得エラー
       setState(() {
         for (int i = 0; i < widget.match.participants.length; i++) {
           final participantId = widget.match.participants[i];
@@ -733,122 +732,167 @@ class _MatchResultInputScreenState
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setState) => Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-          ),
-          child: Container(
-            width: MediaQuery.of(context).size.width * 0.8,
-            constraints: const BoxConstraints(maxWidth: 400),
-            padding: const EdgeInsets.all(AppDimensions.spacingL),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'スコア種別を追加',
-                  style: TextStyle(
-                    fontSize: AppDimensions.fontSizeL,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textDark,
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.spacingL),
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'スコア名',
-                    hintText: 'キル数、ポイント、ダメージなど',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.spacingM),
-                TextField(
-                  controller: unitController,
-                  decoration: const InputDecoration(
-                    labelText: '単位',
-                    hintText: 'キル、ポイント、HPなど',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.spacingM),
-                const Text(
-                  '対象',
-                  style: TextStyle(
-                    fontSize: AppDimensions.fontSizeM,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textDark,
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.spacingS),
-                Row(
-                  children: [
-                    Expanded(
-                      child: RadioListTile<ScoreTargetType>(
-                        title: const Text('グループ'),
-                        subtitle: const Text('チーム単位のスコア'),
-                        value: ScoreTargetType.team,
-                        groupValue: selectedTargetType,
-                        onChanged: (value) {
-                          setState(() {
-                            selectedTargetType = value!;
-                          });
-                        },
-                        dense: true,
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: RadioListTile<ScoreTargetType>(
-                        title: const Text('個人'),
-                        subtitle: const Text('個人単位のスコア'),
-                        value: ScoreTargetType.individual,
-                        groupValue: selectedTargetType,
-                        onChanged: (value) {
-                          setState(() {
-                            selectedTargetType = value!;
-                          });
-                        },
-                        dense: true,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppDimensions.spacingXL),
-                Row(
-                  children: [
-                    Expanded(
-                      child: AppButton.secondary(
-                        text: 'キャンセル',
-                        onPressed: () => Navigator.of(context).pop(),
-                      ),
-                    ),
-                    const SizedBox(width: AppDimensions.spacingM),
-                    Expanded(
-                      child: AppButton.primary(
-                        text: '追加',
-                        onPressed: () {
-                          if (nameController.text.trim().isNotEmpty &&
-                              unitController.text.trim().isNotEmpty) {
-                            _addScoreType(
-                              nameController.text.trim(),
-                              unitController.text.trim(),
-                              selectedTargetType,
-                            );
-                            Navigator.of(context).pop();
-                          }
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+        builder: (context, setState) {
+          final screenHeight = MediaQuery.of(context).size.height;
+          final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+          final maxDialogHeight = screenHeight - keyboardHeight - 100;
+
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
             ),
-          ),
-        ),
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.8,
+              constraints: BoxConstraints(
+                maxWidth: 400,
+                maxHeight: maxDialogHeight,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 固定ヘッダー
+                  Container(
+                    padding: const EdgeInsets.all(AppDimensions.spacingL),
+                    decoration: const BoxDecoration(
+                      color: AppColors.cardBackground,
+                      border: Border(
+                        bottom: BorderSide(color: AppColors.border),
+                      ),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(AppDimensions.radiusM),
+                        topRight: Radius.circular(AppDimensions.radiusM),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'スコア種別を追加',
+                          style: TextStyle(
+                            fontSize: AppDimensions.fontSizeL,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textDark,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.of(context).pop(),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // スクロール可能なコンテンツ
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(AppDimensions.spacingL),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextField(
+                            controller: nameController,
+                            decoration: const InputDecoration(
+                              labelText: 'スコア名',
+                              hintText: 'キル数、ポイント、ダメージなど',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          const SizedBox(height: AppDimensions.spacingM),
+                          TextField(
+                            controller: unitController,
+                            decoration: const InputDecoration(
+                              labelText: '単位',
+                              hintText: 'キル、ポイント、HPなど',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          const SizedBox(height: AppDimensions.spacingM),
+                          const Text(
+                            '対象',
+                            style: TextStyle(
+                              fontSize: AppDimensions.fontSizeM,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textDark,
+                            ),
+                          ),
+                          const SizedBox(height: AppDimensions.spacingS),
+                          RadioListTile<ScoreTargetType>(
+                            title: const Text('グループ'),
+                            subtitle: const Text('チーム単位のスコア'),
+                            value: ScoreTargetType.team,
+                            groupValue: selectedTargetType,
+                            onChanged: (value) {
+                              setState(() {
+                                selectedTargetType = value!;
+                              });
+                            },
+                            dense: true,
+                          ),
+                          RadioListTile<ScoreTargetType>(
+                            title: const Text('個人'),
+                            subtitle: const Text('個人単位のスコア'),
+                            value: ScoreTargetType.individual,
+                            groupValue: selectedTargetType,
+                            onChanged: (value) {
+                              setState(() {
+                                selectedTargetType = value!;
+                              });
+                            },
+                            dense: true,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // 固定ボタンエリア
+                  Container(
+                    padding: const EdgeInsets.all(AppDimensions.spacingL),
+                    decoration: const BoxDecoration(
+                      color: AppColors.cardBackground,
+                      border: Border(
+                        top: BorderSide(color: AppColors.border),
+                      ),
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(AppDimensions.radiusM),
+                        bottomRight: Radius.circular(AppDimensions.radiusM),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: AppButton.secondary(
+                            text: 'キャンセル',
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ),
+                        const SizedBox(width: AppDimensions.spacingM),
+                        Expanded(
+                          child: AppButton.primary(
+                            text: '追加',
+                            onPressed: () {
+                              if (nameController.text.trim().isNotEmpty &&
+                                  unitController.text.trim().isNotEmpty) {
+                                _addScoreType(
+                                  nameController.text.trim(),
+                                  unitController.text.trim(),
+                                  selectedTargetType,
+                                );
+                                Navigator.of(context).pop();
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -1347,77 +1391,6 @@ class _MatchResultInputScreenState
     }
   }
 
-  /// 個人スコアセクション（チーム戦用）
-  Widget _buildIndividualScoreSection() {
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingL),
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.cardShadow,
-            blurRadius: AppDimensions.cardElevation,
-            offset: const Offset(0, AppDimensions.shadowOffsetY),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.person,
-                color: AppColors.info,
-                size: AppDimensions.iconM,
-              ),
-              const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                '個人スコア入力',
-                style: TextStyle(
-                  fontSize: AppDimensions.fontSizeL,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textDark,
-                ),
-              ),
-              const SizedBox(width: AppDimensions.spacingS),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingS,
-                  vertical: 2,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.info.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                ),
-                child: Text(
-                  '任意',
-                  style: TextStyle(
-                    fontSize: AppDimensions.fontSizeS,
-                    color: AppColors.info,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppDimensions.spacingS),
-          const Text(
-            'チーム内の個人スコアを記録できます',
-            style: TextStyle(
-              fontSize: AppDimensions.fontSizeS,
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: AppDimensions.spacingL),
-          ...widget.match.participants.map((teamId) {
-            return _buildTeamIndividualScores(teamId);
-          }),
-        ],
-      ),
-    );
-  }
 
   /// チーム別個人スコア表示
   Widget _buildTeamIndividualScores(String teamId) {
@@ -2308,7 +2281,7 @@ class _MatchResultInputScreenState
           }
         } catch (e) {
           // 削除エラーは警告程度に留める（処理は継続）
-          debugPrint('エビデンス画像の削除でエラーが発生しました: $e');
+          // エビデンス画像の削除でエラーが発生
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(

@@ -101,9 +101,7 @@ class _UserSelectionViolationModalState
         _errorMessage = null;
       });
 
-      print(
-        '🔧 UserSelectionViolationModal: 参加者データ取得開始 - eventId: ${widget.eventId}',
-      );
+      // 参加者データ取得開始
 
       // 承認済み参加者を取得
       final applicationsStream = ParticipationService.getEventApplications(
@@ -115,9 +113,7 @@ class _UserSelectionViolationModalState
           .where((app) => app.status == ParticipationStatus.approved)
           .toList();
 
-      print(
-        '🔧 UserSelectionViolationModal: 承認済み参加者 ${approvedApplications.length}件',
-      );
+      // 承認済み参加者数を取得
 
       // ユーザーデータを取得
       final userRepository = UserRepository();
@@ -130,9 +126,7 @@ class _UserSelectionViolationModalState
             _userDataCache[application.userId] = userData;
           }
         } catch (e) {
-          print(
-            '❌ UserSelectionViolationModal: ユーザーデータ取得エラー - ${application.userId}: $e',
-          );
+          // ユーザーデータ取得エラー
         }
       }
 
@@ -144,7 +138,7 @@ class _UserSelectionViolationModalState
         });
       }
     } catch (e) {
-      print('❌ UserSelectionViolationModal: 参加者データ取得エラー - $e');
+      // 参加者データ取得エラー
       if (mounted) {
         setState(() {
           _errorMessage = '参加者データの取得に失敗しました: $e';

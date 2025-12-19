@@ -13,16 +13,19 @@ import '../../../data/models/game_profile_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/models/violation_record_model.dart';
 import '../../../data/repositories/user_repository.dart';
+import '../../../shared/widgets/event_info_card.dart';
 
 /// ユーザー詳細管理画面
 class UserDetailManagementScreen extends ConsumerStatefulWidget {
   final String eventId;
   final String eventName;
+  final bool fromNotification;
 
   const UserDetailManagementScreen({
     super.key,
     required this.eventId,
     required this.eventName,
+    this.fromNotification = false,
   });
 
   @override
@@ -31,7 +34,7 @@ class UserDetailManagementScreen extends ConsumerStatefulWidget {
 }
 
 class _UserDetailManagementScreenState
-    extends ConsumerState<UserDetailManagementScreen> {
+    extends ConsumerState<UserDetailManagementScreen> with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
 
   // リポジトリ
@@ -42,16 +45,22 @@ class _UserDetailManagementScreenState
   List<ParticipantProfileData> _filteredParticipants = [];
   bool _isLoading = true;
   String? _errorMessage;
+  late AnimationController _marqueeController;
 
   @override
   void initState() {
     super.initState();
+    _marqueeController = AnimationController(
+      duration: const Duration(seconds: 8),
+      vsync: this,
+    )..repeat();
     _loadParticipantDetails();
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _marqueeController.dispose();
     super.dispose();
   }
 
@@ -64,7 +73,7 @@ class _UserDetailManagementScreenState
 
 
       // ParticipationServiceから申込を取得
-      final applications = await ParticipationService.getEventApplications(widget.eventId).first;
+      final applications = await ParticipationService.getEventApplicationsFromServer(widget.eventId, forceFromServer: true);
 
       final participantData = <ParticipantProfileData>[];
 
@@ -173,7 +182,6 @@ class _UserDetailManagementScreenState
             }
           } catch (e) {
             // 違反履歴の取得エラーがあっても続行
-            debugPrint('違反履歴の取得エラー: $e');
           }
 
           participantData.add(ParticipantProfileData(
@@ -186,7 +194,6 @@ class _UserDetailManagementScreenState
 
         } catch (e) {
           // 個別参加者の処理エラーはスキップ
-          debugPrint('参加者データ取得エラー: $e');
         }
       }
 
@@ -230,11 +237,34 @@ class _UserDetailManagementScreenState
           child: Column(
             children: [
               AppHeader(
-                title: 'ユーザー詳細管理',
+                title: 'ユーザー詳細',
                 showBackButton: true,
                 onBackPressed: () => Navigator.of(context).pop(),
               ),
-              _buildEventInfo(),
+              EventInfoCard(
+                eventName: widget.eventName,
+                eventId: widget.eventId,
+                enableTap: widget.fromNotification,
+                iconData: Icons.people,
+                trailing: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.spacingS,
+                    vertical: AppDimensions.spacingXS,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.info.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                  ),
+                  child: Text(
+                    '${_participants.length}名',
+                    style: TextStyle(
+                      fontSize: AppDimensions.fontSizeS,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.info,
+                    ),
+                  ),
+                ),
+              ),
               Expanded(
                 child: Container(
                   margin: const EdgeInsets.all(AppDimensions.spacingL),
@@ -262,7 +292,7 @@ class _UserDetailManagementScreenState
                             ),
                             const SizedBox(width: AppDimensions.spacingS),
                             const Text(
-                              'ユーザー詳細管理',
+                              'ユーザー一覧',
                               style: TextStyle(
                                 fontSize: AppDimensions.fontSizeL,
                                 fontWeight: FontWeight.w700,
@@ -287,62 +317,6 @@ class _UserDetailManagementScreenState
     );
   }
 
-  /// イベント情報
-  Widget _buildEventInfo() {
-    return Container(
-      margin: const EdgeInsets.all(AppDimensions.spacingL),
-      padding: const EdgeInsets.all(AppDimensions.spacingM),
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.cardShadow,
-            blurRadius: AppDimensions.cardElevation,
-            offset: const Offset(0, AppDimensions.shadowOffsetY),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.people,
-            color: AppColors.accent,
-            size: AppDimensions.iconM,
-          ),
-          const SizedBox(width: AppDimensions.spacingM),
-          Expanded(
-            child: Text(
-              widget.eventName,
-              style: const TextStyle(
-                fontSize: AppDimensions.fontSizeL,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textDark,
-              ),
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingS,
-              vertical: AppDimensions.spacingXS,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.info.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-            ),
-            child: Text(
-              '${_participants.length}名',
-              style: TextStyle(
-                fontSize: AppDimensions.fontSizeS,
-                fontWeight: FontWeight.w600,
-                color: AppColors.info,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   /// 検索バー
   Widget _buildSearchBar() {
