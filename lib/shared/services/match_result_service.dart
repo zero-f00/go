@@ -415,8 +415,7 @@ class MatchResultService {
         try {
           await ImageUploadService.deleteImage(filePath);
         } catch (e) {
-          // ログのみ出力、処理は継続
-          print('Warning: Failed to delete image from storage: $e');
+          // 処理は継続
         }
       }
 
@@ -511,14 +510,13 @@ class MatchResultService {
     }
   }
 
-  /// 非同期でStorageから画像を削除（エラーログのみ出力）
+  /// 非同期でStorageから画像を削除
   void _deleteImageFromStorageAsync(String filePath, String imageUrl) {
     Future.delayed(Duration.zero, () async {
       try {
         await ImageUploadService.deleteImage(filePath);
-        print('✅ Successfully deleted old evidence image from storage: $imageUrl');
       } catch (e) {
-        print('⚠️ Warning: Failed to delete old evidence image from storage: $imageUrl, Error: $e');
+        // 削除失敗は無視
       }
     });
   }
@@ -601,20 +599,13 @@ class MatchResultService {
   /// 非同期で複数の画像をStorageから削除
   void _deleteMultipleImagesFromStorageAsync(List<String> filePaths, List<String> imageUrls) {
     Future.delayed(Duration.zero, () async {
-      int successCount = 0;
-      int errorCount = 0;
-
       for (int i = 0; i < filePaths.length; i++) {
         try {
           await ImageUploadService.deleteImage(filePaths[i]);
-          successCount++;
         } catch (e) {
-          errorCount++;
-          print('⚠️ Warning: Failed to delete old evidence image from storage: ${imageUrls.length > i ? imageUrls[i] : filePaths[i]}, Error: $e');
+          // 削除失敗は無視
         }
       }
-
-      print('📊 Bulk deletion complete: $successCount succeeded, $errorCount failed');
     });
   }
 

@@ -4,7 +4,6 @@ import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../../data/models/violation_record_model.dart';
 import '../../data/models/user_model.dart';
-import '../../data/repositories/user_repository.dart';
 import '../services/violation_service.dart';
 import '../providers/auth_provider.dart';
 import 'app_text_field.dart';
@@ -58,7 +57,6 @@ class _ViolationEditDialogState extends ConsumerState<ViolationEditDialog> {
         });
       }
     } catch (e) {
-      print('Error loading violated user data: $e');
       if (mounted) {
         setState(() {
           _violatedUserData = null;

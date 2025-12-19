@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'notification_service.dart';
 
 /// 試合報告の状況
@@ -307,7 +306,6 @@ class MatchReportService {
       // 通知はNotificationServiceで一元管理される
     } catch (e) {
       // 運営通知の送信エラーは報告送信をブロックしない
-      debugPrint('運営通知送信エラー: $e');
     }
   }
 
@@ -359,7 +357,7 @@ class MatchReportService {
           }
         }
       } catch (e) {
-        debugPrint('試合・イベント情報の取得エラー: $e');
+        // 取得エラーは無視
       }
 
       await NotificationService.sendNotification(

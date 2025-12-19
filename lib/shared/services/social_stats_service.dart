@@ -16,7 +16,6 @@ class SocialStatsService {
       final friendships = await FriendService.instance.getFriends(userId);
       return friendships.length;
     } catch (e) {
-      print('Error getting friend count: $e');
       return 0;
     }
   }
@@ -27,7 +26,6 @@ class SocialStatsService {
       // 現在の実装では、フレンド = フォロワーとして扱う
       return await getFriendCount(userId);
     } catch (e) {
-      print('Error getting follower count: $e');
       return 0;
     }
   }
@@ -56,7 +54,6 @@ class SocialStatsService {
 
       return friends;
     } catch (e) {
-      print('Error getting friends list: $e');
       return [];
     }
   }
@@ -67,7 +64,6 @@ class SocialStatsService {
       // 現在の実装では、フレンドリスト = フォロワーリストとして扱う
       return await getFriendsList(userId);
     } catch (e) {
-      print('Error getting followers list: $e');
       return [];
     }
   }
@@ -84,7 +80,6 @@ class SocialStatsService {
         followingCount: friendCount, // 現在は双方向なので同じ
       );
     } catch (e) {
-      print('Error getting social stats: $e');
       return const SocialStats(
         friendCount: 0,
         followerCount: 0,

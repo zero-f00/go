@@ -21,7 +21,6 @@ final unreadNotificationCountProvider = StreamProvider<int>((ref) {
   try {
     return notificationService.watchUnreadNotificationCount(currentUser.uid);
   } catch (e) {
-    print('❌ UnreadNotificationCount Provider: Error watching unread count: $e');
     return Stream.value(0);
   }
 });
@@ -50,7 +49,6 @@ final userNotificationsProvider = StreamProvider<List<NotificationData>>((ref) {
   try {
     return notificationService.watchUserNotifications(currentUser.uid);
   } catch (e) {
-    print('❌ UserNotifications Provider: Error watching notifications: $e');
     return Stream.value(<NotificationData>[]);
   }
 });

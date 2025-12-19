@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
-import '../constants/app_dimensions.dart';
 
 class UserAvatar extends StatelessWidget {
   final double size;

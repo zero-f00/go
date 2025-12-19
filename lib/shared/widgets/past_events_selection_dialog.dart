@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
-import '../../features/game_event_management/models/game_event.dart';
 import '../../data/models/event_model.dart';
 
 class PastEventsSelectionDialog extends StatefulWidget {

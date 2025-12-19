@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
-import '../constants/app_strings.dart';
 import '../../data/models/violation_record_model.dart';
 import '../services/violation_service.dart';
 import '../providers/auth_provider.dart';

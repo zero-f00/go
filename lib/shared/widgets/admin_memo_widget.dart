@@ -53,7 +53,7 @@ class _AdminMemoWidgetState extends State<AdminMemoWidget> {
         });
       }
     } catch (e) {
-      print('Error loading admin memo: $e');
+      // 読み込みエラーは無視
     } finally {
       setState(() => _isLoading = false);
     }
@@ -97,7 +97,6 @@ class _AdminMemoWidgetState extends State<AdminMemoWidget> {
         );
       }
     } catch (e) {
-      print('Error saving admin memo: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

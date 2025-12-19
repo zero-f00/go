@@ -274,17 +274,12 @@ class ErrorHandlerService {
 
   /// エラーをログに記録
   static void logError(String operation, dynamic error, [StackTrace? stackTrace]) {
-    final timestamp = DateTime.now().toIso8601String();
-    print('[$timestamp] ERROR in $operation: $error');
-    if (stackTrace != null) {
-      print('Stack trace: $stackTrace');
-    }
+    // リリースビルドではログ出力しない
   }
 
   /// 操作の成功をログに記録
   static void logSuccess(String operation, [String? details]) {
-    final timestamp = DateTime.now().toIso8601String();
-    print('[$timestamp] SUCCESS: $operation${details != null ? ' - $details' : ''}');
+    // リリースビルドではログ出力しない
   }
 }
 

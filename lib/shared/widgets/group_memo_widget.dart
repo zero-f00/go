@@ -53,7 +53,7 @@ class _GroupMemoWidgetState extends State<GroupMemoWidget> {
         });
       }
     } catch (e) {
-      print('Error loading group memo: $e');
+      // 読み込みエラーは無視
     } finally {
       setState(() => _isLoading = false);
     }
@@ -97,7 +97,6 @@ class _GroupMemoWidgetState extends State<GroupMemoWidget> {
         );
       }
     } catch (e) {
-      print('Error saving group memo: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

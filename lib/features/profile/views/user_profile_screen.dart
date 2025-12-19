@@ -406,7 +406,6 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       // 他人のプロフィールの場合は何もしない（将来的に詳細表示画面を実装）
     } catch (e) {
       // エラーが発生した場合は何もしない
-      debugPrint('フレンドリスト遷移でエラーが発生しました: $e');
     }
   }
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/app_colors.dart';
-import '../constants/app_dimensions.dart';
 import '../../data/repositories/user_repository.dart';
 import '../../data/models/user_model.dart';
 import '../utils/withdrawn_user_helper.dart';

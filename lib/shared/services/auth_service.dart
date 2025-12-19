@@ -1,11 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import 'package:flutter/foundation.dart';
-import 'dart:io';
 import '../constants/app_strings.dart';
 import 'avatar_service.dart';
-import 'push_notification_service.dart';
 import 'event_reminder_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -230,9 +227,8 @@ class AuthService {
         'updatedAt': Timestamp.fromDate(now),
       }, SetOptions(merge: true));
 
-      print('✅ Terms acceptance recorded for user: ${user.uid}');
     } catch (e) {
-      print('❌ Failed to record terms acceptance: $e');
+      // 規約同意の記録失敗は無視
     }
   }
 }

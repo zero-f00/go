@@ -154,7 +154,7 @@ class _UserSelectionViolationModalState
     return _participants.where((participant) {
       final userData = _userDataCache[participant.userId];
       final displayName =
-          userData?.displayName ?? participant.userDisplayName ?? 'Unknown';
+          userData?.displayName ?? participant.userDisplayName;
       final username = userData?.username ?? '';
 
       return displayName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
@@ -315,7 +315,7 @@ class _UserSelectionViolationModalState
   Widget _buildParticipantCard(ParticipationApplication participant) {
     final userData = _userDataCache[participant.userId];
     final displayName =
-        userData?.displayName ?? participant.userDisplayName ?? 'Unknown';
+        userData?.displayName ?? participant.userDisplayName;
 
     return Container(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),

@@ -933,19 +933,9 @@ class EventService {
     required EventChangeResult changeResult,
   }) async {
     try {
-      print(
-        '🔔 EventService: Sending event update notifications for event: ${event.name}',
-      );
-      print(
-        '🔔 EventService: Changes detected: ${changeResult.generateSummaryText()}',
-      );
-
       // 更新者の情報を取得
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) {
-        print(
-          '❌ EventService: No authenticated user found for notification sending',
-        );
         return;
       }
 
@@ -962,9 +952,6 @@ class EventService {
         }
       } catch (e) {
         // ユーザー情報取得失敗時はFirebaseAuthの情報を使用
-        print(
-          '⚠️ EventService: Failed to get user details, using Firebase info: $e',
-        );
       }
 
       // 参加者リストを取得
@@ -977,12 +964,8 @@ class EventService {
         managerIds.add(event.createdBy);
       }
 
-      print(
-        '🔔 EventService: Participants: ${participantIds.length}, Managers: ${managerIds.length}',
-      );
-
       // 通知を送信
-      final success = await NotificationService.instance
+      await NotificationService.instance
           .sendEventUpdateNotifications(
             eventId: event.id,
             eventName: event.name,
@@ -994,14 +977,7 @@ class EventService {
             changesDetail: changeResult.generateDetailText(),
             hasCriticalChanges: changeResult.hasCriticalChanges,
           );
-
-      if (success) {
-        print('✅ EventService: Event update notifications sent successfully');
-      } else {
-        print('❌ EventService: Failed to send some event update notifications');
-      }
     } catch (e) {
-      print('❌ EventService: Error sending event update notifications: $e');
       // 通知送信の失敗はイベント更新処理をブロックしない
     }
   }
@@ -1012,12 +988,8 @@ class EventService {
       // ParticipationServiceを使用して承認済み + 申請中の参加者を取得
       final participantIds =
           await ParticipationService.getApprovedAndPendingApplicants(eventId);
-      print(
-        '🔔 EventService: Retrieved ${participantIds.length} approved/pending participants for event: $eventId',
-      );
       return participantIds;
     } catch (e) {
-      print('❌ EventService: Error getting event participants: $e');
       return [];
     }
   }

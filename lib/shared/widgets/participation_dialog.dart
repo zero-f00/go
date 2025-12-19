@@ -93,7 +93,7 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
     }
 
     // お気に入り登録状況をチェック
-    final favoriteGameIds = currentUser.favoriteGameIds ?? [];
+    final favoriteGameIds = currentUser.favoriteGameIds;
     final isFavorited = favoriteGameIds.contains(gameId);
 
     if (!isFavorited) {
@@ -576,7 +576,7 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
               ),
             ],
           ),
-          if (_existingGameProfile!.gameUserId?.isNotEmpty == true) ...[
+          if (_existingGameProfile!.gameUserId.isNotEmpty) ...[
             const SizedBox(height: AppDimensions.spacingS),
             Row(
               children: [
@@ -595,7 +595,7 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
                 ),
                 const Spacer(),
                 Text(
-                  _existingGameProfile!.gameUserId!,
+                  _existingGameProfile!.gameUserId,
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                   ),
@@ -883,7 +883,7 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
       final result = await ParticipationService.applyToEvent(
         eventId: widget.event.id,
         userId: currentUser.id,
-        userDisplayName: currentUser.displayName ?? 'Unknown',
+        userDisplayName: currentUser.displayName,
         message: _messageController.text.trim().isEmpty
             ? null
             : _messageController.text.trim(),

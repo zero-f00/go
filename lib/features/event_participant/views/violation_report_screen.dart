@@ -4,11 +4,9 @@ import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
-import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/event_info_card.dart';
 import '../../../shared/widgets/user_selection_violation_modal.dart';
 import '../../../shared/providers/auth_provider.dart';
-import '../../../data/models/violation_record_model.dart';
 
 /// 参加者用違反報告画面
 class ViolationReportScreen extends ConsumerStatefulWidget {

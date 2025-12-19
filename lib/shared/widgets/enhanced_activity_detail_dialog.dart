@@ -4,7 +4,6 @@ import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../services/participation_service.dart';
 import '../../features/game_event_management/models/game_event.dart';
-import '../../data/models/event_model.dart';
 import 'app_gradient_background.dart';
 import 'app_header.dart';
 
@@ -52,10 +51,12 @@ class EnhancedActivityDetailDialog extends StatefulWidget {
   });
 
   @override
-  State<EnhancedActivityDetailDialog> createState() => _EnhancedActivityDetailDialogState();
+  State<EnhancedActivityDetailDialog> createState() =>
+      _EnhancedActivityDetailDialogState();
 }
 
-class _EnhancedActivityDetailDialogState extends State<EnhancedActivityDetailDialog>
+class _EnhancedActivityDetailDialogState
+    extends State<EnhancedActivityDetailDialog>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final ScrollController _scrollController = ScrollController();
@@ -101,7 +102,8 @@ class _EnhancedActivityDetailDialogState extends State<EnhancedActivityDetailDia
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.8 &&
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent * 0.8 &&
         !_isLoadingMore &&
         _displayedApplications.length < _allApplications.length) {
       _loadMoreData();
@@ -135,8 +137,9 @@ class _EnhancedActivityDetailDialogState extends State<EnhancedActivityDetailDia
 
         // 期間フィルタ
         if (_selectedPeriod.startDate != null) {
-          filtered = filtered.where((app) =>
-            app.appliedAt.isAfter(_selectedPeriod.startDate!)).toList();
+          filtered = filtered
+              .where((app) => app.appliedAt.isAfter(_selectedPeriod.startDate!))
+              .toList();
         }
 
         // 検索フィルタ（イベント名で検索）
@@ -244,7 +247,9 @@ class _EnhancedActivityDetailDialogState extends State<EnhancedActivityDetailDia
     if (widget.activityType == 'total') {
       children.add(
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingL,
+          ),
           child: TabBar(
             controller: _tabController,
             labelColor: AppColors.accent,
@@ -311,8 +316,12 @@ class _EnhancedActivityDetailDialogState extends State<EnhancedActivityDetailDia
                       controller: _tabController,
                       children: [
                         _buildFilteredContent(null), // 全て
-                        _buildFilteredContent(ParticipationStatus.approved), // 承認済み
-                        _buildFilteredContent(ParticipationStatus.rejected), // 拒否
+                        _buildFilteredContent(
+                          ParticipationStatus.approved,
+                        ), // 承認済み
+                        _buildFilteredContent(
+                          ParticipationStatus.rejected,
+                        ), // 拒否
                       ],
                     ),
                   ),
@@ -320,7 +329,8 @@ class _EnhancedActivityDetailDialogState extends State<EnhancedActivityDetailDia
               )
             : Column(
                 children: [
-                  if (widget.activityType == 'participating') _buildPeriodFilter(),
+                  if (widget.activityType == 'participating')
+                    _buildPeriodFilter(),
                   Expanded(child: _buildActivityContent(widget.activityType)),
                 ],
               ),
@@ -337,9 +347,7 @@ class _EnhancedActivityDetailDialogState extends State<EnhancedActivityDetailDia
       decoration: BoxDecoration(
         color: AppColors.backgroundLight.withValues(alpha: 0.5),
         border: Border(
-          bottom: BorderSide(
-            color: AppColors.border.withValues(alpha: 0.3),
-          ),
+          bottom: BorderSide(color: AppColors.border.withValues(alpha: 0.3)),
         ),
       ),
       child: SizedBox(
@@ -347,7 +355,8 @@ class _EnhancedActivityDetailDialogState extends State<EnhancedActivityDetailDia
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           itemCount: HistoryPeriod.values.length,
-          separatorBuilder: (context, index) => const SizedBox(width: AppDimensions.spacingS),
+          separatorBuilder: (context, index) =>
+              const SizedBox(width: AppDimensions.spacingS),
           itemBuilder: (context, index) {
             final period = HistoryPeriod.values[index];
             final isSelected = period == _selectedPeriod;
@@ -387,7 +396,9 @@ class _EnhancedActivityDetailDialogState extends State<EnhancedActivityDetailDia
                       style: TextStyle(
                         color: isSelected ? Colors.white : AppColors.textDark,
                         fontSize: AppDimensions.fontSizeS,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.normal,
                       ),
                     ),
                   ),
@@ -417,9 +428,7 @@ class _EnhancedActivityDetailDialogState extends State<EnhancedActivityDetailDia
 
         // statusFilterでフィルタリング
         if (statusFilter != null) {
-          allApps = allApps
-              .where((app) => app.status == statusFilter)
-              .toList();
+          allApps = allApps.where((app) => app.status == statusFilter).toList();
         }
 
         // 日付でソート（新しい順）
@@ -428,8 +437,9 @@ class _EnhancedActivityDetailDialogState extends State<EnhancedActivityDetailDia
         // 期間フィルタ適用
         List<ParticipationApplication> filtered = allApps;
         if (_selectedPeriod.startDate != null) {
-          filtered = filtered.where((app) =>
-            app.appliedAt.isAfter(_selectedPeriod.startDate!)).toList();
+          filtered = filtered
+              .where((app) => app.appliedAt.isAfter(_selectedPeriod.startDate!))
+              .toList();
         }
 
         // 検索フィルタ（将来の実装用）
@@ -493,7 +503,10 @@ class _EnhancedActivityDetailDialogState extends State<EnhancedActivityDetailDia
     );
   }
 
-  Widget _buildMonthSection(String month, List<ParticipationApplication> applications) {
+  Widget _buildMonthSection(
+    String month,
+    List<ParticipationApplication> applications,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -524,11 +537,7 @@ class _EnhancedActivityDetailDialogState extends State<EnhancedActivityDetailDia
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.inbox_outlined,
-            size: 64,
-            color: AppColors.textLight,
-          ),
+          Icon(Icons.inbox_outlined, size: 64, color: AppColors.textLight),
           const SizedBox(height: AppDimensions.spacingL),
           Text(
             message,
@@ -606,8 +615,9 @@ class _EnhancedActivityDetailDialogState extends State<EnhancedActivityDetailDia
 
         // 期間フィルタ適用
         if (_selectedPeriod.startDate != null) {
-          filtered = filtered.where((app) =>
-            app.appliedAt.isAfter(_selectedPeriod.startDate!)).toList();
+          filtered = filtered
+              .where((app) => app.appliedAt.isAfter(_selectedPeriod.startDate!))
+              .toList();
         }
 
         if (filtered.isEmpty) {
@@ -695,7 +705,9 @@ class _EnhancedActivityDetailDialogState extends State<EnhancedActivityDetailDia
                             ),
                             decoration: BoxDecoration(
                               color: AppColors.accent.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(AppDimensions.radiusXS),
+                              borderRadius: BorderRadius.circular(
+                                AppDimensions.radiusXS,
+                              ),
                             ),
                             child: Text(
                               '${monthDocs.length}件',
@@ -728,11 +740,14 @@ class _EnhancedActivityDetailDialogState extends State<EnhancedActivityDetailDia
                               : null;
 
                           // status がEventStatus enumの場合の処理
-                          if (data['status'] != null && data['status'].toString() == 'EventStatus.cancelled') {
+                          if (data['status'] != null &&
+                              data['status'].toString() ==
+                                  'EventStatus.cancelled') {
                             eventStatus = GameEventStatus.cancelled;
                           } else if (endDate != null && endDate.isBefore(now)) {
                             eventStatus = GameEventStatus.completed;
-                          } else if (eventDate != null && eventDate.isAfter(now)) {
+                          } else if (eventDate != null &&
+                              eventDate.isAfter(now)) {
                             eventStatus = GameEventStatus.upcoming;
                           } else {
                             eventStatus = GameEventStatus.active;
@@ -772,15 +787,17 @@ class _EnhancedActivityDetailDialogState extends State<EnhancedActivityDetailDia
     );
   }
 
-  Widget _buildApplicationTile(BuildContext context, ParticipationApplication app) {
+  Widget _buildApplicationTile(
+    BuildContext context,
+    ParticipationApplication app,
+  ) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          Navigator.of(context).pushNamed(
-            '/event_detail',
-            arguments: app.eventId,
-          );
+          Navigator.of(
+            context,
+          ).pushNamed('/event_detail', arguments: app.eventId);
         },
         child: Container(
           padding: const EdgeInsets.symmetric(
@@ -839,8 +856,12 @@ class _EnhancedActivityDetailDialogState extends State<EnhancedActivityDetailDia
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: _getStatusColor(app.status).withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusXS),
+                            color: _getStatusColor(
+                              app.status,
+                            ).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusXS,
+                            ),
                           ),
                           child: Text(
                             _getStatusText(app.status),
@@ -887,10 +908,7 @@ class _EnhancedActivityDetailDialogState extends State<EnhancedActivityDetailDia
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          Navigator.of(context).pushNamed(
-            '/event_detail',
-            arguments: event.id,
-          );
+          Navigator.of(context).pushNamed('/event_detail', arguments: event.id);
         },
         child: Container(
           padding: const EdgeInsets.symmetric(
@@ -1119,7 +1137,8 @@ class _EnhancedActivityDetailDialogState extends State<EnhancedActivityDetailDia
     try {
       // まず、渡されたIDがすでにFirebaseUIDかどうかをチェック
       // FirebaseUIDは通常28文字で英数字
-      if (customUserId.length == 28 && RegExp(r'^[a-zA-Z0-9]+$').hasMatch(customUserId)) {
+      if (customUserId.length == 28 &&
+          RegExp(r'^[a-zA-Z0-9]+$').hasMatch(customUserId)) {
         return customUserId;
       }
 
@@ -1140,7 +1159,9 @@ class _EnhancedActivityDetailDialogState extends State<EnhancedActivityDetailDia
   }
 
   /// 運営イベントのドキュメントを取得
-  Future<List<DocumentSnapshot>> _getManagedEventDocs(String firebaseUid) async {
+  Future<List<DocumentSnapshot>> _getManagedEventDocs(
+    String firebaseUid,
+  ) async {
     final allDocs = <String, DocumentSnapshot>{};
 
     try {

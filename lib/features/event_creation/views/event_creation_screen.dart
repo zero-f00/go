@@ -2826,9 +2826,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         );
       }
 
-      print('Draft conversion notifications sent to ${approvedParticipants.length} participants');
     } catch (e) {
-      print('Error sending draft conversion notifications: $e');
       // 通知の失敗は下書き保存を阻害しないようにエラーを無視
     }
   }

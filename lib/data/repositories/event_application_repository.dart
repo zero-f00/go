@@ -26,7 +26,6 @@ class EventApplicationRepository {
           .map((doc) => EventApplication.fromFirestore(doc))
           .toList();
     } catch (e) {
-      print('❌ EventApplicationRepository: Error getting applications: $e');
       return [];
     }
   }
@@ -48,7 +47,6 @@ class EventApplicationRepository {
           .map((doc) => EventApplication.fromFirestore(doc))
           .toList();
     } catch (e) {
-      print('❌ EventApplicationRepository: Error getting applications by status: $e');
       return [];
     }
   }
@@ -60,14 +58,11 @@ class EventApplicationRepository {
           .collection('event_applications')
           .add(application.toFirestore());
 
-      print('✅ EventApplicationRepository: Application created with ID: ${docRef.id}');
-
       // 申込み作成後、運営者に通知を送信
       await _sendApplicationNotification(application.copyWith(id: docRef.id));
 
       return application.copyWith(id: docRef.id);
     } catch (e) {
-      print('❌ EventApplicationRepository: Error creating application: $e');
       return null;
     }
   }
@@ -92,8 +87,6 @@ class EventApplicationRepository {
           .doc(applicationId)
           .update(updateData);
 
-      print('✅ EventApplicationRepository: Application status updated: $applicationId');
-
       // 更新後のデータを取得して返す
       final doc = await _firestore
           .collection('event_applications')
@@ -105,7 +98,6 @@ class EventApplicationRepository {
       }
       return null;
     } catch (e) {
-      print('❌ EventApplicationRepository: Error updating application status: $e');
       return null;
     }
   }
@@ -129,7 +121,6 @@ class EventApplicationRepository {
 
       return EventApplication.fromFirestore(snapshot.docs.first);
     } catch (e) {
-      print('❌ EventApplicationRepository: Error getting user application: $e');
       return null;
     }
   }
@@ -142,10 +133,8 @@ class EventApplicationRepository {
           .doc(applicationId)
           .delete();
 
-      print('✅ EventApplicationRepository: Application deleted: $applicationId');
       return true;
     } catch (e) {
-      print('❌ EventApplicationRepository: Error deleting application: $e');
       return false;
     }
   }
@@ -162,7 +151,6 @@ class EventApplicationRepository {
 
       return stats;
     } catch (e) {
-      print('❌ EventApplicationRepository: Error getting application stats: $e');
       return {};
     }
   }
@@ -179,20 +167,17 @@ class EventApplicationRepository {
               .map((doc) => EventApplication.fromFirestore(doc))
               .toList());
     } catch (e) {
-      print('❌ EventApplicationRepository: Error watching applications: $e');
       return Stream.value([]);
     }
   }
 
   void dispose() {
-    print('🔄 EventApplicationRepository: Disposed');
+    // No-op
   }
 
   /// 申込み通知を運営者に送信
   Future<void> _sendApplicationNotification(EventApplication application) async {
     try {
-      print('📧 EventApplicationRepository: Sending notification for application: ${application.id}');
-
       // イベント情報を取得
       final eventDoc = await _firestore
           .collection('events')
@@ -200,11 +185,8 @@ class EventApplicationRepository {
           .get();
 
       if (!eventDoc.exists) {
-        print('❌ EventApplicationRepository: Event not found: ${application.eventId}');
         return;
       }
-
-      final eventData = eventDoc.data()!;
 
       // 申込者情報を取得
       final applicantDoc = await _firestore
@@ -214,16 +196,13 @@ class EventApplicationRepository {
           .get();
 
       if (applicantDoc.docs.isEmpty) {
-        print('❌ EventApplicationRepository: Applicant user not found: ${application.userId}');
         return;
       }
 
-      final applicantData = applicantDoc.docs.first.data();
-
       // TODO: 通知サービスを使用して通知を送信（一時的に削除）
+      // eventDoc.data()とapplicantDoc.docs.first.data()でイベント・申込者情報が取得可能
 
     } catch (e) {
-      print('❌ EventApplicationRepository: Error sending application notification: $e');
       // 通知送信失敗は申込み作成自体は成功とする
     }
   }

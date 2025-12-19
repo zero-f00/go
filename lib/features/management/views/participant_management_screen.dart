@@ -819,7 +819,6 @@ class _ParticipantManagementScreenState
       }
       return userData;
     } catch (e) {
-      debugPrint('ユーザーデータ取得エラー: $e');
       return null;
     }
   }

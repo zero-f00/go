@@ -66,7 +66,7 @@ class NotificationService {
         }
       }
     } catch (e) {
-      print('❌ NotificationService: Error sending push notification: $e');
+      // プッシュ通知送信エラーは無視
     }
   }
 
@@ -79,7 +79,7 @@ class NotificationService {
         await pushService.updateBadgeCount();
       }
     } catch (e) {
-      print('❌ NotificationService: Error updating badge count: $e');
+      // バッジ更新エラーは無視
     }
   }
 
@@ -1106,7 +1106,6 @@ class NotificationService {
 
       return await NotificationService.instance.createNotification(notification);
     } catch (e) {
-      print('NotificationService: Error sending cancellation notification: $e');
       return false;
     }
   }
@@ -1148,7 +1147,6 @@ class NotificationService {
 
       return await NotificationService.instance.createNotification(notification);
     } catch (e) {
-      print('NotificationService: Error sending manager cancellation notification: $e');
       return false;
     }
   }
@@ -1275,11 +1273,8 @@ class NotificationService {
       recipients.remove(updatedByUserId);
 
       if (recipients.isEmpty) {
-        print('📝 NotificationService: No notification recipients found');
         return true; // 通知対象者がいない場合は成功として扱う
       }
-
-      print('📝 NotificationService: Sending notifications to ${recipients.length} recipients');
 
       // 各受信者に通知を送信
       int successCount = 0;
@@ -1305,14 +1300,12 @@ class NotificationService {
           }
         } catch (e) {
           // 個別の送信失敗は続行
-          print('❌ NotificationService: Failed to send event update notification to user $recipientId: $e');
         }
       }
 
       // 半数以上成功していれば成功とみなす
       return successCount >= (recipients.length / 2).ceil();
     } catch (e) {
-      print('❌ NotificationService: Error sending event update notifications: $e');
       return false;
     }
   }

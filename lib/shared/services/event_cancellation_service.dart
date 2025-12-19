@@ -35,9 +35,7 @@ class EventCancellationService {
       // 3. game_eventsコレクションも確認して更新
       try {
         final gameEventDoc = await _firestore.collection('game_events').doc(eventId).get();
-        print('EventCancellationService: GameEvent exists: ${gameEventDoc.exists}');
         if (gameEventDoc.exists) {
-          print('EventCancellationService: Updating game_events collection with status: cancelled');
           final gameEventRef = _firestore.collection('game_events').doc(eventId);
           batch.update(gameEventRef, {
             'status': 'cancelled',
@@ -45,11 +43,9 @@ class EventCancellationService {
             'cancelledAt': FieldValue.serverTimestamp(),
             'updatedAt': FieldValue.serverTimestamp(),
           });
-        } else {
-          print('EventCancellationService: No corresponding game event found');
         }
       } catch (e) {
-        print('EventCancellationService: Game event update error (continuing): $e');
+        // game_events更新エラーは無視して続行
       }
 
       // 3. 参加申請者一覧を取得
@@ -64,7 +60,6 @@ class EventCancellationService {
 
       return true;
     } catch (e) {
-      print('EventCancellationService: Error cancelling event: $e');
       return false;
     }
   }
@@ -124,9 +119,8 @@ class EventCancellationService {
         );
       }
 
-      print('EventCancellationService: All notifications sent successfully');
     } catch (e) {
-      print('EventCancellationService: Error sending notifications: $e');
+      // 通知送信エラーは無視
     }
   }
 
@@ -153,7 +147,6 @@ class EventCancellationService {
 
       return true;
     } catch (e) {
-      print('EventCancellationService: Error checking cancellation eligibility: $e');
       return false;
     }
   }
@@ -173,7 +166,6 @@ class EventCancellationService {
         'status': data['status'],
       };
     } catch (e) {
-      print('EventCancellationService: Error getting cancellation info: $e');
       return null;
     }
   }
