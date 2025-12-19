@@ -12,8 +12,6 @@ class AppInitializationService {
   /// アプリ初期化処理
   static Future<void> initialize() async {
     try {
-      print('🚀 AppInitializationService: Starting app initialization...');
-
       // ゲストユーザー状態でのキャッシュクリアチェック
       await _clearCacheForGuestUser();
 
@@ -27,10 +25,7 @@ class AppInitializationService {
       // - アプリバージョンチェック
       // - 必要な権限のリクエスト
       // - 初回起動時の設定等
-
-      print('✅ AppInitializationService: App initialization completed');
     } catch (e) {
-      print('❌ AppInitializationService: Initialization error: $e');
       // 初期化エラーでもアプリを続行
     }
   }
@@ -38,18 +33,9 @@ class AppInitializationService {
   /// プッシュ通知サービスの初期化
   static Future<void> _initializePushNotifications() async {
     try {
-      print('🔔 AppInitializationService: Initializing push notifications...');
-
       final pushService = PushNotificationService.instance;
-      final success = await pushService.initialize();
-
-      if (success) {
-        print('✅ AppInitializationService: Push notifications initialized successfully');
-      } else {
-        print('⚠️ AppInitializationService: Push notification initialization failed, but continuing...');
-      }
+      await pushService.initialize();
     } catch (e) {
-      print('❌ AppInitializationService: Push notification initialization error: $e');
       // プッシュ通知初期化失敗でもアプリを続行
     }
   }
@@ -57,18 +43,12 @@ class AppInitializationService {
   /// イベントリマインダーサービスの初期化
   static Future<void> _initializeEventReminderService() async {
     try {
-      print('⏰ AppInitializationService: Initializing event reminder service...');
-
       // 認証済みユーザーの場合のみリマインダーサービスを開始
       final currentUser = _auth.currentUser;
       if (currentUser != null) {
         EventReminderService.instance.startReminderService();
-        print('✅ AppInitializationService: Event reminder service started successfully');
-      } else {
-        print('⚠️ AppInitializationService: Skipping reminder service (user not authenticated)');
       }
     } catch (e) {
-      print('❌ AppInitializationService: Event reminder service initialization error: $e');
       // リマインダーサービス初期化失敗でもアプリを続行
     }
   }

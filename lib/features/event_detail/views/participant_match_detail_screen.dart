@@ -1447,6 +1447,22 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
     );
   }
 
+  /// 参加者表示をフォーマット
+  String _formatParticipants(List<String> participants) {
+    final names = participants.map((id) => participantNames[id] ?? id).toList();
+
+    if (names.length <= 2) {
+      // 2人以下の場合は従来の「vs」形式
+      return names.join(' vs ');
+    } else if (names.length <= 4) {
+      // 3-4人の場合は改行区切り
+      return names.join(' • ');
+    } else {
+      // 5人以上の場合は省略形式
+      return '${names.take(3).join(' • ')} 他${names.length - 3}名';
+    }
+  }
+
   /// 日時フォーマット
   String _formatDateTime(DateTime dateTime) {
     return '${dateTime.year}/${dateTime.month}/${dateTime.day} '
@@ -1541,11 +1557,13 @@ class _ReportMatchDialogState extends ConsumerState<_ReportMatchDialog> {
                   ),
                   const SizedBox(height: AppDimensions.spacingXS),
                   Text(
-                    '参加者: ${widget.match.participants.map((id) => widget.participantNames[id] ?? id).join(' vs ')}',
+                    '参加者: ${_formatParticipants(widget.match.participants, widget.participantNames)}',
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeS,
                       color: AppColors.textSecondary,
                     ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -1656,7 +1674,7 @@ class _ReportMatchDialogState extends ConsumerState<_ReportMatchDialog> {
         throw Exception('ログインが必要です');
       }
 
-      final reportId = await _reportService.submitMatchReport(
+      await _reportService.submitMatchReport(
         matchId: widget.match.id!,
         reporterId: currentUser!.uid,
         issueType: _selectedIssueType,
@@ -1689,6 +1707,22 @@ class _ReportMatchDialogState extends ConsumerState<_ReportMatchDialog> {
           _isSubmitting = false;
         });
       }
+    }
+  }
+
+  /// 参加者表示をフォーマット (ダイアログ用)
+  String _formatParticipants(List<String> participants, Map<String, String> participantNames) {
+    final names = participants.map((id) => participantNames[id] ?? id).toList();
+
+    if (names.length <= 2) {
+      // 2人以下の場合は従来の「vs」形式
+      return names.join(' vs ');
+    } else if (names.length <= 4) {
+      // 3-4人の場合は改行区切り
+      return names.join(' • ');
+    } else {
+      // 5人以上の場合は省略形式
+      return '${names.take(3).join(' • ')} 他${names.length - 3}名';
     }
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
@@ -7,6 +8,7 @@ import '../../../shared/constants/app_strings.dart';
 import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
 import '../../../shared/widgets/app_button.dart';
+import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/participation_dialog.dart';
 import '../../../shared/widgets/user_tag.dart';
 import '../../../shared/widgets/zoomable_image_widget.dart';
@@ -15,7 +17,6 @@ import '../../../shared/services/participation_service.dart';
 import '../../../shared/utils/event_converter.dart';
 import '../../game_event_management/models/game_event.dart';
 import '../../../shared/services/event_service.dart';
-import '../../../data/models/event_model.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../data/models/user_model.dart';
 import '../../../shared/widgets/user_action_modal.dart';
@@ -659,6 +660,17 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
             Icons.event_busy,
           ),
         ],
+
+        // 申込期限切れの警告表示
+        if (_currentEvent.isRegistrationExpired) ...[
+          const SizedBox(height: AppDimensions.spacingM),
+          _buildStatusAlert(
+            '申込期限切れ',
+            '申込期限が過ぎています',
+            Icons.schedule_send,
+            AppColors.warning,
+          ),
+        ],
       ],
     );
   }
@@ -686,7 +698,6 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                           _currentEvent.gameIconUrl!,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
-                            print('❌ EventDetail: Failed to load game icon: ${_currentEvent.gameIconUrl}');
                             return _buildGameIconFallback();
                           },
                           loadingBuilder: (context, child, loadingProgress) {
@@ -800,7 +811,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
             color: AppColors.backgroundLight,
             borderRadius: BorderRadius.circular(AppDimensions.radiusS),
             border: Border.all(
-              color: AppColors.info.withOpacity(0.3),
+              color: AppColors.info.withValues(alpha: 0.3),
               width: 1,
             ),
           ),
@@ -902,9 +913,24 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       title: '参加情報',
       icon: Icons.group,
       children: [
-        _buildInfoRow('募集人数', '${_currentEvent.maxParticipants}人', Icons.group),
-        const SizedBox(height: AppDimensions.spacingM),
-        _buildInfoRow('現在の参加者数', '${_currentEvent.participantCount}人', Icons.people),
+        // 参加者数表示（統合形式）
+        _buildInfoRow(
+          '参加者数',
+          '${_currentEvent.participantCount}/${_currentEvent.maxParticipants}人',
+          Icons.group,
+        ),
+
+        // 満員状態の警告表示
+        if (_currentEvent.isFull) ...[
+          const SizedBox(height: AppDimensions.spacingM),
+          _buildStatusAlert(
+            '満員',
+            'このイベントは定員に達しています',
+            Icons.group_off,
+            AppColors.error,
+          ),
+        ],
+
         if (_currentEvent.hasAgeRestriction && _currentEvent.minAge != null) ...[
           const SizedBox(height: AppDimensions.spacingM),
           _buildInfoRow('年齢制限', '${_currentEvent.minAge}歳以上', Icons.child_care),
@@ -1773,6 +1799,47 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     );
   }
 
+  /// ステータス警告表示を構築
+  Widget _buildStatusAlert(String title, String message, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(AppDimensions.spacingM),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+        border: Border.all(color: color, width: 1),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(width: AppDimensions.spacingS),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                    fontSize: AppDimensions.fontSizeS,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  message,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: AppDimensions.fontSizeXS,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// 参加者用画面への遷移メソッド
   void _navigateToParticipantGroupView(BuildContext context) {
     Navigator.of(context).pushNamed(
@@ -1888,6 +1955,11 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
             // 申し込み済み：状態に応じたボタン表示
             switch (application.status) {
               case ParticipationStatus.pending:
+                // 満員状態かどうかを確認
+                final isEventFull = _currentEvent.isFull;
+                final statusText = isEventFull ? '申し込み済み（キャンセル待ち）' : '申し込み済み（承認待ち）';
+                final statusIcon = isEventFull ? Icons.hourglass_empty : Icons.pending_actions;
+
                 return Container(
                   padding: const EdgeInsets.all(AppDimensions.spacingL),
                   decoration: BoxDecoration(
@@ -1916,7 +1988,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                               borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                             ),
                             child: Icon(
-                              Icons.pending_actions,
+                              statusIcon,
                               color: AppColors.warning,
                               size: AppDimensions.iconM,
                             ),
@@ -1926,9 +1998,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  '申し込み済み（承認待ち）',
-                                  style: TextStyle(
+                                Text(
+                                  statusText,
+                                  style: const TextStyle(
                                     fontSize: AppDimensions.fontSizeL,
                                     fontWeight: FontWeight.w700,
                                     color: AppColors.warning,
@@ -1942,11 +2014,39 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                                     color: AppColors.textSecondary,
                                   ),
                                 ),
+                                if (isEventFull) ...[
+                                  const SizedBox(height: AppDimensions.spacingXS),
+                                  Text(
+                                    'このイベントは満員ですが、あなたの申請はキャンセル待ちとして受付中です。',
+                                    style: TextStyle(
+                                      fontSize: AppDimensions.fontSizeS,
+                                      color: AppColors.warning.withValues(alpha: 0.8),
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
                           ),
                         ],
                       ),
+                      // キャンセルボタンを追加（キャンセル期限内の場合のみ）
+                      if (_canUserCancel()) ...[
+                        const SizedBox(height: AppDimensions.spacingM),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () => _showCancellationDialog(application.id),
+                            icon: const Icon(Icons.cancel_outlined, size: 18),
+                            label: const Text('申し込みをキャンセル'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.error,
+                              side: const BorderSide(color: AppColors.error),
+                              padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingM),
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 );
@@ -2009,6 +2109,115 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                             ),
                           ),
                         ],
+                      ),
+                      // キャンセルボタンを追加（キャンセル期限内の場合のみ）
+                      if (_canUserCancel()) ...[
+                        const SizedBox(height: AppDimensions.spacingM),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () => _showCancellationDialog(application.id),
+                            icon: const Icon(Icons.cancel_outlined, size: 18),
+                            label: const Text('参加をキャンセル'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.error,
+                              side: const BorderSide(color: AppColors.error),
+                              padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingM),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                );
+              case ParticipationStatus.waitlisted:
+                // キャンセル待ちの順位を表示
+                final waitlistPosition = application.waitlistPosition ?? 0;
+                return Container(
+                  padding: const EdgeInsets.all(AppDimensions.spacingL),
+                  decoration: BoxDecoration(
+                    color: AppColors.cardBackground,
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                    border: Border.all(
+                      color: AppColors.warning.withValues(alpha: 0.3),
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.cardShadow.withValues(alpha: 0.1),
+                        blurRadius: 4.0,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(AppDimensions.spacingS),
+                            decoration: BoxDecoration(
+                              color: AppColors.warning.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                            ),
+                            child: Icon(
+                              Icons.hourglass_empty,
+                              color: AppColors.warning,
+                              size: AppDimensions.iconM,
+                            ),
+                          ),
+                          const SizedBox(width: AppDimensions.spacingM),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'キャンセル待ち $waitlistPosition番目',
+                                  style: const TextStyle(
+                                    fontSize: AppDimensions.fontSizeL,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.warning,
+                                  ),
+                                ),
+                                const SizedBox(height: AppDimensions.spacingXS),
+                                Text(
+                                  '申し込み日: ${DateFormat('yyyy/MM/dd').format(application.appliedAt)}',
+                                  style: const TextStyle(
+                                    fontSize: AppDimensions.fontSizeS,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                                const SizedBox(height: AppDimensions.spacingXS),
+                                Text(
+                                  '参加者が辞退した場合、順番に承認いたします。',
+                                  style: TextStyle(
+                                    fontSize: AppDimensions.fontSizeS,
+                                    color: AppColors.warning.withValues(alpha: 0.8),
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppDimensions.spacingM),
+                      // キャンセル待ち取り消しボタン
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () => _cancelWaitlist(application.id),
+                          icon: const Icon(Icons.cancel_outlined, size: 18),
+                          label: const Text('キャンセル待ちを取り消す'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.error,
+                            side: BorderSide(color: AppColors.error),
+                            padding: const EdgeInsets.all(AppDimensions.spacingM),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -2073,6 +2282,79 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                             ),
                           ),
                         ],
+                      ),
+                    ],
+                  ),
+                );
+              case ParticipationStatus.cancelled:
+                return Container(
+                  padding: const EdgeInsets.all(AppDimensions.spacingL),
+                  decoration: BoxDecoration(
+                    color: AppColors.cardBackground,
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                    border: Border.all(
+                      color: AppColors.textSecondary.withValues(alpha: 0.3),
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.cardShadow.withValues(alpha: 0.1),
+                        blurRadius: 4.0,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(AppDimensions.spacingS),
+                        decoration: BoxDecoration(
+                          color: AppColors.textSecondary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                        ),
+                        child: Icon(
+                          Icons.cancel,
+                          color: AppColors.textSecondary,
+                          size: AppDimensions.iconM,
+                        ),
+                      ),
+                      const SizedBox(width: AppDimensions.spacingM),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'キャンセル済み',
+                              style: TextStyle(
+                                fontSize: AppDimensions.fontSizeL,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: AppDimensions.spacingXS),
+                            Text(
+                              application.cancelledAt != null
+                                  ? 'キャンセル日時: ${DateFormat('yyyy/MM/dd HH:mm').format(application.cancelledAt!)}'
+                                  : 'キャンセル済み',
+                              style: const TextStyle(
+                                fontSize: AppDimensions.fontSizeS,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            if (application.cancellationReason != null &&
+                                application.cancellationReason!.isNotEmpty) ...[
+                              const SizedBox(height: AppDimensions.spacingXS),
+                              Text(
+                                'キャンセル理由: ${application.cancellationReason}',
+                                style: const TextStyle(
+                                  fontSize: AppDimensions.fontSizeS,
+                                  color: AppColors.textSecondary,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -2165,38 +2447,6 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
   }
 
   /// 参加費用補足情報を構築
-  Widget _buildFeeSupplementInfo(String supplement) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.spacingM),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundLight.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-        border: Border.all(color: AppColors.borderLight),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            Icons.info_outline,
-            size: AppDimensions.iconS,
-            color: AppColors.textDark,
-          ),
-          const SizedBox(width: AppDimensions.spacingS),
-          Expanded(
-            child: Text(
-              supplement,
-              style: const TextStyle(
-                fontSize: AppDimensions.fontSizeS,
-                color: AppColors.textDark,
-                height: 1.4,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   /// 公開設定の表示名を取得
   String _getVisibilityDisplayName() {
@@ -2371,7 +2621,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
           eventId: _currentEvent.id,
           eventName: _currentEvent.name,
           userId: userId,
-          userName: userData.displayName ?? userData.username,
+          userName: userData.displayName,
           userData: userData,
           gameId: _currentEvent.gameId,
           onGameProfileTap: () {
@@ -2431,5 +2681,390 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     );
   }
 
+  /// キャンセル待ち取り消し
+  Future<void> _cancelWaitlist(String applicationId) async {
+    final shouldCancel = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.cardBackground,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        ),
+        title: const Text(
+          'キャンセル待ちを取り消しますか？',
+          style: TextStyle(
+            fontSize: AppDimensions.fontSizeL,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textDark,
+          ),
+        ),
+        content: const Text(
+          'キャンセル待ちを取り消すと、このイベントへの参加申請が完全に撤回されます。\n\n再度参加を希望される場合は、新規で申請が必要となります。',
+          style: TextStyle(
+            fontSize: AppDimensions.fontSizeM,
+            color: AppColors.textSecondary,
+            height: 1.5,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text(
+              'キャンセル',
+              style: TextStyle(
+                fontSize: AppDimensions.fontSizeM,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+              ),
+            ),
+            child: const Text(
+              '取り消す',
+              style: TextStyle(
+                fontSize: AppDimensions.fontSizeM,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldCancel == true && mounted) {
+      try {
+        final success = await ParticipationService.updateApplicationStatus(
+          applicationId,
+          ParticipationStatus.rejected,
+          adminMessage: 'ユーザーによるキャンセル待ち取り消し',
+          adminUserId: 'user_self',
+        );
+
+        if (success && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('キャンセル待ちを取り消しました'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('キャンセル待ちの取り消しに失敗しました: $e'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  /// ユーザーがキャンセル可能かどうかを判定
+  bool _canUserCancel() {
+    // キャンセル期限が設定されている場合はチェック
+    if (_currentEvent.participationCancelDeadline != null) {
+      final now = DateTime.now();
+      return now.isBefore(_currentEvent.participationCancelDeadline!);
+    }
+    // キャンセル期限が未設定の場合は常にキャンセル可能
+    return true;
+  }
+
+  /// キャンセル理由入力ダイアログを表示
+  Future<void> _showCancellationDialog(String applicationId) async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return _CancellationDialog(
+          eventName: _currentEvent.name,
+        );
+      },
+    );
+
+    if (result != null && result['confirmed'] == true && mounted) {
+      final cancellationReason = result['reason'] as String?;
+      if (cancellationReason != null) {
+        await _executeCancellation(applicationId, cancellationReason);
+      }
+    }
+  }
+
+  /// キャンセル処理を実行
+  Future<void> _executeCancellation(String applicationId, String reason) async {
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) return;
+
+      final success = await ParticipationService.cancelParticipation(
+        applicationId: applicationId,
+        cancellationReason: reason,
+        userId: currentUser.uid,
+      );
+
+      if (mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('参加をキャンセルしました'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('キャンセルに失敗しました'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('キャンセル中にエラーが発生しました: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+}
+
+/// キャンセルダイアログWidget
+class _CancellationDialog extends StatefulWidget {
+  final String eventName;
+
+  const _CancellationDialog({
+    required this.eventName,
+  });
+
+  @override
+  State<_CancellationDialog> createState() => _CancellationDialogState();
+}
+
+class _CancellationDialogState extends State<_CancellationDialog> {
+  final TextEditingController _reasonController = TextEditingController();
+
+  @override
+  void dispose() {
+    _reasonController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.all(AppDimensions.spacingL),
+      child: Container(
+        constraints: BoxConstraints(
+          maxWidth: 500,
+          maxHeight: MediaQuery.of(context).size.height * 0.75,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.shadow,
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // ヘッダー
+            Container(
+              padding: const EdgeInsets.all(AppDimensions.spacingL),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.error.withValues(alpha: 0.9),
+                    AppColors.error,
+                  ],
+                ),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(AppDimensions.radiusL),
+                  topRight: Radius.circular(AppDimensions.radiusL),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(AppDimensions.spacingS),
+                    decoration: BoxDecoration(
+                      color: AppColors.overlayLight,
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                    ),
+                    child: Icon(
+                      Icons.event_busy,
+                      color: AppColors.textWhite,
+                      size: AppDimensions.iconL,
+                    ),
+                  ),
+                  const SizedBox(width: AppDimensions.spacingM),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          '参加キャンセル',
+                          style: TextStyle(
+                            color: AppColors.textWhite,
+                            fontSize: AppDimensions.fontSizeXL,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: AppDimensions.spacingXS),
+                        Text(
+                          widget.eventName,
+                          style: const TextStyle(
+                            color: AppColors.overlayMedium,
+                            fontSize: AppDimensions.fontSizeM,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(
+                      Icons.close,
+                      color: AppColors.textWhite,
+                    ),
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppColors.overlayLight,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // コンテンツ
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(AppDimensions.spacingL),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 警告メッセージ
+                    Container(
+                      padding: const EdgeInsets.all(AppDimensions.spacingM),
+                      decoration: BoxDecoration(
+                        color: AppColors.warning.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                        border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.warning_amber_rounded,
+                            color: AppColors.warning,
+                            size: AppDimensions.iconM,
+                          ),
+                          const SizedBox(width: AppDimensions.spacingM),
+                          Expanded(
+                            child: Text(
+                              '参加をキャンセルすると、再度参加するには主催者の承認が必要になる場合があります。',
+                              style: TextStyle(
+                                fontSize: AppDimensions.fontSizeM,
+                                color: AppColors.textDark,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppDimensions.spacingL),
+                    // キャンセル理由入力
+                    const Text(
+                      'キャンセル理由（必須）',
+                      style: TextStyle(
+                        fontSize: AppDimensions.fontSizeM,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                    const SizedBox(height: AppDimensions.spacingS),
+                    AppTextField(
+                      controller: _reasonController,
+                      hintText: '主催者へキャンセル理由をお知らせください',
+                      maxLines: 4,
+                      maxLength: 200,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // フッター
+            Container(
+              padding: const EdgeInsets.all(AppDimensions.spacingL),
+              decoration: BoxDecoration(
+                color: AppColors.backgroundLight,
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(AppDimensions.radiusL),
+                  bottomRight: Radius.circular(AppDimensions.radiusL),
+                ),
+                border: const Border(
+                  top: BorderSide(color: AppColors.borderLight, width: 1),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: AppButton.outline(
+                      text: '戻る',
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ),
+                  const SizedBox(width: AppDimensions.spacingM),
+                  Expanded(
+                    child: AppButton(
+                      text: 'キャンセルする',
+                      type: AppButtonType.danger,
+                      onPressed: () {
+                        if (_reasonController.text.trim().isNotEmpty) {
+                          Navigator.of(context).pop({
+                            'confirmed': true,
+                            'reason': _reasonController.text.trim(),
+                          });
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('キャンセル理由を入力してください'),
+                              backgroundColor: AppColors.warning,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 

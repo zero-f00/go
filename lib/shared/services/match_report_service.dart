@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'notification_service.dart';
 
 /// 試合報告の状況
@@ -208,6 +209,37 @@ class MatchReportService {
     }
   }
 
+  /// イベントの全報告一覧を取得
+  Future<List<MatchReport>> getEventMatchReports(String eventId) async {
+    try {
+      // まず、イベントのすべての試合IDを取得
+      final matchResults = await FirebaseFirestore.instance
+          .collection('match_results')
+          .where('eventId', isEqualTo: eventId)
+          .get();
+
+      final matchIds = matchResults.docs.map((doc) => doc.id).toList();
+
+      if (matchIds.isEmpty) {
+        return [];
+      }
+
+      // 各試合の報告を取得
+      final reports = <MatchReport>[];
+      for (final matchId in matchIds) {
+        final matchReports = await getMatchReports(matchId);
+        reports.addAll(matchReports);
+      }
+
+      // 作成日時で降順ソート
+      reports.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+      return reports;
+    } catch (e) {
+      throw Exception('イベント報告一覧の取得に失敗しました: $e');
+    }
+  }
+
   /// ユーザーの報告一覧を取得
   Future<List<MatchReport>> getUserReports(String userId) async {
     try {
@@ -251,7 +283,7 @@ class MatchReportService {
     required String eventId,
   }) async {
     try {
-      // 運営ユーザーのリストを取得（簡単な実装例）
+      // 運営ユーザーのリストを取得
       final adminUsers = await _getEventAdmins(eventId);
 
       for (final adminId in adminUsers) {
@@ -263,25 +295,19 @@ class MatchReportService {
           data: {
             'reportId': reportId,
             'matchId': matchId,
+            'matchName': matchName,
+            'eventId': eventId,
+            'issueType': issueType,
             'action': 'review_report',
           },
         );
       }
 
-      // 運営ダッシュボードにリアルタイム通知も送信
-      await _firestore.collection('admin_notifications').add({
-        'type': 'match_report',
-        'eventId': eventId,
-        'reportId': reportId,
-        'matchId': matchId,
-        'matchName': matchName,
-        'issueType': issueType,
-        'createdAt': Timestamp.fromDate(DateTime.now()),
-        'isRead': false,
-      });
+      // 重複通知の原因となっていたadmin_notificationsへの保存を削除
+      // 通知はNotificationServiceで一元管理される
     } catch (e) {
       // 運営通知の送信エラーは報告送信をブロックしない
-      // 通知エラーは報告送信をブロックしない
+      debugPrint('運営通知送信エラー: $e');
     }
   }
 
@@ -308,6 +334,34 @@ class MatchReportService {
           return;
       }
 
+      // イベントIDを取得するために試合情報を検索
+      String? eventId;
+      String? eventName;
+      String? matchName;
+      try {
+        final matchDoc = await _firestore
+            .collection('match_results')
+            .doc(report.matchId)
+            .get();
+        if (matchDoc.exists) {
+          final matchData = matchDoc.data()!;
+          eventId = matchData['eventId'] as String?;
+          matchName = matchData['matchName'] as String?;
+
+          if (eventId != null) {
+            final eventDoc = await _firestore
+                .collection('events')
+                .doc(eventId)
+                .get();
+            if (eventDoc.exists) {
+              eventName = eventDoc.data()!['name'] as String?;
+            }
+          }
+        }
+      } catch (e) {
+        debugPrint('試合・イベント情報の取得エラー: $e');
+      }
+
       await NotificationService.sendNotification(
         toUserId: report.reporterId,
         title: title,
@@ -316,8 +370,11 @@ class MatchReportService {
         data: {
           'reportId': report.id!,
           'matchId': report.matchId,
+          'matchName': matchName,
+          'eventId': eventId,
+          'eventName': eventName,
           'status': report.status.value,
-          'action': 'view_report_status',
+          'action': 'view_match_detail',
         },
       );
     } catch (e) {
@@ -328,17 +385,36 @@ class MatchReportService {
   /// イベントの運営ユーザーIDリストを取得
   Future<List<String>> _getEventAdmins(String eventId) async {
     try {
-      // TODO: 実際のイベント運営者取得ロジックを実装
-      // 例: events/{eventId}/adminsコレクションから取得
-      final querySnapshot = await _firestore
+      // イベントドキュメントを取得
+      final eventDoc = await _firestore
           .collection('events')
           .doc(eventId)
-          .collection('admins')
           .get();
 
-      return querySnapshot.docs
-          .map((doc) => doc.data()['userId'] as String)
-          .toList();
+      if (!eventDoc.exists) {
+        return [];
+      }
+
+      final eventData = eventDoc.data()!;
+      final adminIds = <String>{};
+
+      // 作成者を追加
+      final createdBy = eventData['createdBy'] as String?;
+      if (createdBy != null && createdBy.isNotEmpty) {
+        adminIds.add(createdBy);
+      }
+
+      // 管理者リストを追加
+      final managerIds = eventData['managerIds'] as List<dynamic>?;
+      if (managerIds != null) {
+        for (final managerId in managerIds) {
+          if (managerId is String && managerId.isNotEmpty) {
+            adminIds.add(managerId);
+          }
+        }
+      }
+
+      return adminIds.toList();
     } catch (e) {
       // 運営者リスト取得エラー
       return [];

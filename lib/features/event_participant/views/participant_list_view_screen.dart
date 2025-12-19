@@ -5,6 +5,7 @@ import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
+import '../../../shared/widgets/event_info_card.dart';
 import '../../../shared/widgets/participant_profile_card.dart';
 import '../../../shared/services/participation_service.dart';
 import '../../../shared/services/violation_service.dart';
@@ -90,7 +91,7 @@ class _ParticipantListViewScreenState
               final gameProfileService = ref.read(gameProfileServiceProvider);
               gameProfile = await gameProfileService.getGameProfile(application.userId, _gameId!);
             } catch (e) {
-              debugPrint('ゲームプロフィールの取得エラー: $e');
+              // ゲームプロフィールの取得エラーを無視
             }
           }
 
@@ -145,7 +146,6 @@ class _ParticipantListViewScreenState
             }
           } catch (e) {
             // 違反履歴の取得エラーがあっても続行
-            debugPrint('違反履歴の取得エラー: $e');
           }
 
           participantData.add(ParticipantProfileData(
@@ -157,7 +157,6 @@ class _ParticipantListViewScreenState
           ));
         } catch (e) {
           // 個別参加者の処理エラーはスキップ
-          debugPrint('参加者データ取得エラー: $e');
         }
       }
 
@@ -255,18 +254,42 @@ class _ParticipantListViewScreenState
                         padding: const EdgeInsets.all(AppDimensions.spacingL),
                         child: Row(
                           children: [
-                            Icon(
-                              Icons.person_search,
-                              color: AppColors.accent,
-                              size: AppDimensions.iconM,
+                            Container(
+                              width: AppDimensions.iconXL,
+                              height: AppDimensions.iconXL,
+                              decoration: BoxDecoration(
+                                color: AppColors.accent.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                              ),
+                              child: Icon(
+                                Icons.person_search,
+                                color: AppColors.accent,
+                                size: AppDimensions.iconM,
+                              ),
                             ),
-                            const SizedBox(width: AppDimensions.spacingS),
-                            const Text(
-                              '参加者詳細',
-                              style: TextStyle(
-                                fontSize: AppDimensions.fontSizeL,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textDark,
+                            const SizedBox(width: AppDimensions.spacingL),
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '参加者詳細',
+                                    style: TextStyle(
+                                      fontSize: AppDimensions.fontSizeL,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textDark,
+                                    ),
+                                  ),
+                                  SizedBox(height: AppDimensions.spacingXS),
+                                  Text(
+                                    'イベント参加者のプロフィール情報を確認',
+                                    style: TextStyle(
+                                      fontSize: AppDimensions.fontSizeS,
+                                      color: AppColors.textSecondary,
+                                      height: 1.3,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -289,57 +312,27 @@ class _ParticipantListViewScreenState
 
   /// イベント情報
   Widget _buildEventInfo() {
-    return Container(
-      margin: const EdgeInsets.all(AppDimensions.spacingL),
-      padding: const EdgeInsets.all(AppDimensions.spacingM),
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.cardShadow,
-            blurRadius: AppDimensions.cardElevation,
-            offset: const Offset(0, AppDimensions.shadowOffsetY),
+    return EventInfoCard(
+      eventName: widget.eventName,
+      eventId: widget.eventId,
+      iconData: Icons.people,
+      trailing: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacingS,
+          vertical: AppDimensions.spacingXS,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.info.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+        ),
+        child: Text(
+          '${_participants.length}名',
+          style: TextStyle(
+            fontSize: AppDimensions.fontSizeS,
+            fontWeight: FontWeight.w600,
+            color: AppColors.info,
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.people,
-            color: AppColors.accent,
-            size: AppDimensions.iconM,
-          ),
-          const SizedBox(width: AppDimensions.spacingM),
-          Expanded(
-            child: Text(
-              widget.eventName,
-              style: const TextStyle(
-                fontSize: AppDimensions.fontSizeL,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textDark,
-              ),
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingS,
-              vertical: AppDimensions.spacingXS,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.info.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-            ),
-            child: Text(
-              '${_participants.length}名',
-              style: TextStyle(
-                fontSize: AppDimensions.fontSizeS,
-                fontWeight: FontWeight.w600,
-                color: AppColors.info,
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -482,7 +475,6 @@ class _ParticipantListViewScreenState
         _gameId = gameId;
       });
     } catch (e) {
-      print('Error loading game ID: $e');
       // エラーがあっても処理は続行
     }
   }

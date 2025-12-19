@@ -66,7 +66,7 @@ class _HostEventCalendarScreenState extends ConsumerState<HostEventCalendarScree
         if (addedEventIds.contains(doc.id)) continue;
         addedEventIds.add(doc.id);
 
-        final data = doc.data()!;
+        final data = doc.data();
 
         // フィルターに基づいて表示するかどうかを決定
         final shouldShow = _shouldShowEvent(data);

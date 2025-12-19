@@ -541,6 +541,24 @@ class EventCard extends StatelessWidget {
             color: AppColors.textSecondary,
           ),
         ),
+
+        // 満員バッジ表示
+        if (event.isFull) ...[
+          const SizedBox(width: AppDimensions.spacingXS),
+          _buildCustomStatusBadge('満員', AppColors.error),
+        ]
+        // 期限間近バッジ表示
+        else if (event.daysUntilRegistrationDeadline != null &&
+                event.daysUntilRegistrationDeadline! <= 2 &&
+                event.daysUntilRegistrationDeadline! > 0) ...[
+          const SizedBox(width: AppDimensions.spacingXS),
+          _buildCustomStatusBadge('残り${event.daysUntilRegistrationDeadline}日', AppColors.warning),
+        ]
+        // 期限切れバッジ表示
+        else if (event.isRegistrationExpired) ...[
+          const SizedBox(width: AppDimensions.spacingXS),
+          _buildCustomStatusBadge('締切', AppColors.warning),
+        ],
       ],
     );
   }
@@ -572,6 +590,28 @@ class EventCard extends StatelessWidget {
         ),
         const Spacer(),
       ],
+    );
+  }
+
+  /// カスタムステータスバッジを構築
+  Widget _buildCustomStatusBadge(String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingXS,
+        vertical: 2,
+      ),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusXS),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: AppDimensions.fontSizeXS,
+          fontWeight: FontWeight.bold,
+          color: AppColors.textWhite,
+        ),
+      ),
     );
   }
 

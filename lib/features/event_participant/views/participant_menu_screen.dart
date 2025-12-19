@@ -4,6 +4,7 @@ import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
+import '../../../shared/widgets/event_info_card.dart';
 import '../../../shared/providers/auth_provider.dart';
 import 'participant_group_view_screen.dart';
 import 'participant_list_view_screen.dart';
@@ -91,75 +92,45 @@ class _ParticipantMenuScreenState extends ConsumerState<ParticipantMenuScreen> {
   }
 
   Widget _buildEventInfo() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.spacingL),
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.cardShadow,
-            blurRadius: AppDimensions.cardElevation,
-            offset: const Offset(0, AppDimensions.shadowOffsetY),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        EventInfoCard(
+          eventName: widget.eventName,
+          eventId: widget.eventId,
+          iconData: Icons.event,
+        ),
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingM,
+            vertical: AppDimensions.spacingS,
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+          decoration: BoxDecoration(
+            color: AppColors.success.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                Icons.event,
-                color: AppColors.accent,
-                size: AppDimensions.iconL,
+                Icons.person,
+                color: AppColors.success,
+                size: AppDimensions.iconS,
               ),
-              const SizedBox(width: AppDimensions.spacingM),
-              Expanded(
-                child: Text(
-                  widget.eventName,
-                  style: const TextStyle(
-                    fontSize: AppDimensions.fontSizeL,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textDark,
-                  ),
+              const SizedBox(width: AppDimensions.spacingS),
+              Text(
+                '参加者モード',
+                style: TextStyle(
+                  fontSize: AppDimensions.fontSizeM,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.success,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingM),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingM,
-              vertical: AppDimensions.spacingS,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.success.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.person,
-                  color: AppColors.success,
-                  size: AppDimensions.iconS,
-                ),
-                const SizedBox(width: AppDimensions.spacingS),
-                Text(
-                  '参加者モード',
-                  style: TextStyle(
-                    fontSize: AppDimensions.fontSizeM,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.success,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

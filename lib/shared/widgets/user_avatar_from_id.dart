@@ -79,7 +79,6 @@ class _UserAvatarFromIdState extends ConsumerState<UserAvatarFromId> {
         });
       }
     } catch (e) {
-      print('Error loading user data for ID ${widget.userId}: $e');
       if (mounted) {
         setState(() {
           _userData = null;

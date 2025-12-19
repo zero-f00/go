@@ -7,12 +7,10 @@ import '../../../shared/widgets/app_header.dart';
 import '../../../shared/widgets/user_selection_violation_modal.dart';
 import '../../../shared/widgets/violation_edit_dialog.dart';
 import '../../../shared/widgets/user_action_modal.dart';
-import '../../../shared/widgets/appeal_dialog.dart';
 import '../../../shared/widgets/appeal_process_dialog.dart';
 import '../../../data/models/violation_record_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/models/game_profile_model.dart';
-import '../../../data/repositories/user_repository.dart';
 import '../../../shared/services/violation_service.dart';
 import '../../../shared/services/participation_service.dart';
 import '../../../shared/services/notification_service.dart';
@@ -22,16 +20,19 @@ import '../../../features/game_profile/providers/game_profile_provider.dart';
 import '../../../features/game_profile/views/game_profile_view_screen.dart';
 import '../../../features/profile/views/user_profile_screen.dart';
 import '../../../shared/widgets/app_text_field.dart';
+import '../../../shared/widgets/event_info_card.dart';
 
 /// 違反管理画面
 class ViolationManagementScreen extends ConsumerStatefulWidget {
   final String eventId;
   final String eventName;
+  final bool fromNotification;
 
   const ViolationManagementScreen({
     super.key,
     required this.eventId,
     required this.eventName,
+    this.fromNotification = false,
   });
 
   @override
@@ -82,6 +83,7 @@ class _ViolationManagementScreenState
               count: 3,
             );
           } catch (e) {
+            // テストデータ作成エラーを無視（本番環境では実行されない）
           }
         }
       }
@@ -117,13 +119,13 @@ class _ViolationManagementScreenState
           } else {
           }
         } catch (e) {
+          // ユーザーデータ取得エラーを無視
         }
       }
 
       // ゲーム内ユーザー名を取得（違反者のみ）
       try {
-        final applicationsStream = ParticipationService.getEventApplications(widget.eventId);
-        final applications = await applicationsStream.first;
+        final applications = await ParticipationService.getEventApplicationsFromServer(widget.eventId, forceFromServer: true);
 
         for (final application in applications) {
           if (userIds.contains(application.userId) && application.gameUsername != null) {
@@ -131,6 +133,7 @@ class _ViolationManagementScreenState
           }
         }
       } catch (e) {
+        // ゲーム内ユーザー名取得エラーを無視
       }
 
       if (mounted) {
@@ -139,7 +142,7 @@ class _ViolationManagementScreenState
           _isLoading = false;
         });
       }
-    } catch (e, stackTrace) {
+    } catch (e) {
 
       if (mounted) {
         setState(() {
@@ -165,11 +168,17 @@ class _ViolationManagementScreenState
           child: Column(
             children: [
               AppHeader(
-                title: '違反管理',
+                title: '違反',
                 showBackButton: true,
                 onBackPressed: () => Navigator.of(context).pop(),
               ),
-              _buildEventInfo(),
+              EventInfoCard(
+                eventName: widget.eventName,
+                eventId: widget.eventId,
+                enableTap: widget.fromNotification,
+                iconData: Icons.shield,
+                iconColor: AppColors.error,
+              ),
               Expanded(
                 child: Container(
                   margin: const EdgeInsets.all(AppDimensions.spacingL),
@@ -202,7 +211,7 @@ class _ViolationManagementScreenState
                             ),
                             const SizedBox(width: AppDimensions.spacingS),
                             const Text(
-                              '違反管理',
+                              '違反記録',
                               style: TextStyle(
                                 fontSize: AppDimensions.fontSizeL,
                                 fontWeight: FontWeight.w700,
@@ -253,56 +262,6 @@ class _ViolationManagementScreenState
     );
   }
 
-  /// イベント情報
-  Widget _buildEventInfo() {
-    return Container(
-      margin: const EdgeInsets.all(AppDimensions.spacingL),
-      padding: const EdgeInsets.all(AppDimensions.spacingM),
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.cardShadow,
-            blurRadius: AppDimensions.cardElevation,
-            offset: const Offset(0, AppDimensions.shadowOffsetY),
-          ),
-        ],
-      ),
-      child: InkWell(
-        onTap: () => _navigateToEventDetail(),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingS),
-          child: Row(
-            children: [
-              Icon(
-                Icons.shield,
-                color: AppColors.error,
-                size: AppDimensions.iconM,
-              ),
-              const SizedBox(width: AppDimensions.spacingM),
-              Expanded(
-                child: Text(
-                  widget.eventName,
-                  style: const TextStyle(
-                    fontSize: AppDimensions.fontSizeL,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textDark,
-                  ),
-                ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios,
-                color: AppColors.textSecondary,
-                size: AppDimensions.iconS,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   /// 違反記録一覧
   Widget _buildViolationsTab() {
@@ -775,14 +734,6 @@ class _ViolationManagementScreenState
     return '${dateTime.month}/${dateTime.day} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
 
-  /// イベント詳細画面に遷移
-  void _navigateToEventDetail() {
-    Navigator.pushNamed(
-      context,
-      '/event_detail',
-      arguments: widget.eventId,
-    );
-  }
 
   /// アクションメソッド
   void _reportViolation() {
@@ -884,7 +835,7 @@ class _ViolationManagementScreenState
                             color: AppColors.error,
                           ),
                         ),
-                        if (gameUsername?.isNotEmpty == true && displayName != null)
+                        if (gameUsername?.isNotEmpty == true && displayName != null && displayName.isNotEmpty)
                           Text(
                             '実名: $displayName',
                             style: TextStyle(
@@ -1011,11 +962,13 @@ class _ViolationManagementScreenState
                   notes: notesController.text.trim(),
                 );
 
-                Navigator.pop(context);
-                if (mounted && context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('違反を処理しました')),
-                  );
+                if (mounted) {
+                  Navigator.pop(context);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('違反を処理しました')),
+                    );
+                  }
                 }
                 _loadViolationData();
               } catch (e) {
@@ -1313,7 +1266,7 @@ class _ViolationManagementScreenState
                       ),
                       if (reporterData?.username != null && reporterData!.username.isNotEmpty)
                         Text(
-                          ' (@${reporterData!.username})',
+                          ' (@${reporterData.username})',
                           style: TextStyle(
                             fontSize: AppDimensions.fontSizeS,
                             color: AppColors.info,
@@ -1808,9 +1761,6 @@ class _ViolationManagementScreenState
   }
 
   /// 日付フォーマット（時刻なし）
-  String _formatDate(DateTime dateTime) {
-    return '${dateTime.month}/${dateTime.day}';
-  }
 
   /// イベント運営者IDを取得
   Future<List<String>> _getEventOrganizerIds() async {

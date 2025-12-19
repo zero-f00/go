@@ -51,7 +51,14 @@ class _KeyboardOverlayWidgetState extends State<KeyboardOverlayWidget> {
 
     final hasFocus = widget.focusNode?.hasFocus ?? false;
     if (hasFocus) {
-      _showKeyboardToolbar();
+      // Widget がマウントされている場合のみツールバーを表示
+      if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _showKeyboardToolbar();
+          }
+        });
+      }
     } else {
       _hideKeyboardToolbar();
     }
@@ -94,15 +101,27 @@ class _KeyboardOverlayWidgetState extends State<KeyboardOverlayWidget> {
   }
 
   void _showKeyboardToolbar() {
+    if (!mounted) return; // ウィジェットがアンマウントされている場合は処理しない
+
     _hideKeyboardToolbar(); // 既存のツールバーがあれば削除
 
-    _overlayEntry = _createOverlayEntry();
-    Overlay.of(context).insert(_overlayEntry!);
+    try {
+      _overlayEntry = _createOverlayEntry();
+      Overlay.of(context).insert(_overlayEntry!);
+    } catch (e) {
+      // オーバーレイの挿入でエラーが発生した場合は処理を続行しない
+      _overlayEntry = null;
+    }
   }
 
   void _hideKeyboardToolbar() {
-    _overlayEntry?.remove();
-    _overlayEntry = null;
+    try {
+      _overlayEntry?.remove();
+    } catch (e) {
+      // オーバーレイの削除でエラーが発生した場合はログを出さない
+    } finally {
+      _overlayEntry = null;
+    }
   }
 
   OverlayEntry _createOverlayEntry() {

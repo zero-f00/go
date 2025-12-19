@@ -62,4 +62,23 @@ class NavigationService {
       Navigator.of(context).pushNamed('/friends');
     }
   }
+
+  /// 試合詳細画面に遷移（試合結果管理画面経由）
+  void navigateToMatchDetail({
+    required String eventId,
+    required String matchId,
+  }) {
+    final context = currentContext;
+    if (context != null) {
+      // 試合結果管理画面に遷移
+      Navigator.of(context).pushNamed(
+        '/result_management',
+        arguments: {
+          'eventId': eventId,
+          'eventName': '', // イベント名は画面内で取得
+          'highlightMatchId': matchId, // 特定の試合をハイライト表示するため
+        },
+      );
+    }
+  }
 }

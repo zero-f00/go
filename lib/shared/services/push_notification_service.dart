@@ -288,7 +288,8 @@ class PushNotificationService {
           break;
         case 'eventApproved':
         case 'eventRejected':
-          // イベント承認/拒否の場合、eventIdがあればイベント詳細画面へ
+        case 'eventWaitlist':
+          // イベント承認/拒否/キャンセル待ちの場合、eventIdがあればイベント詳細画面へ
           final eventId = data['eventId'] as String?;
           if (eventId != null && eventId.isNotEmpty) {
             NavigationService.instance.navigateToEventDetail(eventId);
@@ -300,6 +301,34 @@ class PushNotificationService {
         case 'violationProcessed':
           // 違反報告関連は通知画面へ
           NavigationService.instance.navigateToNotifications();
+          break;
+        case 'match_report':
+          // 試合報告（運営者向け）
+          final eventId = data['eventId'] as String?;
+          final matchId = data['matchId'] as String?;
+          if (eventId != null && matchId != null) {
+            // 試合結果管理画面の該当試合詳細に遷移
+            NavigationService.instance.navigateToMatchDetail(
+              eventId: eventId,
+              matchId: matchId,
+            );
+          } else {
+            NavigationService.instance.navigateToNotifications();
+          }
+          break;
+        case 'match_report_response':
+          // 試合報告への回答（報告者向け）
+          final eventId = data['eventId'] as String?;
+          final matchId = data['matchId'] as String?;
+          if (eventId != null && matchId != null) {
+            // 試合詳細画面に遷移
+            NavigationService.instance.navigateToMatchDetail(
+              eventId: eventId,
+              matchId: matchId,
+            );
+          } else {
+            NavigationService.instance.navigateToNotifications();
+          }
           break;
         default:
           // デフォルトは通知画面へ

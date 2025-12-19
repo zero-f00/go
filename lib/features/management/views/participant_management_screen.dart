@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../data/models/event_model.dart';
 import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
 import '../../../shared/widgets/app_button.dart';
-import '../../../shared/widgets/admin_memo_widget.dart';
 import '../../../shared/widgets/user_action_modal.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/services/error_handler_service.dart';
@@ -41,11 +41,12 @@ class _ParticipantManagementScreenState
   final UserRepository _userRepository = UserRepository();
 
   final Map<String, UserData> _userDataCache = {};
+  final Set<String> _processingApplications = {}; // 処理中のアプリケーションID
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -125,6 +126,7 @@ class _ParticipantManagementScreenState
                           controller: _tabController,
                           children: [
                             _buildParticipantList('pending'),
+                            _buildParticipantList('waitlisted'),
                             _buildParticipantList('approved'),
                             _buildParticipantList('rejected'),
                           ],
@@ -160,6 +162,7 @@ class _ParticipantManagementScreenState
         ),
         tabs: const [
           Tab(text: '申請中'),
+          Tab(text: 'キャンセル待ち'),
           Tab(text: '承認済み'),
           Tab(text: '拒否済み'),
         ],
@@ -310,6 +313,10 @@ class _ParticipantManagementScreenState
       case 'pending':
         message = '申請中の参加者はいません';
         icon = Icons.pending_actions;
+        break;
+      case 'waitlisted':
+        message = 'キャンセル待ちの参加者はいません';
+        icon = Icons.hourglass_empty;
         break;
       case 'approved':
         message = '承認済みの参加者はいません';
@@ -775,13 +782,14 @@ class _ParticipantManagementScreenState
 
   Widget _buildActionButtons(ParticipationApplication application) {
     final userId = application.userId;
+    final isProcessing = _processingApplications.contains(application.id);
 
     return Row(
       children: [
         Expanded(
           child: AppButton.primary(
             text: '承認',
-            onPressed: () => _approveRequest(userId),
+            onPressed: isProcessing ? null : () => _approveRequest(application),
             isFullWidth: true,
             padding: const EdgeInsets.all(AppDimensions.spacingM),
           ),
@@ -790,7 +798,7 @@ class _ParticipantManagementScreenState
         Expanded(
           child: AppButton.secondary(
             text: '拒否',
-            onPressed: () => _rejectRequest(userId),
+            onPressed: isProcessing ? null : () => _rejectRequest(application),
             isFullWidth: true,
             padding: const EdgeInsets.all(AppDimensions.spacingM),
           ),
@@ -816,8 +824,163 @@ class _ParticipantManagementScreenState
     }
   }
 
-  Future<void> _approveRequest(String userId) async {
+  Future<void> _approveRequest(ParticipationApplication application) async {
+    // 重複処理を防ぐ
+    if (_processingApplications.contains(application.id)) {
+      return;
+    }
+
+    // 承認前に参加者数をチェック
+    try {
+      final currentApprovedCount = await ParticipationService.getApprovedParticipantCount(widget.eventId);
+
+      // イベント情報を取得して定員を確認
+      final eventDoc = await FirebaseFirestore.instance.collection('events').doc(widget.eventId).get();
+      if (eventDoc.exists) {
+        final event = Event.fromFirestore(eventDoc);
+
+        if (currentApprovedCount >= event.maxParticipants) {
+          // 満員の場合は警告ダイアログを表示
+          if (mounted) {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                backgroundColor: AppColors.cardBackground,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                ),
+                title: Row(
+                  children: [
+                    Icon(
+                      Icons.warning,
+                      color: AppColors.error,
+                      size: AppDimensions.iconM,
+                    ),
+                    const SizedBox(width: AppDimensions.spacingS),
+                    const Text(
+                      '満員のため承認できません',
+                      style: TextStyle(
+                        fontSize: AppDimensions.fontSizeL,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                  ],
+                ),
+                content: Text(
+                  'このイベントは既に定員に達しています。\n\n現在の参加者数: $currentApprovedCount/${event.maxParticipants}人\n\n承認するには、承認済みの他の参加者を申請中に戻すか、イベントの定員を変更してください。',
+                  style: const TextStyle(
+                    fontSize: AppDimensions.fontSizeM,
+                    color: AppColors.textSecondary,
+                    height: 1.5,
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text(
+                      '確認',
+                      style: TextStyle(
+                        fontSize: AppDimensions.fontSizeM,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.accent,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+          return;
+        }
+
+        // 定員間近の警告を表示
+        if (currentApprovedCount >= event.maxParticipants - 1) {
+          if (!mounted) return;
+          final shouldProceed = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              backgroundColor: AppColors.cardBackground,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+              ),
+              title: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    color: AppColors.warning,
+                    size: AppDimensions.iconM,
+                  ),
+                  const SizedBox(width: AppDimensions.spacingS),
+                  const Text(
+                    '定員間近です',
+                    style: TextStyle(
+                      fontSize: AppDimensions.fontSizeL,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                ],
+              ),
+              content: Text(
+                '承認すると定員に達します。\n\n現在の参加者数: $currentApprovedCount/${event.maxParticipants}人\n\n承認を続けますか？',
+                style: const TextStyle(
+                  fontSize: AppDimensions.fontSizeM,
+                  color: AppColors.textSecondary,
+                  height: 1.5,
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text(
+                    'キャンセル',
+                    style: TextStyle(
+                      fontSize: AppDimensions.fontSizeM,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.warning,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                    ),
+                  ),
+                  child: const Text(
+                    '承認する',
+                    style: TextStyle(
+                      fontSize: AppDimensions.fontSizeM,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+
+          if (shouldProceed != true) {
+            return;
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('参加者数の確認に失敗しました: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+      return;
+    }
+
     // 承認ダイアログでメッセージを入力できるようにする
+    if (!mounted) return;
     final result = await showDialog<String?>(
       context: context,
       builder: (context) => _ApprovalDialog(
@@ -828,26 +991,23 @@ class _ParticipantManagementScreenState
     );
 
     if (result != null) {
+      // 処理中状態に追加
+      setState(() {
+        _processingApplications.add(application.id);
+      });
+
       try {
         // 現在のユーザーIDを取得（自己通知除外のため）
         final currentUserId = ref.read(currentFirebaseUserProvider)?.uid;
 
-        // 申請を検索してIDを取得
-        final applications = await ParticipationService.getEventApplications(
-          widget.eventId,
-        ).first;
-        final application = applications.firstWhere(
-          (app) => app.userId == userId,
-        );
-
-        final success = await ParticipationService.updateApplicationStatus(
+        await ParticipationService.updateApplicationStatus(
           application.id,
           ParticipationStatus.approved,
           adminMessage: result.isNotEmpty ? result : null,
           adminUserId: currentUserId,
         );
 
-        if (success && mounted) {
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('参加申請を承認しました'),
@@ -857,13 +1017,38 @@ class _ParticipantManagementScreenState
         }
       } catch (e) {
         if (mounted) {
-          ErrorHandlerService.showErrorDialog(context, '承認に失敗しました');
+          String errorMessage = '承認に失敗しました';
+
+          // 定員超過エラーの場合は詳細なメッセージを表示
+          if (e.toString().contains('定員を超過する')) {
+            errorMessage = e.toString().replaceFirst('Exception: ', '');
+          }
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: AppColors.error,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
+      } finally {
+        // 処理中状態から削除
+        if (mounted) {
+          setState(() {
+            _processingApplications.remove(application.id);
+          });
         }
       }
     }
   }
 
-  Future<void> _rejectRequest(String userId) async {
+  Future<void> _rejectRequest(ParticipationApplication application) async {
+    // 重複処理を防ぐ
+    if (_processingApplications.contains(application.id)) {
+      return;
+    }
+
     // 拒否ダイアログで理由を入力できるようにする
     final result = await showDialog<String?>(
       context: context,
@@ -875,16 +1060,14 @@ class _ParticipantManagementScreenState
     );
 
     if (result != null) {
+      // 処理中状態に追加
+      setState(() {
+        _processingApplications.add(application.id);
+      });
+
       try {
         // 現在のユーザーIDを取得（自己通知除外のため）
         final currentUserId = ref.read(currentFirebaseUserProvider)?.uid;
-        // 申請を検索してIDを取得
-        final applications = await ParticipationService.getEventApplications(
-          widget.eventId,
-        ).first;
-        final application = applications.firstWhere(
-          (app) => app.userId == userId,
-        );
 
         final success = await ParticipationService.updateApplicationStatus(
           application.id,
@@ -904,6 +1087,13 @@ class _ParticipantManagementScreenState
       } catch (e) {
         if (mounted) {
           ErrorHandlerService.showErrorDialog(context, '拒否に失敗しました');
+        }
+      } finally {
+        // 処理中状態から削除
+        if (mounted) {
+          setState(() {
+            _processingApplications.remove(application.id);
+          });
         }
       }
     }
@@ -937,7 +1127,9 @@ class _ParticipantManagementScreenState
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
-        onPressed: () => _returnToPending(application, isFromApproval),
+        onPressed: _processingApplications.contains(application.id)
+            ? null
+            : () => _returnToPending(application, isFromApproval),
         icon: const Icon(Icons.undo, size: 18),
         label: Text(buttonText),
         style: OutlinedButton.styleFrom(
@@ -954,6 +1146,11 @@ class _ParticipantManagementScreenState
 
   /// 申請中に戻す処理
   Future<void> _returnToPending(ParticipationApplication application, bool isFromApproval) async {
+    // 重複処理を防ぐ
+    if (_processingApplications.contains(application.id)) {
+      return;
+    }
+
     final title = isFromApproval ? '承認を取り消しますか？' : '拒否を取り消しますか？';
     final confirmMessage = isFromApproval
         ? 'この参加者の承認を取り消して申請中に戻します。理由を入力してください（任意）。'
@@ -968,6 +1165,11 @@ class _ParticipantManagementScreenState
     );
 
     if (message == null) return; // キャンセルされた場合
+
+    // 処理中状態に追加
+    setState(() {
+      _processingApplications.add(application.id);
+    });
 
     try {
       // 現在のユーザーIDを取得（自己通知除外のため）
@@ -1009,6 +1211,13 @@ class _ParticipantManagementScreenState
             ? '承認取り消しに失敗しました'
             : '拒否取り消しに失敗しました';
         ErrorHandlerService.showErrorDialog(context, errorMessage);
+      }
+    } finally {
+      // 処理中状態から削除
+      if (mounted) {
+        setState(() {
+          _processingApplications.remove(application.id);
+        });
       }
     }
   }

@@ -5,9 +5,7 @@ import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
 import '../../../shared/services/event_service.dart';
-import '../../../shared/utils/event_converter.dart';
 import '../../../data/models/event_model.dart';
-import '../../game_event_management/models/game_event.dart';
 import '../widgets/event_cancellation_dialog.dart';
 
 /// イベント運営ダッシュボード画面
@@ -32,7 +30,7 @@ class EventOperationsDashboardScreen extends ConsumerStatefulWidget {
 
 class _EventOperationsDashboardScreenState
     extends ConsumerState<EventOperationsDashboardScreen> {
-  GameEvent? _event;
+  Event? _event;
   bool _isLoading = true;
 
   @override
@@ -54,9 +52,8 @@ class _EventOperationsDashboardScreenState
     try {
       final event = await EventService.getEventById(widget.eventId);
       if (event != null && mounted) {
-        final gameEvent = await EventConverter.eventToGameEvent(event);
         setState(() {
-          _event = gameEvent;
+          _event = event;
           _isLoading = false;
         });
       } else {
@@ -237,7 +234,7 @@ class _EventOperationsDashboardScreenState
               Expanded(
                 child: _buildQuickActionCard(
                   icon: Icons.group_add,
-                  title: '参加者管理',
+                  title: '参加者',
                   subtitle: '承認・拒否',
                   color: AppColors.success,
                   onTap: () => _navigateToParticipantManagement(),
@@ -348,35 +345,35 @@ class _EventOperationsDashboardScreenState
           const SizedBox(height: AppDimensions.spacingL),
           _buildManagementCard(
             icon: Icons.people_alt,
-            title: '参加者管理',
+            title: '参加者',
             subtitle: '参加申請の承認・拒否、参加者一覧',
             onTap: () => _navigateToParticipantManagement(),
           ),
           const SizedBox(height: AppDimensions.spacingM),
           _buildManagementCard(
             icon: Icons.group_work,
-            title: 'グループ管理',
+            title: 'グループ',
             subtitle: 'チーム分け',
             onTap: () => _navigateToGroupManagement(),
           ),
           const SizedBox(height: AppDimensions.spacingM),
           _buildManagementCard(
             icon: Icons.leaderboard,
-            title: '戦績・結果管理',
+            title: '戦績・結果',
             subtitle: '試合結果入力、順位管理、統計',
             onTap: () => _navigateToResultManagement(),
           ),
           const SizedBox(height: AppDimensions.spacingM),
           _buildManagementCard(
             icon: Icons.report_problem,
-            title: '違反管理',
+            title: '違反',
             subtitle: '違反記録、警告管理、ペナルティ',
             onTap: () => _navigateToViolationManagement(),
           ),
           const SizedBox(height: AppDimensions.spacingM),
           _buildManagementCard(
             icon: Icons.person_search,
-            title: 'ユーザー詳細管理',
+            title: 'ユーザー詳細',
             subtitle: '参加履歴、詳細情報、総合評価',
             onTap: () => _navigateToUserDetailManagement(),
           ),
@@ -500,12 +497,7 @@ class _EventOperationsDashboardScreenState
     );
   }
 
-  void _navigateToPaymentManagement() {
-    Navigator.of(context).pushNamed(
-      '/payment_management',
-      arguments: {'eventId': widget.eventId, 'eventName': widget.eventName},
-    );
-  }
+
 
   /// イベント中止アクションカード
   Widget _buildCancellationActionCard() {
@@ -519,7 +511,7 @@ class _EventOperationsDashboardScreenState
       );
     }
 
-    final isCancelled = _event!.status == GameEventStatus.cancelled;
+    final isCancelled = _event!.status == EventStatus.cancelled;
 
     if (isCancelled) {
       return _buildQuickActionCard(

@@ -23,6 +23,10 @@ enum NotificationType {
   appealProcessed,     // 異議申立処理完了
   matchReport,         // 試合結果報告
   matchReportResponse, // 試合結果報告への回答
+  eventFull,           // イベント満員通知
+  eventCapacityWarning,// イベント定員間近警告（運営者向け）
+  eventWaitlist,       // イベントキャンセル待ち通知
+  participantCancelled, // 参加者キャンセル（運営側通知）
   system,              // システム通知
 }
 
@@ -304,6 +308,14 @@ class NotificationData extends Equatable {
         return 'report_problem';
       case NotificationType.matchReportResponse:
         return 'assignment_returned';
+      case NotificationType.eventFull:
+        return 'group_off';
+      case NotificationType.eventCapacityWarning:
+        return 'warning';
+      case NotificationType.eventWaitlist:
+        return 'hourglass_empty';
+      case NotificationType.participantCancelled:
+        return 'cancel_outlined';
       case NotificationType.system:
         return 'info';
     }
@@ -325,6 +337,10 @@ class NotificationData extends Equatable {
       case NotificationType.eventDraftReverted:
       case NotificationType.eventCancelled:
       case NotificationType.eventCancelProcessed:
+      case NotificationType.eventFull:
+      case NotificationType.eventCapacityWarning:
+      case NotificationType.eventWaitlist:
+      case NotificationType.participantCancelled:
         return 'イベント';
       case NotificationType.violationReported:
       case NotificationType.violationProcessed:

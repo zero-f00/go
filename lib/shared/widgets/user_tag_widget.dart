@@ -67,7 +67,6 @@ class _UserTagWidgetState extends ConsumerState<UserTagWidget> {
         });
       }
     } catch (e) {
-      print('❌ UserTagWidget: Error loading user data for ID ${widget.userId}: $e');
       if (mounted) {
         setState(() {
           _isLoading = false;

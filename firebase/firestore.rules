@@ -314,6 +314,56 @@ service cloud.firestore {
       //   isEventManager(resource.data.eventId);
     }
 
+    // 試合報告コレクション（参加者による試合に関する問題報告）
+    match /match_reports/{reportId} {
+      // 一時的デバッグ: 認証されたユーザーは読み取り・書き込み可能
+      allow read, write: if request.auth != null;
+
+      // TODO: 本番運用時は以下のルールに戻すこと
+      // // 試合報告の読み取り: 報告者またはイベント管理者
+      // allow read: if request.auth != null &&
+      //   (request.auth.uid == resource.data.reporterId ||
+      //    isMatchEventManager(resource.data.matchId));
+      //
+      // // 試合報告の作成: 認証されたユーザーが報告者として作成
+      // allow create: if request.auth != null &&
+      //   request.auth.uid == request.resource.data.reporterId &&
+      //   validateMatchReportData();
+      //
+      // // 試合報告の更新: イベント管理者のみ（ステータス変更用）
+      // allow update: if request.auth != null &&
+      //   isMatchEventManager(resource.data.matchId) &&
+      //   onlyMatchReportStatusChanged();
+      //
+      // // 試合報告の削除: イベント管理者のみ
+      // allow delete: if request.auth != null &&
+      //   isMatchEventManager(resource.data.matchId);
+    }
+
+    // 管理者通知コレクション（管理者向けリアルタイム通知）
+    match /admin_notifications/{notificationId} {
+      // 一時的デバッグ: 認証されたユーザーは読み取り・書き込み可能
+      allow read, write: if request.auth != null;
+
+      // TODO: 本番運用時は以下のルールに戻すこと
+      // // 管理者通知の読み取り: イベント管理者のみ
+      // allow read: if request.auth != null &&
+      //   isEventManager(resource.data.eventId);
+      //
+      // // 管理者通知の作成: システムが自動作成（認証されたユーザー）
+      // allow create: if request.auth != null &&
+      //   validateAdminNotificationData();
+      //
+      // // 管理者通知の更新: イベント管理者のみ（既読ステータス変更用）
+      // allow update: if request.auth != null &&
+      //   isEventManager(resource.data.eventId) &&
+      //   onlyNotificationStatusChanged();
+      //
+      // // 管理者通知の削除: イベント管理者のみ
+      // allow delete: if request.auth != null &&
+      //   isEventManager(resource.data.eventId);
+    }
+
   }
 
   // 基本的なユーザーデータ検証（必須項目のみ）

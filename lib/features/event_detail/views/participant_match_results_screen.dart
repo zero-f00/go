@@ -4,6 +4,7 @@ import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
+import '../../../shared/widgets/event_info_card.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../data/models/match_result_model.dart';
 import '../../../shared/services/match_result_service.dart';
@@ -146,7 +147,7 @@ class _ParticipantMatchResultsScreenState
         }
       }
     } catch (e) {
-      print('参加者名の取得エラー: $e');
+      // エラーが発生した場合は参加者名が空のまま継続
     }
   }
 
@@ -179,7 +180,31 @@ class _ParticipantMatchResultsScreenState
                 showBackButton: true,
                 onBackPressed: () => Navigator.of(context).pop(),
               ),
-              _buildEventInfo(),
+              EventInfoCard(
+                eventName: widget.eventName,
+                eventId: widget.eventId,
+                iconData: Icons.sports_esports,
+                trailing: _isLoading
+                  ? null
+                  : Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.spacingS,
+                        vertical: AppDimensions.spacingXS,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.info.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                      ),
+                      child: Text(
+                        _isTeamEvent ? 'チーム戦' : '個人戦',
+                        style: TextStyle(
+                          fontSize: AppDimensions.fontSizeS,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.info,
+                        ),
+                      ),
+                    ),
+              ),
               Expanded(
                 child: Container(
                   margin: const EdgeInsets.all(AppDimensions.spacingL),
@@ -260,57 +285,6 @@ class _ParticipantMatchResultsScreenState
     );
   }
 
-  /// イベント情報
-  Widget _buildEventInfo() {
-    return Container(
-      margin: const EdgeInsets.all(AppDimensions.spacingL),
-      padding: const EdgeInsets.all(AppDimensions.spacingM),
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.cardShadow,
-            blurRadius: AppDimensions.cardElevation,
-            offset: const Offset(0, AppDimensions.shadowOffsetY),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.sports_esports,
-            color: AppColors.accent,
-            size: AppDimensions.iconM,
-          ),
-          const SizedBox(width: AppDimensions.spacingM),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.eventName,
-                  style: const TextStyle(
-                    fontSize: AppDimensions.fontSizeL,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textDark,
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.spacingXS),
-                Text(
-                  _isTeamEvent ? 'チーム戦' : '個人戦',
-                  style: TextStyle(
-                    fontSize: AppDimensions.fontSizeS,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   /// すべての試合タブ
   Widget _buildAllMatchesTab() {
@@ -445,11 +419,13 @@ class _ParticipantMatchResultsScreenState
 
           // 参加者
           Text(
-            match.participants.map((id) => _participantNames[id] ?? id).join(' vs '),
+            _formatParticipants(match.participants),
             style: TextStyle(
               fontSize: AppDimensions.fontSizeM,
               color: AppColors.textDark,
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
 
           // 結果（完了時のみ）
@@ -552,15 +528,6 @@ class _ParticipantMatchResultsScreenState
     );
   }
 
-  /// ユーザーが試合の参加者かどうか
-  bool _isUserParticipant(MatchResult match) {
-    if (_isTeamEvent && _currentUserTeamId != null) {
-      return match.participants.contains(_currentUserTeamId!);
-    }
-    return match.participants.contains(_currentUserId!);
-  }
-
-
   /// ステータスの色を取得
   Color _getStatusColor(MatchStatus status) {
     switch (status) {
@@ -585,6 +552,22 @@ class _ParticipantMatchResultsScreenState
     }
   }
 
+
+  /// 参加者表示をフォーマット
+  String _formatParticipants(List<String> participants) {
+    final names = participants.map((id) => _participantNames[id] ?? id).toList();
+
+    if (names.length <= 2) {
+      // 2人以下の場合は従来の「vs」形式
+      return names.join(' vs ');
+    } else if (names.length <= 4) {
+      // 3-4人の場合は改行区切り
+      return names.join(' • ');
+    } else {
+      // 5人以上の場合は省略形式
+      return '${names.take(3).join(' • ')} 他${names.length - 3}名';
+    }
+  }
 
   /// 日時フォーマット
   String _formatDateTime(DateTime dateTime) {

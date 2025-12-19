@@ -65,12 +65,18 @@ class AppHeader extends ConsumerWidget {
           // 中央のタイトル
           Expanded(
             child: Center(
-              child: Text(
-                title,
-                style: const TextStyle(
-                  color: AppColors.textOnPrimary,
-                  fontSize: AppDimensions.fontSizeXXL,
-                  fontWeight: FontWeight.w700,
+              child: GestureDetector(
+                onTap: () => _showFullTitle(context),
+                child: Text(
+                  title,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppColors.textOnPrimary,
+                    fontSize: _getResponsiveFontSize(title),
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),
@@ -131,5 +137,78 @@ class AppHeader extends ConsumerWidget {
   ) async {
     // ヘッダーアイコンタップで常にサイドメニュー（AppDrawer）を表示
     Scaffold.of(context).openDrawer();
+  }
+
+  /// レスポンシブフォントサイズを計算
+  double _getResponsiveFontSize(String title) {
+    // 基本フォントサイズ
+    const double baseSize = AppDimensions.fontSizeXXL;
+
+    // タイトル長に応じてフォントサイズを調整
+    if (title.length <= 10) {
+      return baseSize; // 20.0
+    } else if (title.length <= 20) {
+      return AppDimensions.fontSizeXL; // 18.0
+    } else if (title.length <= 30) {
+      return AppDimensions.fontSizeL; // 16.0
+    } else {
+      return AppDimensions.fontSizeM; // 14.0
+    }
+  }
+
+  /// 全文タイトル表示ダイアログ
+  void _showFullTitle(BuildContext context) {
+    // 短いタイトルの場合は何もしない
+    if (title.length <= 15) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        ),
+        title: Row(
+          children: [
+            Icon(
+              Icons.event,
+              color: AppColors.accent,
+              size: AppDimensions.iconM,
+            ),
+            const SizedBox(width: AppDimensions.spacingS),
+            const Text(
+              'イベントタイトル',
+              style: TextStyle(
+                fontSize: AppDimensions.fontSizeL,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textDark,
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontSize: AppDimensions.fontSizeM,
+              color: AppColors.textDark,
+              height: 1.4,
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text(
+              '閉じる',
+              style: TextStyle(
+                color: AppColors.accent,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -602,6 +602,22 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         icon = Icons.assignment_returned;
         iconColor = AppColors.info;
         break;
+      case NotificationType.eventFull:
+        icon = Icons.group_off;
+        iconColor = AppColors.warning;
+        break;
+      case NotificationType.eventCapacityWarning:
+        icon = Icons.warning;
+        iconColor = AppColors.warning;
+        break;
+      case NotificationType.eventWaitlist:
+        icon = Icons.hourglass_empty;
+        iconColor = AppColors.warning;
+        break;
+      case NotificationType.participantCancelled:
+        icon = Icons.cancel_outlined;
+        iconColor = AppColors.warning;
+        break;
       case NotificationType.system:
         icon = Icons.info;
         iconColor = AppColors.info;
@@ -691,7 +707,8 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
     }
 
     if (notification.type == NotificationType.eventApproved ||
-        notification.type == NotificationType.eventRejected) {
+        notification.type == NotificationType.eventRejected ||
+        notification.type == NotificationType.eventWaitlist) {
       _handleEventDecisionNotification(notification);
       return;
     }
@@ -717,6 +734,11 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       return;
     }
 
+    if (notification.type == NotificationType.participantCancelled) {
+      _handleParticipantCancelled(notification);
+      return;
+    }
+
     if (notification.type == NotificationType.eventUpdated) {
       _handleEventUpdatedNotification(notification);
       return;
@@ -729,6 +751,16 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
     if (notification.type == NotificationType.eventDraftReverted) {
       _handleEventDraftRevertedNotification(notification);
+      return;
+    }
+
+    if (notification.type == NotificationType.matchReport) {
+      _handleMatchReportNotification(notification);
+      return;
+    }
+
+    if (notification.type == NotificationType.matchReportResponse) {
+      _handleMatchReportResponseNotification(notification);
       return;
     }
 
@@ -1042,6 +1074,8 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         return '既に参加申請済みです';
       case ParticipationResult.incorrectPassword:
         return 'パスワードが正しくありません';
+      case ParticipationResult.eventFull:
+        return 'イベントは満員です';
       case ParticipationResult.permissionDenied:
         return '権限がありません';
       case ParticipationResult.networkError:
@@ -1385,6 +1419,44 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
     }
   }
 
+  /// 参加キャンセル通知の処理（運営者への通知）
+  Future<void> _handleParticipantCancelled(NotificationData notification) async {
+    final data = notification.data;
+    if (data == null || data['eventId'] == null) {
+      _showErrorMessage('イベント情報が見つかりません');
+      return;
+    }
+
+    final eventId = data['eventId'] as String;
+
+    try {
+      // イベント情報を取得
+      final event = await EventService.getEventById(eventId);
+      if (event == null) {
+        _showErrorMessage('イベント情報が見つかりません');
+        return;
+      }
+
+      // 参加者管理画面へ遷移
+      if (mounted) {
+        Navigator.of(context).pushNamed(
+          '/event_participants_management',
+          arguments: {
+            'eventId': eventId,
+            'eventName': event.name,
+            'fromNotification': true, // 通知画面からの遷移フラグ
+            'notificationType': 'participantCancelled', // キャンセル通知であることを明示
+            'cancelledUserId': data['userId'], // キャンセルしたユーザーID
+            'cancelledUserName': data['userName'], // キャンセルしたユーザー名
+            'cancellationReason': data['cancellationReason'], // キャンセル理由
+          },
+        );
+      }
+    } catch (e) {
+      _showErrorMessage('エラーが発生しました');
+    }
+  }
+
   /// イベント承認/拒否通知の処理（参加者への通知）
   Future<void> _handleEventDecisionNotification(NotificationData notification) async {
     final data = notification.data;
@@ -1690,6 +1762,96 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       }
     } catch (e) {
       _showErrorMessage('このイベントは下書き状態のため詳細を表示できません');
+    }
+  }
+
+  /// 試合報告通知の処理（運営者向け）
+  Future<void> _handleMatchReportNotification(NotificationData notification) async {
+    final data = notification.data;
+    if (data == null) {
+      _showErrorMessage('報告情報が見つかりません');
+      return;
+    }
+
+    final eventId = data['eventId'] as String?;
+    final matchId = data['matchId'] as String?;
+    final matchName = data['matchName'] as String?;
+
+    if (eventId == null || matchId == null) {
+      _showErrorMessage('試合情報が見つかりません');
+      return;
+    }
+
+    try {
+      // 試合結果管理画面に遷移
+      Navigator.pushNamed(
+        context,
+        '/result_management',
+        arguments: {
+          'eventId': eventId,
+          'eventName': '', // 画面内で取得
+          'highlightMatchId': matchId, // 該当試合をハイライト
+        },
+      );
+    } catch (e) {
+      _showErrorMessage('画面遷移でエラーが発生しました');
+    }
+  }
+
+  /// 試合報告回答通知の処理（報告者向け）
+  Future<void> _handleMatchReportResponseNotification(NotificationData notification) async {
+    final data = notification.data;
+    if (data == null) {
+      _showErrorMessage('報告情報が見つかりません');
+      return;
+    }
+
+    final eventId = data['eventId'] as String?;
+    final matchId = data['matchId'] as String?;
+    final status = data['status'] as String?;
+
+    if (eventId == null || matchId == null) {
+      _showErrorMessage('試合情報が見つかりません');
+      return;
+    }
+
+    try {
+      String statusMessage = '';
+      switch (status) {
+        case 'reviewing':
+          statusMessage = '運営が報告内容を確認中です';
+          break;
+        case 'resolved':
+          statusMessage = '報告が解決されました';
+          break;
+        case 'rejected':
+          statusMessage = '報告が却下されました';
+          break;
+        default:
+          statusMessage = '報告の状況が更新されました';
+      }
+
+      // ステータスメッセージを表示
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(statusMessage),
+          backgroundColor: status == 'resolved' ? AppColors.success : AppColors.info,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+
+      // 試合結果管理画面に遷移（参加者でも確認可能）
+      Navigator.pushNamed(
+        context,
+        '/result_management',
+        arguments: {
+          'eventId': eventId,
+          'eventName': '', // 画面内で取得
+          'highlightMatchId': matchId,
+        },
+      );
+    } catch (e) {
+      _showErrorMessage('画面遷移でエラーが発生しました');
     }
   }
 

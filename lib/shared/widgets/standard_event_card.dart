@@ -325,7 +325,53 @@ class StandardEventCard extends StatelessWidget {
             color: participantColor,
           ),
         ),
+
+        // 満員バッジ表示
+        if (event.isFull) ...[
+          const SizedBox(width: AppDimensions.spacingXS),
+          _buildCustomStatusBadge('満員', AppColors.error),
+        ]
+        // 期限間近バッジ表示
+        else if (event.daysUntilRegistrationDeadline <= 2 &&
+                event.daysUntilRegistrationDeadline > 0) ...[
+          const SizedBox(width: AppDimensions.spacingXS),
+          _buildCustomStatusBadge('残り${event.daysUntilRegistrationDeadline}日', AppColors.warning),
+        ]
+        // 期限切れバッジ表示
+        else if (event.isRegistrationExpired) ...[
+          const SizedBox(width: AppDimensions.spacingXS),
+          _buildCustomStatusBadge('締切', AppColors.warning),
+        ],
       ],
+    );
+  }
+
+  Widget _buildCustomStatusBadge(String label, Color color) {
+    final badgeColor = event.status == EventStatus.cancelled
+        ? AppColors.textSecondary
+        : color;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingS,
+        vertical: AppDimensions.spacingXS,
+      ),
+      decoration: BoxDecoration(
+        color: badgeColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+        border: Border.all(
+          color: badgeColor.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: AppDimensions.fontSizeXS,
+          color: badgeColor,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 

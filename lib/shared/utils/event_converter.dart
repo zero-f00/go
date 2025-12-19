@@ -4,13 +4,163 @@ import '../constants/event_management_types.dart';
 import '../../data/repositories/shared_game_repository.dart';
 import '../services/game_service.dart';
 
+/// ゲーム情報のキャッシュエントリ
+class _GameCacheEntry {
+  final String? gameIconUrl;
+  final String? gameName;
+  final DateTime cachedAt;
+
+  _GameCacheEntry({
+    this.gameIconUrl,
+    this.gameName,
+    required this.cachedAt,
+  });
+}
+
 /// Event モデルを GameEvent モデルに変換するユーティリティクラス
 class EventConverter {
   EventConverter._();
 
-  /// Event を GameEvent に変換
-  static Future<GameEvent> eventToGameEvent(Event event) async {
+  // セッション内ゲーム情報キャッシュ
+  static final Map<String, _GameCacheEntry> _gameCache = {};
+  static const Duration _cacheExpiry = Duration(minutes: 30);
 
+  /// キャッシュをクリア
+  static void clearCache() {
+    _gameCache.clear();
+  }
+
+  /// 期限切れキャッシュを削除
+  static void _cleanExpiredCache() {
+    final now = DateTime.now();
+    _gameCache.removeWhere((key, entry) =>
+        now.difference(entry.cachedAt) > _cacheExpiry);
+  }
+
+  /// Event を GameEvent に変換（キャッシュ付き）
+  static Future<GameEvent> eventToGameEvent(Event event) async {
+    try {
+      // ゲーム情報を取得（キャッシュ優先）
+      final gameInfo = await _getGameInfoWithCache(event.gameId, event.gameName);
+
+      final gameEvent = GameEvent(
+        id: event.id ?? '',
+        name: event.name,
+        subtitle: event.subtitle,
+        description: event.description,
+        type: _mapEventToGameEventType(event),
+        status: _mapEventToGameEventStatus(event),
+        startDate: event.eventDate,
+        endDate: event.registrationDeadline ?? event.eventDate.add(const Duration(days: 1)),
+        participantCount: event.participantIds.length,
+        maxParticipants: event.maxParticipants,
+        completionRate: _calculateCompletionRate(event),
+        isPremium: false,
+        hasFee: event.hasParticipationFee,
+        rewards: _parseRewards(event),
+        gameId: event.gameId,
+        gameName: gameInfo.gameName ?? event.gameName,
+        gameIconUrl: gameInfo.gameIconUrl,
+        imageUrl: event.imageUrl,
+        rules: event.rules,
+        registrationDeadline: event.registrationDeadline,
+        prizeContent: event.prizeContent,
+        contactInfo: event.contactInfo,
+        policy: event.policy,
+        additionalInfo: event.additionalInfo,
+        streamingUrls: event.streamingUrls,
+        minAge: null,
+        feeAmount: _parseFeeAmount(event.participationFeeText),
+        feeText: event.participationFeeText,
+        feeSupplement: event.participationFeeSupplement,
+        platforms: event.platforms,
+        approvalMethod: 'automatic',
+        visibility: _mapEventVisibilityToString(event.visibility),
+        language: event.language,
+        hasAgeRestriction: false,
+        hasStreaming: event.hasStreaming,
+        eventTags: event.eventTags,
+        sponsors: event.sponsorIds,
+        managers: _buildManagersList(event),
+        blockedUsers: event.blockedUserIds,
+        eventPassword: event.eventPassword,
+        invitedUserIds: event.invitedUserIds,
+        createdBy: event.createdBy,
+        createdByName: event.createdByName,
+        createdAt: event.createdAt,
+        updatedAt: event.updatedAt,
+        lastUpdatedBy: event.lastUpdatedBy,
+        lastUpdatedByName: event.lastUpdatedByName,
+        cancellationReason: event.cancellationReason,
+        cancelledAt: event.cancelledAt,
+      );
+
+      return gameEvent;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// ゲーム情報をキャッシュ付きで取得
+  static Future<_GameCacheEntry> _getGameInfoWithCache(String? gameId, String? gameName) async {
+    // 期限切れキャッシュを削除
+    _cleanExpiredCache();
+
+    // キャッシュ確認
+    if (gameId != null && _gameCache.containsKey(gameId)) {
+      return _gameCache[gameId]!;
+    }
+
+    // ゲーム情報を取得
+    String? gameIconUrl;
+    String? finalGameName = gameName;
+
+    if (gameId != null) {
+      try {
+        final sharedGameRepository = SharedGameRepository();
+        final sharedGame = await sharedGameRepository.findExistingGame(gameId);
+        if (sharedGame != null) {
+          gameIconUrl = sharedGame.game.iconUrl;
+          finalGameName = sharedGame.game.name;
+        } else {
+          // フォールバック: iTunes APIから直接取得を試みる
+          if (finalGameName != null && finalGameName.isNotEmpty) {
+            try {
+              final gameService = GameService.instance;
+              final games = await gameService.searchGames(finalGameName);
+              if (games.isNotEmpty) {
+                final game = games.first;
+                gameIconUrl = game.iconUrl;
+                finalGameName = game.name;
+                // shared_gamesコレクションに保存（非同期実行）
+                gameService.getOrCacheGame(game);
+              }
+            } catch (itunesError) {
+              // iTunes API エラーは無視して続行
+            }
+          }
+        }
+      } catch (e) {
+        // shared_games取得エラーは無視して続行
+      }
+    }
+
+    // キャッシュに保存
+    final cacheEntry = _GameCacheEntry(
+      gameIconUrl: gameIconUrl,
+      gameName: finalGameName,
+      cachedAt: DateTime.now(),
+    );
+
+    if (gameId != null) {
+      _gameCache[gameId] = cacheEntry;
+    }
+
+    return cacheEntry;
+  }
+
+  /// 旧実装（フォールバック用）
+  static Future<GameEvent> _eventToGameEventLegacy(Event event) async {
     try {
       // ゲームアイコンURLを取得
       String? gameIconUrl;
@@ -98,7 +248,7 @@ class EventConverter {
     );
 
       return gameEvent;
-    } catch (e, stackTrace) {
+    } catch (e) {
       rethrow;
     }
   }
@@ -227,11 +377,74 @@ class EventConverter {
     return managers;
   }
 
-  /// Event リストを GameEvent リストに変換
+  /// Event リストを GameEvent リストに変換（最適化版）
   static Future<List<GameEvent>> eventsToGameEvents(List<Event> events) async {
+    try {
+      return await _eventsToGameEventsOptimized(events);
+    } catch (e) {
+      // フォールバック：旧実装
+      return await _eventsToGameEventsLegacy(events);
+    }
+  }
+
+  /// Event リストを GameEvent リストに変換（最適化版）
+  static Future<List<GameEvent>> _eventsToGameEventsOptimized(List<Event> events) async {
+    if (events.isEmpty) return [];
+
+    // ゲームIDを事前収集してバッチ処理準備
+    final gameIds = events
+        .map((e) => e.gameId)
+        .where((id) => id != null && id.isNotEmpty)
+        .cast<String>()
+        .toSet();
+
+    // 未キャッシュのゲームIDを特定
+    _cleanExpiredCache();
+    final uncachedGameIds = gameIds.where((id) => !_gameCache.containsKey(id)).toSet();
+
+    // 未キャッシュのゲーム情報をバッチで事前取得
+    if (uncachedGameIds.isNotEmpty) {
+      await _batchPreloadGameInfo(uncachedGameIds);
+    }
+
+    // 各イベントを並列変換
+    final futures = events.map((event) => eventToGameEvent(event));
+    return await Future.wait(futures);
+  }
+
+  /// ゲーム情報をバッチで事前読み込み
+  static Future<void> _batchPreloadGameInfo(Set<String> gameIds) async {
+    const batchSize = 10; // 同時実行数制限
+    final batches = <List<String>>[];
+
+    // バッチに分割
+    final gameIdList = gameIds.toList();
+    for (int i = 0; i < gameIdList.length; i += batchSize) {
+      final end = (i + batchSize < gameIdList.length) ? i + batchSize : gameIdList.length;
+      batches.add(gameIdList.sublist(i, end));
+    }
+
+    // バッチごとに並列実行
+    for (final batch in batches) {
+      final futures = batch.map((gameId) => _preloadSingleGameInfo(gameId));
+      await Future.wait(futures, eagerError: false); // エラーがあっても継続
+    }
+  }
+
+  /// 単一ゲーム情報の事前読み込み
+  static Future<void> _preloadSingleGameInfo(String gameId) async {
+    try {
+      await _getGameInfoWithCache(gameId, null);
+    } catch (e) {
+      // エラーは無視（後続の処理で再試行）
+    }
+  }
+
+  /// Event リストを GameEvent リストに変換（旧実装）
+  static Future<List<GameEvent>> _eventsToGameEventsLegacy(List<Event> events) async {
     final gameEvents = <GameEvent>[];
     for (final event in events) {
-      final gameEvent = await eventToGameEvent(event);
+      final gameEvent = await _eventToGameEventLegacy(event);
       gameEvents.add(gameEvent);
     }
     return gameEvents;
@@ -262,6 +475,8 @@ class EventConverter {
           event.status == EventStatus.draft &&
           (event.createdBy == currentUserId || event.managerIds.contains(currentUserId))
         ).toList();
+        // 下書きは最終更新日降順でソート（継続作業の利便性向上）
+        filteredEvents.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
         break;
       case EventManagementType.pastEvents:
         // 過去のイベント

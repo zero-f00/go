@@ -1349,8 +1349,8 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
         description: gameEvent.description,
         type: gameEvent.type,
         status: GameEventStatus.upcoming, // ステータスをリセット
-        startDate: DateTime.now().add(const Duration(days: 7)), // 開催日を1週間後に設定
-        endDate: DateTime.now().add(const Duration(days: 8)), // 終了日を8日後に設定
+        startDate: DateTime.now().add(const Duration(days: 30)), // 開催日を30日後に設定（ユーザーが変更する前提）
+        endDate: DateTime.now().add(const Duration(days: 30, hours: 2)), // 終了日を30日後+2時間に設定
         participantCount: 0, // 参加者数をリセット
         maxParticipants: gameEvent.maxParticipants,
         completionRate: 0.0, // 完了率をリセット
@@ -1362,9 +1362,7 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
         gameIconUrl: gameEvent.gameIconUrl,
         imageUrl: gameEvent.imageUrl, // コピー時は前回の画像URLを保持
         rules: gameEvent.rules,
-        registrationDeadline: DateTime.now().add(
-          const Duration(days: 6),
-        ), // 申込期限を6日後に設定
+        registrationDeadline: null, // 申込期限をクリア（ユーザーに入力させる）
         prizeContent: gameEvent.prizeContent,
         contactInfo: gameEvent.contactInfo,
         policy: gameEvent.policy,
@@ -1433,6 +1431,46 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
     BuildContext context,
     EventManagementType eventType,
   ) async {
+    try {
+      // 最適化版：並列処理でユーザー情報とイベント取得
+      final events = await _loadEventsOptimized(eventType);
+      await _navigateToEventListScreen(context, eventType, events, null);
+    } catch (e) {
+      // フォールバック：旧実装
+      await _navigateToEventListLegacy(context, eventType);
+    }
+  }
+
+  /// 最適化版イベント読み込み（並列処理）
+  Future<List<GameEvent>> _loadEventsOptimized(EventManagementType eventType) async {
+    // ユーザー情報取得と事前準備を並列実行
+    final results = await Future.wait([
+      ref.read(currentUserDataProvider.future),
+      Future.value(null), // 将来の拡張用
+    ], eagerError: true);
+
+    final currentUser = results[0] as UserData;
+
+    // イベント取得とゲーム情報の並列処理
+    switch (eventType) {
+      case EventManagementType.createdEvents:
+      case EventManagementType.collaborativeEvents:
+      case EventManagementType.draftEvents:
+      case EventManagementType.pastEvents:
+        final userEvents = await EventService.getUserCreatedEvents(currentUser.id);
+        return await converter.EventConverter.filterEventsByManagementType(
+          userEvents,
+          currentUser.id,
+          eventType,
+        );
+    }
+  }
+
+  /// 旧実装（フォールバック）
+  Future<void> _navigateToEventListLegacy(
+    BuildContext context,
+    EventManagementType eventType,
+  ) async {
     // ユーザー情報の取得
     UserData? currentUser;
     try {
@@ -1482,6 +1520,16 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
       events = []; // 空のリストで画面遷移
     }
 
+    await _navigateToEventListScreen(context, eventType, events, errorMessage);
+  }
+
+  /// イベント一覧画面への遷移（共通処理）
+  Future<void> _navigateToEventListScreen(
+    BuildContext context,
+    EventManagementType eventType,
+    List<GameEvent> events,
+    String? errorMessage,
+  ) async {
     // 常に画面遷移を行う（イベントが0個でも空状態画面を表示）
     if (mounted && context.mounted) {
       // 過去のイベント履歴の場合は改善されたUIを使用

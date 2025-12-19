@@ -82,9 +82,10 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
   DateTime? _eventDate;
   DateTime? _registrationDeadline;
+  bool _hasRegistrationDeadline = true; // 申込期限を設定するかどうか
+  DateTime? _participationCancelDeadline; // ユーザーキャンセル期限
   File? _selectedImage;
   String? _existingImageUrl; // 編集モード時の既存画像URL
-  bool _useExistingImage = false; // 前回の画像を使用するフラグ
 
 
   final ImagePicker _imagePicker = ImagePicker();
@@ -149,6 +150,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       // 日時の初期値設定
       _eventDate = event.startDate;
       _registrationDeadline = event.registrationDeadline;
+      _hasRegistrationDeadline = event.registrationDeadline != null;
+      _participationCancelDeadline = event.participationCancelDeadline;
 
       // ゲーム情報の初期化（非同期で読み込み）
       if (event.gameId != null) {
@@ -942,12 +945,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           isRequired: true,
         ),
         const SizedBox(height: AppDimensions.spacingL),
-        _buildDateTimeField(
-          label: AppStrings.registrationDeadlineLabel,
-          value: _registrationDeadline,
-          onTap: () => _selectDateTime(isEventDate: false),
-          isRequired: true,
-        ),
+        _buildRegistrationDeadlineSection(),
       ],
     );
   }
@@ -1018,6 +1016,89 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
             ),
           ),
         ),
+      ],
+    );
+  }
+
+  /// 申込期限セクション（任意設定可能）
+  Widget _buildRegistrationDeadlineSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              '申込期限',
+              style: TextStyle(
+                fontSize: AppDimensions.fontSizeM,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textDark,
+              ),
+            ),
+            Switch.adaptive(
+              value: _hasRegistrationDeadline,
+              onChanged: (value) {
+                setState(() {
+                  _hasRegistrationDeadline = value;
+                  if (!value) {
+                    // 申込期限を無効にする場合、関連する設定もリセット
+                    _registrationDeadline = null;
+                    _participationCancelDeadline = null;
+                  }
+                });
+              },
+              activeColor: AppColors.accent,
+            ),
+          ],
+        ),
+        if (!_hasRegistrationDeadline) ...[
+          const SizedBox(height: AppDimensions.spacingS),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppDimensions.spacingM),
+            decoration: BoxDecoration(
+              color: AppColors.info.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+              border: Border.all(color: AppColors.info.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  size: AppDimensions.iconS,
+                  color: AppColors.info,
+                ),
+                const SizedBox(width: AppDimensions.spacingS),
+                Expanded(
+                  child: Text(
+                    '申込期限なし - 参加者はいつでも申し込み可能です',
+                    style: TextStyle(
+                      fontSize: AppDimensions.fontSizeS,
+                      color: AppColors.info,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+        if (_hasRegistrationDeadline) ...[
+          const SizedBox(height: AppDimensions.spacingS),
+          _buildDateTimeField(
+            label: AppStrings.registrationDeadlineLabel,
+            value: _registrationDeadline,
+            onTap: () => _selectDateTime(isEventDate: false),
+            isRequired: true,
+          ),
+          const SizedBox(height: AppDimensions.spacingL),
+          _buildDateTimeField(
+            label: '参加者キャンセル期限（任意）',
+            value: _participationCancelDeadline,
+            onTap: () => _selectDateTime(isEventDate: false, isParticipationCancelDeadline: true),
+            isRequired: false,
+          ),
+        ],
       ],
     );
   }
@@ -1280,7 +1361,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
               color: AppColors.backgroundLight,
               borderRadius: BorderRadius.circular(AppDimensions.radiusS),
               border: Border.all(
-                color: AppColors.warning.withOpacity(0.3),
+                color: AppColors.warning.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
@@ -1895,29 +1976,25 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         );
       }
 
-      // null チェック後に使用
-      if (selfUserData != null) {
-        // 重複チェック
-        if (!_selectedManagers.any((manager) => manager.id == selfUserData!.id)) {
-          setState(() {
-            _selectedManagers.add(selfUserData!);
-            // 他のリストから除去
-            _blockedUsers.removeWhere((blockedUser) => blockedUser.id == selfUserData!.id);
-            _selectedSponsors.removeWhere((sponsor) => sponsor.id == selfUserData!.id);
-            _invitedUsers.removeWhere((invitedUser) => invitedUser.id == selfUserData!.id);
-          });
+      // この時点でselfUserDataは必ずnullでない
+      final userData = selfUserData!;
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${selfUserData!.username}を運営者に追加しました')),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('既に運営者として追加されています')),
-          );
-        }
+      // 重複チェック
+      if (!_selectedManagers.any((manager) => manager.id == userData.id)) {
+        setState(() {
+          _selectedManagers.add(userData);
+          // 他のリストから除去
+          _blockedUsers.removeWhere((blockedUser) => blockedUser.id == userData.id);
+          _selectedSponsors.removeWhere((sponsor) => sponsor.id == userData.id);
+          _invitedUsers.removeWhere((invitedUser) => invitedUser.id == userData.id);
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${userData.username}を運営者に追加しました')),
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('ユーザー情報を取得できませんでした')),
+          const SnackBar(content: Text('既に運営者として追加されています')),
         );
       }
     } catch (e) {
@@ -1969,26 +2046,23 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         );
       }
 
-      if (selfUserData != null) {
-        // 重複チェック
-        if (!_selectedSponsors.any((sponsor) => sponsor.id == selfUserData!.id)) {
-          setState(() {
-            _selectedSponsors.add(selfUserData!);
-            // スポンサーは自動的に運営者にも追加
-            if (!_selectedManagers.any((manager) => manager.id == selfUserData!.id)) {
-              _selectedManagers.add(selfUserData!);
-            }
-            // ブロックリストから除外
-            _blockedUsers.removeWhere((blockedUser) => blockedUser.id == selfUserData!.id);
-          });
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('既にスポンサーとして追加されています')),
-          );
-        }
+      // この時点でselfUserDataは必ずnullでない
+      final userData = selfUserData!;
+
+      // 重複チェック
+      if (!_selectedSponsors.any((sponsor) => sponsor.id == userData.id)) {
+        setState(() {
+          _selectedSponsors.add(userData);
+          // スポンサーは自動的に運営者にも追加
+          if (!_selectedManagers.any((manager) => manager.id == userData.id)) {
+            _selectedManagers.add(userData);
+          }
+          // ブロックリストから除外
+          _blockedUsers.removeWhere((blockedUser) => blockedUser.id == userData.id);
+        });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('ユーザー情報を取得できませんでした')),
+          const SnackBar(content: Text('既にスポンサーとして追加されています')),
         );
       }
     } catch (e) {
@@ -2216,109 +2290,6 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   }
 
 
-  Widget _buildTagField({
-    required String label,
-    required List<String> tags,
-    required ValueChanged<List<String>> onTagsChanged,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: AppDimensions.fontSizeM,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textDark,
-          ),
-        ),
-        const SizedBox(height: AppDimensions.spacingS),
-        Container(
-          width: double.infinity,
-          constraints: const BoxConstraints(minHeight: 50),
-          padding: const EdgeInsets.all(AppDimensions.spacingM),
-          decoration: BoxDecoration(
-            color: AppColors.backgroundLight,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-            border: Border.all(color: AppColors.border),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (tags.isNotEmpty)
-                Wrap(
-                  spacing: AppDimensions.spacingS,
-                  runSpacing: AppDimensions.spacingS,
-                  children: tags.map((tag) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.spacingS,
-                        vertical: AppDimensions.spacingXS,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.info.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                        border: Border.all(color: AppColors.info),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            tag,
-                            style: const TextStyle(
-                              fontSize: AppDimensions.fontSizeS,
-                              color: AppColors.info,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(width: AppDimensions.spacingXS),
-                          GestureDetector(
-                            onTap: () {
-                              final newTags = List<String>.from(tags);
-                              newTags.remove(tag);
-                              onTagsChanged(newTags);
-                            },
-                            child: const Icon(
-                              Icons.close,
-                              size: AppDimensions.fontSizeS,
-                              color: AppColors.info,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
-              const SizedBox(height: AppDimensions.spacingS),
-              GestureDetector(
-                onTap: () {
-                  // TODO: タグ追加機能を実装
-                },
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.add,
-                      color: AppColors.textDark,
-                      size: AppDimensions.iconS,
-                    ),
-                    const SizedBox(width: AppDimensions.spacingXS),
-                    Text(
-                      'タグを追加',
-                      style: TextStyle(
-                        fontSize: AppDimensions.fontSizeS,
-                        color: AppColors.textDark,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget _buildActionButtons() {
     return Column(
@@ -2352,33 +2323,73 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   }
 
 
-  void _selectDateTime({required bool isEventDate}) async {
+  void _selectDateTime({required bool isEventDate, bool isParticipationCancelDeadline = false}) async {
     // 日付選択時の制限を設定
     DateTime initialDate = DateTime.now();
-    DateTime firstDate = DateTime.now();
+    DateTime firstDate = isEventDate
+        ? DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day) // 開催日時は当日から選択可能
+        : DateTime.now(); // 申込期限とキャンセル期限は現在時刻から
     DateTime lastDate = DateTime.now().add(const Duration(days: 365));
 
-    if (!isEventDate) {
-      // 申込期限の場合は開催日時より前でなければならない
-      if (_eventDate != null) {
-        // 開催日時が設定されている場合、申込期限は開催日時の前日まで
-        lastDate = _eventDate!.subtract(const Duration(days: 1));
+    if (isParticipationCancelDeadline) {
+      // キャンセル期限の場合
+      if (!_hasRegistrationDeadline || _registrationDeadline == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('申込期限を有効にして設定してください'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+        return;
+      }
 
-        // lastDateが現在時刻より前の場合は、現在時刻から開催日時の前日までに調整
-        if (lastDate.isBefore(DateTime.now())) {
-          // 開催日時が明日以前の場合はエラー
-          if (_eventDate!.isBefore(DateTime.now().add(const Duration(days: 1)))) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('開催日時を明日以降に設定してから申込期限を設定してください'),
-                backgroundColor: AppColors.error,
-              ),
-            );
-            return;
-          }
+      if (_eventDate != null) {
+        // キャンセル期限は申込期限以降、開催日時の前まで
+        firstDate = _registrationDeadline!;
+        lastDate = _eventDate!.subtract(const Duration(hours: 1));
+
+        // 申込期限と開催日時の間隔が短すぎる場合の警告
+        if (!_registrationDeadline!.isBefore(lastDate)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('申込期限から開催日時まで間隔が短すぎるため、キャンセル期限を設定できません'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+          return;
         }
 
-        // 初期日付は現在時刻と開催日時の前日の間で適切に設定
+        // 初期日付は申込期限と開催日時の間で適切に設定
+        initialDate = _registrationDeadline!;
+      } else {
+        // 開催日時が未設定の場合はエラー
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('まず開催日時を設定してください'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+        return;
+      }
+    } else if (!isEventDate) {
+      // 申込期限の場合は開催日時より前でなければならない
+      if (_eventDate != null) {
+        // 開催日時が設定されている場合、申込期限は開催日時の3時間前まで
+        lastDate = _eventDate!.subtract(const Duration(hours: 3));
+
+        // lastDateが現在時刻より前の場合の処理
+        if (lastDate.isBefore(DateTime.now())) {
+          // 開催日時が3時間以内の場合はエラー
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('開催日時が近すぎるため申込期限を設定できません（開催3時間前まで設定可能）'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+          return;
+        }
+
+        // 初期日付は現在時刻と開催日時の3時間前の間で適切に設定
         if (DateTime.now().isBefore(lastDate)) {
           initialDate = DateTime.now();
         } else {
@@ -2432,21 +2443,21 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           date.month == _eventDate!.month &&
           date.day == _eventDate!.day) {
 
-        // 同日の場合は開催時刻の1時間前を初期値に設定
+        // 同日の場合は開催時刻の3時間前を初期値に設定
         final eventTimeOfDay = TimeOfDay.fromDateTime(_eventDate!);
         final eventMinutes = eventTimeOfDay.hour * 60 + eventTimeOfDay.minute;
-        final oneHourBeforeMinutes = eventMinutes - 60;
+        final threeHoursBeforeMinutes = eventMinutes - 180; // 3時間 = 180分
 
-        if (oneHourBeforeMinutes > 0) {
+        if (threeHoursBeforeMinutes > 0) {
           initialTime = TimeOfDay(
-            hour: oneHourBeforeMinutes ~/ 60,
-            minute: oneHourBeforeMinutes % 60,
+            hour: threeHoursBeforeMinutes ~/ 60,
+            minute: threeHoursBeforeMinutes % 60,
           );
         } else {
           // 開催時刻が早い場合は前日を推奨
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('申込期限は開催時刻の少なくとも1時間前に設定してください'),
+              content: Text('申込期限は開催時刻の少なくとも3時間前に設定してください'),
               backgroundColor: AppColors.warning,
             ),
           );
@@ -2485,12 +2496,51 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           time.minute,
         );
 
-        // 申込期限の妥当性を最終チェック
-        if (!isEventDate && _eventDate != null) {
-          if (selectedDateTime.isAfter(_eventDate!) || selectedDateTime.isAtSameMomentAs(_eventDate!)) {
+        // 期限の妥当性を最終チェック
+        if (isParticipationCancelDeadline) {
+          // キャンセル期限のチェック
+          if (_registrationDeadline != null && selectedDateTime.isBefore(_registrationDeadline!)) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('申込期限は開催日時より前に設定してください'),
+                content: Text('キャンセル期限は申込期限以降に設定してください'),
+                backgroundColor: AppColors.error,
+              ),
+            );
+            FocusScope.of(context).unfocus();
+            return;
+          }
+          if (_eventDate != null && (selectedDateTime.isAfter(_eventDate!) || selectedDateTime.isAtSameMomentAs(_eventDate!))) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('キャンセル期限は開催日時より前に設定してください'),
+                backgroundColor: AppColors.error,
+              ),
+            );
+            FocusScope.of(context).unfocus();
+            return;
+          }
+        } else if (!isEventDate && _eventDate != null) {
+          // 申込期限のチェック
+          final now = DateTime.now();
+          final deadlineLimit = _eventDate!.subtract(const Duration(hours: 3));
+
+          // 現在時刻より前かチェック
+          if (selectedDateTime.isBefore(now)) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('申込期限は現在時刻より後に設定してください'),
+                backgroundColor: AppColors.error,
+              ),
+            );
+            FocusScope.of(context).unfocus();
+            return;
+          }
+
+          // 開催日時の3時間前より後かチェック
+          if (selectedDateTime.isAfter(deadlineLimit)) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('申込期限は開催日時の3時間前までに設定してください'),
                 backgroundColor: AppColors.error,
               ),
             );
@@ -2499,17 +2549,41 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           }
         }
 
+        // 開催日時が現在時刻より前でないかチェック
+        if (isEventDate && selectedDateTime.isBefore(DateTime.now())) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('開催日時は現在時刻より後に設定してください'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+          FocusScope.of(context).unfocus();
+          return;
+        }
+
         setState(() {
           if (isEventDate) {
             _eventDate = selectedDateTime;
-            // 開催日時が変更された場合、申込期限をリセット
+            // 開催日時が変更された場合、申込期限とキャンセル期限をリセット
             if (_registrationDeadline != null &&
                 (_registrationDeadline!.isAfter(selectedDateTime) ||
                  _registrationDeadline!.isAtSameMomentAs(selectedDateTime))) {
               _registrationDeadline = null;
             }
+            if (_participationCancelDeadline != null &&
+                (_participationCancelDeadline!.isAfter(selectedDateTime) ||
+                 _participationCancelDeadline!.isAtSameMomentAs(selectedDateTime))) {
+              _participationCancelDeadline = null;
+            }
+          } else if (isParticipationCancelDeadline) {
+            _participationCancelDeadline = selectedDateTime;
           } else {
             _registrationDeadline = selectedDateTime;
+            // 申込期限が変更された場合、キャンセル期限をリセット（申込期限より前の場合）
+            if (_participationCancelDeadline != null &&
+                _participationCancelDeadline!.isBefore(selectedDateTime)) {
+              _participationCancelDeadline = null;
+            }
           }
         });
 
@@ -2722,145 +2796,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   }
 
   /// 多数参加者がいる場合のエラーダイアログ
-  void _showTooManyParticipantsError(int participantCount) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: AppColors.cardBackground,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-          ),
-          title: Row(
-            children: [
-              Icon(
-                Icons.block,
-                color: AppColors.error,
-                size: AppDimensions.iconL,
-              ),
-              const SizedBox(width: AppDimensions.spacingM),
-              const Text(
-                '下書きに戻すことができません',
-                style: TextStyle(
-                  fontSize: AppDimensions.fontSizeL,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textDark,
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(AppDimensions.spacingM),
-                decoration: BoxDecoration(
-                  color: AppColors.error.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.group,
-                      color: AppColors.error,
-                      size: AppDimensions.iconM,
-                    ),
-                    const SizedBox(width: AppDimensions.spacingM),
-                    Expanded(
-                      child: Text(
-                        '現在$participantCount名が参加申込済みです',
-                        style: TextStyle(
-                          fontSize: AppDimensions.fontSizeM,
-                          color: AppColors.error,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppDimensions.spacingM),
-              const Text(
-                '多数の参加者がいるイベントを下書きに戻すことはできません。',
-                style: TextStyle(
-                  fontSize: AppDimensions.fontSizeM,
-                  color: AppColors.textDark,
-                ),
-              ),
-              const SizedBox(height: AppDimensions.spacingM),
-              Container(
-                padding: const EdgeInsets.all(AppDimensions.spacingM),
-                decoration: BoxDecoration(
-                  color: AppColors.backgroundLight,
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      '代替案：',
-                      style: TextStyle(
-                        fontSize: AppDimensions.fontSizeM,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textDark,
-                      ),
-                    ),
-                    const SizedBox(height: AppDimensions.spacingS),
-                    _buildAlternativeItem('イベント情報を編集して保存'),
-                    _buildAlternativeItem('イベントをキャンセル（中止）にする'),
-                    _buildAlternativeItem('新規募集を停止したい場合は、定員を現在の参加者数に設定'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.primary,
-              ),
-              child: const Text(
-                '了解',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
-  /// 代替案項目の表示ウィジェット
-  Widget _buildAlternativeItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingXS),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            '•',
-            style: TextStyle(
-              fontSize: AppDimensions.fontSizeM,
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(width: AppDimensions.spacingS),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(
-                fontSize: AppDimensions.fontSizeS,
-                color: AppColors.textDark,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   /// イベント下書き化時の参加者への通知送信
   Future<void> _sendDraftConversionNotifications() async {
@@ -3013,14 +2949,6 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         }
       }
     } catch (e) {
-      String errorMessage = 'エラーが発生しました';
-
-      if (e is EventServiceException) {
-        errorMessage = e.message;
-      } else {
-        errorMessage = 'イベントの保存に失敗しました。もう一度お試しください。';
-      }
-
       ErrorHandlerService.showErrorDialog(context, e);
     } finally {
       if (mounted) {
@@ -3051,7 +2979,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       gameId: gameId,
       platforms: List<String>.from(_selectedPlatforms),
       eventDate: _eventDate!,
-      registrationDeadline: _registrationDeadline!,
+      registrationDeadline: _hasRegistrationDeadline ? _registrationDeadline : null,
+      participationCancelDeadline: _participationCancelDeadline,
       maxParticipants: int.parse(_maxParticipantsController.text.trim()),
       additionalInfo: _additionalInfoController.text.trim().isEmpty
           ? null
@@ -3143,11 +3072,13 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       errors.add('開催日時は現在時刻より後に設定してください');
     }
 
-    if (_registrationDeadline == null) {
-      errors.add('参加申込締切を設定してください');
-    } else if (_eventDate != null &&
-               (_registrationDeadline!.isAfter(_eventDate!) || _registrationDeadline!.isAtSameMomentAs(_eventDate!))) {
-      errors.add('参加申込締切は開催日時より前に設定してください');
+    if (_hasRegistrationDeadline) {
+      if (_registrationDeadline == null) {
+        errors.add('参加申込締切を設定してください');
+      } else if (_eventDate != null &&
+                 (_registrationDeadline!.isAfter(_eventDate!) || _registrationDeadline!.isAtSameMomentAs(_eventDate!))) {
+        errors.add('参加申込締切は開催日時より前に設定してください');
+      }
     }
 
     if (_maxParticipantsController.text.trim().isEmpty) {
@@ -3443,21 +3374,6 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   }
 
   /// フォームの基本検証（レガシー）
-  bool _validateForm() {
-    return ValidationService.validateForm(
-      _formKey,
-      additionalValidations: [
-        () => ValidationService.validateDateTime(_eventDate, 'イベント日時', minDate: DateTime.now()),
-        () => ValidationService.validateDateTime(_registrationDeadline, '参加申込締切', maxDate: _eventDate),
-        () => ValidationService.validateList(_selectedPlatforms, 'プラットフォーム'),
-        () => ValidationService.validateEventTags(_eventTags),
-        () => ValidationService.validateParticipationFeeText(_feeAmountController.text, _hasParticipationFee),
-        () => ValidationService.validateTextLength(_prizeContentController.text, 500, '賞品内容', isRequired: _hasPrize),
-        () => _hasStreaming && _streamingUrls.isEmpty ? '配信URLを入力してください' : null,
-        () => ValidationService.validateImageFile(_selectedImage, false),
-      ],
-    );
-  }
 
 
   /// 中程度の参加者がいる場合の警告ダイアログ（6-20人）

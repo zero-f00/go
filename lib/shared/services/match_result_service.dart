@@ -8,6 +8,19 @@ class MatchResultService {
 
   static const String _collection = 'match_results';
 
+  /// 指定IDの試合結果を取得
+  Future<MatchResult?> getMatchResultById(String matchId) async {
+    try {
+      final doc = await _firestore.collection(_collection).doc(matchId).get();
+      if (doc.exists) {
+        return MatchResult.fromFirestore(doc);
+      }
+      return null;
+    } catch (e) {
+      throw Exception('試合結果の取得に失敗しました: $e');
+    }
+  }
+
   /// 指定イベントの試合結果を取得
   Future<List<MatchResult>> getMatchResultsByEventId(String eventId) async {
     try {

@@ -27,7 +27,8 @@ class Event {
   final String? gameName; // 検索最適化用
   final List<String> platforms;
   final DateTime eventDate;
-  final DateTime registrationDeadline;
+  final DateTime? registrationDeadline;
+  final DateTime? participationCancelDeadline; // ユーザーキャンセル期限
   final int maxParticipants;
   final String? additionalInfo;
   final bool hasParticipationFee;
@@ -69,7 +70,8 @@ class Event {
     this.gameName,
     required this.platforms,
     required this.eventDate,
-    required this.registrationDeadline,
+    this.registrationDeadline,
+    this.participationCancelDeadline,
     required this.maxParticipants,
     this.additionalInfo,
     required this.hasParticipationFee,
@@ -116,7 +118,12 @@ class Event {
       gameName: data['gameName'],
       platforms: List<String>.from(data['platforms'] ?? []),
       eventDate: (data['eventDate'] as Timestamp).toDate(),
-      registrationDeadline: (data['registrationDeadline'] as Timestamp).toDate(),
+      registrationDeadline: data['registrationDeadline'] != null
+          ? (data['registrationDeadline'] as Timestamp).toDate()
+          : null,
+      participationCancelDeadline: data['participationCancelDeadline'] != null
+          ? (data['participationCancelDeadline'] as Timestamp).toDate()
+          : null,
       maxParticipants: data['maxParticipants'] ?? 0,
       additionalInfo: data['additionalInfo'],
       hasParticipationFee: data['hasParticipationFee'] ?? false,
@@ -163,7 +170,12 @@ class Event {
       'gameName': gameName,
       'platforms': platforms,
       'eventDate': Timestamp.fromDate(eventDate),
-      'registrationDeadline': Timestamp.fromDate(registrationDeadline),
+      'registrationDeadline': registrationDeadline != null
+          ? Timestamp.fromDate(registrationDeadline!)
+          : null,
+      'participationCancelDeadline': participationCancelDeadline != null
+          ? Timestamp.fromDate(participationCancelDeadline!)
+          : null,
       'maxParticipants': maxParticipants,
       'additionalInfo': additionalInfo,
       'hasParticipationFee': hasParticipationFee,
@@ -337,6 +349,22 @@ class Event {
     }
   }
 
+  /// 満員かどうかを判定
+  bool get isFull => participantIds.length >= maxParticipants;
+
+  /// 申込期限が切れているかどうかを判定
+  bool get isRegistrationExpired => registrationDeadline != null
+      ? DateTime.now().isAfter(registrationDeadline!)
+      : false; // 申込期限が設定されていない場合は期限切れではない
+
+  /// 申込期限まで残り日数を取得
+  int get daysUntilRegistrationDeadline {
+    if (registrationDeadline == null) return -1; // 申込期限なしを示す
+    final now = DateTime.now();
+    if (now.isAfter(registrationDeadline!)) return 0;
+    return registrationDeadline!.difference(now).inDays;
+  }
+
   static EventStatus _parseStatus(dynamic value) {
     if (value == null) return EventStatus.draft;
     switch (value.toString()) {
@@ -377,7 +405,8 @@ class EventInput {
   final String? gameId;
   final List<String> platforms;
   final DateTime eventDate;
-  final DateTime registrationDeadline;
+  final DateTime? registrationDeadline;
+  final DateTime? participationCancelDeadline; // ユーザーキャンセル期限
   final int maxParticipants;
   final String? additionalInfo;
   final bool hasParticipationFee;
@@ -407,7 +436,8 @@ class EventInput {
     this.gameId,
     required this.platforms,
     required this.eventDate,
-    required this.registrationDeadline,
+    this.registrationDeadline,
+    this.participationCancelDeadline,
     required this.maxParticipants,
     this.additionalInfo,
     required this.hasParticipationFee,

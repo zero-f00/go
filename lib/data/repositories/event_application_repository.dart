@@ -205,8 +205,6 @@ class EventApplicationRepository {
       }
 
       final eventData = eventDoc.data()!;
-      final eventTitle = eventData['title'] as String;
-      final managerIds = List<String>.from(eventData['managerIds'] ?? []);
 
       // 申込者情報を取得
       final applicantDoc = await _firestore
@@ -221,7 +219,6 @@ class EventApplicationRepository {
       }
 
       final applicantData = applicantDoc.docs.first.data();
-      final applicantUsername = applicantData['username'] as String;
 
       // TODO: 通知サービスを使用して通知を送信（一時的に削除）
 

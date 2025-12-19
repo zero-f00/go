@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../data/models/game_profile_model.dart';
 import '../../shared/services/participation_service.dart';
 
 /// イベントグループのモデル
@@ -144,7 +143,6 @@ class GroupService {
       }
       return null;
     } catch (e) {
-      print('GroupService: Error getting group: $e');
       return null;
     }
   }
@@ -155,7 +153,6 @@ class GroupService {
       final docRef = await _firestore.collection('event_groups').add(group.toFirestore());
       return docRef.id;
     } catch (e) {
-      print('GroupService: Error creating group: $e');
       return null;
     }
   }
@@ -166,7 +163,6 @@ class GroupService {
       await _firestore.collection('event_groups').doc(group.id).update(group.toFirestore());
       return true;
     } catch (e) {
-      print('GroupService: Error updating group: $e');
       return false;
     }
   }
@@ -184,7 +180,6 @@ class GroupService {
 
       return matchResults.docs.isEmpty;
     } catch (e) {
-      print('GroupService: Error checking group deletion: $e');
       return false; // 安全側に倒す
     }
   }
@@ -199,7 +194,6 @@ class GroupService {
 
       return matchResults.docs.length;
     } catch (e) {
-      print('GroupService: Error getting related match count: $e');
       return 0;
     }
   }
@@ -209,7 +203,6 @@ class GroupService {
       await _firestore.collection('event_groups').doc(groupId).delete();
       return true;
     } catch (e) {
-      print('GroupService: Error deleting group: $e');
       return false;
     }
   }

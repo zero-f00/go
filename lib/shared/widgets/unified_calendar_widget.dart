@@ -82,7 +82,6 @@ class _UnifiedCalendarWidgetState extends State<UnifiedCalendarWidget> {
   @override
   void didUpdateWidget(UnifiedCalendarWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    print('Debug: didUpdateWidget called');
 
     // widget.initialFiltersが変更された場合は更新
     if (widget.initialFilters != oldWidget.initialFilters) {

@@ -12,7 +12,6 @@ import 'features/settings/views/settings_screen.dart';
 import 'features/profile/views/user_profile_screen.dart';
 import 'features/event_detail/views/event_detail_wrapper.dart';
 import 'features/event_creation/views/event_creation_screen.dart';
-import 'features/management/views/participant_management_screen.dart';
 import 'features/friends/views/friends_screen.dart';
 import 'features/game_profile/views/game_profile_edit_screen.dart';
 import 'features/game_profile/views/game_profile_view_screen.dart';
@@ -20,6 +19,7 @@ import 'features/game_profile/views/game_profile_view_wrapper.dart';
 import 'data/models/game_profile_model.dart';
 import 'data/models/user_model.dart';
 import 'features/event_management/views/event_operations_dashboard_screen.dart';
+import 'features/event_management/views/event_participants_management_screen.dart';
 import 'features/event_management/views/group_room_management_screen.dart';
 import 'features/event_management/views/result_management_screen.dart';
 import 'features/event_management/views/violation_management_screen.dart';
@@ -35,7 +35,8 @@ import 'shared/constants/app_strings.dart';
 import 'shared/constants/app_colors.dart';
 
 void main() async {
-  final WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  final WidgetsBinding widgetsBinding =
+      WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   // 画面方向を縦画面のみに固定
@@ -62,7 +63,6 @@ void main() async {
 
     // 初期化完了後にスプラッシュ画面を削除
     FlutterNativeSplash.remove();
-
   } catch (e, stackTrace) {
     // Firebase初期化に失敗してもアプリを続行
     // スプラッシュ画面を削除
@@ -93,9 +93,7 @@ class MyApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [
-        Locale('ja', 'JP'),
-      ],
+      supportedLocales: const [Locale('ja', 'JP')],
       home: const MainScreen(),
       routes: {
         '/settings': (context) => const SettingsScreen(),
@@ -115,64 +113,80 @@ class MyApp extends StatelessWidget {
         ),
         '/participant_management': (context) {
           final event = ModalRoute.of(context)?.settings.arguments as GameEvent;
-          return ParticipantManagementScreen(
+          return EventParticipantsManagementScreen(
             eventId: event.id,
             eventName: event.name,
           );
         },
         '/operations_dashboard': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
+          final args =
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>;
           return EventOperationsDashboardScreen(
             eventId: args['eventId']! as String,
             eventName: args['eventName']! as String,
-            fromParticipantManagement: args['fromParticipantManagement'] as bool? ?? false,
+            fromParticipantManagement:
+                args['fromParticipantManagement'] as bool? ?? false,
           );
         },
         '/event_participants_management': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
-          return ParticipantManagementScreen(
+          final args =
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>;
+          return EventParticipantsManagementScreen(
             eventId: args['eventId']! as String,
             eventName: args['eventName']! as String,
             fromNotification: args['fromNotification'] as bool? ?? false,
+            notificationType: args['notificationType'] as String?,
+            cancelledUserId: args['cancelledUserId'] as String?,
+            cancelledUserName: args['cancelledUserName'] as String?,
+            cancellationReason: args['cancellationReason'] as String?,
           );
         },
         '/group_management': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments as Map<String, String>;
+          final args =
+              ModalRoute.of(context)?.settings.arguments as Map<String, String>;
           return GroupRoomManagementScreen(
             eventId: args['eventId']!,
             eventName: args['eventName']!,
           );
         },
         '/result_management': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments as Map<String, String>;
+          final args =
+              ModalRoute.of(context)?.settings.arguments as Map<String, String>;
           return ResultManagementScreen(
             eventId: args['eventId']!,
             eventName: args['eventName']!,
           );
         },
         '/violation_management': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments as Map<String, String>;
+          final args =
+              ModalRoute.of(context)?.settings.arguments as Map<String, String>;
           return ViolationManagementScreen(
             eventId: args['eventId']!,
             eventName: args['eventName']!,
           );
         },
         '/user_detail_management': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments as Map<String, String>;
+          final args =
+              ModalRoute.of(context)?.settings.arguments as Map<String, String>;
           return UserDetailManagementScreen(
             eventId: args['eventId']!,
             eventName: args['eventName']!,
           );
         },
         '/payment_management': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments as Map<String, String>;
+          final args =
+              ModalRoute.of(context)?.settings.arguments as Map<String, String>;
           return PaymentManagementScreen(
             eventId: args['eventId']!,
             eventName: args['eventName']!,
           );
         },
         '/game_profile_edit': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
+          final args =
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>;
           final gameId = args['gameId'];
           return GameProfileEditScreen(
             gameId: gameId.toString(),
@@ -182,7 +196,9 @@ class MyApp extends StatelessWidget {
           );
         },
         '/game_profile_view': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
+          final args =
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>;
           // 既存のGameProfileオブジェクトがある場合は直接表示
           if (args.containsKey('profile')) {
             return GameProfileViewScreen(
@@ -207,21 +223,27 @@ class MyApp extends StatelessWidget {
         },
         '/favorite-games': (context) => const FavoriteGamesScreen(),
         '/participant_group_view': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
+          final args =
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>;
           return ParticipantGroupViewScreen(
             eventId: args['eventId']! as String,
             eventName: args['eventName']! as String,
           );
         },
         '/participant_list_view': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
+          final args =
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>;
           return ParticipantListViewScreen(
             eventId: args['eventId']! as String,
             eventName: args['eventName']! as String,
           );
         },
         '/violation_report': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
+          final args =
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>;
           return ViolationReportScreen(
             eventId: args['eventId']! as String,
             eventName: args['eventName']! as String,

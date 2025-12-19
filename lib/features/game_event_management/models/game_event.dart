@@ -23,6 +23,7 @@ class GameEvent {
   // イベント作成画面の追加項目
   final String? rules;
   final DateTime? registrationDeadline;
+  final DateTime? participationCancelDeadline; // ユーザーキャンセル期限
   final String? prizeContent;
   final String? contactInfo;
   final String? policy;
@@ -80,6 +81,7 @@ class GameEvent {
     this.imageUrl,
     this.rules,
     this.registrationDeadline,
+    this.participationCancelDeadline,
     this.prizeContent,
     this.contactInfo,
     this.policy,
@@ -173,6 +175,21 @@ class GameEvent {
     );
 
     return gameEvent;
+  }
+
+  /// 満員かどうかを判定
+  bool get isFull => participantCount >= maxParticipants;
+
+  /// 申込期限が切れているかどうかを判定
+  bool get isRegistrationExpired =>
+    registrationDeadline != null && DateTime.now().isAfter(registrationDeadline!);
+
+  /// 申込期限まで残り日数を取得
+  int? get daysUntilRegistrationDeadline {
+    if (registrationDeadline == null) return null;
+    final now = DateTime.now();
+    if (now.isAfter(registrationDeadline!)) return 0;
+    return registrationDeadline!.difference(now).inDays;
   }
 
   /// visibilityの英語表記を日本語表記に変換

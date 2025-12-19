@@ -15,17 +15,20 @@ import '../../../shared/widgets/user_avatar_from_id.dart';
 import '../../../data/models/game_profile_model.dart';
 import '../../../data/models/event_group_model.dart';
 import '../../../shared/widgets/app_text_field.dart';
+import '../../../shared/widgets/event_info_card.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// グループ管理画面
 class GroupRoomManagementScreen extends ConsumerStatefulWidget {
   final String eventId;
   final String eventName;
+  final bool fromNotification;
 
   const GroupRoomManagementScreen({
     super.key,
     required this.eventId,
     required this.eventName,
+    this.fromNotification = false,
   });
 
   @override
@@ -34,7 +37,7 @@ class GroupRoomManagementScreen extends ConsumerStatefulWidget {
 }
 
 class _GroupRoomManagementScreenState
-    extends ConsumerState<GroupRoomManagementScreen> {
+    extends ConsumerState<GroupRoomManagementScreen> with TickerProviderStateMixin {
   // グループ管理データ
   List<EventGroup> _groups = [];
   List<ApprovedParticipant> _unassignedParticipants = [];
@@ -51,6 +54,7 @@ class _GroupRoomManagementScreenState
     _loadGroupData();
   }
 
+
   Future<void> _loadGroupData() async {
     try {
       // イベント情報を取得してゲームIDを設定
@@ -62,9 +66,10 @@ class _GroupRoomManagementScreenState
       }
 
       // 承認済みの参加申請を取得
-      final applications = await ParticipationService.getEventApplications(
+      final applications = await ParticipationService.getEventApplicationsFromServer(
         widget.eventId,
-      ).first;
+        forceFromServer: true,
+      );
       final approvedApplications = applications
           .where((app) => app.status == ParticipationStatus.approved)
           .toList();
@@ -127,7 +132,6 @@ class _GroupRoomManagementScreenState
         _isLoading = false;
       });
     } catch (e) {
-      print('グループデータ読み込みエラー: $e');
       setState(() {
         _isLoading = false;
       });
@@ -142,7 +146,7 @@ class _GroupRoomManagementScreenState
           child: Column(
             children: [
               AppHeader(
-                title: 'グループ管理',
+                title: 'グループ',
                 showBackButton: true,
                 onBackPressed: () => Navigator.of(context).pop(),
                 actions: [
@@ -153,7 +157,57 @@ class _GroupRoomManagementScreenState
                   ),
                 ],
               ),
-              Expanded(child: _buildGroupManagementTab()),
+              EventInfoCard(
+                eventName: widget.eventName,
+                eventId: widget.eventId,
+                enableTap: widget.fromNotification,
+                showBorder: true,
+                margin: const EdgeInsets.all(AppDimensions.spacingM),
+              ),
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.all(AppDimensions.spacingL),
+                  decoration: BoxDecoration(
+                    color: AppColors.cardBackground,
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.cardShadow,
+                        blurRadius: AppDimensions.cardElevation,
+                        offset: const Offset(0, AppDimensions.shadowOffsetY),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(AppDimensions.spacingL),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.group,
+                              color: AppColors.accent,
+                              size: AppDimensions.iconM,
+                            ),
+                            const SizedBox(width: AppDimensions.spacingS),
+                            const Text(
+                              'グループ管理',
+                              style: TextStyle(
+                                fontSize: AppDimensions.fontSizeL,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textDark,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: _buildGroupManagementTab(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -290,53 +344,38 @@ class _GroupRoomManagementScreenState
 
   /// 空の状態を表示
   Widget _buildEmptyState() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppDimensions.spacingL),
+    return Center(
       child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(AppDimensions.spacingXL),
-        decoration: BoxDecoration(
-          color: AppColors.cardBackground,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.cardShadow,
-              blurRadius: AppDimensions.cardElevation,
-              offset: const Offset(0, AppDimensions.shadowOffsetY),
-            ),
-          ],
-        ),
+        padding: const EdgeInsets.all(AppDimensions.spacingL),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               Icons.group_add,
-              size: 80,
-              color: AppColors.textDark.withValues(alpha: 0.3),
+              size: AppDimensions.iconXXL,
+              color: AppColors.textLight,
             ),
-            const SizedBox(height: AppDimensions.spacingL),
-            Text(
+            const SizedBox(height: AppDimensions.spacingM),
+            const Text(
               'まだグループがありません',
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textDark,
+                color: AppColors.textSecondary,
               ),
-              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: AppDimensions.spacingM),
-            Text(
+            const SizedBox(height: AppDimensions.spacingS),
+            const Text(
               'チーム戦を開催するために\nグループ（チーム）を作成しましょう',
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeM,
-                color: AppColors.textDark.withValues(alpha: 0.7),
+                color: AppColors.textLight,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: AppDimensions.spacingXL),
-
             // 未割り当て参加者がいる場合の警告表示
             if (_unassignedParticipants.isNotEmpty) ...[
+              const SizedBox(height: AppDimensions.spacingL),
               Container(
                 padding: const EdgeInsets.all(AppDimensions.spacingM),
                 decoration: BoxDecoration(
@@ -963,8 +1002,6 @@ class _GroupRoomManagementScreenState
   /// 全体連絡事項を更新
   Future<void> _updateGeneralAnnouncements(String announcements) async {
     try {
-      print('Updating general announcements for event: ${widget.eventId}');
-
       await FirebaseFirestore.instance
           .collection('event_group_settings')
           .doc(widget.eventId)
@@ -985,10 +1022,7 @@ class _GroupRoomManagementScreenState
           ),
         );
       }
-    } catch (e, stackTrace) {
-      print('Error updating general announcements: $e');
-      print('Stack trace: $stackTrace');
-
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1122,8 +1156,6 @@ class _GroupRoomManagementScreenState
         return;
       }
 
-      print('Creating group: $name for event: ${widget.eventId}');
-
       final newGroup = EventGroup(
         id: '',
         eventId: widget.eventId,
@@ -1138,7 +1170,6 @@ class _GroupRoomManagementScreenState
       final groupId = await GroupService.createGroup(newGroup);
 
       if (groupId != null) {
-        print('Group created successfully with ID: $groupId');
         // データ再読み込み
         await _loadGroupData();
 
@@ -1153,10 +1184,7 @@ class _GroupRoomManagementScreenState
       } else {
         throw Exception('グループの作成に失敗しました');
       }
-    } catch (e, stackTrace) {
-      print('Error creating group: $e');
-      print('Stack trace: $stackTrace');
-
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1266,10 +1294,7 @@ class _GroupRoomManagementScreenState
       } else {
         throw Exception('グループの更新に失敗しました');
       }
-    } catch (e, stackTrace) {
-      print('Error updating group: $e');
-      print('Stack trace: $stackTrace');
-
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1307,7 +1332,7 @@ class _GroupRoomManagementScreenState
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('「${group.name}」は${matchCount}件の戦績データに関連付けられています。'),
+            Text('「${group.name}」は$matchCount件の戦績データに関連付けられています。'),
             const SizedBox(height: AppDimensions.spacingM),
             const Text(
               '戦績データを保護するため、関連する戦績があるグループは削除できません。',
@@ -1733,45 +1758,6 @@ class _GroupRoomManagementScreenState
   }
 
   /// 削除制限バッジウィジェット
-  Widget _buildDeletionRestrictionBadge(EventGroup group) {
-    return FutureBuilder<bool>(
-      future: GroupService.canDeleteGroup(group.id),
-      builder: (context, snapshot) {
-        if (snapshot.hasData && snapshot.data == false) {
-          return Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingS,
-              vertical: AppDimensions.spacingXS,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.warning.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-              border: Border.all(color: AppColors.warning),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                Icon(
-                  Icons.lock_outline,
-                  size: 14,
-                  color: AppColors.warning,
-                ),
-                SizedBox(width: AppDimensions.spacingXS),
-                Text(
-                  '戦績あり',
-                  style: TextStyle(
-                    fontSize: AppDimensions.fontSizeXS,
-                    color: AppColors.warning,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-        return const SizedBox.shrink();
-      },
-    );
-  }
+
 }
 

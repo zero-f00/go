@@ -47,10 +47,15 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
   ProfileRequirementStatus _profileStatus = ProfileRequirementStatus.checking;
   bool _needsFavoriteRegistration = false;
 
+  // 参加者数管理
+  int _currentParticipantCount = 0;
+  bool _isLoadingParticipantCount = true;
+
   @override
   void initState() {
     super.initState();
     _checkRequirements();
+    _loadParticipantCount();
   }
 
   @override
@@ -173,6 +178,7 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        _buildParticipantCountSection(),
                         _buildGameInfo(),
                         _buildProfileStatusSection(),
                         if (widget.event.hasParticipationFee) _buildParticipationFeeSection(),
@@ -828,12 +834,36 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
     }
   }
 
+  /// 現在の参加者数を取得
+  Future<void> _loadParticipantCount() async {
+    try {
+      final count = await ParticipationService.getApprovedParticipantCount(widget.event.id);
+      if (mounted) {
+        setState(() {
+          _currentParticipantCount = count;
+          _isLoadingParticipantCount = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _currentParticipantCount = 0;
+          _isLoadingParticipantCount = false;
+        });
+      }
+    }
+  }
+
   bool _canSubmitApplication() {
     if (_isLoading) return false;
     if (widget.event.visibility == EventVisibility.private) return false;
     if (_profileStatus != ProfileRequirementStatus.ready) return false;
     if (widget.event.visibility == EventVisibility.inviteOnly &&
         _passwordController.text.trim().isEmpty) {
+      return false;
+    }
+    // 満員の場合は申込不可
+    if (_currentParticipantCount >= widget.event.maxParticipants) {
       return false;
     }
     return true;
@@ -1019,6 +1049,83 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
     );
   }
 
+  /// 参加者数情報セクションを構築
+  Widget _buildParticipantCountSection() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.spacingM),
+      decoration: BoxDecoration(
+        color: _currentParticipantCount >= widget.event.maxParticipants
+            ? AppColors.error.withValues(alpha: 0.1)
+            : AppColors.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        border: Border.all(
+          color: _currentParticipantCount >= widget.event.maxParticipants
+              ? AppColors.error
+              : AppColors.primary,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            _currentParticipantCount >= widget.event.maxParticipants
+                ? Icons.group_off
+                : Icons.group,
+            color: _currentParticipantCount >= widget.event.maxParticipants
+                ? AppColors.error
+                : AppColors.primary,
+          ),
+          const SizedBox(width: AppDimensions.spacingS),
+          Expanded(
+            child: _isLoadingParticipantCount
+                ? const Row(
+                    children: [
+                      SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      SizedBox(width: AppDimensions.spacingS),
+                      Text('参加者数を取得中...'),
+                    ],
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            '参加者数: ',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          Text(
+                            '$_currentParticipantCount/${widget.event.maxParticipants}人',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: _currentParticipantCount >= widget.event.maxParticipants
+                                  ? AppColors.error
+                                  : AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (_currentParticipantCount >= widget.event.maxParticipants)
+                        const Text(
+                          '※ このイベントは満員です',
+                          style: TextStyle(
+                            color: AppColors.error,
+                            fontSize: 12,
+                          ),
+                        ),
+                    ],
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
   String _getErrorMessage(ParticipationResult result) {
     switch (result) {
       case ParticipationResult.eventNotFound:
@@ -1029,6 +1136,8 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
         return '既にこのイベントに申し込み済みです。';
       case ParticipationResult.incorrectPassword:
         return 'パスワードが間違っています。';
+      case ParticipationResult.eventFull:
+        return 'このイベントは満員のため申し込みができません。';
       case ParticipationResult.permissionDenied:
         return 'アクセス権限がありません。';
       case ParticipationResult.networkError:

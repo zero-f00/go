@@ -263,12 +263,12 @@ class EventChangeDetector {
   static void _checkDateTimeChange(
     List<EventChange> changes,
     EventChangeType type,
-    DateTime oldValue,
-    DateTime newValue,
+    DateTime? oldValue,
+    DateTime? newValue,
   ) {
     if (oldValue != newValue) {
-      final oldDisplay = _formatDateTime(oldValue);
-      final newDisplay = _formatDateTime(newValue);
+      final oldDisplay = oldValue != null ? _formatDateTime(oldValue) : 'なし';
+      final newDisplay = newValue != null ? _formatDateTime(newValue) : 'なし';
 
       changes.add(EventChange(
         type: type,

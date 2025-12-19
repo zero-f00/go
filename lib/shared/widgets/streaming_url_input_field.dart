@@ -276,7 +276,7 @@ class _UrlCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(AppDimensions.spacingXS),
               decoration: BoxDecoration(
-                color: AppColors.accent.withOpacity(0.1),
+                color: AppColors.accent.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppDimensions.radiusS),
               ),
               child: const Icon(

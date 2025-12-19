@@ -402,10 +402,14 @@ extension ParticipationStatusExtension on ParticipationStatus {
     switch (this) {
       case ParticipationStatus.pending:
         return '承認待ち';
+      case ParticipationStatus.waitlisted:
+        return 'キャンセル待ち';
       case ParticipationStatus.approved:
         return '承認済み';
       case ParticipationStatus.rejected:
         return '拒否';
+      case ParticipationStatus.cancelled:
+        return 'キャンセル済み';
     }
   }
 
@@ -413,10 +417,14 @@ extension ParticipationStatusExtension on ParticipationStatus {
     switch (this) {
       case ParticipationStatus.pending:
         return AppColors.warning;
+      case ParticipationStatus.waitlisted:
+        return AppColors.warning;
       case ParticipationStatus.approved:
         return AppColors.success;
       case ParticipationStatus.rejected:
         return AppColors.error;
+      case ParticipationStatus.cancelled:
+        return AppColors.textSecondary;
     }
   }
 
@@ -424,10 +432,14 @@ extension ParticipationStatusExtension on ParticipationStatus {
     switch (this) {
       case ParticipationStatus.pending:
         return Icons.access_time;
+      case ParticipationStatus.waitlisted:
+        return Icons.queue;
       case ParticipationStatus.approved:
         return Icons.check_circle;
       case ParticipationStatus.rejected:
         return Icons.cancel;
+      case ParticipationStatus.cancelled:
+        return Icons.cancel_outlined;
     }
   }
 }

@@ -53,7 +53,7 @@ class SharedGameRepository {
 
       final results = <SharedGameData>[];
       for (final doc in querySnapshot.docs) {
-        final sharedGame = SharedGameData.fromJson(doc.data() as Map<String, dynamic>, doc.id);
+        final sharedGame = SharedGameData.fromJson(doc.data(), doc.id);
 
         // プラットフォームが一致するかチェック
         final hasCommonPlatform = sharedGame.game.platforms.any(
@@ -93,7 +93,7 @@ class SharedGameRepository {
         // Handle permission denied error
       }
       return null;
-    } catch (e, stackTrace) {
+    } catch (e) {
       return null;
     }
   }

@@ -534,12 +534,14 @@ class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
     switch (status) {
       case ApplicationStatus.pending:
         return AppColors.warning;
+      case ApplicationStatus.waitlisted:
+        return AppColors.info;
       case ApplicationStatus.approved:
         return AppColors.success;
       case ApplicationStatus.rejected:
         return AppColors.error;
-      case ParticipationStatus.rejected:
-        return AppColors.textSecondary;  // canceledは存在しないのでrejectedで代用
+      case ApplicationStatus.cancelled:
+        return AppColors.textSecondary;
     }
   }
 
@@ -547,12 +549,14 @@ class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
     switch (status) {
       case ApplicationStatus.pending:
         return Icons.schedule;
+      case ApplicationStatus.waitlisted:
+        return Icons.queue;
       case ApplicationStatus.approved:
         return Icons.check_circle;
       case ApplicationStatus.rejected:
         return Icons.cancel;
-      case ParticipationStatus.rejected:
-        return Icons.cancel;  // canceledは存在しないのでrejectedで代用
+      case ApplicationStatus.cancelled:
+        return Icons.cancel_outlined;
     }
   }
 
@@ -560,12 +564,14 @@ class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
     switch (status) {
       case ApplicationStatus.pending:
         return '承認待ち';
+      case ApplicationStatus.waitlisted:
+        return 'キャンセル待ち';
       case ApplicationStatus.approved:
         return '承認済み';
       case ApplicationStatus.rejected:
         return '拒否';
-      case ParticipationStatus.rejected:
-        return '拒否';  // canceledは存在しないのでrejectedで代用
+      case ApplicationStatus.cancelled:
+        return 'キャンセル済み';
     }
   }
 

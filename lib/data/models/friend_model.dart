@@ -86,7 +86,6 @@ class FriendRequest extends Equatable {
       return DateTime.fromMillisecondsSinceEpoch(value);
     } else {
       // フォールバック: 現在時刻を返す
-      print('⚠️ FriendRequest: Unexpected date format: $value, using current time');
       return DateTime.now();
     }
   }

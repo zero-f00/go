@@ -4,6 +4,7 @@ import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
+import '../../../shared/widgets/event_info_card.dart';
 import '../../../shared/widgets/user_avatar_from_id.dart';
 import '../../../data/models/event_group_model.dart';
 import '../../../data/repositories/user_repository.dart';
@@ -64,8 +65,6 @@ class _ParticipantGroupViewScreenState
       // ゲームIDを取得
       await _loadGameId();
 
-      // 少し遅延させてローディング状態を表示
-      await Future.delayed(const Duration(milliseconds: 500));
     } catch (e) {
       setState(() {
         _errorMessage = 'データの読み込みに失敗しました: $e';
@@ -94,7 +93,6 @@ class _ParticipantGroupViewScreenState
         _commonDescription = commonDesc;
       });
     } catch (e) {
-      print('Error loading common description: $e');
       // エラーがあっても処理は続行
     }
   }
@@ -116,7 +114,6 @@ class _ParticipantGroupViewScreenState
         _gameId = gameId;
       });
     } catch (e) {
-      print('Error loading game ID: $e');
       // エラーがあっても処理は続行
     }
   }
@@ -134,7 +131,6 @@ class _ParticipantGroupViewScreenState
       }
       return userData;
     } catch (e) {
-      print('Error getting user data for $userId: $e');
       return null;
     }
   }
@@ -265,53 +261,10 @@ class _ParticipantGroupViewScreenState
 
   /// イベント情報
   Widget _buildEventInfo() {
-    return Container(
-      margin: const EdgeInsets.all(AppDimensions.spacingL),
-      padding: const EdgeInsets.all(AppDimensions.spacingM),
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.cardShadow,
-            blurRadius: AppDimensions.cardElevation,
-            offset: const Offset(0, AppDimensions.shadowOffsetY),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.sports_esports,
-            color: AppColors.accent,
-            size: AppDimensions.iconM,
-          ),
-          const SizedBox(width: AppDimensions.spacingM),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.eventName,
-                  style: const TextStyle(
-                    fontSize: AppDimensions.fontSizeL,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textDark,
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.spacingXS),
-                Text(
-                  'チーム戦イベント',
-                  style: TextStyle(
-                    fontSize: AppDimensions.fontSizeS,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+    return EventInfoCard(
+      eventName: widget.eventName,
+      eventId: widget.eventId,
+      iconData: Icons.sports_esports,
     );
   }
 
@@ -949,9 +902,9 @@ class _ParticipantGroupViewScreenState
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.1),
+        color: AppColors.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-        border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

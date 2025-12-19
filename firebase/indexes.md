@@ -53,6 +53,11 @@ firebase deploy --only firestore:indexes
 | violations | reportedByUserId(昇順), reportedAt(降順) | 報告者別違反記録 |
 | violations | eventId(昇順), status(昇順), reportedAt(降順) | イベント別ステータス付き違反記録 |
 | violations | eventId(昇順), severity(昇順), reportedAt(降順) | イベント別重要度付き違反記録 |
+| match_reports | matchId(昇順), createdAt(降順) | 試合別報告一覧 |
+| match_reports | reporterId(昇順), createdAt(降順) | 報告者別報告一覧 |
+| match_reports | status(昇順), createdAt(昇順) | 運営向け未処理報告 |
+| admin_notifications | eventId(昇順), createdAt(降順) | イベント別運営通知 |
+| admin_notifications | isRead(昇順), createdAt(降順) | 未読運営通知 |
 
 ## 単一フィールドインデックス
 
@@ -123,6 +128,37 @@ eventGroupsCollection
   // メモリ内でソート: ..sort((a, b) => a.createdAt.compareTo(b.createdAt))
 ```
 
+### 試合報告管理
+```dart
+// 試合別報告一覧
+matchReportsCollection
+  .where('matchId', isEqualTo: matchId)
+  .orderBy('createdAt', descending: true)
+
+// 報告者別報告一覧
+matchReportsCollection
+  .where('reporterId', isEqualTo: userId)
+  .orderBy('createdAt', descending: true)
+
+// 運営向け未処理報告
+matchReportsCollection
+  .where('status', whereIn: ['submitted', 'reviewing'])
+  .orderBy('createdAt', descending: false)
+```
+
+### 運営通知
+```dart
+// イベント別運営通知
+adminNotificationsCollection
+  .where('eventId', isEqualTo: eventId)
+  .orderBy('createdAt', descending: true)
+
+// 未読運営通知
+adminNotificationsCollection
+  .where('isRead', isEqualTo: false)
+  .orderBy('createdAt', descending: true)
+```
+
 ## インデックス追加手順
 
 1. `firestore.indexes.json` にインデックス定義を追加
@@ -149,3 +185,4 @@ eventGroupsCollection
 | 2025-12-02 | event_groups複合クエリをメモリ内ソートに変更 |
 | 2025-12-08 | イベントリマインダー用インデックス追加 |
 | 2025-12-11 | firestore.indexes.json作成、ドキュメント整理 |
+| 2025-12-18 | match_reports、admin_notificationsインデックス追加 |

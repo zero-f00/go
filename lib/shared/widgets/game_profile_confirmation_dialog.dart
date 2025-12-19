@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/game_profile_model.dart';
+import '../../features/game_profile/providers/game_profile_provider.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import 'primary_button.dart';
 import 'secondary_button.dart';
 
 /// ゲームプロフィール確認ダイアログ
-class GameProfileConfirmationDialog extends StatelessWidget {
+class GameProfileConfirmationDialog extends ConsumerWidget {
   final GameProfile gameProfile;
   final String eventName;
   final VoidCallback onConfirm;
@@ -21,7 +23,7 @@ class GameProfileConfirmationDialog extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return AlertDialog(
       title: const Text('ゲームプロフィールの確認'),
       content: SingleChildScrollView(
@@ -37,7 +39,7 @@ class GameProfileConfirmationDialog extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppDimensions.spacingM),
-            _buildProfileSection(),
+            _buildProfileSection(ref),
           ],
         ),
       ),
@@ -56,25 +58,35 @@ class GameProfileConfirmationDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileSection() {
+  Widget _buildProfileSection(WidgetRef ref) {
+    final gameAsync = ref.watch(gameByIdProvider(gameProfile.gameId));
+
+    return gameAsync.when(
+      data: (game) => _buildProfileContent(game?.name ?? gameProfile.gameId),
+      loading: () => _buildProfileContent(gameProfile.gameId),
+      error: (_, __) => _buildProfileContent(gameProfile.gameId),
+    );
+  }
+
+  Widget _buildProfileContent(String gameName) {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
-        color: AppColors.background.withOpacity(0.5),
+        color: AppColors.background.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(AppDimensions.radiusM),
         border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildInfoRow('ゲーム', gameProfile.gameId),  // TODO: gameNameをプロバイダーから取得
+          _buildInfoRow('ゲーム', gameName),
           _buildInfoRow('ゲーム内ユーザー名', gameProfile.gameUsername),
-          if (gameProfile.gameUserId?.isNotEmpty == true)
-            _buildInfoRow('ゲーム内ユーザーID', gameProfile.gameUserId!),
-          if (gameProfile.experience != null)
-            _buildInfoRow('経験レベル', gameProfile.experience!.displayName),
-          if (gameProfile.rankOrLevel?.isNotEmpty == true)
-            _buildInfoRow('ランク・レベル', gameProfile.rankOrLevel!),
+          if (gameProfile.gameUserId.isNotEmpty)
+            _buildInfoRow('ゲーム内ユーザーID', gameProfile.gameUserId),
+          if (gameProfile.skillLevel != null)
+            _buildInfoRow('スキルレベル', gameProfile.skillLevel!.displayName),
+          if (gameProfile.rankOrLevel.isNotEmpty)
+            _buildInfoRow('ランク・レベル', gameProfile.rankOrLevel),
           if (gameProfile.playStyles.isNotEmpty)
             _buildInfoRow(
               'プレイスタイル',
@@ -85,17 +97,16 @@ class GameProfileConfirmationDialog extends StatelessWidget {
               '活動時間',
               gameProfile.activityTimes.map((time) => time.displayName).join(', '),
             ),
-          if (gameProfile.useInGameVC != null)
-            _buildInfoRow(
-              'ゲーム内ボイスチャット',
-              gameProfile.useInGameVC! ? '利用する' : '利用しない',
-            ),
-          if (gameProfile.voiceChatDetails?.isNotEmpty == true)
-            _buildInfoRow('ボイスチャット詳細', gameProfile.voiceChatDetails!),
-          if (gameProfile.achievements?.isNotEmpty == true)
-            _buildInfoRow('実績・成果', gameProfile.achievements!),
-          if (gameProfile.notes?.isNotEmpty == true)
-            _buildInfoRow('その他メモ', gameProfile.notes!),
+          _buildInfoRow(
+            'ゲーム内ボイスチャット',
+            gameProfile.useInGameVC ? '利用する' : '利用しない',
+          ),
+          if (gameProfile.voiceChatDetails.isNotEmpty)
+            _buildInfoRow('ボイスチャット詳細', gameProfile.voiceChatDetails),
+          if (gameProfile.achievements.isNotEmpty)
+            _buildInfoRow('実績・成果', gameProfile.achievements),
+          if (gameProfile.notes.isNotEmpty)
+            _buildInfoRow('その他メモ', gameProfile.notes),
         ],
       ),
     );
