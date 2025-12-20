@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "go-mobile-cb9f1"
+    "default": "go-mobile-cb9f1",
+    "prod": "go-mobile-cb9f1",
+    "dev": "go-mobile-dev-ce2ac"
   }
 }

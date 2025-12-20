@@ -5,7 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'firebase_options.dart';
+import 'firebase_options_loader.dart'; // FlavorごとのFirebase設定をロード
 import 'shared/services/app_initialization_service.dart';
 import 'features/main/views/main_screen.dart';
 import 'features/settings/views/settings_screen.dart';
@@ -55,7 +55,7 @@ void main() async {
   // Firebase初期化
   try {
     await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
+      options: FirebaseOptionsLoader.currentPlatform,
     );
 
     // アプリ初期化処理（ゲストユーザーキャッシュクリア等）

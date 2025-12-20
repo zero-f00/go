@@ -22,14 +22,24 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "go.mobile"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+    }
+
+    flavorDimensions += "app"
+    productFlavors {
+        create("dev") {
+            dimension = "app"
+            applicationIdSuffix = ".dev"  // go.mobile.dev になる
+            versionNameSuffix = "-dev"
+        }
+        create("prod") {
+            dimension = "app"
+            // applicationId は defaultConfig の go.mobile をそのまま使用
+        }
     }
 
     buildTypes {
