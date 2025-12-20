@@ -32,6 +32,7 @@ import 'features/event_participant/views/participant_list_view_screen.dart';
 import 'features/event_participant/views/violation_report_screen.dart';
 import 'shared/services/navigation_service.dart';
 import 'shared/services/admob_service.dart';
+import 'shared/services/deep_link_service.dart';
 import 'shared/constants/app_strings.dart';
 import 'shared/constants/app_colors.dart';
 
@@ -64,6 +65,9 @@ void main() async {
 
     // AdMob SDKを初期化
     await AdMobService.initialize();
+
+    // ディープリンク処理の初期化
+    await DeepLinkService().initialize();
 
     // 初期化完了後にスプラッシュ画面を削除
     FlutterNativeSplash.remove();

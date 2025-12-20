@@ -22,6 +22,7 @@ import '../../../data/models/user_model.dart';
 import '../../../shared/widgets/user_action_modal.dart';
 import '../../../shared/widgets/streaming_player_widget.dart';
 import '../../../shared/widgets/auth_dialog.dart';
+import '../../../shared/services/event_share_service.dart';
 import 'participant_match_results_screen.dart';
 
 class EventDetailScreen extends ConsumerStatefulWidget {
@@ -83,6 +84,22 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     } else {
       // 通常の戻る動作
       Navigator.of(context).pop();
+    }
+  }
+
+  /// イベントをSNSで共有
+  Future<void> _shareEvent() async {
+    try {
+      await EventShareService.shareEvent(_currentEvent);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('共有に失敗しました: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 
@@ -159,6 +176,17 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                 title: _currentEvent.name,
                 showBackButton: true,
                 onBackPressed: () => _handleBackPressed(),
+                actions: [
+                  if (EventShareService.canShareEvent(_currentEvent))
+                    IconButton(
+                      icon: const Icon(
+                        Icons.share,
+                        color: AppColors.textOnPrimary,
+                      ),
+                      onPressed: () => _shareEvent(),
+                      tooltip: 'イベントを共有',
+                    ),
+                ],
               ),
               Expanded(
                 child: ListView(
