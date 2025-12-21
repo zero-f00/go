@@ -774,7 +774,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                       ),
                     ),
                     Text(
-                      '${entry.value}点',
+                      '${entry.value}${_currentMatch.scoreUnit ?? '点'}',
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeL,
                         fontWeight: FontWeight.w600,
@@ -854,7 +854,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                       ),
                     ),
                     Text(
-                      '${entry.value}点',
+                      '${entry.value}${_currentMatch.individualScoreUnit ?? _currentMatch.scoreUnit ?? '点'}',
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeL,
                         fontWeight: FontWeight.w600,

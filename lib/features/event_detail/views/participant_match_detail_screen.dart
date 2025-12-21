@@ -511,7 +511,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
                         ],
                       ),
                       Text(
-                        '${entry.value}点',
+                        '${entry.value}${match.individualScoreUnit ?? match.scoreUnit ?? '点'}',
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeM,
                           fontWeight: FontWeight.w600,
@@ -755,7 +755,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
               ),
             ),
             Text(
-              '${scoreEntry.value}点',
+              '${scoreEntry.value}${match.scoreUnit ?? '点'}',
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 fontWeight: FontWeight.w600,

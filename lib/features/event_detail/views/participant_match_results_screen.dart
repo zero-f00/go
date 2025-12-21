@@ -488,7 +488,7 @@ class _ParticipantMatchResultsScreenState
                             ),
                           ),
                           Text(
-                            '${entry.value}点',
+                            '${entry.value}${match.scoreUnit ?? '点'}',
                             style: TextStyle(
                               fontSize: AppDimensions.fontSizeM,
                               fontWeight: FontWeight.w600,

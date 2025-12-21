@@ -132,7 +132,7 @@ class _MatchResultInputScreenState
         _scoreTypes.add(ScoreType(
           id: 'default_score',
           name: 'スコア',
-          unit: '点',
+          unit: widget.match.scoreUnit ?? '点',
           targetType: ScoreTargetType.team,
         ));
       } else {
@@ -140,7 +140,7 @@ class _MatchResultInputScreenState
         _scoreTypes.add(ScoreType(
           id: 'default_individual_score',
           name: 'スコア',
-          unit: '点',
+          unit: widget.match.scoreUnit ?? '点',
           targetType: ScoreTargetType.individual,
         ));
       }
@@ -153,7 +153,7 @@ class _MatchResultInputScreenState
       _scoreTypes.add(ScoreType(
         id: 'default_individual_score',
         name: '個人スコア',
-        unit: '点',
+        unit: widget.match.individualScoreUnit ?? '点',
         targetType: ScoreTargetType.individual,
       ));
     }
@@ -2331,6 +2331,30 @@ class _MatchResultInputScreenState
         }
       }
 
+      // スコア単位を取得
+      String? scoreUnit;
+      String? individualScoreUnit;
+
+      // チーム戦の場合
+      if (widget.match.isTeamMatch) {
+        // チーム対象のスコア種別から単位を取得
+        final teamScoreTypes = _scoreTypes.where((type) => type.targetType == ScoreTargetType.team);
+        if (teamScoreTypes.isNotEmpty) {
+          scoreUnit = teamScoreTypes.first.unit;
+        }
+        // 個人対象のスコア種別から単位を取得
+        final individualScoreTypes = _scoreTypes.where((type) => type.targetType == ScoreTargetType.individual);
+        if (individualScoreTypes.isNotEmpty) {
+          individualScoreUnit = individualScoreTypes.first.unit;
+        }
+      } else {
+        // 個人戦の場合
+        final individualScoreTypes = _scoreTypes.where((type) => type.targetType == ScoreTargetType.individual);
+        if (individualScoreTypes.isNotEmpty) {
+          scoreUnit = individualScoreTypes.first.unit;
+        }
+      }
+
       // 更新されたMatchResultを作成
       final updatedMatch = widget.match.copyWith(
         scores: scores,
@@ -2346,6 +2370,8 @@ class _MatchResultInputScreenState
         status: MatchStatus.completed,
         completedAt: DateTime.now(),
         updatedAt: DateTime.now(),
+        scoreUnit: scoreUnit,
+        individualScoreUnit: individualScoreUnit,
       );
 
       if (mounted) {

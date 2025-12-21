@@ -78,6 +78,12 @@ class MatchResult extends Equatable {
   /// エビデンス画像のメタデータ（アップロード者、アップロード日時など）
   final Map<String, Map<String, dynamic>>? evidenceImageMetadata;
 
+  /// スコアの単位（例: 点、キル、ラウンド）
+  final String? scoreUnit;
+
+  /// 個人スコアの単位（チーム戦の場合のみ使用）
+  final String? individualScoreUnit;
+
   const MatchResult({
     this.id,
     required this.eventId,
@@ -98,6 +104,8 @@ class MatchResult extends Equatable {
     this.status = MatchStatus.scheduled,
     this.evidenceImages = const [],
     this.evidenceImageMetadata,
+    this.scoreUnit,
+    this.individualScoreUnit,
   });
 
   /// Firestoreドキュメントから作成
@@ -143,6 +151,8 @@ class MatchResult extends Equatable {
               ),
             )
           : null,
+      scoreUnit: data['scoreUnit'] as String?,
+      individualScoreUnit: data['individualScoreUnit'] as String?,
     );
   }
 
@@ -188,6 +198,8 @@ class MatchResult extends Equatable {
               ),
             )
           : null,
+      scoreUnit: json['scoreUnit'] as String?,
+      individualScoreUnit: json['individualScoreUnit'] as String?,
     );
   }
 
@@ -214,6 +226,8 @@ class MatchResult extends Equatable {
       'status': status.value,
       'evidenceImages': evidenceImages,
       'evidenceImageMetadata': evidenceImageMetadata,
+      'scoreUnit': scoreUnit,
+      'individualScoreUnit': individualScoreUnit,
     };
   }
 
@@ -239,6 +253,8 @@ class MatchResult extends Equatable {
       'status': status.value,
       'evidenceImages': evidenceImages,
       'evidenceImageMetadata': evidenceImageMetadata,
+      'scoreUnit': scoreUnit,
+      'individualScoreUnit': individualScoreUnit,
     };
   }
 
@@ -263,6 +279,8 @@ class MatchResult extends Equatable {
     MatchStatus? status,
     List<String>? evidenceImages,
     Map<String, Map<String, dynamic>>? evidenceImageMetadata,
+    String? scoreUnit,
+    String? individualScoreUnit,
   }) {
     return MatchResult(
       id: id ?? this.id,
@@ -284,6 +302,8 @@ class MatchResult extends Equatable {
       status: status ?? this.status,
       evidenceImages: evidenceImages ?? this.evidenceImages,
       evidenceImageMetadata: evidenceImageMetadata ?? this.evidenceImageMetadata,
+      scoreUnit: scoreUnit ?? this.scoreUnit,
+      individualScoreUnit: individualScoreUnit ?? this.individualScoreUnit,
     );
   }
 
@@ -317,6 +337,8 @@ class MatchResult extends Equatable {
         status,
         evidenceImages,
         evidenceImageMetadata,
+        scoreUnit,
+        individualScoreUnit,
       ];
 
   @override
