@@ -11,11 +11,15 @@ class InAppReviewService {
   /// デバイスがサポートしていない場合は、アプリストアページを開く
   static Future<void> requestReview() async {
     try {
-      // 開発中またはアプリがストアに公開されていない場合はスキップ
-      if (kDebugMode || !_isValidStoreConfiguration()) {
-        if (kDebugMode) {
-          print('In-App Review: Skipping review request in debug mode or invalid store configuration');
-        }
+      // デバッグモードではスキップ（リリースビルドのみ動作）
+      if (kDebugMode) {
+        print('In-App Review: Skipping in debug mode');
+        return;
+      }
+
+      // ストア設定の検証
+      if (!_isValidStoreConfiguration()) {
+        // リリースでも設定不正なら何もしない
         return;
       }
 
@@ -47,19 +51,28 @@ class InAppReviewService {
         return;
       }
 
-      await _inAppReview.openStoreListing(
-        appStoreId: AppConstants.iosAppStoreId, // iOS用
-        microsoftStoreId: AppConstants.microsoftStoreId, // Microsoft Store用（必要に応じて）
-      );
+      // まずネイティブAPIで開く試行
+      try {
+        await _inAppReview.openStoreListing(
+          appStoreId: AppConstants.iosAppStoreId,
+        );
+      } catch (e) {
+        // ネイティブAPIが失敗した場合はブラウザで開く
+        if (kDebugMode) {
+          print('Native store listing failed, trying browser: $e');
+        }
+        await _openStoreInBrowser();
+      }
     } catch (e) {
       if (kDebugMode) {
         print('Store listing error: $e');
       }
-      // エラー時は何もしない（フリーズを防ぐ）
+      // 最終フォールバック：ブラウザで開く
+      await _openStoreInBrowser();
     }
   }
 
-  /// ブラウザでストアページを開く（最後の手段）
+  /// ブラウザでストアページを開く
   static Future<void> _openStoreInBrowser() async {
     String storeUrl;
 

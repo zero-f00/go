@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../services/avatar_service.dart';
-import '../services/in_app_review_service.dart';
+import 'review_dialog.dart';
 import '../providers/auth_provider.dart';
 import 'user_settings_dialog.dart';
 import 'auth_dialog.dart';
@@ -505,13 +505,10 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
   }
 
 
-
-
-
   void _onRatingTap(BuildContext context) {
     Navigator.pop(context);
-    // In-App Review機能を実行
-    InAppReviewService.requestReview();
+    // レビュー選択ダイアログを表示
+    ReviewDialog.show(context);
   }
 
   void _onFriendsTap(BuildContext context) {

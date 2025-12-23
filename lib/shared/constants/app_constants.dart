@@ -54,10 +54,8 @@ class AppConstants {
   static const int analyticsCacheDuration = 30;
 
   // App Store configurations
-  // TODO: 実際のアプリID/パッケージ名に置き換える
-  static const String iosAppStoreId = 'YOUR_APP_STORE_ID';
-  static const String androidPackageName = 'YOUR_PACKAGE_NAME';
-  static const String microsoftStoreId = 'YOUR_MICROSOFT_STORE_ID';
+  static const String iosAppStoreId = '6756296268';
+  static const String androidPackageName = 'go.mobile';
 
   // In-app review conditions
   static const int reviewRequestMinLaunchCount = 10;
