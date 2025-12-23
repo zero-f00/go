@@ -15,6 +15,10 @@ class DeepLinkService {
   bool _isInitialized = false;
 
   /// Vercelでホストするランディングページのドメイン
+  /// TODO: 開発環境用のドメイン切り替え対応
+  /// 現在は本番環境のみ対応。開発環境でテストする場合は本番Firebaseに
+  /// 同じイベントを作成する必要がある。
+  /// 将来的にはFlavorに応じてドメインを切り替える実装を検討。
   static const String webDomain = 'go-web-zeta.vercel.app';
 
   /// ディープリンクのパスパターン
