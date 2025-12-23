@@ -58,15 +58,18 @@ class UserActionModal extends ConsumerWidget {
     List<Widget>? additionalActions,
     bool showViolationReport = true,
   }) {
+    // 元のNavigatorを保持（モーダルを閉じた後のナビゲーションで使用）
+    final rootNavigator = Navigator.of(context, rootNavigator: true);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) => DraggableScrollableSheet(
+      builder: (modalContext) => DraggableScrollableSheet(
         initialChildSize: 0.7,
         minChildSize: 0.5,
         maxChildSize: 0.9,
         expand: false,
-        builder: (context, scrollController) => UserActionModal(
+        builder: (sheetContext, scrollController) => UserActionModal(
           eventId: eventId,
           eventName: eventName ?? 'イベント',
           userId: userId,
@@ -75,11 +78,17 @@ class UserActionModal extends ConsumerWidget {
           userData: userData,
           gameProfile: gameProfile,
           gameId: gameId,
-          onGameProfileTap: onGameProfileTap,
-          onUserProfileTap: onUserProfileTap,
+          onGameProfileTap: () {
+            rootNavigator.pop(); // モーダルを閉じる
+            onGameProfileTap?.call(); // コールバック実行
+          },
+          onUserProfileTap: () {
+            rootNavigator.pop(); // モーダルを閉じる
+            onUserProfileTap?.call(); // コールバック実行
+          },
           additionalActions: additionalActions,
           showViolationReport: showViolationReport,
-        )._buildContent(context, scrollController),
+        )._buildContent(sheetContext, scrollController),
       ),
     );
   }
@@ -239,10 +248,7 @@ class UserActionModal extends ConsumerWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () {
-          Navigator.pop(context);
-          onTap?.call();
-        },
+        onTap: onTap,
         borderRadius: BorderRadius.circular(AppDimensions.radiusM),
         child: Container(
           width: double.infinity,

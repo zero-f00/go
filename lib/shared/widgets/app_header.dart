@@ -4,6 +4,7 @@ import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../providers/auth_provider.dart';
 import 'user_avatar.dart';
+import 'ad_banner.dart';
 
 class AppHeader extends ConsumerWidget {
   final String title;
@@ -13,6 +14,7 @@ class AppHeader extends ConsumerWidget {
   final bool showMenuButton;
   final bool showUserIcon;
   final List<Widget>? actions;
+  final bool showAd;
 
   const AppHeader({
     super.key,
@@ -23,6 +25,7 @@ class AppHeader extends ConsumerWidget {
     this.showMenuButton = false,
     this.showUserIcon = false,
     this.actions,
+    this.showAd = true,
   });
 
   @override
@@ -30,84 +33,90 @@ class AppHeader extends ConsumerWidget {
     final isSignedIn = ref.watch(isSignedInProvider);
     final displayName = ref.watch(displayNameProvider);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingXL,
-        vertical: AppDimensions.spacingL,
-      ),
-      child: Row(
-        children: [
-          // 左側のアイコン
-          if (showUserIcon)
-            _buildUserIcon(context, ref, isSignedIn, displayName)
-          else if (showBackButton)
-            GestureDetector(
-              onTap: onBackPressed ?? () => Navigator.of(context).pop(),
-              child: Container(
-                width: AppDimensions.headerButtonSize,
-                height: AppDimensions.headerButtonSize,
-                decoration: BoxDecoration(
-                  color: AppColors.overlayLight,
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.headerButtonSize / 2,
-                  ),
-                ),
-                child: const Icon(
-                  Icons.arrow_back,
-                  color: AppColors.textOnPrimary,
-                  size: AppDimensions.iconM,
-                ),
-              ),
-            )
-          else
-            SizedBox(width: AppDimensions.headerButtonSize),
-
-          // 中央のタイトル
-          Expanded(
-            child: Center(
-              child: GestureDetector(
-                onTap: () => _showFullTitle(context),
-                child: Text(
-                  title,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: AppColors.textOnPrimary,
-                    fontSize: _getResponsiveFontSize(title),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingXL,
+            vertical: AppDimensions.spacingL,
           ),
+          child: Row(
+            children: [
+              // 左側のアイコン
+              if (showUserIcon)
+                _buildUserIcon(context, ref, isSignedIn, displayName)
+              else if (showBackButton)
+                GestureDetector(
+                  onTap: onBackPressed ?? () => Navigator.of(context).pop(),
+                  child: Container(
+                    width: AppDimensions.headerButtonSize,
+                    height: AppDimensions.headerButtonSize,
+                    decoration: BoxDecoration(
+                      color: AppColors.overlayLight,
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.headerButtonSize / 2,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back,
+                      color: AppColors.textOnPrimary,
+                      size: AppDimensions.iconM,
+                    ),
+                  ),
+                )
+              else
+                SizedBox(width: AppDimensions.headerButtonSize),
 
-          // 右側のアクションまたはメニューボタン
-          if (actions != null && actions!.isNotEmpty)
-            Row(mainAxisSize: MainAxisSize.min, children: actions!)
-          else if (showMenuButton && !showUserIcon)
-            GestureDetector(
-              onTap: onMenuPressed,
-              child: Container(
-                width: AppDimensions.headerButtonSize,
-                height: AppDimensions.headerButtonSize,
-                decoration: BoxDecoration(
-                  color: AppColors.overlayLight,
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.headerButtonSize / 2,
+              // 中央のタイトル
+              Expanded(
+                child: Center(
+                  child: GestureDetector(
+                    onTap: () => _showFullTitle(context),
+                    child: Text(
+                      title,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppColors.textOnPrimary,
+                        fontSize: _getResponsiveFontSize(title),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
                 ),
-                child: const Icon(
-                  Icons.more_vert,
-                  color: AppColors.textOnPrimary,
-                  size: AppDimensions.iconM,
-                ),
               ),
-            )
-          else
-            SizedBox(width: AppDimensions.headerButtonSize),
-        ],
-      ),
+
+              // 右側のアクションまたはメニューボタン
+              if (actions != null && actions!.isNotEmpty)
+                Row(mainAxisSize: MainAxisSize.min, children: actions!)
+              else if (showMenuButton && !showUserIcon)
+                GestureDetector(
+                  onTap: onMenuPressed,
+                  child: Container(
+                    width: AppDimensions.headerButtonSize,
+                    height: AppDimensions.headerButtonSize,
+                    decoration: BoxDecoration(
+                      color: AppColors.overlayLight,
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.headerButtonSize / 2,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.more_vert,
+                      color: AppColors.textOnPrimary,
+                      size: AppDimensions.iconM,
+                    ),
+                  ),
+                )
+              else
+                SizedBox(width: AppDimensions.headerButtonSize),
+            ],
+          ),
+        ),
+        if (showAd) const AdBanner(),
+      ],
     );
   }
 

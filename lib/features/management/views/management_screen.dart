@@ -8,6 +8,7 @@ import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
 import '../../../shared/widgets/app_drawer.dart';
 import '../../../shared/widgets/app_tab_bar.dart';
+import '../../../shared/widgets/ad_banner.dart';
 import '../../../shared/widgets/auth_dialog.dart';
 import '../../../shared/widgets/user_settings_dialog.dart';
 import '../../../shared/providers/auth_provider.dart';
@@ -278,6 +279,7 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
                 title: AppStrings.manageTab,
                 showBackButton: false,
                 showUserIcon: true,
+                showAd: false,
                 onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
                 // 参加イベントタブが選択されている場合のみ表示切り替えボタンを表示
                 actions: _tabController.index == 1
@@ -293,6 +295,8 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
                   tabLabels: _tabLabels,
                 ),
               ),
+              const SizedBox(height: AppDimensions.spacingS),
+              const AdBanner(),
               Expanded(
                 child: TabBarView(
                   controller: _tabController,

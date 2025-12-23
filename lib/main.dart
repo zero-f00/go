@@ -31,6 +31,7 @@ import 'features/event_participant/views/participant_group_view_screen.dart';
 import 'features/event_participant/views/participant_list_view_screen.dart';
 import 'features/event_participant/views/violation_report_screen.dart';
 import 'shared/services/navigation_service.dart';
+import 'shared/services/admob_service.dart';
 import 'shared/constants/app_strings.dart';
 import 'shared/constants/app_colors.dart';
 
@@ -60,6 +61,9 @@ void main() async {
 
     // アプリ初期化処理（ゲストユーザーキャッシュクリア等）
     await AppInitializationService.initialize();
+
+    // AdMob SDKを初期化
+    await AdMobService.initialize();
 
     // 初期化完了後にスプラッシュ画面を削除
     FlutterNativeSplash.remove();

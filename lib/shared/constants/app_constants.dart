@@ -60,4 +60,24 @@ class AppConstants {
   // In-app review conditions
   static const int reviewRequestMinLaunchCount = 10;
   static const int reviewRequestMinUsageDays = 3;
+
+  // AdMob configurations
+  // Flavorに応じてテスト用IDと本番用IDを切り替え
+  static const String _appFlavor = String.fromEnvironment('APP_FLAVOR', defaultValue: 'dev');
+  static const bool _isProduction = _appFlavor == 'prod';
+
+  // テスト用ID（Google公式）
+  static const String _admobBannerAdUnitIdIosTest = 'ca-app-pub-3940256099942544/2934735716';
+  static const String _admobBannerAdUnitIdAndroidTest = 'ca-app-pub-3940256099942544/6300978111';
+
+  // 本番用ID
+  static const String _admobBannerAdUnitIdIosProd = 'ca-app-pub-7611377680432550/3765201131';
+  // Android用は未設定（リリース時に設定する）
+  static const String _admobBannerAdUnitIdAndroidProd = 'ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY';
+
+  // Flavorに応じたIDを返す
+  static String get admobBannerAdUnitIdIos =>
+      _isProduction ? _admobBannerAdUnitIdIosProd : _admobBannerAdUnitIdIosTest;
+  static String get admobBannerAdUnitIdAndroid =>
+      _isProduction ? _admobBannerAdUnitIdAndroidProd : _admobBannerAdUnitIdAndroidTest;
 }
