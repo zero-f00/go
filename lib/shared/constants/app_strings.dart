@@ -47,7 +47,7 @@ class AppStrings {
   static const String participationTrend = '参加者推移';
   static const String eventTypeAnalysis = 'イベントタイプ別分析';
   static const String eventDetails = 'イベント詳細';
-  static const String rewardList = '報酬一覧';
+  static const String rewardList = '賞品一覧';
 
   // Common actions
   static const String edit = '編集';
@@ -135,9 +135,9 @@ class AppStrings {
   static const String addTagButton = 'タグ追加';
   static const String removeTagButton = 'タグ削除';
 
-  static const String prizeSection = '賞金・報酬';
-  static const String hasPrizeLabel = '賞金あり';
-  static const String prizeContentLabel = '賞金内容';
+  static const String prizeSection = '賞品';
+  static const String hasPrizeLabel = '賞品あり';
+  static const String prizeContentLabel = '賞品内容';
   static const String sponsorsLabel = 'スポンサー';
 
   static const String managementSection = '運営・管理';

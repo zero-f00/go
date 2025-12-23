@@ -1376,7 +1376,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                 const SizedBox(width: AppDimensions.spacingS),
                 Expanded(
                   child: Text(
-                    '賞金の受け渡しは主催者と参加者間で直接行ってください。アプリでは受け渡しの仲介や保証は行いません。',
+                    '賞品の受け渡しは主催者と参加者間で直接行ってください。アプリでは受け渡しの仲介や保証は行いません。',
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeXS,
                       color: AppColors.textSecondary,
@@ -1413,7 +1413,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     );
   }
 
-  /// 賞金設定のヘルプダイアログを表示
+  /// 賞品設定のヘルプダイアログを表示
   void _showPrizeInfoDialog() {
     showDialog(
       context: context,
@@ -1422,14 +1422,14 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           children: [
             Icon(Icons.help_outline, color: AppColors.accent),
             const SizedBox(width: AppDimensions.spacingS),
-            const Text('賞金設定について'),
+            const Text('賞品設定について'),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildDialogBulletPoint('賞金情報は参加者への案内として表示されます'),
+            _buildDialogBulletPoint('賞品情報は参加者への案内として表示されます'),
             _buildDialogBulletPoint('実際の受け渡しは主催者と参加者間で行ってください'),
             _buildDialogBulletPoint('アプリでは受け渡しの仲介や保証は行いません'),
             _buildDialogBulletPoint('受け渡し方法は事前に参加者と相談してください'),

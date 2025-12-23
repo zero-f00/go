@@ -88,9 +88,19 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
   }
 
   /// イベントをSNSで共有
-  Future<void> _shareEvent() async {
+  /// [buttonContext] はiPadでシェアシートの表示位置を取得するために使用
+  Future<void> _shareEvent(BuildContext buttonContext) async {
     try {
-      await EventShareService.shareEvent(_currentEvent);
+      // iPadではシェアシートの表示位置が必要
+      final box = buttonContext.findRenderObject() as RenderBox?;
+      final sharePositionOrigin = box != null
+          ? box.localToGlobal(Offset.zero) & box.size
+          : null;
+
+      await EventShareService.shareEvent(
+        _currentEvent,
+        sharePositionOrigin: sharePositionOrigin,
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -178,13 +188,15 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                 onBackPressed: () => _handleBackPressed(),
                 actions: [
                   if (EventShareService.canShareEvent(_currentEvent))
-                    IconButton(
-                      icon: const Icon(
-                        Icons.share,
-                        color: AppColors.textOnPrimary,
+                    Builder(
+                      builder: (buttonContext) => IconButton(
+                        icon: const Icon(
+                          Icons.share,
+                          color: AppColors.textOnPrimary,
+                        ),
+                        onPressed: () => _shareEvent(buttonContext),
+                        tooltip: 'イベントを共有',
                       ),
-                      onPressed: () => _shareEvent(),
-                      tooltip: 'イベントを共有',
                     ),
                 ],
               ),
@@ -244,7 +256,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                       const SizedBox(height: AppDimensions.spacingL),
                     ],
 
-                    // 10. 賞金・スポンサー情報（入力済みの場合のみ表示）
+                    // 10. 賞品・スポンサー情報（入力済みの場合のみ表示）
                     if (_currentEvent.prizeContent != null && _currentEvent.prizeContent!.isNotEmpty) ...[
                       _buildPrizeSection(),
                       const SizedBox(height: AppDimensions.spacingL),
@@ -821,7 +833,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
   Widget _buildPrizeSection() {
     return _buildSectionContainer(
-      title: '賞金内容',
+      title: '賞品内容',
       icon: Icons.emoji_events,
       children: [
         Text(
@@ -854,7 +866,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
               const SizedBox(width: AppDimensions.spacingS),
               Expanded(
                 child: Text(
-                  '賞金の受け渡しは主催者と参加者間で直接行われます。受け渡し方法や詳細については主催者にお問い合わせください。',
+                  '賞品の受け渡しは主催者と参加者間で直接行われます。受け渡し方法や詳細については主催者にお問い合わせください。',
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeXS,
                     color: AppColors.textSecondary,

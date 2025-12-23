@@ -581,7 +581,7 @@ class EventDetailDialog extends StatelessWidget {
               ),
               const SizedBox(width: AppDimensions.spacingS),
               const Text(
-                '報酬',
+                '賞品',
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   fontWeight: FontWeight.w600,

@@ -16,6 +16,7 @@ import '../../../shared/services/game_service.dart';
 import '../../../shared/services/friend_service.dart';
 import '../../../shared/services/user_event_service.dart';
 import '../../../shared/services/social_stats_service.dart';
+import '../../../shared/services/user_profile_share_service.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/widgets/compact_event_card.dart';
 import '../../../shared/widgets/generic_event_list_screen.dart';
@@ -140,6 +141,64 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     }
   }
 
+  /// ヘッダーのアクションボタンを構築
+  List<Widget>? _buildHeaderActions() {
+    // ユーザーデータがない場合やシェア不可の場合はボタンを表示しない
+    if (_userData == null ||
+        !UserProfileShareService.canShareUserProfile(_userData!)) {
+      return null;
+    }
+
+    return [
+      GestureDetector(
+        onTap: () => _shareUserProfile(),
+        child: Container(
+          width: AppDimensions.headerButtonSize,
+          height: AppDimensions.headerButtonSize,
+          decoration: BoxDecoration(
+            color: AppColors.overlayLight,
+            borderRadius: BorderRadius.circular(
+              AppDimensions.headerButtonSize / 2,
+            ),
+          ),
+          child: const Icon(
+            Icons.share,
+            color: AppColors.textOnPrimary,
+            size: AppDimensions.iconM,
+          ),
+        ),
+      ),
+    ];
+  }
+
+  /// ユーザープロフィールを共有
+  Future<void> _shareUserProfile() async {
+    if (_userData == null) return;
+
+    try {
+      // iPadでのシェアシート位置を取得
+      final box = context.findRenderObject() as RenderBox?;
+      final sharePositionOrigin =
+          box != null
+              ? box.localToGlobal(Offset.zero) & box.size
+              : null;
+
+      await UserProfileShareService.shareUserProfile(
+        _userData!,
+        sharePositionOrigin: sharePositionOrigin,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('共有に失敗しました'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -151,6 +210,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                 title: AppStrings.userProfile,
                 showBackButton: true,
                 onBackPressed: () => Navigator.pop(context),
+                actions: _buildHeaderActions(),
               ),
               Expanded(
                 child: _isLoading

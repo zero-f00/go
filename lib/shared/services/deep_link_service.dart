@@ -19,10 +19,11 @@ class DeepLinkService {
   /// 現在は本番環境のみ対応。開発環境でテストする場合は本番Firebaseに
   /// 同じイベントを作成する必要がある。
   /// 将来的にはFlavorに応じてドメインを切り替える実装を検討。
-  static const String webDomain = 'go-web-zeta.vercel.app';
+  static const String webDomain = 'go-web-teal.vercel.app';
 
   /// ディープリンクのパスパターン
   static const String eventPathPrefix = '/event/';
+  static const String userPathPrefix = '/user/';
 
   /// 初期化
   Future<void> initialize() async {
@@ -75,6 +76,15 @@ class DeepLinkService {
       if (eventId.isNotEmpty) {
         _navigateToEventDetail(eventId);
       }
+      return;
+    }
+
+    // ユーザープロフィールへのリンク: /user/{userId}
+    if (path.startsWith(userPathPrefix)) {
+      final userId = path.substring(userPathPrefix.length);
+      if (userId.isNotEmpty) {
+        _navigateToUserProfile(userId);
+      }
     }
   }
 
@@ -97,9 +107,33 @@ class DeepLinkService {
     });
   }
 
-  /// 共有用URLを生成
+  /// ユーザープロフィール画面へ遷移
+  void _navigateToUserProfile(String userId) {
+    if (kDebugMode) {
+      print('DeepLinkService: Navigating to user profile - $userId');
+    }
+
+    // NavigationServiceを使用して遷移
+    // アプリが完全に起動していない可能性があるため、少し遅延させる
+    Future.delayed(const Duration(milliseconds: 500), () {
+      final context = NavigationService.navigatorKey.currentContext;
+      if (context != null) {
+        NavigationService.navigatorKey.currentState?.pushNamed(
+          '/user_profile',
+          arguments: userId,
+        );
+      }
+    });
+  }
+
+  /// イベント共有用URLを生成
   static String generateEventShareUrl(String eventId) {
     return 'https://$webDomain$eventPathPrefix$eventId';
+  }
+
+  /// ユーザープロフィール共有用URLを生成
+  static String generateUserShareUrl(String userId) {
+    return 'https://$webDomain$userPathPrefix$userId';
   }
 
   /// リソース解放

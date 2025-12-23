@@ -312,13 +312,13 @@ class EventConverter {
     return null;
   }
 
-  /// 報酬情報を解析
+  /// 賞品情報を解析
   static Map<String, double> _parseRewards(Event event) {
     if (!event.hasPrize) {
       return {};
     }
 
-    // 簡単な報酬解析（prizeContentから情報を抽出）
+    // 簡単な賞品解析（prizeContentから情報を抽出）
     final rewards = <String, double>{};
     final content = event.prizeContent?.toLowerCase() ?? '';
 

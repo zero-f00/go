@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../features/game_event_management/models/game_event.dart';
@@ -13,9 +14,10 @@ class EventShareService {
 
   /// イベントを共有できるかどうかを判定
   static bool canShareEvent(GameEvent event) {
+    // TODO: シェア機能の動作確認完了後、以下のコメントを解除して開発環境でのシェアを無効化する
     // 開発環境ではシェア機能を無効化
     // 開発用Firebaseのイベントは本番go-webで参照できないため
-    if (!_isProduction) return false;
+    // if (!_isProduction) return false;
     // プライベートイベントは共有不可
     if (event.visibility == 'プライベート') return false;
     // 中止されたイベントも共有不可
@@ -26,7 +28,8 @@ class EventShareService {
   }
 
   /// イベントを共有する
-  static Future<void> shareEvent(GameEvent event) async {
+  /// [sharePositionOrigin] はiPadでシェアシートの表示位置を指定するために必要
+  static Future<void> shareEvent(GameEvent event, {Rect? sharePositionOrigin}) async {
     if (!canShareEvent(event)) {
       if (kDebugMode) {
         print('EventShareService: Cannot share this event (visibility: ${event.visibility}, status: ${event.status})');
@@ -36,7 +39,10 @@ class EventShareService {
 
     try {
       final shareText = _buildShareText(event);
-      await Share.share(shareText);
+      await Share.share(
+        shareText,
+        sharePositionOrigin: sharePositionOrigin,
+      );
     } catch (e) {
       if (kDebugMode) {
         print('EventShareService: Share error - $e');
@@ -50,7 +56,7 @@ class EventShareService {
     final buffer = StringBuffer();
 
     // イベント名
-    buffer.writeln('🎮 【${event.name}】');
+    buffer.writeln('【${event.name}】');
     buffer.writeln();
 
     // 開催日時
@@ -64,6 +70,11 @@ class EventShareService {
 
     // 参加者情報
     buffer.writeln('👥 参加者: ${event.participantCount}/${event.maxParticipants}人');
+
+    // 賞品情報（存在する場合）
+    if (event.prizeContent != null && event.prizeContent!.isNotEmpty) {
+      buffer.writeln('🏆 賞品あり');
+    }
     buffer.writeln();
 
     // 説明文（最大100文字）
@@ -82,12 +93,25 @@ class EventShareService {
     buffer.writeln();
 
     // ハッシュタグ
-    buffer.write('#Go #ゲームイベント');
+    final hashtags = <String>['Go.', 'ゲームイベント'];
+
+    // ゲーム名をハッシュタグに追加
     if (event.gameName != null && event.gameName!.isNotEmpty) {
-      // ゲーム名からスペースを除去してハッシュタグに追加
-      final gameTag = event.gameName!.replaceAll(' ', '');
-      buffer.write(' #$gameTag');
+      final gameTag = _sanitizeHashtag(event.gameName!);
+      if (gameTag.isNotEmpty) {
+        hashtags.add(gameTag);
+      }
     }
+
+    // イベントタグをハッシュタグに追加
+    for (final tag in event.eventTags) {
+      final sanitizedTag = _sanitizeHashtag(tag);
+      if (sanitizedTag.isNotEmpty && !hashtags.contains(sanitizedTag)) {
+        hashtags.add(sanitizedTag);
+      }
+    }
+
+    buffer.write(hashtags.map((tag) => '#$tag').join(' '));
 
     return buffer.toString();
   }
@@ -100,5 +124,14 @@ class EventShareService {
       // フォールバック: デフォルトロケール使用
       return DateFormat('yyyy/MM/dd HH:mm');
     }
+  }
+
+  /// ハッシュタグ用に文字列をサニタイズ
+  /// スペースや特殊文字を除去し、ハッシュタグとして使用可能な形式に変換
+  static String _sanitizeHashtag(String text) {
+    // スペース、ハッシュ記号、その他SNSで問題となる文字を除去
+    return text
+        .replaceAll(RegExp(r'[\s#@\n\r\t]'), '')
+        .replaceAll(RegExp(r'[　]'), ''); // 全角スペースも除去
   }
 }
