@@ -7,8 +7,15 @@ import 'deep_link_service.dart';
 /// イベント共有サービス
 /// SNSやメッセージアプリでイベント情報を共有する機能を提供
 class EventShareService {
+  /// 本番環境かどうか（開発環境ではシェア機能を無効化）
+  static const bool _isProduction =
+      String.fromEnvironment('APP_FLAVOR', defaultValue: 'dev') == 'prod';
+
   /// イベントを共有できるかどうかを判定
   static bool canShareEvent(GameEvent event) {
+    // 開発環境ではシェア機能を無効化
+    // 開発用Firebaseのイベントは本番go-webで参照できないため
+    if (!_isProduction) return false;
     // プライベートイベントは共有不可
     if (event.visibility == 'プライベート') return false;
     // 中止されたイベントも共有不可
