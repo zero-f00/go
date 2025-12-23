@@ -15,8 +15,7 @@ class DeepLinkService {
   bool _isInitialized = false;
 
   /// Vercelでホストするランディングページのドメイン
-  /// TODO: 実際のVercelドメインに置き換える
-  static const String webDomain = 'go-mobile-event.vercel.app';
+  static const String webDomain = 'go-web-zeta.vercel.app';
 
   /// ディープリンクのパスパターン
   static const String eventPathPrefix = '/event/';

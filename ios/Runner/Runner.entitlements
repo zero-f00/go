@@ -10,7 +10,7 @@
 	</array>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:go-mobile-event.vercel.app</string>
+		<string>applinks:go-web-zeta.vercel.app</string>
 	</array>
 </dict>
 </plist>

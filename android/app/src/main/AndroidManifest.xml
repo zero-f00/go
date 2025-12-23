@@ -43,7 +43,7 @@
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data
                     android:scheme="https"
-                    android:host="go-mobile-event.vercel.app"
+                    android:host="go-web-zeta.vercel.app"
                     android:pathPrefix="/event"/>
             </intent-filter>
         </activity>
