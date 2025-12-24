@@ -86,7 +86,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
               children: [
                 _buildDrawerItem(
                   icon: Icons.sync_alt,
-                  title: '相互フォロー',
+                  title: 'フォロー',
                   onTap: () => _onFriendsTap(context),
                 ),
                 _buildDrawerItem(

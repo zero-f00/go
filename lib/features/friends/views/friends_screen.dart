@@ -53,7 +53,7 @@ extension _SocialListTypeExtension on _SocialListType {
   }
 }
 
-/// 相互フォローリスト画面
+/// フォロー画面（相互フォロー・フォロー中・フォロワーを管理）
 class FriendsScreen extends ConsumerStatefulWidget {
   const FriendsScreen({super.key});
 
@@ -128,7 +128,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
           child: Column(
             children: [
               AppHeader(
-                title: '相互フォロー',
+                title: 'フォロー',
                 showBackButton: true,
                 onBackPressed: () => Navigator.of(context).pop(),
                 actions: [
@@ -197,13 +197,13 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
           Row(
             children: [
               Icon(
-                Icons.people,
+                Icons.sync_alt,
                 color: AppColors.accent,
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
               const Text(
-                '相互フォロー',
+                'フォロー',
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
