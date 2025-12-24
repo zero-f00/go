@@ -198,8 +198,9 @@ class RecommendationService {
               }
 
               // 4. イベント開始時刻が過ぎているイベントも除外
-              final startDate = (data['startDate'] as Timestamp?)?.toDate();
-              if (startDate != null && startDate.isBefore(now)) {
+              // eventsコレクションのフィールド名はeventDate
+              final eventDate = (data['eventDate'] as Timestamp?)?.toDate();
+              if (eventDate != null && eventDate.isBefore(now)) {
                 continue;
               }
 
@@ -337,8 +338,9 @@ class RecommendationService {
               }
 
               // 4. イベント開始時刻が過ぎているイベントも除外
-              final startDate = (data['startDate'] as Timestamp?)?.toDate();
-              if (startDate != null && startDate.isBefore(now)) {
+              // eventsコレクションのフィールド名はeventDate
+              final eventDate = (data['eventDate'] as Timestamp?)?.toDate();
+              if (eventDate != null && eventDate.isBefore(now)) {
                 continue;
               }
 
@@ -437,8 +439,9 @@ class RecommendationService {
           }
 
           // イベント開始時刻が過ぎているイベントも除外
-          final startDate = (data['startDate'] as Timestamp?)?.toDate();
-          if (startDate != null && startDate.isBefore(now)) {
+          // eventsコレクションのフィールド名はeventDate
+          final eventDate = (data['eventDate'] as Timestamp?)?.toDate();
+          if (eventDate != null && eventDate.isBefore(now)) {
             continue;
           }
 

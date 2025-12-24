@@ -5,8 +5,10 @@ import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
 import '../../../shared/services/event_service.dart';
+import '../../../shared/services/event_deletion_service.dart';
 import '../../../data/models/event_model.dart';
 import '../widgets/event_cancellation_dialog.dart';
+import '../widgets/event_deletion_dialog.dart';
 
 /// イベント運営ダッシュボード画面
 class EventOperationsDashboardScreen extends ConsumerStatefulWidget {
@@ -32,6 +34,7 @@ class _EventOperationsDashboardScreenState
     extends ConsumerState<EventOperationsDashboardScreen> {
   Event? _event;
   bool _isLoading = true;
+  EventDeletionCheck? _deletionCheck;
 
   @override
   void initState() {
@@ -52,8 +55,12 @@ class _EventOperationsDashboardScreenState
     try {
       final event = await EventService.getEventById(widget.eventId);
       if (event != null && mounted) {
+        // 削除可否チェックを実行
+        final deletionCheck =
+            await EventDeletionService.canDeleteEvent(widget.eventId);
         setState(() {
           _event = event;
+          _deletionCheck = deletionCheck;
           _isLoading = false;
         });
       } else {
@@ -499,11 +506,11 @@ class _EventOperationsDashboardScreenState
 
 
 
-  /// イベント中止アクションカード
+  /// イベント削除/中止アクションカード
   Widget _buildCancellationActionCard() {
     if (_isLoading || _event == null) {
       return _buildQuickActionCard(
-        icon: Icons.cancel,
+        icon: Icons.more_horiz,
         title: '読み込み中',
         subtitle: '',
         color: AppColors.textLight,
@@ -512,21 +519,45 @@ class _EventOperationsDashboardScreenState
     }
 
     final isCancelled = _event!.status == EventStatus.cancelled;
+    final isCompleted = _event!.status == EventStatus.completed;
 
+    // 中止済みまたは完了済みの場合は操作不可
     if (isCancelled) {
       return _buildQuickActionCard(
         icon: Icons.cancel_outlined,
         title: '中止済み',
-        subtitle: 'イベント中止',
+        subtitle: '',
         color: AppColors.textSecondary,
         onTap: () {},
       );
     }
 
+    if (isCompleted) {
+      return _buildQuickActionCard(
+        icon: Icons.check_circle_outline,
+        title: '完了済み',
+        subtitle: '',
+        color: AppColors.textSecondary,
+        onTap: () {},
+      );
+    }
+
+    // 削除可能な場合（下書き or 参加申込者0人の公開イベント）
+    if (_deletionCheck?.canDelete == true) {
+      return _buildQuickActionCard(
+        icon: Icons.delete_forever,
+        title: 'イベント削除',
+        subtitle: '',
+        color: AppColors.error,
+        onTap: () => _showEventDeletionDialog(),
+      );
+    }
+
+    // 削除不可（参加申込者がいる公開イベント）は中止を表示
     return _buildQuickActionCard(
       icon: Icons.cancel,
       title: 'イベント中止',
-      subtitle: 'イベント中止',
+      subtitle: '',
       color: AppColors.error,
       onTap: () => _showEventCancellationDialog(),
     );
@@ -541,5 +572,23 @@ class _EventOperationsDashboardScreenState
         eventName: widget.eventName,
       ),
     );
+  }
+
+  /// イベント削除確認ダイアログを表示
+  void _showEventDeletionDialog() async {
+    final isDraft = _deletionCheck?.isDraft ?? false;
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => EventDeletionDialog(
+        eventId: widget.eventId,
+        eventName: widget.eventName,
+        isDraft: isDraft,
+      ),
+    );
+
+    // 削除が成功した場合、画面を閉じてイベント一覧に戻る
+    if (result == true && mounted) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    }
   }
 }

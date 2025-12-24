@@ -1536,7 +1536,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
 
     for (final application in applications) {
       final event = await _getEventFromApplication(application);
-      if (event != null && event.startDate.isAfter(now.subtract(const Duration(days: 1)))) {
+      // イベント開始時刻が未来のもののみ表示（開始時刻を過ぎたら参加予定から除外）
+      if (event != null && event.startDate.isAfter(now)) {
         events.add(event);
       }
     }
@@ -1611,7 +1612,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
 
     for (final application in approvedApplications) {
       final event = await _getEventFromApplication(application);
-      if (event != null && event.startDate.isAfter(now.subtract(const Duration(days: 1)))) {
+      // イベント開始時刻が未来のもののみ表示（開始時刻を過ぎたら参加予定から除外）
+      if (event != null && event.startDate.isAfter(now)) {
         events.add(event);
       }
     }
