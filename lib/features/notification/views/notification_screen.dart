@@ -7,13 +7,9 @@ import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
 import '../../../shared/widgets/app_drawer.dart';
 import '../../../shared/widgets/app_button.dart';
-import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/providers/notification_provider.dart';
 import '../../../shared/services/notification_service.dart';
-import '../../../shared/services/error_handler_service.dart';
 import '../../../shared/services/event_service.dart';
-import '../../../shared/services/friend_service.dart';
-import '../../../shared/services/participation_service.dart';
 import '../../../data/models/notification_model.dart';
 import '../../../shared/widgets/user_avatar_from_id.dart';
 import '../../event_detail/views/event_detail_screen.dart';
@@ -34,7 +30,6 @@ class NotificationScreen extends ConsumerStatefulWidget {
 
 class _NotificationScreenState extends ConsumerState<NotificationScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  Set<String> _processingRequests = {}; // 処理中のリクエストID
   Set<String> _readNotifications = {}; // 既読処理済みの通知ID
 
   @override
@@ -478,11 +473,6 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                     ),
                   ],
                 ),
-                if (notification.type == NotificationType.friendRequest &&
-                    !notification.isRead) ...[
-                  const SizedBox(height: AppDimensions.spacingM),
-                  _buildFriendRequestActions(notification),
-                ],
               ],
             ),
           ),
@@ -493,7 +483,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
   /// 通知アイコンを構築
   Widget _buildNotificationIcon(NotificationData notification) {
-    // フレンドリクエスト通知の場合はユーザーアイコンを表示
+    // 廃止されたフレンドリクエスト通知の場合はユーザーアイコンを表示（互換性のため）
     if (notification.type == NotificationType.friendRequest &&
         notification.fromUserId != null) {
       return GestureDetector(
@@ -622,6 +612,10 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         icon = Icons.info;
         iconColor = AppColors.info;
         break;
+      case NotificationType.follow:
+        icon = Icons.person_add_alt_1;
+        iconColor = AppColors.primary;
+        break;
     }
 
     return Container(
@@ -647,34 +641,6 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         color: iconColor,
         size: 24,
       ),
-    );
-  }
-
-  /// フレンドリクエストのアクションボタンを構築
-  Widget _buildFriendRequestActions(NotificationData notification) {
-    final requestId = notification.data?['friendRequestId'] as String?;
-    final isProcessing = requestId != null && _processingRequests.contains(requestId);
-
-    return Row(
-      children: [
-        Expanded(
-          child: AppButton(
-            text: isProcessing ? '処理中...' : '承認',
-            icon: isProcessing ? null : Icons.check,
-            onPressed: isProcessing ? null : () => _acceptFriendRequest(notification),
-            type: AppButtonType.primary,
-          ),
-        ),
-        const SizedBox(width: AppDimensions.spacingM),
-        Expanded(
-          child: AppButton(
-            text: isProcessing ? '処理中...' : '拒否',
-            icon: isProcessing ? null : Icons.close,
-            onPressed: isProcessing ? null : () => _rejectFriendRequest(notification),
-            type: AppButtonType.secondary,
-          ),
-        ),
-      ],
     );
   }
 
@@ -764,350 +730,61 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       return;
     }
 
-    // その他の通知タイプの処理をここに追加
+    if (notification.type == NotificationType.follow) {
+      _handleFollowNotification(notification);
+      return;
+    }
+
+    if (notification.type == NotificationType.violationProcessed ||
+        notification.type == NotificationType.violationDismissed ||
+        notification.type == NotificationType.violationDeleted) {
+      _handleViolationStatusNotification(notification);
+      return;
+    }
+
+    if (notification.type == NotificationType.eventFull ||
+        notification.type == NotificationType.eventCapacityWarning) {
+      _handleEventCapacityNotification(notification);
+      return;
+    }
+
+    // その他の通知タイプ（system等）は何もしない
   }
 
   /// イベント招待通知の処理
   Future<void> _handleEventInvitation(NotificationData notification) async {
     final eventData = notification.data;
-    if (eventData == null ||
-        eventData['eventId'] == null ||
-        eventData['eventName'] == null) {
-      ErrorHandlerService.showErrorDialog(
-        context,
-        'イベント情報が見つかりません'
-      );
+    if (eventData == null || eventData['eventId'] == null) {
+      _showErrorMessage('イベント情報が見つかりません');
       return;
     }
 
     final eventId = eventData['eventId'] as String;
-    final eventName = eventData['eventName'] as String;
-    final createdByName = eventData['createdByName'] as String? ?? 'ユーザー';
-    final applicationStatus = eventData['applicationStatus'] as String?;
 
-    // 既に申請済みかチェック
-    if (applicationStatus == 'submitted') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('既に参加申請を送信済みです。運営からの返答をお待ちください。'),
-          backgroundColor: AppColors.info,
-        ),
-      );
-      return;
-    }
-
-    // 申請が承認済み
-    if (applicationStatus == 'approved') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('このイベントへの参加が承認されています。'),
-          backgroundColor: AppColors.success,
-        ),
-      );
-      return;
-    }
-
-    // 申請が拒否済み
-    if (applicationStatus == 'rejected') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('このイベントへの参加申請は拒否されました。'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    // パスワード入力ダイアログを表示
-    final password = await _showPasswordInputDialog(eventName, createdByName);
-    if (password == null || password.isEmpty) return;
-
-    // パスワード検証と参加申請
-    await _submitEventJoinRequest(eventId, password, notification);
-  }
-
-  /// パスワード入力ダイアログを表示
-  Future<String?> _showPasswordInputDialog(String eventName, String createdByName) async {
-    final passwordController = TextEditingController();
-    
-    return await showDialog<String>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: AppColors.cardBackground,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-          ),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(AppDimensions.spacingS),
-                decoration: BoxDecoration(
-                  color: AppColors.accent.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                ),
-                child: Icon(
-                  Icons.event,
-                  color: AppColors.accent,
-                  size: AppDimensions.iconL,
-                ),
-              ),
-              const SizedBox(width: AppDimensions.spacingM),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'イベント参加申請',
-                      style: TextStyle(
-                        fontSize: AppDimensions.fontSizeL,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textDark,
-                      ),
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXS),
-                    Text(
-                      '${createdByName}さんからの招待',
-                      style: const TextStyle(
-                        fontSize: AppDimensions.fontSizeS,
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AppDimensions.spacingM),
-                decoration: BoxDecoration(
-                  color: AppColors.backgroundLight,
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'イベント名',
-                      style: TextStyle(
-                        fontSize: AppDimensions.fontSizeS,
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXS),
-                    Text(
-                      eventName,
-                      style: const TextStyle(
-                        fontSize: AppDimensions.fontSizeM,
-                        color: AppColors.textDark,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppDimensions.spacingL),
-              const Text(
-                'パスワードを入力してイベントに参加してください',
-                style: TextStyle(
-                  fontSize: AppDimensions.fontSizeM,
-                  color: AppColors.textDark,
-                ),
-              ),
-              const SizedBox(height: AppDimensions.spacingM),
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  hintText: 'イベントパスワード',
-                  hintStyle: const TextStyle(
-                    color: AppColors.textLight,
-                    fontSize: AppDimensions.fontSizeM,
-                  ),
-                  filled: true,
-                  fillColor: AppColors.backgroundLight,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                    borderSide: const BorderSide(color: AppColors.border),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                    borderSide: const BorderSide(color: AppColors.border),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                    borderSide: const BorderSide(color: AppColors.accent, width: 2),
-                  ),
-                  contentPadding: const EdgeInsets.all(AppDimensions.spacingM),
-                ),
-                style: const TextStyle(
-                  fontSize: AppDimensions.fontSizeM,
-                  color: AppColors.textDark,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.textSecondary,
-                textStyle: const TextStyle(
-                  fontSize: AppDimensions.fontSizeM,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              child: const Text('キャンセル'),
-            ),
-            FilledButton(
-              onPressed: () {
-                final password = passwordController.text.trim();
-                Navigator.of(context).pop(password);
-              },
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.accent,
-                foregroundColor: Colors.white,
-                textStyle: const TextStyle(
-                  fontSize: AppDimensions.fontSizeM,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              child: const Text('参加申請'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  /// イベント参加申請を送信
-  Future<void> _submitEventJoinRequest(
-    String eventId,
-    String password,
-    NotificationData notification
-  ) async {
     try {
-      final authState = ref.read(authStateProvider);
-      if (!authState.hasValue || authState.value == null) {
-        throw Exception('ユーザーが認証されていません');
+      // イベント情報を取得
+      final event = await EventService.getEventById(eventId);
+      if (event == null) {
+        _showErrorMessage('イベントが見つかりません。削除された可能性があります。');
+        return;
       }
 
-      final userId = authState.value!.uid;
+      // GameEventに変換
+      final gameEvent = await EventConverter.eventToGameEvent(event);
 
-      // ユーザー表示名を取得
-      final userData = await ref.read(currentUserDataProvider.future);
-      final userDisplayName = userData?.displayName ?? 'ユーザー';
-
-      // ParticipationServiceを使用してパスワード検証と参加申請を送信
-      // これによりパブリックイベントと同じ流れで処理され、運営者への通知も送信される
-      final result = await ParticipationService.applyToEvent(
-        eventId: eventId,
-        userId: userId,
-        userDisplayName: userDisplayName,
-        password: password,
-      );
-
-      if (result == ParticipationResult.success) {
-        // 申請成功時に通知の状態を更新
-        await _updateNotificationApplicationStatus(
-          notification,
-          'submitted'
-        );
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('イベント参加申請を送信しました'),
-              backgroundColor: AppColors.success,
-            ),
-          );
-
-          // 動的更新により自動で状態が反映されるため手動再読み込み不要
-        }
-      } else {
-        // 申請失敗
-        if (mounted) {
-          final errorMessage = _getParticipationErrorMessage(result);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(errorMessage),
-              backgroundColor: AppColors.error,
-            ),
-          );
-        }
-      }
-    } catch (e) {
+      // イベント詳細画面へ遷移（詳細を確認してから参加申請できる）
       if (mounted) {
-        String errorMessage = 'エラーが発生しました';
-        if (e is EventServiceException) {
-          errorMessage = e.message;
-        }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: AppColors.error,
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EventDetailScreen(event: gameEvent),
           ),
         );
       }
-    }
-  }
-
-  /// ParticipationResultに応じたエラーメッセージを返す
-  String _getParticipationErrorMessage(ParticipationResult result) {
-    switch (result) {
-      case ParticipationResult.eventNotFound:
-        return 'イベントが見つかりませんでした';
-      case ParticipationResult.cannotApply:
-        return 'このイベントには参加申請できません';
-      case ParticipationResult.alreadyApplied:
-        return '既に参加申請済みです';
-      case ParticipationResult.incorrectPassword:
-        return 'パスワードが正しくありません';
-      case ParticipationResult.eventFull:
-        return 'イベントは満員です';
-      case ParticipationResult.permissionDenied:
-        return '権限がありません';
-      case ParticipationResult.networkError:
-        return 'ネットワークエラーが発生しました';
-      case ParticipationResult.unknownError:
-      case ParticipationResult.success:
-        return 'エラーが発生しました';
-    }
-  }
-
-  /// 通知の申請状態を更新
-  Future<void> _updateNotificationApplicationStatus(
-    NotificationData notification,
-    String status
-  ) async {
-    try {
-      if (notification.id == null) return;
-
-      // 通知のdataフィールドを更新
-      final updatedData = Map<String, dynamic>.from(notification.data ?? {});
-      updatedData['applicationStatus'] = status;
-      updatedData['applicationDate'] = DateTime.now().toIso8601String();
-
-      await NotificationService.instance.updateNotification(
-        notification.id!,
-        data: updatedData,
-      );
     } catch (e) {
-      // エラーログのみ、ユーザーには影響させない
+      _showErrorMessage('イベント情報の取得中にエラーが発生しました');
     }
   }
-
 
   /// 通知時間をフォーマット
   String _formatNotificationTime(DateTime timestamp) {
@@ -1122,108 +799,6 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       return '${difference.inMinutes}分前';
     } else {
       return 'たった今';
-    }
-  }
-
-  /// フレンドリクエストを承認
-  Future<void> _acceptFriendRequest(NotificationData notification) async {
-    try {
-      // 未読の場合は既読にする
-      if (!notification.isRead) {
-        await _markAsRead(notification);
-      }
-
-      // 通知データからフレンドリクエストIDを取得
-      final friendRequestId = notification.data?['friendRequestId'] as String?;
-      if (friendRequestId == null) {
-        throw Exception('フレンドリクエストIDが見つかりません');
-      }
-
-      // FriendServiceを使用してリクエストを承認
-      final friendService = FriendService.instance;
-      final success = await friendService.acceptFriendRequest(friendRequestId);
-
-      if (success) {
-        // 承認成功の場合、通知リストを更新
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('フレンドリクエストを承認しました'),
-              backgroundColor: AppColors.success,
-            ),
-          );
-        }
-      } else {
-        // 承認失敗の場合
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('フレンドリクエストの承認に失敗しました'),
-              backgroundColor: AppColors.error,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('エラーが発生しました: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    }
-  }
-
-  /// フレンドリクエストを拒否
-  Future<void> _rejectFriendRequest(NotificationData notification) async {
-    try {
-      // 未読の場合は既読にする
-      if (!notification.isRead) {
-        await _markAsRead(notification);
-      }
-
-      // 通知データからフレンドリクエストIDを取得
-      final friendRequestId = notification.data?['friendRequestId'] as String?;
-      if (friendRequestId == null) {
-        throw Exception('フレンドリクエストIDが見つかりません');
-      }
-
-      // FriendServiceを使用してリクエストを拒否
-      final friendService = FriendService.instance;
-      final success = await friendService.rejectFriendRequest(friendRequestId);
-
-      if (success) {
-        // 拒否成功の場合、通知リストを更新
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('フレンドリクエストを拒否しました'),
-              backgroundColor: AppColors.info,
-            ),
-          );
-        }
-      } else {
-        // 拒否失敗の場合
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('フレンドリクエストの拒否に失敗しました'),
-              backgroundColor: AppColors.error,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('エラーが発生しました: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
     }
   }
 
@@ -1279,7 +854,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
     );
   }
 
-  /// フレンド申請通知の処理
+  /// フレンド申請通知の処理（廃止済み - 既存データ互換性のため残存）
   Future<void> _handleFriendRequest(NotificationData notification) async {
     final fromUserId = notification.fromUserId;
     if (fromUserId == null) {
@@ -1299,11 +874,10 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         return;
       }
 
-      // 有効なユーザーからのフレンド申請の場合
-      // フレンド申請の詳細ダイアログやページを表示
+      // この機能は廃止されました。相互フォローに移行済みです。
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('フレンド申請の詳細機能は実装中です'),
+          content: Text('この機能は廃止されました'),
           backgroundColor: AppColors.info,
         ),
       );
@@ -1349,7 +923,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
           ],
         ),
         content: const Text(
-          'この通知の送信者は退会済みのため、フレンド申請を処理できません。',
+          'この通知の送信者は退会済みのため、この通知を処理できません。',
           style: TextStyle(
             fontSize: AppDimensions.fontSizeM,
             color: AppColors.textSecondary,
@@ -1373,13 +947,13 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
     );
   }
 
-  /// フレンド申請承認通知の処理
+  /// フレンド申請承認通知の処理（廃止済み - 既存データ互換性のため残存）
   Future<void> _handleFriendAccepted(NotificationData notification) async {
 
-    // フレンドリストに移動するなどの処理
+    // この機能は廃止されました。相互フォローに移行済みです。
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('フレンドが追加されました！'),
+        content: Text('相互フォローになりました！'),
         backgroundColor: AppColors.success,
       ),
     );
@@ -1852,6 +1426,164 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       );
     } catch (e) {
       _showErrorMessage('画面遷移でエラーが発生しました');
+    }
+  }
+
+  /// フォロー通知の処理
+  Future<void> _handleFollowNotification(NotificationData notification) async {
+    final fromUserId = notification.fromUserId;
+    if (fromUserId == null) {
+      _showErrorMessage('ユーザー情報が見つかりません');
+      return;
+    }
+
+    try {
+      // フォロワーのユーザー情報を確認
+      // fromUserIdはFirebase UIDなので、getUserByIdで検索
+      final userRepository = UserRepository();
+      var fromUser = await userRepository.getUserById(fromUserId);
+
+      // Firebase UIDで見つからない場合は、カスタムIDでも検索を試みる
+      fromUser ??= await userRepository.getUserByCustomId(fromUserId);
+
+      if (fromUser == null || !fromUser.isActive) {
+        _showWithdrawnUserMessage();
+        return;
+      }
+
+      // フォロワーのプロフィール画面へ遷移（カスタムユーザーIDを使用）
+      if (mounted) {
+        Navigator.pushNamed(
+          context,
+          '/user_profile',
+          arguments: {'userId': fromUser.userId},
+        );
+      }
+    } catch (e) {
+      _showErrorMessage('ユーザー情報の取得中にエラーが発生しました');
+    }
+  }
+
+  /// 違反ステータス通知の処理（violationProcessed, violationDismissed, violationDeleted）
+  Future<void> _handleViolationStatusNotification(NotificationData notification) async {
+    final data = notification.data;
+
+    String title = '';
+    String message = '';
+    IconData icon = Icons.info;
+    Color iconColor = AppColors.info;
+
+    switch (notification.type) {
+      case NotificationType.violationProcessed:
+        title = '違反報告が処理されました';
+        message = data?['processedMessage'] as String? ?? '違反報告が運営によって処理されました。';
+        icon = Icons.gavel;
+        iconColor = AppColors.warning;
+        break;
+      case NotificationType.violationDismissed:
+        title = '違反報告が棄却されました';
+        message = data?['dismissReason'] as String? ?? '違反報告の内容が確認できなかったため棄却されました。';
+        icon = Icons.cancel;
+        iconColor = AppColors.warning;
+        break;
+      case NotificationType.violationDeleted:
+        title = '違反記録が削除されました';
+        message = data?['deleteReason'] as String? ?? '違反記録が削除されました。';
+        icon = Icons.delete;
+        iconColor = AppColors.error;
+        break;
+      default:
+        return;
+    }
+
+    // 詳細ダイアログを表示
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.cardBackground,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppDimensions.spacingS),
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+              ),
+              child: Icon(icon, color: iconColor, size: AppDimensions.iconL),
+            ),
+            const SizedBox(width: AppDimensions.spacingM),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: AppDimensions.fontSizeL,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          message,
+          style: const TextStyle(
+            fontSize: AppDimensions.fontSizeM,
+            color: AppColors.textSecondary,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.primary,
+              textStyle: const TextStyle(
+                fontSize: AppDimensions.fontSizeM,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            child: const Text('確認'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// イベント定員関連通知の処理（eventFull, eventCapacityWarning）
+  Future<void> _handleEventCapacityNotification(NotificationData notification) async {
+    final data = notification.data;
+    if (data == null || data['eventId'] == null) {
+      _showErrorMessage('イベント情報が見つかりません');
+      return;
+    }
+
+    final eventId = data['eventId'] as String;
+
+    try {
+      // イベント情報を取得
+      final event = await EventService.getEventById(eventId);
+      if (event == null) {
+        _showErrorMessage('イベント情報が見つかりません');
+        return;
+      }
+
+      // GameEventに変換
+      final gameEvent = await EventConverter.eventToGameEvent(event);
+
+      // イベント詳細画面へ遷移
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EventDetailScreen(event: gameEvent),
+          ),
+        );
+      }
+    } catch (e) {
+      _showErrorMessage('エラーが発生しました');
     }
   }
 

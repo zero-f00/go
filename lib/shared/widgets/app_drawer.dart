@@ -85,8 +85,8 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
               padding: EdgeInsets.zero,
               children: [
                 _buildDrawerItem(
-                  icon: Icons.people,
-                  title: 'フレンド',
+                  icon: Icons.sync_alt,
+                  title: '相互フォロー',
                   onTap: () => _onFriendsTap(context),
                 ),
                 _buildDrawerItem(

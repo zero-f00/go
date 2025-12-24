@@ -54,14 +54,12 @@ class EventService {
     required String createdByUserId,
   }) async {
     try {
-      // 招待されたユーザーのデータを取得
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser == null) {
-        return;
-      }
+      // 招待元ユーザーの情報をFirestoreから取得
+      final userRepository = UserRepository();
+      final creatorUser = await userRepository.getUserById(createdByUserId);
 
-      final createdByName =
-          currentUser.displayName ?? currentUser.email ?? 'ユーザー';
+      // ユーザー名を取得（Firestoreのユーザー名を優先）
+      final createdByName = creatorUser?.username ?? 'ユーザー';
 
       // 各招待ユーザーに通知を送信
       for (final userId in invitedUserIds) {

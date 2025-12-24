@@ -9,11 +9,10 @@ import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
 import '../../../shared/widgets/user_avatar.dart';
 import '../../../shared/widgets/game_icon.dart';
-import '../../../shared/widgets/app_button.dart';
 import '../../../data/models/user_model.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/services/game_service.dart';
-import '../../../shared/services/friend_service.dart';
+import '../../../shared/services/follow_service.dart';
 import '../../../shared/services/user_event_service.dart';
 import '../../../shared/services/social_stats_service.dart';
 import '../../../shared/services/user_profile_share_service.dart';
@@ -45,8 +44,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   List<Game> _favoriteGames = [];
   bool _isLoading = true;
   String? _errorMessage;
-  FriendshipStatus _friendshipStatus = FriendshipStatus.none;
-  bool _isProcessingFriendRequest = false;
+  bool _isFollowing = false;
+  bool _isProcessingFollow = false;
   SocialStats _socialStats = const SocialStats(
     friendCount: 0,
     followerCount: 0,
@@ -90,10 +89,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           userData.userId,
         );
 
-        // フレンドシップステータスを取得
+        // フォロー状態を取得
         final currentUserAsync = await ref.read(currentUserDataProvider.future);
         if (currentUserAsync != null) {
-          await _loadFriendshipStatus(currentUserAsync.userId, userData.userId);
+          await _loadFollowStatus(currentUserAsync.userId, userData.userId);
         }
 
         setState(() {
@@ -116,26 +115,26 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     }
   }
 
-  /// フレンドシップステータスを読み込み
-  Future<void> _loadFriendshipStatus(
+  /// フォロー状態を読み込み
+  Future<void> _loadFollowStatus(
     String currentUserId,
     String targetUserId,
   ) async {
     try {
-      final status = await FriendService.instance.getFriendshipStatus(
+      final isFollowing = await FollowService.instance.isFollowing(
         currentUserId,
         targetUserId,
       );
       if (mounted) {
         setState(() {
-          _friendshipStatus = status;
+          _isFollowing = isFollowing;
         });
       }
     } catch (e) {
-      // フレンドシップステータスの取得に失敗した場合はデフォルト状態を維持
+      // フォロー状態の取得に失敗した場合はデフォルト状態を維持
       if (mounted) {
         setState(() {
-          _friendshipStatus = FriendshipStatus.none;
+          _isFollowing = false;
         });
       }
     }
@@ -318,7 +317,6 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           _buildProfileHeader(),
           _buildSocialLinksSection(),
           _buildUserInfo(),
-          _buildFriendActionButton(),
           _buildFavoriteGamesSection(),
           if (_userData != null) ...[
             _buildManagedEventsSection(),
@@ -349,6 +347,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       child: Column(
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               UserAvatar(
                 avatarUrl: _userData!.photoUrl,
@@ -363,22 +362,35 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      _userData!.username,
-                      style: const TextStyle(
-                        fontSize: AppDimensions.fontSizeXL,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textDark,
-                      ),
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXS),
-                    Text(
-                      '@${_userData!.userId}',
-                      style: const TextStyle(
-                        fontSize: AppDimensions.fontSizeM,
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w500,
-                      ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _userData!.username,
+                                style: const TextStyle(
+                                  fontSize: AppDimensions.fontSizeXL,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textDark,
+                                ),
+                              ),
+                              const SizedBox(height: AppDimensions.spacingXS),
+                              Text(
+                                '@${_userData!.userId}',
+                                style: const TextStyle(
+                                  fontSize: AppDimensions.fontSizeM,
+                                  color: AppColors.textSecondary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        _buildCompactFollowButton(),
+                      ],
                     ),
                     const SizedBox(height: AppDimensions.spacingM),
                     _buildSocialStatsRow(),
@@ -392,6 +404,132 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     );
   }
 
+  /// コンパクトなフォローボタンを構築（ヘッダー内用）
+  Widget _buildCompactFollowButton() {
+    final currentUserAsync = ref.watch(currentUserDataProvider);
+    final currentUser = currentUserAsync.asData?.value;
+
+    // 現在のユーザーがサインインしていない場合
+    if (currentUser == null) {
+      return _buildFollowActionButton(
+        icon: Icons.person_add_alt_1,
+        label: 'フォロー',
+        isActive: false,
+        onTap: () async {
+          final result = await AuthDialog.show(context);
+          if (result == true && mounted) {
+            _loadUserData();
+          }
+        },
+      );
+    }
+
+    // 自分自身のプロフィールの場合は表示しない
+    final isOwnProfile =
+        currentUser.userId == widget.userId ||
+        currentUser.id == widget.userId ||
+        (_userData != null &&
+            (currentUser.userId == _userData!.userId ||
+                currentUser.id == _userData!.userId ||
+                currentUser.userId == _userData!.id ||
+                currentUser.id == _userData!.id));
+
+    if (isOwnProfile) {
+      return const SizedBox.shrink();
+    }
+
+    // 処理中
+    if (_isProcessingFollow) {
+      return Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacingM,
+          vertical: AppDimensions.spacingS,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.backgroundLight,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: const SizedBox(
+          width: 16,
+          height: 16,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.textSecondary),
+          ),
+        ),
+      );
+    }
+
+    // フォロー中
+    if (_isFollowing) {
+      return _buildFollowActionButton(
+        icon: Icons.check,
+        label: 'フォロー中',
+        isActive: true,
+        onTap: _unfollow,
+      );
+    }
+
+    // 未フォロー
+    return _buildFollowActionButton(
+      icon: Icons.person_add_alt_1,
+      label: 'フォロー',
+      isActive: false,
+      onTap: _follow,
+    );
+  }
+
+  /// フォローアクションボタンを構築
+  Widget _buildFollowActionButton({
+    required IconData icon,
+    required String label,
+    required bool isActive,
+    required VoidCallback? onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingM,
+            vertical: AppDimensions.spacingS,
+          ),
+          decoration: BoxDecoration(
+            color: isActive
+                ? AppColors.primary.withValues(alpha: 0.1)
+                : AppColors.primary,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+            border: isActive
+                ? Border.all(color: AppColors.primary.withValues(alpha: 0.3))
+                : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: isActive ? AppColors.primary : Colors.white,
+              ),
+              const SizedBox(width: AppDimensions.spacingXS),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: AppDimensions.fontSizeS,
+                  fontWeight: FontWeight.w600,
+                  color: isActive ? AppColors.primary : Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   /// ソーシャル統計行を構築
   Widget _buildSocialStatsRow() {
     return Container(
@@ -399,7 +537,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       child: Align(
         alignment: Alignment.centerLeft,
         child: GestureDetector(
-          onTap: () => _onStatItemTap('フレンド'),
+          onTap: () => _onStatItemTap('相互フォロー'),
           child: Container(
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingM,
@@ -427,7 +565,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'フレンド',
+                      '相互フォロー',
                       style: const TextStyle(
                         fontSize: AppDimensions.fontSizeXS,
                         fontWeight: FontWeight.w500,
@@ -458,7 +596,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     try {
       final currentUser = await ref.read(currentUserDataProvider.future);
       if (currentUser != null && currentUser.userId == widget.userId) {
-        // 自分のプロフィールの場合はフレンドリスト画面へ
+        // 自分のプロフィールの場合は相互フォローリスト画面へ
         if (mounted) {
           Navigator.pushNamed(context, '/friends');
         }
@@ -913,323 +1051,37 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     );
   }
 
-  /// フレンドアクションボタンを構築
-  Widget _buildFriendActionButton() {
-    final currentUserAsync = ref.watch(currentUserDataProvider);
-    final currentUser = currentUserAsync.asData?.value;
-
-    // 現在のユーザーがサインインしていない場合はログインボタンを表示
-    if (currentUser == null) {
-      return Container(
-        margin: const EdgeInsets.only(bottom: AppDimensions.spacingL),
-        child: AppButton(
-          text: 'ログインしてフレンドになる',
-          icon: Icons.login,
-          onPressed: () async {
-            final result = await AuthDialog.show(context);
-            if (result == true) {
-              // サインイン成功後は自動的に状態が更新される
-            }
-          },
-          type: AppButtonType.primary,
-          isFullWidth: true,
-        ),
-      );
-    }
-
-    // 自分自身のプロフィールの場合は表示しない
-    // Firebase UID、カスタムユーザーID、または表示中ユーザーデータのIDで比較
-    final isOwnProfile =
-        currentUser.userId == widget.userId ||
-        currentUser.id == widget.userId ||
-        (_userData != null &&
-            (currentUser.userId == _userData!.userId ||
-                currentUser.id == _userData!.userId ||
-                currentUser.userId == _userData!.id ||
-                currentUser.id == _userData!.id));
-
-    if (isOwnProfile) {
-      return const SizedBox.shrink();
-    }
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacingL),
-      child: _buildFriendButton(),
-    );
-  }
-
-  /// フレンドボタンを構築
-  Widget _buildFriendButton() {
-    if (_isProcessingFriendRequest) {
-      return AppButton(
-        text: '処理中...',
-        icon: Icons.hourglass_empty,
-        onPressed: null,
-        type: AppButtonType.secondary,
-        isFullWidth: true,
-      );
-    }
-
-    switch (_friendshipStatus) {
-      case FriendshipStatus.none:
-        return AppButton(
-          text: 'フレンドリクエストを送信',
-          icon: Icons.person_add,
-          onPressed: _sendFriendRequest,
-          type: AppButtonType.primary,
-          isFullWidth: true,
-        );
-
-      case FriendshipStatus.requestSent:
-        return AppButton(
-          text: 'リクエスト送信済み',
-          icon: Icons.schedule,
-          onPressed: null,
-          type: AppButtonType.secondary,
-          isFullWidth: true,
-        );
-
-      case FriendshipStatus.requestReceived:
-        return Row(
-          children: [
-            Expanded(
-              child: AppButton(
-                text: '承認',
-                icon: Icons.check,
-                onPressed: _acceptFriendRequest,
-                type: AppButtonType.primary,
-              ),
-            ),
-            const SizedBox(width: AppDimensions.spacingM),
-            Expanded(
-              child: AppButton(
-                text: '拒否',
-                icon: Icons.close,
-                onPressed: _rejectFriendRequest,
-                type: AppButtonType.danger,
-              ),
-            ),
-          ],
-        );
-
-      case FriendshipStatus.friends:
-        return AppButton(
-          text: 'フレンドを解除',
-          icon: Icons.person_remove,
-          onPressed: _removeFriend,
-          type: AppButtonType.danger,
-          isFullWidth: true,
-        );
-    }
-  }
-
-  /// フレンドリクエストを送信
-  Future<void> _sendFriendRequest() async {
+  /// フォローする
+  Future<void> _follow() async {
     final currentUser = await ref.read(currentUserDataProvider.future);
     if (currentUser == null || _userData == null) return;
 
     setState(() {
-      _isProcessingFriendRequest = true;
+      _isProcessingFollow = true;
     });
 
     try {
-      final success = await FriendService.instance.sendFriendRequest(
-        fromUserId: currentUser.userId,
-        toUserId: _userData!.userId,
+      final success = await FollowService.instance.follow(
+        followerId: currentUser.userId,
+        followeeId: _userData!.userId,
       );
 
-      if (success && mounted) {
-        // フレンドリクエスト送信後、ステータスを即座に更新
-        setState(() {
-          _friendshipStatus = FriendshipStatus.requestSent;
-        });
-
-        if (mounted) {
+      if (mounted) {
+        if (success) {
+          setState(() {
+            _isFollowing = true;
+          });
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('フレンドリクエストを送信しました'),
+            SnackBar(
+              content: Text('${_userData!.username}さんをフォローしました'),
               backgroundColor: AppColors.primary,
             ),
           );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('エラーが発生しました: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isProcessingFriendRequest = false;
-        });
-      }
-    }
-  }
-
-  /// フレンドリクエストを承認
-  Future<void> _acceptFriendRequest() async {
-    final currentUser = await ref.read(currentUserDataProvider.future);
-    if (currentUser == null || _userData == null) return;
-
-    setState(() {
-      _isProcessingFriendRequest = true;
-    });
-
-    try {
-      // リクエストを取得して承認
-      final requests = await FriendService.instance.getIncomingRequests(
-        currentUser.userId,
-      );
-      final request = requests
-          .where((r) => r.fromUserId == _userData!.userId)
-          .firstOrNull;
-
-      if (request != null) {
-        final success = await FriendService.instance.acceptFriendRequest(
-          request.id!,
-        );
-
-        if (success && mounted) {
-          setState(() {
-            _friendshipStatus = FriendshipStatus.friends;
-          });
-
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('フレンドリクエストを承認しました'),
-                backgroundColor: AppColors.primary,
-              ),
-            );
-          }
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('エラーが発生しました: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isProcessingFriendRequest = false;
-        });
-      }
-    }
-  }
-
-  /// フレンドリクエストを拒否
-  Future<void> _rejectFriendRequest() async {
-    final currentUser = await ref.read(currentUserDataProvider.future);
-    if (currentUser == null || _userData == null) return;
-
-    setState(() {
-      _isProcessingFriendRequest = true;
-    });
-
-    try {
-      // リクエストを取得して拒否
-      final requests = await FriendService.instance.getIncomingRequests(
-        currentUser.userId,
-      );
-      final request = requests
-          .where((r) => r.fromUserId == _userData!.userId)
-          .firstOrNull;
-
-      if (request != null) {
-        final success = await FriendService.instance.rejectFriendRequest(
-          request.id!,
-        );
-
-        if (success && mounted) {
-          setState(() {
-            _friendshipStatus = FriendshipStatus.none;
-          });
-
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('フレンドリクエストを拒否しました'),
-                backgroundColor: AppColors.textSecondary,
-              ),
-            );
-          }
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('エラーが発生しました: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isProcessingFriendRequest = false;
-        });
-      }
-    }
-  }
-
-  /// フレンドを解除
-  Future<void> _removeFriend() async {
-    final currentUser = await ref.read(currentUserDataProvider.future);
-    if (currentUser == null || _userData == null || !mounted) return;
-
-    // 確認ダイアログを表示
-    final shouldRemove = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('フレンド解除の確認'),
-        content: Text('${_userData!.username}さんをフレンドから解除しますか？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('キャンセル'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('解除する'),
-          ),
-        ],
-      ),
-    );
-
-    if (shouldRemove != true) return;
-
-    setState(() {
-      _isProcessingFriendRequest = true;
-    });
-
-    try {
-      final success = await FriendService.instance.removeFriend(
-        currentUser.userId,
-        _userData!.userId,
-      );
-
-      if (success && mounted) {
-        setState(() {
-          _friendshipStatus = FriendshipStatus.none;
-        });
-
-        if (mounted) {
+        } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('フレンドを解除しました'),
-              backgroundColor: AppColors.textSecondary,
+              content: Text('フォローに失敗しました'),
+              backgroundColor: AppColors.error,
             ),
           );
         }
@@ -1246,7 +1098,60 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     } finally {
       if (mounted) {
         setState(() {
-          _isProcessingFriendRequest = false;
+          _isProcessingFollow = false;
+        });
+      }
+    }
+  }
+
+  /// フォロー解除
+  Future<void> _unfollow() async {
+    final currentUser = await ref.read(currentUserDataProvider.future);
+    if (currentUser == null || _userData == null) return;
+
+    setState(() {
+      _isProcessingFollow = true;
+    });
+
+    try {
+      final success = await FollowService.instance.unfollow(
+        followerId: currentUser.userId,
+        followeeId: _userData!.userId,
+      );
+
+      if (mounted) {
+        if (success) {
+          setState(() {
+            _isFollowing = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${_userData!.username}さんのフォローを解除しました'),
+              backgroundColor: AppColors.textSecondary,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('フォロー解除に失敗しました'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('エラーが発生しました: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isProcessingFollow = false;
         });
       }
     }

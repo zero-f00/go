@@ -340,7 +340,7 @@ class UserRepository {
         _deleteUserGameProfiles(userId),
         _cleanupUserNotifications(userId, anonymizedId),
         _cleanupParticipationApplications(userId, anonymizedId),
-        _cleanupFriendRequests(userId, anonymizedId),
+        _cleanupFollows(userId),
         _handleEventOwnershipTransfer(userId, anonymizedId),
         _removeUserFromEvents(userId),
       ]);
@@ -500,41 +500,30 @@ class UserRepository {
     }
   }
 
-  /// フレンドリクエストの処理
-  Future<void> _cleanupFriendRequests(String userId, String anonymizedId) async {
+  /// フォロー関係のクリーンアップ
+  Future<void> _cleanupFollows(String userId) async {
     try {
-      // 送信済みリクエストをキャンセル
-      final sentRequests = await FirebaseFirestore.instance
-          .collection('friendRequests')
-          .where('fromUserId', isEqualTo: userId)
-          .where('status', isEqualTo: 'pending')
+      // このユーザーがフォローしているレコードを削除
+      final followingDocs = await FirebaseFirestore.instance
+          .collection('follows')
+          .where('followerId', isEqualTo: userId)
           .get();
 
-      for (final doc in sentRequests.docs) {
-        await doc.reference.update({
-          'status': 'cancelled',
-          'fromUserId': anonymizedId, // 匿名化IDで置換
-          'cancelledAt': DateTime.now(),
-          'cancelledReason': 'user_withdrawal',
-        });
+      for (final doc in followingDocs.docs) {
+        await doc.reference.delete();
       }
 
-      // 受信済みリクエストも処理
-      final receivedRequests = await FirebaseFirestore.instance
-          .collection('friendRequests')
-          .where('toUserId', isEqualTo: userId)
-          .where('status', isEqualTo: 'pending')
+      // このユーザーをフォローしているレコードを削除
+      final followerDocs = await FirebaseFirestore.instance
+          .collection('follows')
+          .where('followeeId', isEqualTo: userId)
           .get();
 
-      for (final doc in receivedRequests.docs) {
-        await doc.reference.update({
-          'status': 'cancelled',
-          'toUserId': anonymizedId, // 匿名化IDで置換
-          'cancelledAt': DateTime.now(),
-          'cancelledReason': 'user_withdrawal',
-        });
+      for (final doc in followerDocs.docs) {
+        await doc.reference.delete();
       }
     } catch (e) {
+      // クリーンアップエラーは無視
     }
   }
 

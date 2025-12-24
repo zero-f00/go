@@ -299,7 +299,7 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
                   ),
                   const SizedBox(height: AppDimensions.spacingM),
                   Text(
-                    'ゲームを追加してプロフィールを作成し、\nフレンドやイベントに参加しましょう！',
+                    'ゲームを追加してプロフィールを作成し、\nユーザーをフォローしてイベントに参加しましょう！',
                     style: const TextStyle(
                       fontSize: AppDimensions.fontSizeM,
                       color: AppColors.textSecondary,

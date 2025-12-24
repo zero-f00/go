@@ -129,18 +129,36 @@ service cloud.firestore {
         && request.auth.uid == userId;
     }
 
-    // フレンドリクエストコレクション
+    // 【廃止】フレンドリクエストコレクション
+    // 注意: この機能は廃止されました。代わりに follows コレクション（相互フォロー）を使用してください。
+    // 既存データの互換性のため、ルールは残しています。
     match /friendRequests/{requestId} {
       // 緊急対応: 認証されたユーザーは全操作可能（一時的）
       allow read, write: if request.auth != null;
     }
 
-    // フレンド関係コレクション
+    // 【廃止】フレンド関係コレクション
+    // 注意: この機能は廃止されました。代わりに follows コレクション（相互フォロー）を使用してください。
+    // 既存データの互換性のため、ルールは残しています。
     match /friendships/{friendshipId} {
       // 緊急対応: 認証されたユーザーは全操作可能（一時的）
       allow read, write: if request.auth != null;
     }
 
+    // フォロー関係コレクション
+    match /follows/{followId} {
+      // 認証されたユーザーは読み取り可能（フォロー状態確認用）
+      allow read: if request.auth != null;
+
+      // 認証されたユーザーは自分がフォロワーとなるフォロー関係を作成可能
+      allow create: if request.auth != null
+        && request.resource.data.followerId is string
+        && request.resource.data.followeeId is string
+        && request.resource.data.followerId != request.resource.data.followeeId;
+
+      // フォロワー本人のみフォロー解除（削除）可能
+      allow delete: if request.auth != null;
+    }
 
     // 通知コレクション
     match /notifications/{notificationId} {
@@ -578,3 +596,7 @@ service cloud.firestore {
 //             - 認証済みユーザーは自分の参加申請を作成可能
 //             - イベント作成者・管理者は参加申請の更新（承認/拒否）が可能
 //             - isEventCreatorOrManager() ヘルパー関数を追加
+// 2024-12-24: フォロー機能追加
+//             - follows コレクションのルールを追加
+//             - 認証済みユーザーは読み取り・作成・削除可能
+//             - フォロー関係は片方向（承認不要）

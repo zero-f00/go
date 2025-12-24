@@ -55,7 +55,7 @@ class NavigationService {
     }
   }
 
-  /// フレンド画面に遷移
+  /// 相互フォロー画面に遷移
   void navigateToFriends() {
     final context = currentContext;
     if (context != null) {

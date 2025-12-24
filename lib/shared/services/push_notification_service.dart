@@ -279,7 +279,7 @@ class PushNotificationService {
         case 'friendRequest':
         case 'friendAccepted':
         case 'friendRejected':
-          // フレンド関連の通知は通知画面へ
+          // 廃止されたフレンド関連の通知は通知画面へ（互換性のため）
           NavigationService.instance.navigateToNotifications();
           break;
         case 'eventInvite':

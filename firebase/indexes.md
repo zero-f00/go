@@ -31,12 +31,15 @@ firebase deploy --only firestore:indexes
 | events | managerIds(配列), startDate(降順) | 共同編集者イベント一覧 |
 | gameEvents | createdBy(昇順), startDate(降順) | 主催者イベント |
 | gameEvents | managerIds(配列), startDate(降順) | 共同編集者イベント |
-| friendRequests | fromUserId(昇順), toUserId(昇順) | フレンドリクエスト存在確認 |
-| friendRequests | toUserId(昇順), status(昇順), createdAt(降順) | 受信リクエスト一覧 |
-| friendRequests | fromUserId(昇順), status(昇順), createdAt(降順) | 送信リクエスト一覧 |
-| friendships | user1Id(昇順), user2Id(昇順) | フレンド関係確認 |
-| friendships | user1Id(昇順), createdAt(降順) | ユーザー1のフレンド一覧 |
-| friendships | user2Id(昇順), createdAt(降順) | ユーザー2のフレンド一覧 |
+| follows | followerId(昇順), followeeId(昇順) | フォロー関係存在確認 |
+| follows | followerId(昇順), createdAt(降順) | フォロー中一覧 |
+| follows | followeeId(昇順), createdAt(降順) | フォロワー一覧 |
+| ~~friendRequests~~ | ~~fromUserId(昇順), toUserId(昇順)~~ | ~~フレンドリクエスト存在確認~~ **【廃止】** |
+| ~~friendRequests~~ | ~~toUserId(昇順), status(昇順), createdAt(降順)~~ | ~~受信リクエスト一覧~~ **【廃止】** |
+| ~~friendRequests~~ | ~~fromUserId(昇順), status(昇順), createdAt(降順)~~ | ~~送信リクエスト一覧~~ **【廃止】** |
+| ~~friendships~~ | ~~user1Id(昇順), user2Id(昇順)~~ | ~~フレンド関係確認~~ **【廃止】** |
+| ~~friendships~~ | ~~user1Id(昇順), createdAt(降順)~~ | ~~ユーザー1のフレンド一覧~~ **【廃止】** |
+| ~~friendships~~ | ~~user2Id(昇順), createdAt(降順)~~ | ~~ユーザー2のフレンド一覧~~ **【廃止】** |
 | notifications | toUserId(昇順), createdAt(降順) | ユーザー通知一覧 |
 | notifications | toUserId(昇順), isRead(昇順) | 未読通知取得 |
 | notifications | toUserId(昇順), isRead(昇順), createdAt(降順) | 未読通知一覧 |
@@ -93,14 +96,35 @@ eventsCollection
   .orderBy('startDate', descending: false)
 ```
 
-### フレンド検索
+### フォロー検索
 ```dart
-// フレンド関係確認
+// フォロー関係確認
+followsCollection
+  .where('followerId', isEqualTo: currentUserId)
+  .where('followeeId', isEqualTo: targetUserId)
+
+// フォロー中一覧
+followsCollection
+  .where('followerId', isEqualTo: userId)
+  .orderBy('createdAt', descending: true)
+
+// フォロワー一覧
+followsCollection
+  .where('followeeId', isEqualTo: userId)
+  .orderBy('createdAt', descending: true)
+```
+
+### 【廃止】フレンド検索
+> **注意**: フレンド機能は廃止されました。代わりに相互フォロー（mutual follow）を使用してください。
+> 既存データの互換性のためインデックスは残していますが、新規開発では使用しないでください。
+
+```dart
+// 【廃止】フレンド関係確認
 friendshipsCollection
   .where('user1Id', isEqualTo: userId1)
   .where('user2Id', isEqualTo: userId2)
 
-// 受信リクエスト一覧
+// 【廃止】受信リクエスト一覧
 friendRequestsCollection
   .where('toUserId', isEqualTo: userId)
   .where('status', isEqualTo: 'pending')
@@ -186,3 +210,4 @@ adminNotificationsCollection
 | 2025-12-08 | イベントリマインダー用インデックス追加 |
 | 2025-12-11 | firestore.indexes.json作成、ドキュメント整理 |
 | 2025-12-18 | match_reports、admin_notificationsインデックス追加 |
+| 2025-12-24 | フレンド機能廃止に伴い friendRequests/friendships を廃止扱いに変更、follows情報を追加 |

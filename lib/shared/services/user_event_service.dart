@@ -260,46 +260,41 @@ class UserEventService {
   }
 
   /// パブリック表示専用の管理イベント取得（下書きとプライベートを除外）
-  static Stream<List<GameEvent>> _getPublicOnlyManagedEvents(String userId) async* {
-    try {
+  /// リアルタイム監視対応：主催者イベントの変更を監視し、補助クエリは都度取得
+  static Stream<List<GameEvent>> _getPublicOnlyManagedEvents(String userId) {
+    // メインクエリ: 主催者として作成したイベントをリアルタイム監視
+    final hostedEventsQuery = _firestore
+        .collection('events')
+        .where('createdBy', isEqualTo: userId)
+        .limit(30);
+
+    return hostedEventsQuery.snapshots().asyncMap((hostedSnapshot) async {
       final allEvents = <String, GameEvent>{};
 
-      // 1. eventsコレクションから主催者イベントを取得
-      try {
-        final eventsHostedQuery = await _firestore
-            .collection('events')
-            .where('createdBy', isEqualTo: userId)
-            .limit(30)
-            .get();
-
-        for (final doc in eventsHostedQuery.docs) {
-          try {
-            final data = doc.data();
-            // 下書きと非公開イベントは除外
-            if (_isEventPubliclyVisible(data)) {
-              final event = GameEvent.fromFirestore(data, doc.id);
-              allEvents[event.id] = event;
-            }
-          } catch (e) {
-            // 変換エラーは無視して続行
+      // 1. 主催者イベント（リアルタイム監視対象）
+      for (final doc in hostedSnapshot.docs) {
+        try {
+          final data = doc.data();
+          if (_isEventPubliclyVisible(data)) {
+            final event = GameEvent.fromFirestore(data, doc.id);
+            allEvents[event.id] = event;
           }
+        } catch (e) {
+          // 変換エラーは無視して続行
         }
-      } catch (e) {
-        // クエリエラーは無視して続行
       }
 
-      // 2. eventsコレクションからmanagerIds配列を検索
+      // 2. 共同編集者として参加しているイベント
       try {
-        final eventsWhereManagerQuery = await _firestore
+        final managedSnapshot = await _firestore
             .collection('events')
             .where('managerIds', arrayContains: userId)
             .limit(30)
             .get();
 
-        for (final doc in eventsWhereManagerQuery.docs) {
+        for (final doc in managedSnapshot.docs) {
           try {
             final data = doc.data();
-            // 下書きと非公開イベントは除外
             if (_isEventPubliclyVisible(data)) {
               final event = GameEvent.fromFirestore(data, doc.id);
               allEvents[event.id] = event;
@@ -312,18 +307,17 @@ class UserEventService {
         // クエリエラーは無視して続行
       }
 
-      // 3. gameEventsコレクションから主催者イベントを取得
+      // 3. gameEventsコレクションから主催者イベント
       try {
-        final gameEventsHostedQuery = await _firestore
+        final gameEventsHostedSnapshot = await _firestore
             .collection('gameEvents')
             .where('createdBy', isEqualTo: userId)
             .limit(30)
             .get();
 
-        for (final doc in gameEventsHostedQuery.docs) {
+        for (final doc in gameEventsHostedSnapshot.docs) {
           try {
             final data = doc.data();
-            // 下書きと非公開イベントは除外
             if (_isEventPubliclyVisible(data)) {
               final event = GameEvent.fromFirestore(data, doc.id);
               allEvents[event.id] = event;
@@ -336,18 +330,17 @@ class UserEventService {
         // クエリエラーは無視して続行
       }
 
-      // 4. gameEventsコレクションからmanagerIds配列を検索
+      // 4. gameEventsコレクションから共同編集者イベント
       try {
-        final gameEventsManagedQuery = await _firestore
+        final gameEventsManagedSnapshot = await _firestore
             .collection('gameEvents')
             .where('managerIds', arrayContains: userId)
             .limit(30)
             .get();
 
-        for (final doc in gameEventsManagedQuery.docs) {
+        for (final doc in gameEventsManagedSnapshot.docs) {
           try {
             final data = doc.data();
-            // 下書きと非公開イベントは除外
             if (_isEventPubliclyVisible(data)) {
               final event = GameEvent.fromFirestore(data, doc.id);
               allEvents[event.id] = event;
@@ -363,11 +356,8 @@ class UserEventService {
       // 日付でソートして返す
       final events = allEvents.values.toList();
       events.sort((a, b) => b.startDate.compareTo(a.startDate));
-      yield events;
-
-    } catch (e) {
-      yield [];
-    }
+      return events;
+    });
   }
 
   /// イベントが公開表示可能かどうかを判定
@@ -390,105 +380,119 @@ class UserEventService {
   }
 
   /// パブリック表示専用の参加予定イベント取得（下書きとプライベートを除外）
-  static Stream<List<GameEvent>> _getPublicOnlyParticipatingEvents(String userId) async* {
-    try {
-      final now = DateTime.now();
+  /// リアルタイム監視対応
+  static Stream<List<GameEvent>> _getPublicOnlyParticipatingEvents(String userId) {
+    final now = DateTime.now();
+
+    // メインクエリ: 参加予定イベントをリアルタイム監視
+    final eventsQuery = _firestore
+        .collection('events')
+        .where('participantIds', arrayContains: userId)
+        .where('status', isEqualTo: 'published')
+        .where('visibility', isEqualTo: 'public')
+        .limit(20);
+
+    return eventsQuery.snapshots().asyncMap((eventsSnapshot) async {
       final events = <GameEvent>[];
 
       // eventsコレクションから公開中のイベントのみ取得
-      final eventsQuery = await _firestore
-          .collection('events')
-          .where('participantIds', arrayContains: userId)
-          .where('status', isEqualTo: 'published')
-          .where('visibility', isEqualTo: 'public')
-          .where('startDate', isGreaterThanOrEqualTo: Timestamp.fromDate(now))
-          .limit(20)
-          .get();
-
-      for (final doc in eventsQuery.docs) {
+      for (final doc in eventsSnapshot.docs) {
         try {
-          final gameEvent = GameEvent.fromFirestore(doc.data(), doc.id);
-          events.add(gameEvent);
+          final data = doc.data();
+          final startDate = (data['startDate'] as Timestamp?)?.toDate();
+          // 未来のイベントのみ
+          if (startDate != null && startDate.isAfter(now)) {
+            final gameEvent = GameEvent.fromFirestore(data, doc.id);
+            events.add(gameEvent);
+          }
         } catch (e) {
           // 変換エラーは無視して続行
         }
       }
 
       // gameEventsコレクションからアクティブなイベントのみ取得
-      final gameEventsQuery = await _firestore
-          .collection('gameEvents')
-          .where('participantIds', arrayContains: userId)
-          .where('status', isEqualTo: 'active')
-          .limit(20)
-          .get();
+      try {
+        final gameEventsSnapshot = await _firestore
+            .collection('gameEvents')
+            .where('participantIds', arrayContains: userId)
+            .where('status', isEqualTo: 'active')
+            .limit(20)
+            .get();
 
-      for (final doc in gameEventsQuery.docs) {
-        try {
-          final gameEvent = GameEvent.fromFirestore(doc.data(), doc.id);
-          events.add(gameEvent);
-        } catch (e) {
-          // 変換エラーは無視して続行
+        for (final doc in gameEventsSnapshot.docs) {
+          try {
+            final gameEvent = GameEvent.fromFirestore(doc.data(), doc.id);
+            events.add(gameEvent);
+          } catch (e) {
+            // 変換エラーは無視して続行
+          }
         }
+      } catch (e) {
+        // クエリエラーは無視して続行
       }
 
       // 日付でソート
       events.sort((a, b) => a.startDate.compareTo(b.startDate));
-      yield events;
-
-    } catch (e) {
-      yield [];
-    }
+      return events;
+    });
   }
 
   /// パブリック表示専用の参加済みイベント取得（下書きとプライベートを除外）
-  static Stream<List<GameEvent>> _getPublicOnlyParticipatedEvents(String userId) async* {
-    try {
-      final now = DateTime.now();
+  /// リアルタイム監視対応
+  static Stream<List<GameEvent>> _getPublicOnlyParticipatedEvents(String userId) {
+    final now = DateTime.now();
+
+    // メインクエリ: 参加済みイベントをリアルタイム監視
+    final eventsQuery = _firestore
+        .collection('events')
+        .where('participantIds', arrayContains: userId)
+        .where('status', isEqualTo: 'published')
+        .where('visibility', isEqualTo: 'public')
+        .limit(20);
+
+    return eventsQuery.snapshots().asyncMap((eventsSnapshot) async {
       final events = <GameEvent>[];
 
       // eventsコレクションから公開中の過去イベントのみ取得
-      final eventsQuery = await _firestore
-          .collection('events')
-          .where('participantIds', arrayContains: userId)
-          .where('status', isEqualTo: 'published')
-          .where('visibility', isEqualTo: 'public')
-          .where('startDate', isLessThan: Timestamp.fromDate(now))
-          .limit(20)
-          .get();
-
-      for (final doc in eventsQuery.docs) {
+      for (final doc in eventsSnapshot.docs) {
         try {
-          final gameEvent = GameEvent.fromFirestore(doc.data(), doc.id);
-          events.add(gameEvent);
+          final data = doc.data();
+          final startDate = (data['startDate'] as Timestamp?)?.toDate();
+          // 過去のイベントのみ
+          if (startDate != null && startDate.isBefore(now)) {
+            final gameEvent = GameEvent.fromFirestore(data, doc.id);
+            events.add(gameEvent);
+          }
         } catch (e) {
           // 変換エラーは無視して続行
         }
       }
 
       // gameEventsコレクションから完了した過去イベントのみ取得
-      final gameEventsQuery = await _firestore
-          .collection('gameEvents')
-          .where('participantIds', arrayContains: userId)
-          .where('status', isEqualTo: 'completed')
-          .limit(20)
-          .get();
+      try {
+        final gameEventsSnapshot = await _firestore
+            .collection('gameEvents')
+            .where('participantIds', arrayContains: userId)
+            .where('status', isEqualTo: 'completed')
+            .limit(20)
+            .get();
 
-      for (final doc in gameEventsQuery.docs) {
-        try {
-          final gameEvent = GameEvent.fromFirestore(doc.data(), doc.id);
-          events.add(gameEvent);
-        } catch (e) {
-          // 変換エラーは無視して続行
+        for (final doc in gameEventsSnapshot.docs) {
+          try {
+            final gameEvent = GameEvent.fromFirestore(doc.data(), doc.id);
+            events.add(gameEvent);
+          } catch (e) {
+            // 変換エラーは無視して続行
+          }
         }
+      } catch (e) {
+        // クエリエラーは無視して続行
       }
 
       // 日付でソート（新しい順）
       events.sort((a, b) => b.startDate.compareTo(a.startDate));
-      yield events;
-
-    } catch (e) {
-      yield [];
-    }
+      return events;
+    });
   }
 
   /// ユーザーのアクティビティ統計を取得

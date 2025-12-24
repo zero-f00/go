@@ -12,23 +12,48 @@ import '../../../data/models/user_model.dart';
 import '../../../data/repositories/user_repository.dart';
 
 /// ソーシャルリストタイプ
-enum SocialListType {
+enum _SocialListType {
   friends,
+  following,
   followers,
 }
 
-extension SocialListTypeExtension on SocialListType {
+extension _SocialListTypeExtension on _SocialListType {
   String get emptyMessage {
     switch (this) {
-      case SocialListType.friends:
-        return 'フレンドがいません';
-      case SocialListType.followers:
+      case _SocialListType.friends:
+        return '相互フォローがいません';
+      case _SocialListType.following:
+        return 'フォロー中のユーザーがいません';
+      case _SocialListType.followers:
         return 'フォロワーがいません';
+    }
+  }
+
+  String get emptySubMessage {
+    switch (this) {
+      case _SocialListType.friends:
+        return '気になるユーザーをフォローして\n相互フォローになりましょう';
+      case _SocialListType.following:
+        return '気になるユーザーをフォローして\nイベント情報を受け取りましょう';
+      case _SocialListType.followers:
+        return 'あなたをフォローしてくれる\nユーザーを待っています';
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case _SocialListType.friends:
+        return Icons.sync_alt;
+      case _SocialListType.following:
+        return Icons.person_add_alt_1;
+      case _SocialListType.followers:
+        return Icons.person_add;
     }
   }
 }
 
-/// フレンドリスト画面
+/// 相互フォローリスト画面
 class FriendsScreen extends ConsumerStatefulWidget {
   const FriendsScreen({super.key});
 
@@ -41,6 +66,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
 
   late TabController _tabController;
   List<UserData> _friends = [];
+  List<UserData> _following = [];
   List<UserData> _followers = [];
   bool _isLoading = true;
   String? _errorMessage;
@@ -48,7 +74,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _loadData();
   }
 
@@ -71,10 +97,12 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
         final socialStatsService = SocialStatsService.instance;
 
         final friends = await socialStatsService.getFriendsList(currentUser.userId);
+        final following = await socialStatsService.getFollowingList(currentUser.userId);
         final followers = await socialStatsService.getFollowersList(currentUser.userId);
 
         setState(() {
           _friends = friends;
+          _following = following;
           _followers = followers;
           _isLoading = false;
         });
@@ -100,7 +128,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
           child: Column(
             children: [
               AppHeader(
-                title: 'フレンド',
+                title: '相互フォロー',
                 showBackButton: true,
                 onBackPressed: () => Navigator.of(context).pop(),
                 actions: [
@@ -175,7 +203,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
               ),
               const SizedBox(width: AppDimensions.spacingS),
               const Text(
-                'フレンド',
+                '相互フォロー',
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
@@ -193,19 +221,23 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
             ),
             child: TabBar(
               controller: _tabController,
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
               labelColor: AppColors.primary,
               unselectedLabelColor: AppColors.textSecondary,
               indicatorColor: AppColors.primary,
               indicatorSize: TabBarIndicatorSize.tab,
               dividerColor: Colors.transparent,
+              labelPadding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingM),
               tabs: [
                 Tab(
-                  text: 'フレンド (${_friends.length})',
-                  icon: const Icon(Icons.people, size: 20),
+                  text: '相互フォロー (${_friends.length})',
+                ),
+                Tab(
+                  text: 'フォロー中 (${_following.length})',
                 ),
                 Tab(
                   text: 'フォロワー (${_followers.length})',
-                  icon: const Icon(Icons.person_add, size: 20),
                 ),
               ],
             ),
@@ -289,14 +321,15 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
     return TabBarView(
       controller: _tabController,
       children: [
-        _buildUserList(_friends, SocialListType.friends),
-        _buildUserList(_followers, SocialListType.followers),
+        _buildUserList(_friends, _SocialListType.friends),
+        _buildUserList(_following, _SocialListType.following),
+        _buildUserList(_followers, _SocialListType.followers),
       ],
     );
   }
 
   /// ユーザーリストを構築
-  Widget _buildUserList(List<UserData> users, SocialListType type) {
+  Widget _buildUserList(List<UserData> users, _SocialListType type) {
     if (users.isEmpty) {
       return _buildEmptyState(type);
     }
@@ -317,7 +350,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
   }
 
   /// 空の状態を構築
-  Widget _buildEmptyState(SocialListType type) {
+  Widget _buildEmptyState(_SocialListType type) {
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.spacingXL),
       child: Center(
@@ -336,7 +369,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
                 ),
               ),
               child: Icon(
-                type == SocialListType.friends ? Icons.people : Icons.person_add,
+                type.icon,
                 size: AppDimensions.iconXL,
                 color: AppColors.textLight,
               ),
@@ -352,9 +385,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              type == SocialListType.friends
-                  ? '新しいフレンドを見つけて\n一緒にゲームを楽しみましょう'
-                  : 'フレンドになってくれる\nユーザーを待っています',
+              type.emptySubMessage,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textLight,
@@ -697,7 +728,7 @@ class _UserSearchModalState extends State<_UserSearchModal> {
             ),
             const SizedBox(height: AppDimensions.spacingS),
             const Text(
-              'フレンドにしたいユーザーを\n検索して見つけましょう',
+              'フォローしたいユーザーを\n検索して見つけましょう',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeM,

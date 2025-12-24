@@ -6,6 +6,7 @@ import '../../data/models/user_model.dart';
 import '../../data/models/event_model.dart';
 import '../utils/event_converter.dart';
 import 'event_filter_service.dart';
+import 'follow_service.dart';
 
 /// パーソナライズされたイベントレコメンデーションサービス
 class RecommendationService {
@@ -59,37 +60,98 @@ class RecommendationService {
   }
 
 
-  /// フレンドが主催または参加しているイベントを取得
+  /// 相互フォローが主催または参加しているイベントを取得
   static Stream<List<GameEvent>> getFriendEvents(String userId) async* {
     try {
-      // フレンドリストを取得
-      final friendsSnapshot = await _firestore
-          .collection('friendships')
-          .where('userId', isEqualTo: userId)
-          .where('status', isEqualTo: 'accepted')
-          .get();
-
-      final friendIds = friendsSnapshot.docs
-          .map((doc) => doc.data()['friendId'] as String)
-          .toList();
+      // FollowServiceから相互フォローのIDリストを取得
+      final friendIds = await FollowService.instance.getMutualFollowIds(userId);
 
       if (friendIds.isEmpty) {
         yield [];
         return;
       }
 
-      // フレンドが主催しているイベント
+      // Firestoreのwhereクエリ制限（最大10件）に対応
+      final limitedFriendIds = friendIds.take(10).toList();
+
+      // 相互フォローが主催しているイベント
       final hostedEventsQuery = _firestore
           .collection('events')
-          .where('createdBy', whereIn: friendIds)
+          .where('createdBy', whereIn: limitedFriendIds)
           .where('status', whereIn: ['published', 'scheduled'])
           .orderBy('eventDate', descending: false)
           .limit(10);
 
-      // フレンドが参加しているイベント
+      // 相互フォローが参加しているイベント
       final participatingEventsQuery = _firestore
           .collection('events')
-          .where('participantIds', arrayContainsAny: friendIds)
+          .where('participantIds', arrayContainsAny: limitedFriendIds)
+          .where('status', whereIn: ['published', 'scheduled'])
+          .orderBy('eventDate', descending: false)
+          .limit(10);
+
+      final hostedEvents = await hostedEventsQuery.get();
+      final participatingEvents = await participatingEventsQuery.get();
+
+      final allEvents = <GameEvent>[];
+      final eventIds = <String>{};
+
+      // 重複を避けてイベントを統合
+      for (final doc in hostedEvents.docs) {
+        if (!eventIds.contains(doc.id)) {
+          final event = Event.fromFirestore(doc);
+          final gameEvent = await EventConverter.eventToGameEvent(event);
+          allEvents.add(gameEvent);
+          eventIds.add(doc.id);
+        }
+      }
+
+      for (final doc in participatingEvents.docs) {
+        if (!eventIds.contains(doc.id)) {
+          final event = Event.fromFirestore(doc);
+          final gameEvent = await EventConverter.eventToGameEvent(event);
+          allEvents.add(gameEvent);
+          eventIds.add(doc.id);
+        }
+      }
+
+      // 開催日時順にソート
+      allEvents.sort((a, b) => a.startDate.compareTo(b.startDate));
+
+      // NGユーザーのイベントを除外
+      final filteredEvents = EventFilterService.filterBlockedUserEvents(allEvents, userId);
+      yield filteredEvents;
+    } catch (e) {
+      yield [];
+    }
+  }
+
+  /// フォロー中のユーザーが主催または参加しているイベントを取得
+  static Stream<List<GameEvent>> getFollowingEvents(String userId) async* {
+    try {
+      // FollowServiceからフォロー中のユーザーリストを取得
+      final followingIds = await FollowService.instance.getFollowingIds(userId);
+
+      if (followingIds.isEmpty) {
+        yield [];
+        return;
+      }
+
+      // Firestoreのwhereクエリ制限（最大10件）に対応
+      final limitedFollowingIds = followingIds.take(10).toList();
+
+      // フォロー中のユーザーが主催しているイベント
+      final hostedEventsQuery = _firestore
+          .collection('events')
+          .where('createdBy', whereIn: limitedFollowingIds)
+          .where('status', whereIn: ['published', 'scheduled'])
+          .orderBy('eventDate', descending: false)
+          .limit(10);
+
+      // フォロー中のユーザーが参加しているイベント
+      final participatingEventsQuery = _firestore
+          .collection('events')
+          .where('participantIds', arrayContainsAny: limitedFollowingIds)
           .where('status', whereIn: ['published', 'scheduled'])
           .orderBy('eventDate', descending: false)
           .limit(10);
@@ -464,7 +526,7 @@ class RecommendationService {
     }
   }
 
-  /// 複合的なおすすめイベントを取得（お気に入りゲーム + フレンドのイベント）
+  /// 複合的なおすすめイベントを取得（お気に入りゲーム + 相互フォローのイベント）
   static Stream<List<GameEvent>> getCombinedRecommendations(String userId) async* {
     try {
       // ユーザーIDが空の場合は人気のイベントのみを返す
@@ -481,7 +543,7 @@ class RecommendationService {
           final combinedEvents = <GameEvent>[];
           final eventIds = <String>{};
 
-          // フレンドのイベントを優先で追加
+          // 相互フォローのイベントを優先で追加
           for (final event in friendEvents.take(5)) {
             if (!eventIds.contains(event.id)) {
               combinedEvents.add(event);
@@ -649,9 +711,14 @@ final recommendedEventsProvider = StreamProvider.family<List<GameEvent>, String>
   }
 });
 
-/// フレンドイベントプロバイダー
+/// 相互フォローイベントプロバイダー
 final friendEventsProvider = StreamProvider.family<List<GameEvent>, String>((ref, userId) {
   return RecommendationService.getFriendEvents(userId);
+});
+
+/// フォロー中ユーザーのイベントプロバイダー
+final followingEventsProvider = StreamProvider.family<List<GameEvent>, String>((ref, userId) {
+  return RecommendationService.getFollowingEvents(userId);
 });
 
 /// 運営者イベントプロバイダー（ユーザーが運営するイベント）

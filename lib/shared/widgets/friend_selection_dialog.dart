@@ -7,7 +7,7 @@ import '../services/social_stats_service.dart';
 import '../providers/auth_provider.dart';
 import '../../data/models/user_model.dart';
 
-/// フレンド選択ダイアログ
+/// 相互フォロー選択ダイアログ
 class FriendSelectionDialog extends ConsumerStatefulWidget {
   final String title;
   final String description;
@@ -89,7 +89,7 @@ class _FriendSelectionDialogState extends ConsumerState<FriendSelectionDialog> {
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'フレンド情報の取得に失敗しました: $e';
+        _errorMessage = '相互フォロー情報の取得に失敗しました: $e';
         _isLoading = false;
       });
     }
@@ -216,7 +216,7 @@ class _FriendSelectionDialogState extends ConsumerState<FriendSelectionDialog> {
             ),
             SizedBox(height: AppDimensions.spacingM),
             Text(
-              'フレンド情報を取得中...',
+              '相互フォロー情報を取得中...',
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textSecondary,
@@ -297,7 +297,7 @@ class _FriendSelectionDialogState extends ConsumerState<FriendSelectionDialog> {
             ),
             const SizedBox(height: AppDimensions.spacingL),
             const Text(
-              'フレンドがいません',
+              '相互フォローがいません',
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 color: AppColors.textSecondary,
@@ -306,7 +306,7 @@ class _FriendSelectionDialogState extends ConsumerState<FriendSelectionDialog> {
             ),
             const SizedBox(height: AppDimensions.spacingS),
             const Text(
-              'フレンドを追加すると\nここから簡単に運営者を選択できます',
+              '相互フォローを増やすと\nここから簡単に運営者を選択できます',
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textLight,
@@ -346,7 +346,7 @@ class _FriendSelectionDialogState extends ConsumerState<FriendSelectionDialog> {
             ),
             const SizedBox(height: AppDimensions.spacingL),
             const Text(
-              'すべてのフレンドが選択済みです',
+              'すべての相互フォローが選択済みです',
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 color: AppColors.textSecondary,
@@ -355,7 +355,7 @@ class _FriendSelectionDialogState extends ConsumerState<FriendSelectionDialog> {
             ),
             const SizedBox(height: AppDimensions.spacingS),
             const Text(
-              '選択可能な新しいフレンドがありません',
+              '選択可能な相互フォローがありません',
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textLight,
@@ -484,7 +484,7 @@ class _FriendSelectionDialogState extends ConsumerState<FriendSelectionDialog> {
           const SizedBox(width: AppDimensions.spacingS),
           Expanded(
             child: Text(
-              '${_availableFriends.length}人のフレンドから選択できます',
+              '${_availableFriends.length}人の相互フォローから選択できます',
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeS,
                 color: AppColors.textLight,

@@ -1,19 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../data/models/friend_model.dart';
-import '../../data/repositories/user_repository.dart';
-import 'firestore_service.dart';
 import 'error_handler_service.dart';
-import 'notification_service.dart';
 
 /// フレンド機能を管理するサービスクラス
+///
+/// このクラスは廃止されました。
+/// 代わりに FollowService を使用してください。
+/// 相互フォロー（mutual follow）がフレンドと同等の機能を提供します。
+@Deprecated('フレンドリクエスト機能は廃止されました。FollowServiceを使用してください。')
 class FriendService {
   static final FriendService _instance = FriendService._internal();
   factory FriendService() => _instance;
   FriendService._internal();
 
   static FriendService get instance => _instance;
-
-  final FirestoreService _firestore = FirestoreService();
 
   /// フレンドリクエストのコレクション参照
   CollectionReference get friendRequestsCollection =>
@@ -63,26 +63,7 @@ class FriendService {
         message: message,
       );
 
-      final docRef = await friendRequestsCollection.add(request.toJson());
-      final requestId = docRef.id;
-
-      // 送信者と受信者の情報を取得
-      final userRepository = UserRepository();
-      final fromUserData = await userRepository.getUserByCustomId(fromUserId);
-      final toUserData = await userRepository.getUserByCustomId(toUserId);
-
-      if (fromUserData != null && toUserData != null) {
-        // 受信者のFirebase UIDを使用して通知を送信
-        final toUserFirebaseUid = toUserData.id; // UserData.id = Firebase UID
-        final fromUserFirebaseUid = fromUserData.id; // UserData.id = Firebase UID
-
-        await NotificationService.instance.sendFriendRequestNotification(
-          toUserId: toUserFirebaseUid, // Firebase UIDを使用
-          fromUserId: fromUserFirebaseUid, // Firebase UIDを使用
-          fromUserName: fromUserData.username,
-          friendRequestId: requestId,
-        );
-      }
+      await friendRequestsCollection.add(request.toJson());
 
       return true;
     } catch (e) {
@@ -118,36 +99,6 @@ class FriendService {
 
       await friendshipsCollection.add(friendship.toJson());
 
-      // 承認者と送信者の情報を取得
-      final userRepository = UserRepository();
-      final toUserData = await userRepository.getUserByCustomId(request.toUserId);
-      final fromUserData = await userRepository.getUserByCustomId(request.fromUserId);
-
-      if (toUserData != null && fromUserData != null) {
-        // 元の通知を「承認済み」に更新
-        final originalNotification = await NotificationService.instance.findFriendRequestNotification(
-          toUserId: toUserData.id, // 受信者のFirebase UID
-          friendRequestId: requestId,
-        );
-
-        if (originalNotification != null) {
-          await NotificationService.instance.updateFriendRequestNotification(
-            notificationId: originalNotification.id!,
-            isAccepted: true,
-            fromUserName: fromUserData.username,
-          );
-        }
-
-        // リクエスト送信者のFirebase UIDを使用して承認通知を送信
-        final fromUserFirebaseUid = fromUserData.id; // UserData.id = Firebase UID
-
-        await NotificationService.instance.sendFriendAcceptedNotification(
-          toUserId: fromUserFirebaseUid, // Firebase UIDを使用
-          fromUserId: toUserData.id, // Firebase UIDを使用
-          fromUserName: toUserData.username,
-        );
-      }
-
       return true;
     } catch (e) {
       ErrorHandlerService.logError('フレンドリクエストの承認', e);
@@ -173,36 +124,6 @@ class FriendService {
       await friendRequestsCollection.doc(requestId).update(
         request.updateStatus(FriendRequestStatus.rejected).toJson(),
       );
-
-      // 拒否者と送信者の情報を取得
-      final userRepository = UserRepository();
-      final toUserData = await userRepository.getUserByCustomId(request.toUserId);
-      final fromUserData = await userRepository.getUserByCustomId(request.fromUserId);
-
-      if (toUserData != null && fromUserData != null) {
-        // 元の通知を「拒否済み」に更新
-        final originalNotification = await NotificationService.instance.findFriendRequestNotification(
-          toUserId: toUserData.id, // 受信者のFirebase UID
-          friendRequestId: requestId,
-        );
-
-        if (originalNotification != null) {
-          await NotificationService.instance.updateFriendRequestNotification(
-            notificationId: originalNotification.id!,
-            isAccepted: false,
-            fromUserName: fromUserData.username,
-          );
-        }
-
-        // リクエスト送信者のFirebase UIDを使用して拒否通知を送信
-        final fromUserFirebaseUid = fromUserData.id; // UserData.id = Firebase UID
-
-        await NotificationService.instance.sendFriendRejectedNotification(
-          toUserId: fromUserFirebaseUid, // Firebase UIDを使用
-          fromUserId: toUserData.id, // Firebase UIDを使用
-          fromUserName: toUserData.username,
-        );
-      }
 
       return true;
     } catch (e) {

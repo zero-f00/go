@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
@@ -84,6 +85,20 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     } else {
       // 通常の戻る動作
       Navigator.of(context).pop();
+    }
+  }
+
+  /// イベント名をクリップボードにコピー
+  Future<void> _copyEventName() async {
+    await Clipboard.setData(ClipboardData(text: _currentEvent.name));
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('イベント名をコピーしました'),
+          backgroundColor: AppColors.success,
+          duration: Duration(seconds: 2),
+        ),
+      );
     }
   }
 
@@ -352,6 +367,38 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       title: 'イベント概要',
       icon: Icons.info,
       children: [
+        // イベント名（コピー機能付き）
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Text(
+                _currentEvent.name,
+                style: const TextStyle(
+                  fontSize: AppDimensions.fontSizeXL,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ),
+            const SizedBox(width: AppDimensions.spacingS),
+            IconButton(
+              icon: const Icon(
+                Icons.copy,
+                size: 20,
+                color: AppColors.textSecondary,
+              ),
+              onPressed: () => _copyEventName(),
+              tooltip: 'イベント名をコピー',
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(
+                minWidth: 32,
+                minHeight: 32,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppDimensions.spacingM),
         Row(
           children: [
             Expanded(

@@ -95,6 +95,9 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   bool _isSavingDraft = false;
   double _uploadProgress = 0.0;
 
+  // パスワード表示状態
+  bool _isPasswordVisible = false;
+
   @override
   void initState() {
     super.initState();
@@ -481,6 +484,80 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                   return null;
                 }
               : null),
+        ),
+      ],
+    );
+  }
+
+  /// パスワードフィールド（表示/非表示トグル付き）
+  Widget _buildPasswordField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              AppStrings.eventPasswordLabel,
+              style: const TextStyle(
+                fontSize: AppDimensions.fontSizeM,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textDark,
+              ),
+            ),
+            const Text(
+              ' *',
+              style: TextStyle(
+                fontSize: AppDimensions.fontSizeM,
+                color: AppColors.error,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppDimensions.spacingS),
+        TextFormField(
+          controller: _eventPasswordController,
+          obscureText: !_isPasswordVisible,
+          textInputAction: TextInputAction.next,
+          decoration: InputDecoration(
+            hintText: AppStrings.eventPasswordHint,
+            hintStyle: const TextStyle(
+              color: AppColors.textLight,
+              fontSize: AppDimensions.fontSizeM,
+            ),
+            filled: true,
+            fillColor: AppColors.backgroundLight,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+              borderSide: const BorderSide(color: AppColors.accent, width: 2),
+            ),
+            contentPadding: const EdgeInsets.all(AppDimensions.spacingM),
+            suffixIcon: IconButton(
+              icon: Icon(
+                _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                color: AppColors.textSecondary,
+              ),
+              onPressed: () {
+                setState(() {
+                  _isPasswordVisible = !_isPasswordVisible;
+                });
+              },
+              tooltip: _isPasswordVisible ? 'パスワードを隠す' : 'パスワードを表示',
+            ),
+          ),
+          style: const TextStyle(
+            fontSize: AppDimensions.fontSizeM,
+            color: AppColors.textDark,
+          ),
+          validator: (value) => ValidationService.validateEventPassword(value, true),
         ),
       ],
     );
@@ -1589,7 +1666,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
             // ボタンを横並びで配置
             Row(
               children: [
-                // フレンドから追加ボタン
+                // 相互フォローから追加ボタン
                 Expanded(
                   child: GestureDetector(
                     onTap: _addManagerFromFriends,
@@ -1610,7 +1687,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                           ),
                           SizedBox(width: AppDimensions.spacingS),
                           Text(
-                            'フレンドから',
+                            '相互フォローから',
                             style: TextStyle(
                               fontSize: AppDimensions.fontSizeS,
                               color: AppColors.secondary,
@@ -1761,8 +1838,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   Future<void> _addManagerFromFriends() async {
     await FriendSelectionDialog.show(
       context,
-      title: 'フレンドから運営者を選択',
-      description: 'フレンドの中からイベント運営者を追加してください',
+      title: '相互フォローから運営者を選択',
+      description: '相互フォローの中からイベント運営者を追加してください',
       excludedUsers: _selectedManagers,
       onFriendSelected: (user) {
         if (!_selectedManagers.any((manager) => manager.id == user.id)) {
@@ -1811,7 +1888,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
               children: [
                 Icon(Icons.people, size: 16),
                 SizedBox(width: 8),
-                Text('フレンドから選択'),
+                Text('相互フォローから選択'),
               ],
             ),
           ),
@@ -1862,8 +1939,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   Future<void> _addSponsorFromFriends() async {
     await FriendSelectionDialog.show(
       context,
-      title: 'フレンドからスポンサーを選択',
-      description: 'フレンドの中からイベントスポンサーを追加してください',
+      title: '相互フォローからスポンサーを選択',
+      description: '相互フォローの中からイベントスポンサーを追加してください',
       excludedUsers: _selectedSponsors,
       onFriendSelected: (user) {
         if (!_selectedSponsors.any((sponsor) => sponsor.id == user.id)) {
@@ -2203,15 +2280,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       title: AppStrings.invitationSection,
       icon: Icons.person_add,
       children: [
-        // パスワード入力フィールド
-        _buildTextField(
-          controller: _eventPasswordController,
-          label: AppStrings.eventPasswordLabel,
-          hint: AppStrings.eventPasswordHint,
-          isRequired: true,
-          obscureText: true,
-          validator: (value) => ValidationService.validateEventPassword(value, true),
-        ),
+        // パスワード入力フィールド（表示/非表示トグル付き）
+        _buildPasswordField(),
         const SizedBox(height: AppDimensions.spacingL),
 
         // 招待メンバー管理（ユーザー検索形式）
@@ -2872,6 +2942,10 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       if (isEditMode) {
         // 編集モード: 既存のイベントを更新
         eventId = widget.editingEvent!.id;
+
+        // 編集前の招待ユーザーIDを保存（差分通知用）
+        final previousInvitedUserIds = List<String>.from(widget.editingEvent!.invitedUserIds);
+
         await EventService.updateEvent(
           eventId: eventId,
           eventInput: eventInput,
@@ -2886,6 +2960,28 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
         // ステータスを更新
         await EventService.updateEventStatus(eventId, status);
+
+        // 編集モードで招待制イベントの場合、新規追加された招待ユーザーにのみ通知を送信
+        if (_visibility == '招待制' && _invitedUsers.isNotEmpty && status == EventStatus.published) {
+          // 新規追加されたユーザーのみ抽出（既存ユーザーには再送しない）
+          final newInvitedUserIds = _invitedUsers
+              .map((user) => user.id)
+              .where((userId) => !previousInvitedUserIds.contains(userId))
+              .toList();
+
+          if (newInvitedUserIds.isNotEmpty) {
+            try {
+              await EventService.sendEventInvitations(
+                eventId: eventId,
+                eventName: _eventNameController.text.trim(),
+                invitedUserIds: newInvitedUserIds,
+                createdByUserId: currentUser.uid,
+              );
+            } catch (invitationError) {
+              // 招待送信エラーは非致命的なので無視
+            }
+          }
+        }
       } else {
         // 新規作成モード（通常の新規作成 or コピーモード）
         File? imageFileToUse = _selectedImage;
@@ -3001,9 +3097,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       invitedUserIds: _visibility == '招待制'
           ? _invitedUsers.map((user) => user.id).toList()
           : [],
-      visibility: overrideStatus == EventStatus.draft
-          ? EventVisibility.private
-          : _convertVisibilityToEnum(_visibility),
+      // 下書き保存時もユーザーが選択したvisibilityを保持する
+      visibility: _convertVisibilityToEnum(_visibility),
       eventTags: List<String>.from(_eventTags),
       language: _language,
       contactInfo: _contactController.text.trim().isEmpty

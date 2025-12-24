@@ -56,10 +56,20 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
     super.initState();
     _checkRequirements();
     _loadParticipantCount();
+    // パスワード入力の変更を監視してUIを更新
+    _passwordController.addListener(_onPasswordChanged);
+  }
+
+  void _onPasswordChanged() {
+    // パスワード入力時にボタンの活性/非活性を更新
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
+    _passwordController.removeListener(_onPasswordChanged);
     _messageController.dispose();
     _passwordController.dispose();
     super.dispose();

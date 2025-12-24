@@ -1,6 +1,5 @@
 import '../../data/models/user_model.dart';
-import 'friend_service.dart';
-import '../../data/repositories/user_repository.dart';
+import 'follow_service.dart';
 
 /// ソーシャル統計管理サービス
 class SocialStatsService {
@@ -10,59 +9,55 @@ class SocialStatsService {
 
   static SocialStatsService get instance => _instance;
 
-  /// フレンド数を取得
+  /// 相互フォロー数を取得
   Future<int> getFriendCount(String userId) async {
     try {
-      final friendships = await FriendService.instance.getFriends(userId);
-      return friendships.length;
+      return await FollowService.instance.getMutualFollowCount(userId);
     } catch (e) {
       return 0;
     }
   }
 
-  /// フォロワー数を取得（現在は双方向フレンド関係のみ）
+  /// フォロワー数を取得（follows コレクションから取得）
   Future<int> getFollowerCount(String userId) async {
     try {
-      // 現在の実装では、フレンド = フォロワーとして扱う
-      return await getFriendCount(userId);
+      return await FollowService.instance.getFollowerCount(userId);
     } catch (e) {
       return 0;
     }
   }
 
-  /// フレンドリストを取得（UserDataとして）
+  /// フォロー中の数を取得（follows コレクションから取得）
+  Future<int> getFollowingCount(String userId) async {
+    try {
+      return await FollowService.instance.getFollowingCount(userId);
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  /// 相互フォローリストを取得
   Future<List<UserData>> getFriendsList(String userId) async {
     try {
-      final friendships = await FriendService.instance.getFriends(userId);
-      final userRepository = UserRepository();
-      final List<UserData> friends = [];
-
-      for (final friendship in friendships) {
-        // friendship.user1Id か user2Id のうち、userIdでない方を取得
-        String friendUserId;
-        if (friendship.user1Id == userId) {
-          friendUserId = friendship.user2Id;
-        } else {
-          friendUserId = friendship.user1Id;
-        }
-
-        final friendData = await userRepository.getUserByCustomId(friendUserId);
-        if (friendData != null) {
-          friends.add(friendData);
-        }
-      }
-
-      return friends;
+      return await FollowService.instance.getMutualFollowsList(userId);
     } catch (e) {
       return [];
     }
   }
 
-  /// フォロワーリストを取得（現在は双方向フレンド関係のみ）
+  /// フォロワーリストを取得（follows コレクションから取得）
   Future<List<UserData>> getFollowersList(String userId) async {
     try {
-      // 現在の実装では、フレンドリスト = フォロワーリストとして扱う
-      return await getFriendsList(userId);
+      return await FollowService.instance.getFollowersList(userId);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// フォロー中リストを取得（follows コレクションから取得）
+  Future<List<UserData>> getFollowingList(String userId) async {
+    try {
+      return await FollowService.instance.getFollowingList(userId);
     } catch (e) {
       return [];
     }
@@ -73,11 +68,12 @@ class SocialStatsService {
     try {
       final friendCount = await getFriendCount(userId);
       final followerCount = await getFollowerCount(userId);
+      final followingCount = await getFollowingCount(userId);
 
       return SocialStats(
         friendCount: friendCount,
         followerCount: followerCount,
-        followingCount: friendCount, // 現在は双方向なので同じ
+        followingCount: followingCount,
       );
     } catch (e) {
       return const SocialStats(
@@ -109,7 +105,7 @@ class SocialStats {
 
 /// ソーシャルリストの種類
 enum SocialListType {
-  friends,    // フレンド
+  friends,    // 相互フォロー
   followers,  // フォロワー
   following,  // フォロー中
 }
@@ -118,7 +114,7 @@ extension SocialListTypeExtension on SocialListType {
   String get displayName {
     switch (this) {
       case SocialListType.friends:
-        return 'フレンド';
+        return '相互フォロー';
       case SocialListType.followers:
         return 'フォロワー';
       case SocialListType.following:
@@ -129,7 +125,7 @@ extension SocialListTypeExtension on SocialListType {
   String get emptyMessage {
     switch (this) {
       case SocialListType.friends:
-        return 'まだフレンドがいません';
+        return 'まだ相互フォローがいません';
       case SocialListType.followers:
         return 'まだフォロワーがいません';
       case SocialListType.following:

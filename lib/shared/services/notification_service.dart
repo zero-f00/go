@@ -109,101 +109,13 @@ class NotificationService {
     }
   }
 
-  /// フレンドリクエストの結果で通知を更新
-  Future<bool> updateFriendRequestNotification({
-    required String notificationId,
-    required bool isAccepted,
-    required String fromUserName,
-  }) async {
-    try {
-
-      final title = isAccepted ? 'フレンドリクエスト承認済み' : 'フレンドリクエスト拒否済み';
-      final message = isAccepted
-          ? '${fromUserName}さんのフレンドリクエストを承認しました'
-          : '${fromUserName}さんのフレンドリクエストを拒否しました';
-      final type = isAccepted ? NotificationType.friendAccepted : NotificationType.friendRejected;
-
-      return await updateNotification(
-        notificationId,
-        title: title,
-        message: message,
-        type: type,
-        data: {
-          'fromUserName': fromUserName,
-          'status': isAccepted ? 'accepted' : 'rejected',
-        },
-      );
-    } catch (e) {
-      return false;
-    }
-  }
-
-  /// フレンドリクエストIDから通知を検索
-  Future<NotificationData?> findFriendRequestNotification({
-    required String toUserId,
-    required String friendRequestId,
-  }) async {
-    try {
-
-      final querySnapshot = await _firestore
-          .collection(_collectionName)
-          .where('toUserId', isEqualTo: toUserId)
-          .where('type', isEqualTo: NotificationType.friendRequest.name)
-          .get();
-
-      for (final doc in querySnapshot.docs) {
-        final notification = NotificationData.fromFirestore(doc);
-        final data = notification.data;
-        if (data != null && data['friendRequestId'] == friendRequestId) {
-          return notification;
-        }
-      }
-
-      return null;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  /// フレンドリクエスト通知を送信
-  Future<bool> sendFriendRequestNotification({
-    required String toUserId,
-    required String fromUserId,
-    required String fromUserName,
-    required String friendRequestId,
-  }) async {
-    final notification = NotificationData.friendRequest(
-      toUserId: toUserId,
-      fromUserId: fromUserId,
-      fromUserName: fromUserName,
-      friendRequestId: friendRequestId,
-    );
-
-    return await createNotification(notification);
-  }
-
-  /// フレンドリクエスト承認通知を送信
-  Future<bool> sendFriendAcceptedNotification({
+  /// フォロー通知を送信
+  Future<bool> sendFollowNotification({
     required String toUserId,
     required String fromUserId,
     required String fromUserName,
   }) async {
-    final notification = NotificationData.friendAccepted(
-      toUserId: toUserId,
-      fromUserId: fromUserId,
-      fromUserName: fromUserName,
-    );
-
-    return await createNotification(notification);
-  }
-
-  /// フレンドリクエスト拒否通知を送信
-  Future<bool> sendFriendRejectedNotification({
-    required String toUserId,
-    required String fromUserId,
-    required String fromUserName,
-  }) async {
-    final notification = NotificationData.friendRejected(
+    final notification = NotificationData.follow(
       toUserId: toUserId,
       fromUserId: fromUserId,
       fromUserName: fromUserName,

@@ -3,9 +3,12 @@ import 'package:equatable/equatable.dart';
 
 /// 通知のタイプ
 enum NotificationType {
-  friendRequest,       // フレンドリクエスト
-  friendAccepted,      // フレンドリクエスト承認
-  friendRejected,      // フレンドリクエスト拒否
+  @Deprecated('フレンドリクエスト機能は廃止されました。既存データの互換性のために残しています。')
+  friendRequest,       // フレンドリクエスト（廃止）
+  @Deprecated('フレンドリクエスト機能は廃止されました。既存データの互換性のために残しています。')
+  friendAccepted,      // フレンドリクエスト承認（廃止）
+  @Deprecated('フレンドリクエスト機能は廃止されました。既存データの互換性のために残しています。')
+  friendRejected,      // フレンドリクエスト拒否（廃止）
   eventInvite,         // イベント招待
   eventReminder,       // イベントリマインダー
   eventApproved,       // イベント参加承認
@@ -27,6 +30,7 @@ enum NotificationType {
   eventCapacityWarning,// イベント定員間近警告（運営者向け）
   eventWaitlist,       // イベントキャンセル待ち通知
   participantCancelled, // 参加者キャンセル（運営側通知）
+  follow,              // フォロー通知
   system,              // システム通知
 }
 
@@ -75,29 +79,8 @@ class NotificationData extends Equatable {
     this.data,
   });
 
-  /// フレンドリクエスト通知を作成
-  factory NotificationData.friendRequest({
-    required String toUserId,
-    required String fromUserId,
-    required String fromUserName,
-    required String friendRequestId,
-  }) {
-    return NotificationData(
-      toUserId: toUserId,
-      fromUserId: fromUserId,
-      type: NotificationType.friendRequest,
-      title: 'フレンドリクエスト',
-      message: '$fromUserNameさんからフレンドリクエストが届きました',
-      createdAt: DateTime.now(),
-      data: {
-        'friendRequestId': friendRequestId,
-        'fromUserName': fromUserName,
-      },
-    );
-  }
-
-  /// フレンドリクエスト承認通知を作成
-  factory NotificationData.friendAccepted({
+  /// フォロー通知を作成
+  factory NotificationData.follow({
     required String toUserId,
     required String fromUserId,
     required String fromUserName,
@@ -105,28 +88,9 @@ class NotificationData extends Equatable {
     return NotificationData(
       toUserId: toUserId,
       fromUserId: fromUserId,
-      type: NotificationType.friendAccepted,
-      title: 'フレンドリクエスト承認',
-      message: '$fromUserNameさんがフレンドリクエストを承認しました',
-      createdAt: DateTime.now(),
-      data: {
-        'fromUserName': fromUserName,
-      },
-    );
-  }
-
-  /// フレンドリクエスト拒否通知を作成
-  factory NotificationData.friendRejected({
-    required String toUserId,
-    required String fromUserId,
-    required String fromUserName,
-  }) {
-    return NotificationData(
-      toUserId: toUserId,
-      fromUserId: fromUserId,
-      type: NotificationType.friendRejected,
-      title: 'フレンドリクエスト拒否',
-      message: '$fromUserNameさんがフレンドリクエストを拒否しました',
+      type: NotificationType.follow,
+      title: '新しいフォロワー',
+      message: '$fromUserNameさんがあなたをフォローしました',
       createdAt: DateTime.now(),
       data: {
         'fromUserName': fromUserName,
@@ -268,10 +232,13 @@ class NotificationData extends Equatable {
   /// 通知アイコンを取得
   String get iconName {
     switch (type) {
+      // ignore: deprecated_member_use_from_same_package
       case NotificationType.friendRequest:
         return 'person_add';
+      // ignore: deprecated_member_use_from_same_package
       case NotificationType.friendAccepted:
         return 'check_circle';
+      // ignore: deprecated_member_use_from_same_package
       case NotificationType.friendRejected:
         return 'cancel';
       case NotificationType.eventInvite:
@@ -316,6 +283,8 @@ class NotificationData extends Equatable {
         return 'hourglass_empty';
       case NotificationType.participantCancelled:
         return 'cancel_outlined';
+      case NotificationType.follow:
+        return 'person_add_alt_1';
       case NotificationType.system:
         return 'info';
     }
@@ -324,10 +293,14 @@ class NotificationData extends Equatable {
   /// 通知カテゴリの表示名を取得
   String get categoryDisplayName {
     switch (type) {
+      // ignore: deprecated_member_use_from_same_package
       case NotificationType.friendRequest:
+      // ignore: deprecated_member_use_from_same_package
       case NotificationType.friendAccepted:
+      // ignore: deprecated_member_use_from_same_package
       case NotificationType.friendRejected:
-        return 'フレンド';
+      case NotificationType.follow:
+        return 'フォロー';
       case NotificationType.eventInvite:
       case NotificationType.eventReminder:
       case NotificationType.eventApproved:
