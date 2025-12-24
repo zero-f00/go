@@ -129,22 +129,6 @@ service cloud.firestore {
         && request.auth.uid == userId;
     }
 
-    // 【廃止】フレンドリクエストコレクション
-    // 注意: この機能は廃止されました。代わりに follows コレクション（相互フォロー）を使用してください。
-    // 既存データの互換性のため、ルールは残しています。
-    match /friendRequests/{requestId} {
-      // 緊急対応: 認証されたユーザーは全操作可能（一時的）
-      allow read, write: if request.auth != null;
-    }
-
-    // 【廃止】フレンド関係コレクション
-    // 注意: この機能は廃止されました。代わりに follows コレクション（相互フォロー）を使用してください。
-    // 既存データの互換性のため、ルールは残しています。
-    match /friendships/{friendshipId} {
-      // 緊急対応: 認証されたユーザーは全操作可能（一時的）
-      allow read, write: if request.auth != null;
-    }
-
     // フォロー関係コレクション
     match /follows/{followId} {
       // 認証されたユーザーは読み取り可能（フォロー状態確認用）
