@@ -197,7 +197,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
           Row(
             children: [
               Icon(
-                Icons.sync_alt,
+                Icons.people,
                 color: AppColors.accent,
                 size: AppDimensions.iconM,
               ),
