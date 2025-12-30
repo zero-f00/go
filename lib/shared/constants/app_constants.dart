@@ -63,7 +63,10 @@ class AppConstants {
 
   // AdMob configurations
   // Flavorに応じてテスト用IDと本番用IDを切り替え
-  static const String _appFlavor = String.fromEnvironment('APP_FLAVOR', defaultValue: 'dev');
+  // 注意: String.fromEnvironmentはビルド時にのみ評価される
+  // --dart-define=APP_FLAVOR=prod でビルドした場合のみ本番用IDが使用される
+  static const String _appFlavor = String.fromEnvironment('APP_FLAVOR', defaultValue: '');
+  // APP_FLAVORが明示的に'prod'の場合のみ本番、それ以外（dev、空文字、未設定）はテスト広告を使用
   static const bool _isProduction = _appFlavor == 'prod';
 
   // テスト用ID（Google公式）
@@ -72,8 +75,7 @@ class AppConstants {
 
   // 本番用ID
   static const String _admobBannerAdUnitIdIosProd = 'ca-app-pub-7611377680432550/3765201131';
-  // Android用は未設定（リリース時に設定する）
-  static const String _admobBannerAdUnitIdAndroidProd = 'ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY';
+  static const String _admobBannerAdUnitIdAndroidProd = 'ca-app-pub-7611377680432550/8834614854';
 
   // Flavorに応じたIDを返す
   static String get admobBannerAdUnitIdIos =>
