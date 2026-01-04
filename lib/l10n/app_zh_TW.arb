@@ -2457,6 +2457,67 @@
   "generalAnnouncementsDescription": "向所有參與者發布公告",
   "guideDeleteDesc": "刪除此指南",
   "noFavoriteGamesHint": "沒有註冊喜歡的遊戲",
+  "favoriteGamesTitle": "收藏的遊戲",
+  "favoriteGamesList": "收藏的遊戲列表",
+  "loadingFavoriteGames": "正在載入收藏的遊戲...",
+  "noFavoriteGames": "沒有收藏的遊戲",
+  "gameProfile": "遊戲資料",
+  "gameCount": "{count}個",
+  "@gameCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gameProfileConfigured": "{configured}/{total} 遊戲已設定",
+  "@gameProfileConfigured": {
+    "placeholders": {
+      "configured": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "configured": "已設定",
+  "notConfigured": "未設定",
+  "pleaseSetGameProfile": "請設定遊戲資料",
+  "editProfile": "編輯資料",
+  "setProfile": "設定資料",
+  "quickAction": "快速操作",
+  "addGame": "新增遊戲",
+  "addFavoriteGame": "新增收藏的遊戲",
+  "deleteMode": "刪除模式",
+  "exitDeleteMode": "退出刪除模式",
+  "deleteSelectedGames": "刪除選取的遊戲",
+  "deleteSelectedGamesTitle": "刪除選取的遊戲",
+  "deleteSelectedGamesConfirm": "確定要從收藏中刪除以下{count}個遊戲嗎？",
+  "@deleteSelectedGamesConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gameProfileWillBeDeleted": "遊戲資料也將被刪除",
+  "gamesDeleted": "已刪除{count}個遊戲",
+  "@gamesDeleted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteFailed": "刪除失敗：{error}",
+  "@deleteFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "participantCheckFailedMessage": "參與者檢查失敗",
   "rejectionDescription": "拒絕說明",
   "revokeApprovalConfirmMessage": "撤銷批准？",

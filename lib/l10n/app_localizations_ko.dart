@@ -468,40 +468,40 @@ class L10nKo extends L10n {
   String get errorOccurred => '오류가 발생했습니다';
 
   @override
-  String get favoriteGamesTitle => 'お気に入りのゲーム';
+  String get favoriteGamesTitle => '즐겨찾는 게임';
 
   @override
-  String get deleteSelectedGames => '選択したゲームを削除';
+  String get deleteSelectedGames => '선택한 게임 삭제';
 
   @override
-  String get deleteMode => '削除モード';
+  String get deleteMode => '삭제 모드';
 
   @override
-  String get exitDeleteMode => '削除モードを終了';
+  String get exitDeleteMode => '삭제 모드 종료';
 
   @override
-  String get loadingFavoriteGames => 'お気に入りゲームを読み込み中...';
+  String get loadingFavoriteGames => '즐겨찾는 게임 로딩 중...';
 
   @override
-  String get noFavoriteGames => 'お気に入りゲームがありません';
+  String get noFavoriteGames => '즐겨찾는 게임이 없습니다';
 
   @override
-  String get quickAction => 'クイックアクション';
+  String get quickAction => '빠른 작업';
 
   @override
-  String get addGame => 'ゲームを追加';
+  String get addGame => '게임 추가';
 
   @override
-  String get gameProfile => 'ゲームプロフィール';
+  String get gameProfile => '게임 프로필';
 
   @override
-  String get favoriteGamesList => 'お気に入りゲーム一覧';
+  String get favoriteGamesList => '즐겨찾는 게임 목록';
 
   @override
   String get configured => '설정됨';
 
   @override
-  String get notConfigured => '未設定';
+  String get notConfigured => '미설정';
 
   @override
   String get today => '今日';
@@ -510,25 +510,25 @@ class L10nKo extends L10n {
   String get yesterday => '昨日';
 
   @override
-  String get pleaseSetGameProfile => 'ゲームプロフィールを設定してください';
+  String get pleaseSetGameProfile => '게임 프로필을 설정해 주세요';
 
   @override
-  String get editProfile => 'プロフィール編集';
+  String get editProfile => '프로필 수정';
 
   @override
-  String get setProfile => 'プロフィール設定';
+  String get setProfile => '프로필 설정';
 
   @override
-  String get deleteSelectedGamesTitle => '選択したゲームを削除';
+  String get deleteSelectedGamesTitle => '선택한 게임 삭제';
 
   @override
-  String get gameProfileWillBeDeleted => 'ゲームプロフィールも同時に削除されます';
+  String get gameProfileWillBeDeleted => '게임 프로필도 함께 삭제됩니다';
 
   @override
   String get delete => '削除';
 
   @override
-  String get addFavoriteGame => 'お気に入りゲームを追加';
+  String get addFavoriteGame => '즐겨찾는 게임 추가';
 
   @override
   String get account => 'アカウント';
@@ -6429,12 +6429,12 @@ class L10nKo extends L10n {
 
   @override
   String gameCount(int count) {
-    return '$count個';
+    return '$count개';
   }
 
   @override
   String gameProfileConfigured(int configured, int total) {
-    return '$configured/$total ゲーム設定済み';
+    return '$configured/$total 게임 설정 완료';
   }
 
   @override
@@ -6449,17 +6449,17 @@ class L10nKo extends L10n {
 
   @override
   String deleteSelectedGamesConfirm(int count) {
-    return '以下の$countつのゲームをお気に入りから削除しますか？';
+    return '다음 $count개의 게임을 즐겨찾기에서 삭제하시겠습니까?';
   }
 
   @override
   String gamesDeleted(int count) {
-    return '$countつのゲームを削除しました';
+    return '$count개의 게임을 삭제했습니다';
   }
 
   @override
   String deleteFailed(String error) {
-    return '削除に失敗しました: $error';
+    return '삭제 실패: $error';
   }
 
   @override

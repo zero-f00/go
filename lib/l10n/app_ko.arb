@@ -2457,6 +2457,67 @@
   "generalAnnouncementsDescription": "전체 참가자에게 공지",
   "guideDeleteDesc": "이 가이드를 삭제합니다",
   "noFavoriteGamesHint": "좋아하는 게임이 없습니다",
+  "favoriteGamesTitle": "즐겨찾는 게임",
+  "favoriteGamesList": "즐겨찾는 게임 목록",
+  "loadingFavoriteGames": "즐겨찾는 게임 로딩 중...",
+  "noFavoriteGames": "즐겨찾는 게임이 없습니다",
+  "gameProfile": "게임 프로필",
+  "gameCount": "{count}개",
+  "@gameCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gameProfileConfigured": "{configured}/{total} 게임 설정 완료",
+  "@gameProfileConfigured": {
+    "placeholders": {
+      "configured": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "configured": "설정됨",
+  "notConfigured": "미설정",
+  "pleaseSetGameProfile": "게임 프로필을 설정해 주세요",
+  "editProfile": "프로필 수정",
+  "setProfile": "프로필 설정",
+  "quickAction": "빠른 작업",
+  "addGame": "게임 추가",
+  "addFavoriteGame": "즐겨찾는 게임 추가",
+  "deleteMode": "삭제 모드",
+  "exitDeleteMode": "삭제 모드 종료",
+  "deleteSelectedGames": "선택한 게임 삭제",
+  "deleteSelectedGamesTitle": "선택한 게임 삭제",
+  "deleteSelectedGamesConfirm": "다음 {count}개의 게임을 즐겨찾기에서 삭제하시겠습니까?",
+  "@deleteSelectedGamesConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gameProfileWillBeDeleted": "게임 프로필도 함께 삭제됩니다",
+  "gamesDeleted": "{count}개의 게임을 삭제했습니다",
+  "@gamesDeleted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteFailed": "삭제 실패: {error}",
+  "@deleteFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "participantCheckFailedMessage": "참가자 확인에 실패했습니다",
   "rejectionDescription": "거절 설명",
   "revokeApprovalConfirmMessage": "승인을 취소하시겠습니까?",

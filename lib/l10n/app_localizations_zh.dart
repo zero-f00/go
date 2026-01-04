@@ -465,40 +465,40 @@ class L10nZh extends L10n {
   String get errorOccurred => '发生错误';
 
   @override
-  String get favoriteGamesTitle => 'お気に入りのゲーム';
+  String get favoriteGamesTitle => '收藏的游戏';
 
   @override
-  String get deleteSelectedGames => '選択したゲームを削除';
+  String get deleteSelectedGames => '删除选中的游戏';
 
   @override
-  String get deleteMode => '削除モード';
+  String get deleteMode => '删除模式';
 
   @override
-  String get exitDeleteMode => '削除モードを終了';
+  String get exitDeleteMode => '退出删除模式';
 
   @override
-  String get loadingFavoriteGames => 'お気に入りゲームを読み込み中...';
+  String get loadingFavoriteGames => '正在加载收藏的游戏...';
 
   @override
-  String get noFavoriteGames => 'お気に入りゲームがありません';
+  String get noFavoriteGames => '没有收藏的游戏';
 
   @override
-  String get quickAction => 'クイックアクション';
+  String get quickAction => '快速操作';
 
   @override
-  String get addGame => 'ゲームを追加';
+  String get addGame => '添加游戏';
 
   @override
-  String get gameProfile => 'ゲームプロフィール';
+  String get gameProfile => '游戏资料';
 
   @override
-  String get favoriteGamesList => 'お気に入りゲーム一覧';
+  String get favoriteGamesList => '收藏的游戏列表';
 
   @override
   String get configured => '已设置';
 
   @override
-  String get notConfigured => '未設定';
+  String get notConfigured => '未设置';
 
   @override
   String get today => '今日';
@@ -507,25 +507,25 @@ class L10nZh extends L10n {
   String get yesterday => '昨日';
 
   @override
-  String get pleaseSetGameProfile => 'ゲームプロフィールを設定してください';
+  String get pleaseSetGameProfile => '请设置游戏资料';
 
   @override
-  String get editProfile => 'プロフィール編集';
+  String get editProfile => '编辑资料';
 
   @override
-  String get setProfile => 'プロフィール設定';
+  String get setProfile => '设置资料';
 
   @override
-  String get deleteSelectedGamesTitle => '選択したゲームを削除';
+  String get deleteSelectedGamesTitle => '删除选中的游戏';
 
   @override
-  String get gameProfileWillBeDeleted => 'ゲームプロフィールも同時に削除されます';
+  String get gameProfileWillBeDeleted => '游戏资料也将被删除';
 
   @override
   String get delete => '削除';
 
   @override
-  String get addFavoriteGame => 'お気に入りゲームを追加';
+  String get addFavoriteGame => '添加收藏的游戏';
 
   @override
   String get account => 'アカウント';
@@ -6411,12 +6411,12 @@ class L10nZh extends L10n {
 
   @override
   String gameCount(int count) {
-    return '$count個';
+    return '$count个';
   }
 
   @override
   String gameProfileConfigured(int configured, int total) {
-    return '$configured/$total ゲーム設定済み';
+    return '$configured/$total 游戏已设置';
   }
 
   @override
@@ -6431,17 +6431,17 @@ class L10nZh extends L10n {
 
   @override
   String deleteSelectedGamesConfirm(int count) {
-    return '以下の$countつのゲームをお気に入りから削除しますか？';
+    return '确定要从收藏中删除以下$count个游戏吗？';
   }
 
   @override
   String gamesDeleted(int count) {
-    return '$countつのゲームを削除しました';
+    return '已删除$count个游戏';
   }
 
   @override
   String deleteFailed(String error) {
-    return '削除に失敗しました: $error';
+    return '删除失败：$error';
   }
 
   @override
@@ -9346,7 +9346,58 @@ class L10nZhTw extends L10nZh {
   String get errorOccurred => '發生錯誤';
 
   @override
+  String get favoriteGamesTitle => '收藏的遊戲';
+
+  @override
+  String get deleteSelectedGames => '刪除選取的遊戲';
+
+  @override
+  String get deleteMode => '刪除模式';
+
+  @override
+  String get exitDeleteMode => '退出刪除模式';
+
+  @override
+  String get loadingFavoriteGames => '正在載入收藏的遊戲...';
+
+  @override
+  String get noFavoriteGames => '沒有收藏的遊戲';
+
+  @override
+  String get quickAction => '快速操作';
+
+  @override
+  String get addGame => '新增遊戲';
+
+  @override
+  String get gameProfile => '遊戲資料';
+
+  @override
+  String get favoriteGamesList => '收藏的遊戲列表';
+
+  @override
   String get configured => '已設定';
+
+  @override
+  String get notConfigured => '未設定';
+
+  @override
+  String get pleaseSetGameProfile => '請設定遊戲資料';
+
+  @override
+  String get editProfile => '編輯資料';
+
+  @override
+  String get setProfile => '設定資料';
+
+  @override
+  String get deleteSelectedGamesTitle => '刪除選取的遊戲';
+
+  @override
+  String get gameProfileWillBeDeleted => '遊戲資料也將被刪除';
+
+  @override
+  String get addFavoriteGame => '新增收藏的遊戲';
 
   @override
   String get markAllAsRead => '全部已讀';
@@ -13987,8 +14038,33 @@ class L10nZhTw extends L10nZh {
   }
 
   @override
+  String gameCount(int count) {
+    return '$count個';
+  }
+
+  @override
+  String gameProfileConfigured(int configured, int total) {
+    return '$configured/$total 遊戲已設定';
+  }
+
+  @override
   String daysAgo(int count) {
     return '$count天前';
+  }
+
+  @override
+  String deleteSelectedGamesConfirm(int count) {
+    return '確定要從收藏中刪除以下$count個遊戲嗎？';
+  }
+
+  @override
+  String gamesDeleted(int count) {
+    return '已刪除$count個遊戲';
+  }
+
+  @override
+  String deleteFailed(String error) {
+    return '刪除失敗：$error';
   }
 
   @override
