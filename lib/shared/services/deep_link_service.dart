@@ -142,14 +142,20 @@ class DeepLinkService {
   }
 
   /// URLに言語パラメータを追加
-  /// go-webがサポートする言語: ja, en, ko, zh
+  /// go-webがサポートする言語: ja, en, ko, zh, zh-TW
   static String _appendLangParam(String url, Locale? locale) {
     if (locale == null) return url;
 
+    final langCode = locale.languageCode;
+    final countryCode = locale.countryCode;
+
+    // 繁体字中国語（zh_TW）の場合
+    if (langCode == 'zh' && countryCode == 'TW') {
+      return '$url?lang=zh_tw';
+    }
+
     // go-webがサポートする言語コード
     const supportedLangs = ['ja', 'en', 'ko', 'zh'];
-    final langCode = locale.languageCode;
-
     if (supportedLangs.contains(langCode)) {
       return '$url?lang=$langCode';
     }

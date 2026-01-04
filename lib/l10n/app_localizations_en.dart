@@ -6501,79 +6501,85 @@ class L10nEn extends L10n {
       'Password can only contain alphanumeric characters and common symbols';
 
   @override
-  String get participantMatchYourMatch => 'あなたの試合';
+  String get participantMatchYourMatch => 'Your Match';
 
   @override
-  String get participantMatchInfoTitle => '試合情報';
+  String get participantMatchInfoTitle => 'Match Information';
 
   @override
-  String get participantMatchFormatLabel => '形式';
+  String get participantMatchFormatLabel => 'Format';
 
   @override
-  String get participantMatchTeamLabel => 'チーム';
+  String get participantMatchTeamLabel => 'Team';
 
   @override
-  String get participantMatchParticipantsLabel => '参加者';
+  String get participantMatchParticipantsLabel => 'Participants';
 
   @override
-  String get participantMatchWinnerLabel => '勝者';
+  String get participantMatchWinnerLabel => 'Winner';
 
   @override
-  String get participantMatchAdminNoticeTitle => '運営からのお知らせ';
+  String get participantMatchAdminNoticeTitle => 'Notice from Organizer';
 
   @override
-  String get participantMatchAdminNoticeDesc => '運営側からの重要な情報です';
+  String get participantMatchAdminNoticeDesc =>
+      'Important information from the organizer';
 
   @override
-  String get participantMatchYourReportStatus => 'あなたの報告状況';
+  String get participantMatchYourReportStatus => 'Your Report Status';
 
   @override
-  String get participantMatchAdminResponse => '運営回答';
+  String get participantMatchAdminResponse => 'Admin Response';
 
   @override
-  String get participantMatchEvidenceDesc => '運営がアップロードした試合の証拠画像です';
+  String get participantMatchEvidenceDesc =>
+      'Match evidence images uploaded by the organizer';
 
   @override
-  String get participantMatchReportProblemTitle => '問題の報告';
+  String get participantMatchReportProblemTitle => 'Report an Issue';
 
   @override
-  String get participantMatchReportProblemDesc => '試合結果に誤りがある場合は運営に報告できます';
+  String get participantMatchReportProblemDesc =>
+      'You can report to the organizer if there are errors in the match result';
 
   @override
-  String get participantMatchReportProblemButton => '問題を報告する';
+  String get participantMatchReportProblemButton => 'Report an Issue';
 
   @override
-  String get participantMatchReportDialogTitle => '問題を報告';
+  String get participantMatchReportDialogTitle => 'Report an Issue';
 
   @override
-  String get participantMatchIssueTypeTitle => '問題の種類';
+  String get participantMatchIssueTypeTitle => 'Issue Type';
 
   @override
-  String get participantMatchDetailDescHint => '問題の詳細を説明してください...';
+  String get participantMatchDetailDescHint =>
+      'Please describe the issue in detail...';
 
   @override
-  String get participantMatchSubmitReport => '報告する';
+  String get participantMatchSubmitReport => 'Submit Report';
 
   @override
-  String get participantMatchEnterDetailDesc => '詳細説明を入力してください';
+  String get participantMatchEnterDetailDesc =>
+      'Please enter a detailed description';
 
   @override
-  String get participantMatchReportSuccess => '問題を報告しました。運営が確認次第対応いたします。';
+  String get participantMatchReportSuccess =>
+      'Issue reported. The organizer will review and respond accordingly.';
 
   @override
-  String get participantMatchIssueScoreError => 'スコア誤り';
+  String get participantMatchIssueScoreError => 'Score Error';
 
   @override
-  String get participantMatchIssueWinnerError => '勝者判定誤り';
+  String get participantMatchIssueWinnerError => 'Winner Determination Error';
 
   @override
-  String get participantMatchIssueParticipantError => '参加者誤り';
+  String get participantMatchIssueParticipantError => 'Participant Error';
 
   @override
-  String get participantMatchIssueStatusError => '試合ステータス誤り';
+  String get participantMatchIssueStatusError => 'Match Status Error';
 
   @override
-  String get participantMatchIssueOther => 'その他';
+  String get participantMatchIssueOther => 'Other';
 
   @override
   String get recordMethodLabel => 'Record Method';
@@ -8719,42 +8725,42 @@ class L10nEn extends L10n {
 
   @override
   String participantMatchCompletedAt(Object dateTime) {
-    return '完了: $dateTime';
+    return 'Completed: $dateTime';
   }
 
   @override
   String participantMatchReportedAt(Object dateTime) {
-    return '$dateTime 報告';
+    return 'Reported: $dateTime';
   }
 
   @override
   String participantMatchUploaderLabel(Object name) {
-    return 'アップロード者: $name';
+    return 'Uploaded by: $name';
   }
 
   @override
   String participantMatchUploadedAtLabel(Object dateTime) {
-    return 'アップロード日時: $dateTime';
+    return 'Uploaded: $dateTime';
   }
 
   @override
   String participantMatchMatchLabel(Object name) {
-    return '試合: $name';
+    return 'Match: $name';
   }
 
   @override
   String participantMatchParticipantsDialogLabel(Object names) {
-    return '参加者: $names';
+    return 'Participants: $names';
   }
 
   @override
   String participantMatchReportFailed(Object error) {
-    return '報告の送信に失敗しました: $error';
+    return 'Failed to submit report: $error';
   }
 
   @override
   String participantMatchAndMore(Object count, Object names) {
-    return '$names 他$count名';
+    return '$names and $count more';
   }
 
   @override

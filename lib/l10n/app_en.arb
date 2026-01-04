@@ -1954,15 +1954,21 @@
   "streamingUrlMaxReached": "You can add up to {maxUrls} streaming URLs",
   "@streamingUrlMaxReached": {
     "placeholders": {
-      "maxUrls": {"type": "int"}
+      "maxUrls": {
+        "type": "int"
+      }
     }
   },
   "streamingUrlInvalid": "Please enter a valid URL (https://... or http://...)",
   "streamingUrlCount": "{count}/{maxUrls} streaming URLs",
   "@streamingUrlCount": {
     "placeholders": {
-      "count": {"type": "int"},
-      "maxUrls": {"type": "int"}
+      "count": {
+        "type": "int"
+      },
+      "maxUrls": {
+        "type": "int"
+      }
     }
   },
   "deleteUrlTooltip": "Delete URL",
@@ -3328,133 +3334,190 @@
   "adjustAvatar": "Adjust Avatar",
   "hideKeyboard": "Hide Keyboard",
   "errorOccurredSimple": "An error occurred",
-
   "notificationTitleEventApplication": "Event Application",
   "notificationMessageEventApplication": "{applicantName} has applied to join \"{eventName}\"",
   "@notificationMessageEventApplication": {
     "placeholders": {
-      "applicantName": {"type": "String"},
-      "eventName": {"type": "String"}
+      "applicantName": {
+        "type": "String"
+      },
+      "eventName": {
+        "type": "String"
+      }
     }
   },
   "notificationTitleEventApproved": "Event Participation Approved",
   "notificationMessageEventApproved": "Your participation in \"{eventName}\" has been approved",
   "@notificationMessageEventApproved": {
     "placeholders": {
-      "eventName": {"type": "String"}
+      "eventName": {
+        "type": "String"
+      }
     }
   },
   "notificationMessageEventApprovedWithMessage": "Your participation in \"{eventName}\" has been approved\nAdmin message: {adminMessage}",
   "@notificationMessageEventApprovedWithMessage": {
     "placeholders": {
-      "eventName": {"type": "String"},
-      "adminMessage": {"type": "String"}
+      "eventName": {
+        "type": "String"
+      },
+      "adminMessage": {
+        "type": "String"
+      }
     }
   },
   "notificationTitleEventRejected": "Event Application Result",
   "notificationMessageEventRejected": "Your application to \"{eventName}\" was not approved",
   "@notificationMessageEventRejected": {
     "placeholders": {
-      "eventName": {"type": "String"}
+      "eventName": {
+        "type": "String"
+      }
     }
   },
   "notificationMessageEventRejectedWithReason": "Your application to \"{eventName}\" was not approved\nReason: {reason}",
   "@notificationMessageEventRejectedWithReason": {
     "placeholders": {
-      "eventName": {"type": "String"},
-      "reason": {"type": "String"}
+      "eventName": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
     }
   },
   "notificationTitleEventPendingReverted": "Event Application Status Changed",
   "notificationMessageEventPendingReverted": "Your application to \"{eventName}\" has been reverted to pending",
   "@notificationMessageEventPendingReverted": {
     "placeholders": {
-      "eventName": {"type": "String"}
+      "eventName": {
+        "type": "String"
+      }
     }
   },
   "notificationMessageEventPendingRevertedWithReason": "Your application to \"{eventName}\" has been reverted to pending\nReason: {reason}",
   "@notificationMessageEventPendingRevertedWithReason": {
     "placeholders": {
-      "eventName": {"type": "String"},
-      "reason": {"type": "String"}
+      "eventName": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
     }
   },
   "notificationTitleEventWaitlist": "Event Full Notice",
   "notificationMessageEventWaitlist": "\"{eventName}\" is now full. Your application is on the waitlist at position {position}. You will be approved in order when spots become available.",
   "@notificationMessageEventWaitlist": {
     "placeholders": {
-      "eventName": {"type": "String"},
-      "position": {"type": "int"}
+      "eventName": {
+        "type": "String"
+      },
+      "position": {
+        "type": "int"
+      }
     }
   },
   "notificationTitleEventWaitlistRegistered": "Event Full - Waitlist Registration Complete",
   "notificationMessageEventWaitlistRegistered": "\"{eventName}\" is full. You have been registered as waitlist number {position}. You will be approved in order when spots become available.",
   "@notificationMessageEventWaitlistRegistered": {
     "placeholders": {
-      "eventName": {"type": "String"},
-      "position": {"type": "int"}
+      "eventName": {
+        "type": "String"
+      },
+      "position": {
+        "type": "int"
+      }
     }
   },
   "notificationTitleEventPromotedFromWaitlist": "Event Participation Approved (Promoted from Waitlist)",
   "notificationMessageEventPromotedFromWaitlist": "Your participation in \"{eventName}\" has been approved. You have been promoted from the waitlist to an official participant.",
   "@notificationMessageEventPromotedFromWaitlist": {
     "placeholders": {
-      "eventName": {"type": "String"}
+      "eventName": {
+        "type": "String"
+      }
     }
   },
   "notificationTitleEventFull": "Event Full",
   "notificationMessageEventFull": "Could not apply to \"{eventName}\" because it is full",
   "@notificationMessageEventFull": {
     "placeholders": {
-      "eventName": {"type": "String"}
+      "eventName": {
+        "type": "String"
+      }
     }
   },
   "notificationTitleEventCapacityWarning": "Event Near Capacity",
   "notificationMessageEventCapacityWarning": "\"{eventName}\" has reached {percentage}% capacity ({currentCount}/{maxParticipants} participants)",
   "@notificationMessageEventCapacityWarning": {
     "placeholders": {
-      "eventName": {"type": "String"},
-      "percentage": {"type": "int"},
-      "currentCount": {"type": "int"},
-      "maxParticipants": {"type": "int"}
+      "eventName": {
+        "type": "String"
+      },
+      "percentage": {
+        "type": "int"
+      },
+      "currentCount": {
+        "type": "int"
+      },
+      "maxParticipants": {
+        "type": "int"
+      }
     }
   },
   "notificationTitleEventSlotAvailable": "Event Slot Available",
   "notificationMessageEventSlotAvailable": "A slot has become available in \"{eventName}\" due to a participant revert. Please consider approving {waitlistCount} waitlisted users.",
   "@notificationMessageEventSlotAvailable": {
     "placeholders": {
-      "eventName": {"type": "String"},
-      "waitlistCount": {"type": "int"}
+      "eventName": {
+        "type": "String"
+      },
+      "waitlistCount": {
+        "type": "int"
+      }
     }
   },
   "notificationTitleNewMatchReport": "New Match Report",
   "notificationMessageNewMatchReport": "A {issueType} report has been submitted for \"{matchName}\"",
   "@notificationMessageNewMatchReport": {
     "placeholders": {
-      "matchName": {"type": "String"},
-      "issueType": {"type": "String"}
+      "matchName": {
+        "type": "String"
+      },
+      "issueType": {
+        "type": "String"
+      }
     }
   },
   "notificationTitleEventInvite": "Event Invitation",
   "notificationMessageEventInvite": "{createdByName} has invited you to \"{eventName}\"",
   "@notificationMessageEventInvite": {
     "placeholders": {
-      "createdByName": {"type": "String"},
-      "eventName": {"type": "String"}
+      "createdByName": {
+        "type": "String"
+      },
+      "eventName": {
+        "type": "String"
+      }
     }
   },
   "notificationTitleNewFollower": "New Follower",
   "notificationMessageNewFollower": "{fromUserName} started following you",
   "@notificationMessageNewFollower": {
     "placeholders": {
-      "fromUserName": {"type": "String"}
+      "fromUserName": {
+        "type": "String"
+      }
     }
   },
   "notificationTitleEventDraftReverted": "Event Participation Cancelled",
   "notificationMessageEventDraftReverted": "Your participation in \"{eventName}\" has been cancelled because the organizer reverted it to draft status.",
   "@notificationMessageEventDraftReverted": {
     "placeholders": {
-      "eventName": {"type": "String"}
+      "eventName": {
+        "type": "String"
+      }
     }
   },
   "defaultUserDisplayName": "User",
@@ -3465,13 +3528,50 @@
   "shareTextParticipantCount": "{current}/{max}",
   "@shareTextParticipantCount": {
     "placeholders": {
-      "current": {"type": "int"},
-      "max": {"type": "int"}
+      "current": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
     }
   },
   "shareTextPrizeAvailable": "Prize available",
   "shareTextDetailsLink": "Details",
   "shareTextProfileLink": "View Profile",
   "shareHashtagGameEvent": "GameEvent",
-  "shareHashtagLookingForGamers": "LookingForGamers"
+  "shareHashtagLookingForGamers": "LookingForGamers",
+  "participantMatchAdminNoticeDesc": "Important information from the organizer",
+  "participantMatchAdminNoticeTitle": "Notice from Organizer",
+  "participantMatchAdminResponse": "Admin Response",
+  "participantMatchAndMore": "{names} and {count} more",
+  "participantMatchCompletedAt": "Completed: {dateTime}",
+  "participantMatchDetailDescHint": "Please describe the issue in detail...",
+  "participantMatchEnterDetailDesc": "Please enter a detailed description",
+  "participantMatchEvidenceDesc": "Match evidence images uploaded by the organizer",
+  "participantMatchFormatLabel": "Format",
+  "participantMatchInfoTitle": "Match Information",
+  "participantMatchIssueOther": "Other",
+  "participantMatchIssueParticipantError": "Participant Error",
+  "participantMatchIssueScoreError": "Score Error",
+  "participantMatchIssueStatusError": "Match Status Error",
+  "participantMatchIssueTypeTitle": "Issue Type",
+  "participantMatchIssueWinnerError": "Winner Determination Error",
+  "participantMatchMatchLabel": "Match: {name}",
+  "participantMatchParticipantsDialogLabel": "Participants: {names}",
+  "participantMatchParticipantsLabel": "Participants",
+  "participantMatchReportDialogTitle": "Report an Issue",
+  "participantMatchReportFailed": "Failed to submit report: {error}",
+  "participantMatchReportProblemButton": "Report an Issue",
+  "participantMatchReportProblemDesc": "You can report to the organizer if there are errors in the match result",
+  "participantMatchReportProblemTitle": "Report an Issue",
+  "participantMatchReportSuccess": "Issue reported. The organizer will review and respond accordingly.",
+  "participantMatchReportedAt": "Reported: {dateTime}",
+  "participantMatchSubmitReport": "Submit Report",
+  "participantMatchTeamLabel": "Team",
+  "participantMatchUploadedAtLabel": "Uploaded: {dateTime}",
+  "participantMatchUploaderLabel": "Uploaded by: {name}",
+  "participantMatchWinnerLabel": "Winner",
+  "participantMatchYourMatch": "Your Match",
+  "participantMatchYourReportStatus": "Your Report Status"
 }

@@ -408,16 +408,16 @@ class L10nZh extends L10n {
   String get verifyingUserInfo => '正在验证用户信息';
 
   @override
-  String get followScreenTitle => 'フォロー';
+  String get followScreenTitle => '关注中';
 
   @override
-  String get mutualFollowTab => '相互フォロー';
+  String get mutualFollowTab => 'Mutual';
 
   @override
-  String get followingTab => 'フォロー中';
+  String get followingTab => '关注中';
 
   @override
-  String get followersTab => 'フォロワー';
+  String get followersTab => '粉丝';
 
   @override
   String get noMutualFollows => '没有相互关注';
@@ -426,37 +426,37 @@ class L10nZh extends L10n {
   String get noMutualFollowsHint => '添加相互关注后\n可以从这里轻松选择运营者';
 
   @override
-  String get noFollowing => 'フォロー中のユーザーがいません';
+  String get noFollowing => '否t following anyone';
 
   @override
-  String get noFollowingHint => '気になるユーザーをフォローして\\nイベント情報を受け取りましょう';
+  String get noFollowingHint => '关注 users to receive\nevent updates';
 
   @override
-  String get noFollowers => 'フォロワーがいません';
+  String get noFollowers => '无粉丝';
 
   @override
-  String get noFollowersHint => 'あなたをフォローしてくれる\\nユーザーを待っています';
+  String get noFollowersHint => 'Waiting for users\nto follow you';
 
   @override
-  String get fetchingData => 'データを取得中...';
+  String get fetchingData => '正在获取数据...';
 
   @override
   String get retry => '重试';
 
   @override
-  String get searchUser => 'ユーザーを検索';
+  String get searchUser => '搜索用户s';
 
   @override
-  String get searchUserPlaceholder => 'ユーザー名またはIDで検索...';
+  String get searchUserPlaceholder => '搜索 by username or ID...';
 
   @override
-  String get searchUserHint => 'ユーザー名またはIDで検索';
+  String get searchUserHint => '搜索 by username or ID';
 
   @override
-  String get searchUserDescription => 'フォローしたいユーザーを\\n検索して見つけましょう';
+  String get searchUserDescription => '搜索 to find users\nyou want to follow';
 
   @override
-  String get searchingUser => 'ユーザーを検索中...';
+  String get searchingUser => '正在搜索用户s...';
 
   @override
   String get userSearchError => '搜索用户时发生错误';
@@ -501,10 +501,10 @@ class L10nZh extends L10n {
   String get notConfigured => '未设置';
 
   @override
-  String get today => '今日';
+  String get today => '今天';
 
   @override
-  String get yesterday => '昨日';
+  String get yesterday => '昨天';
 
   @override
   String get pleaseSetGameProfile => '请设置游戏资料';
@@ -522,94 +522,96 @@ class L10nZh extends L10n {
   String get gameProfileWillBeDeleted => '游戏资料也将被删除';
 
   @override
-  String get delete => '削除';
+  String get delete => '删除';
 
   @override
   String get addFavoriteGame => '添加收藏的游戏';
 
   @override
-  String get account => 'アカウント';
+  String get account => '账户';
 
   @override
-  String get signedIn => 'サインイン済み';
+  String get signedIn => 'Signed In';
 
   @override
-  String get tapToViewProfile => 'タップしてプロフィールを表示';
+  String get tapToViewProfile => '点击查看资料';
 
   @override
-  String get profileVisibilitySettings => 'プロフィール公開設定';
+  String get profileVisibilitySettings => '资料可见性';
 
   @override
-  String get profileVisibilityDescription => '他のユーザーがあなたのプロフィールで閲覧できる情報を設定します';
+  String get profileVisibilityDescription =>
+      'Configure what others can see on your profile';
 
   @override
-  String get eventsAsOrganizer => '運営者としてのイベント';
+  String get eventsAsOrganizer => '作为主办者的活动';
 
   @override
-  String get eventsAsOrganizerDescription => '主催・共同編集者として関わるイベントを表示';
+  String get eventsAsOrganizerDescription => '显示 events you host or co-edit';
 
   @override
-  String get upcomingEventsVisibility => '参加予定イベント';
+  String get upcomingEventsVisibility => '即将举行的活动';
 
   @override
-  String get upcomingEventsDescription => '参加予定のイベントを表示';
+  String get upcomingEventsDescription => '显示 events you\'re attending';
 
   @override
-  String get pastEventsVisibility => '過去参加済みイベント';
+  String get pastEventsVisibility => '过去的活动';
 
   @override
-  String get pastEventsDescription => '過去に参加したイベントを表示';
+  String get pastEventsDescription => '显示 events you\'ve attended';
 
   @override
-  String get appInfo => 'アプリ情報';
+  String get appInfo => '应用信息';
 
   @override
-  String get infoAndSupport => '情報・サポート';
+  String get infoAndSupport => 'Info & Support';
 
   @override
-  String get accountManagement => 'アカウント管理';
+  String get accountManagement => '账户管理';
 
   @override
-  String get accountManagementDescription => 'アカウントに関する重要な操作';
+  String get accountManagementDescription => '重要账户操作';
 
   @override
-  String get deleteAccountTitle => 'アカウント退会';
+  String get deleteAccountTitle => '删除账户';
 
   @override
-  String get deleteAccountDescription => 'アカウントとすべてのデータを削除します';
+  String get deleteAccountDescription => '删除您的账户和所有数据';
 
   @override
-  String get signOutTitle => 'サインアウト';
+  String get signOutTitle => '退出登录';
 
   @override
-  String get signedOut => 'サインアウトしました';
+  String get signedOut => '已退出登录';
 
   @override
-  String get failedToGetUserInfo => 'ユーザー情報を取得できませんでした';
+  String get failedToGetUserInfo => '获取用户信息失败rmation';
 
   @override
-  String get failedToShowProfile => 'プロフィール画面の表示に失敗しました';
+  String get failedToShowProfile => '失败： show profile';
 
   @override
-  String get failedToOpenContactForm => 'お問い合わせフォームを開けませんでした。';
+  String get failedToOpenContactForm => '失败： open contact form.';
 
   @override
-  String get errorOpeningContactForm => 'お問い合わせフォームを開く際にエラーが発生しました。';
+  String get errorOpeningContactForm => '打开联系表单时发生错误。';
 
   @override
-  String get rateAppTitle => 'アプリを評価';
+  String get rateAppTitle => '评价应用';
 
   @override
-  String get rateAppMessage => 'Goをご利用いただきありがとうございます！\\nどちらの方法で評価しますか？';
+  String get rateAppMessage =>
+      'Thank you for using Go!\nHow would you like to rate?';
 
   @override
-  String get rateWithStars => '星で評価';
+  String get rateWithStars => 'Rate with Stars';
 
   @override
-  String get writeReview => 'レビューを書く';
+  String get writeReview => 'Write a Review';
 
   @override
-  String get later => 'あとで';
+  String get later => '稍后';
 
   @override
   String get markAllAsRead => '全部已读';
@@ -1077,52 +1079,52 @@ class L10nZh extends L10n {
   String get noCompletedEventsYet => '还没有已完成的活动';
 
   @override
-  String get gameProfileEditTitle => 'プロフィール編集';
+  String get gameProfileEditTitle => '编辑 资料';
 
   @override
-  String get gameProfileCreateTitle => 'ゲームプロフィール作成';
+  String get gameProfileCreateTitle => '创建 游戏资料';
 
   @override
-  String get deleteProfileTooltip => 'プロフィールを削除';
+  String get deleteProfileTooltip => '删除资料';
 
   @override
   String get saving => '保存中...';
 
   @override
-  String get gameName => 'ゲーム名';
+  String get gameName => '游戏名称';
 
   @override
-  String get selectedGame => '選択されたゲーム';
+  String get selectedGame => '所选游戏';
 
   @override
-  String get editExistingProfile => '既存プロフィールを編集';
+  String get editExistingProfile => '编辑现有资料';
 
   @override
-  String get createNewProfile => '新しいプロフィールを作成';
+  String get createNewProfile => '创建新资料';
 
   @override
-  String get createProfileDescription => 'すべての項目は任意入力です。後から編集も可能です';
+  String get createProfileDescription => '所有字段均为可选。您可以稍后编辑';
 
   @override
-  String get basicInfo => '基本情報';
+  String get basicInfo => '基本信息';
 
   @override
-  String get gameUsername => 'ゲーム内ユーザー名';
+  String get gameUsername => 'In-游戏用户名';
 
   @override
-  String get gameUsernameHint => '例: プレイヤー001, GamerTag';
+  String get gameUsernameHint => '例如： Player001, GamerTag';
 
   @override
-  String get gameUserId => 'ゲーム内ユーザーID';
+  String get gameUserId => 'In-游戏用户ID';
 
   @override
-  String get gameUserIdHint => '例: #1234, @username, user_id_12345';
+  String get gameUserIdHint => '例如： #1234, @username, user_id_12345';
 
   @override
-  String get clanName => 'クラン名';
+  String get clanName => '公会名称';
 
   @override
-  String get clanNameHint => '例: TeamAlpha, ProGuild, [ABC]Clan';
+  String get clanNameHint => '例如： TeamAlpha, ProGuild, [ABC]Clan';
 
   @override
   String get skillLevelSection => '技能等级';
@@ -1152,10 +1154,10 @@ class L10nZh extends L10n {
   String get skillLevelExpertDescription => '最高水平的实力，比赛前列或职业经验';
 
   @override
-  String get rankOrLevel => 'ランク・レベル';
+  String get rankOrLevel => 'Rank / Level';
 
   @override
-  String get rankOrLevelHint => '例: ダイヤモンド, レベル50, プラチナⅢ';
+  String get rankOrLevelHint => '例如： Diamond, Level 50, Platinum III';
 
   @override
   String get playStyleSection => '游戏风格';
@@ -1203,7 +1205,7 @@ class L10nZh extends L10n {
   String get playStyleCollectorDescription => '以收集物品、完成成就为目标';
 
   @override
-  String get playStyleDescription => '当てはまるものを選択してください（任意）';
+  String get playStyleDescription => '选择 what applies (可选)';
 
   @override
   String get activityTimeSection => '活动时间段';
@@ -1227,79 +1229,83 @@ class L10nZh extends L10n {
   String get activityTimeWeekday => '工作日为主';
 
   @override
-  String get activityTimeDescription => 'よくプレイする時間帯を選択してください';
+  String get activityTimeDescription => '选择您通常玩游戏的时间';
 
   @override
-  String get voiceChatSection => 'ボイスチャット';
+  String get voiceChatSection => '语音聊天';
 
   @override
-  String get inGameVC => 'ゲーム内VC';
+  String get inGameVC => '游戏内语音';
 
   @override
-  String get vcAvailable => '利用可能';
+  String get vcAvailable => 'Available';
 
   @override
-  String get vcUnavailable => '利用不可';
+  String get vcUnavailable => 'Unavailable';
 
   @override
-  String get vcDetails => 'VC詳細情報';
+  String get vcDetails => '语音详情';
 
   @override
-  String get vcDetailsHint => '例: ゲーム内VCメイン、Discord: user#1234、○時以降はVC可能';
+  String get vcDetailsHint =>
+      '例如： Mainly in-game VC, Discord: user#1234, VC available after 9pm';
 
   @override
-  String get additionalInfo => 'その他の情報';
+  String get additionalInfo => '附加信息';
 
   @override
-  String get achievements => '達成実績・アピールポイント';
+  String get achievements => '成就 / 亮点';
 
   @override
-  String get achievementsHint => '例: 世界ランキング100位、大会優勝歴あり、配信経験あり';
+  String get achievementsHint => '例如： 世界排名第100，锦标赛冠军，直播经验';
 
   @override
-  String get freeNotes => '自由記入・メモ';
+  String get freeNotes => '备注 / Memo';
 
   @override
-  String get freeNotesHint => '例: 初心者歓迎、まったりプレイ希望、ボイスチャット可能';
+  String get freeNotesHint =>
+      '例如： Beginners welcome, Casual play, Voice chat 确定';
 
   @override
-  String get snsAccountsSection => 'SNSアカウント';
+  String get snsAccountsSection => 'Social 账户s';
 
   @override
-  String get snsAccountsDescription => 'このゲーム専用のSNSアカウントがある場合は入力してください';
+  String get snsAccountsDescription =>
+      'Enter if you have game-specific social accounts';
 
   @override
-  String get snsUsernameHint => 'ユーザー名（@なし）';
+  String get snsUsernameHint => '用户name (without @)';
 
   @override
-  String get youtubeChannelHint => 'チャンネル名（@なし）';
+  String get youtubeChannelHint => 'Channel name (without @)';
 
   @override
-  String get discordUsernameHint => 'ユーザー名#1234（#タグ込み）';
+  String get discordUsernameHint => '用户名#1234（带标签）';
 
   @override
-  String get saveChanges => '変更を保存';
+  String get saveChanges => '保存更改';
 
   @override
-  String get createProfile => 'プロフィールを作成';
+  String get createProfile => '创建资料';
 
   @override
-  String get failedToGetUserInfoShort => 'ユーザー情報の取得に失敗しました';
+  String get failedToGetUserInfoShort => '获取用户信息失败';
 
   @override
-  String get profileUpdated => 'プロフィールを更新しました';
+  String get profileUpdated => '资料已更新';
 
   @override
-  String get profileCreated => 'プロフィールを作成しました';
+  String get profileCreated => '资料已创建';
 
   @override
-  String get saveFailed => '保存に失敗しました。もう一度お試しください。';
+  String get saveFailed => '失败： save. Please try again.';
 
   @override
-  String get deleteProfileTitle => 'プロフィールを削除';
+  String get deleteProfileTitle => '删除资料';
 
   @override
-  String get profileAndFavoriteDeleted => 'ゲームプロフィールとお気に入りから削除しました';
+  String get profileAndFavoriteDeleted =>
+      '删除d game profile and removed from favorites';
 
   @override
   String get gameSelection => '选择游戏';
@@ -2160,13 +2166,13 @@ class L10nZh extends L10n {
   String get dashboardCancelEvent => '取消活动';
 
   @override
-  String get participantsTitle => '参加者';
+  String get participantsTitle => '参与者';
 
   @override
-  String get participationApplications => '参加申請';
+  String get participationApplications => 'Applications';
 
   @override
-  String get tabPending => '申請中';
+  String get tabPending => '待处理';
 
   @override
   String get tabApproved => '已批准';
@@ -2175,52 +2181,52 @@ class L10nZh extends L10n {
   String get tabRejected => '已拒绝';
 
   @override
-  String get tabWaitlisted => 'キャンセル待ち';
+  String get tabWaitlisted => '候补';
 
   @override
-  String get tabCancelled => 'キャンセル済み';
+  String get tabCancelled => '已取消';
 
   @override
-  String get dataLoadFailed => 'データの読み込みに失敗しました';
+  String get dataLoadFailed => '加载数据失败';
 
   @override
-  String get noPendingParticipants => '申請中の参加者はいません';
+  String get noPendingParticipants => '无待处理的参与者';
 
   @override
-  String get noApprovedParticipants => '承認済みの参加者はいません';
+  String get noApprovedParticipants => '无已批准的参与者';
 
   @override
-  String get noRejectedParticipants => '拒否済みの参加者はいません';
+  String get noRejectedParticipants => '无已拒绝的参与者';
 
   @override
-  String get noWaitlistedParticipants => 'キャンセル待ちの参加者はいません';
+  String get noWaitlistedParticipants => '无候补参与者';
 
   @override
-  String get noCancelledParticipants => 'キャンセルした参加者はいません';
+  String get noCancelledParticipants => '无已取消的参与者';
 
   @override
-  String get noParticipants => '参加者はいません';
+  String get noParticipants => '无参与者';
 
   @override
   String get loadingText => '加载中...';
 
   @override
-  String get gameAccountInfo => 'ゲームアカウント情報';
+  String get gameAccountInfo => '游戏账户信息';
 
   @override
   String get inGameUsername => '游戏内用户名';
 
   @override
-  String get inGameUserId => 'ゲーム内ユーザーID';
+  String get inGameUserId => 'In-game 用户 ID';
 
   @override
-  String get noGameAccountInfo => 'ゲームアカウント情報が登録されていません';
+  String get noGameAccountInfo => '无游戏账户信息 registered';
 
   @override
-  String get approve => '承認';
+  String get approve => '批准';
 
   @override
-  String get reject => '拒否';
+  String get reject => '拒绝';
 
   @override
   String get statusPending => '待批准';
@@ -2235,31 +2241,33 @@ class L10nZh extends L10n {
   String get statusWaitlisted => '候补名单';
 
   @override
-  String get statusUnknown => '不明';
+  String get statusUnknown => '未知';
 
   @override
-  String get approveApplicationTitle => '参加申請を承認';
+  String get approveApplicationTitle => '批准申请';
 
   @override
-  String get rejectApplicationTitle => '参加申請を拒否';
+  String get rejectApplicationTitle => '拒绝申请';
 
   @override
-  String get approveApplicationMessageHint => '申請者にメッセージを送信できます（任意）';
+  String get approveApplicationMessageHint => '您可以向申请者发送消息 (可选)';
 
   @override
-  String get rejectApplicationMessageHint => '拒否理由をメッセージで送信できます（任意）';
+  String get rejectApplicationMessageHint =>
+      'You can send a rejection reason (可选)';
 
   @override
-  String get messageInputLabel => 'メッセージ';
+  String get messageInputLabel => '消息';
 
   @override
-  String get rejectReasonInputLabel => '拒否理由';
+  String get rejectReasonInputLabel => '拒绝原因';
 
   @override
-  String get approveMessagePlaceholder => '承認に関する詳細やイベント参加の注意事項など';
+  String get approveMessagePlaceholder => '关于批准或活动参与的详细说明';
 
   @override
-  String get rejectMessagePlaceholder => '拒否の理由や今後の改善点など';
+  String get rejectMessagePlaceholder =>
+      'Reason for rejection or suggestions for improvement';
 
   @override
   String get approveButton => '批准';
@@ -2268,25 +2276,25 @@ class L10nZh extends L10n {
   String get rejectButton => '驳回';
 
   @override
-  String get waitlistUserApproved => 'キャンセル待ちユーザーを承認しました';
+  String get waitlistUserApproved => '候补 user approved';
 
   @override
-  String get applicationApproved => '参加申請を承認しました';
+  String get applicationApproved => '申请已批准';
 
   @override
-  String get approvalFailed => '承認に失敗しました';
+  String get approvalFailed => '批准失败';
 
   @override
-  String get applicationRejectedSuccess => '参加申請を拒否しました';
+  String get applicationRejectedSuccess => '申请已拒绝';
 
   @override
-  String get rejectionFailed => '拒否に失敗しました';
+  String get rejectionFailed => '拒绝失败';
 
   @override
-  String get revokeApprovalAndReturnToPending => '承認を取り消して申請中に戻す';
+  String get revokeApprovalAndReturnToPending => '撤销批准并返回待处理';
 
   @override
-  String get revokeRejectionAndReturnToPending => '拒否を取り消して申請中に戻す';
+  String get revokeRejectionAndReturnToPending => '撤销拒绝并返回待处理';
 
   @override
   String get revokeApprovalTitle => '撤销批准？';
@@ -2295,22 +2303,22 @@ class L10nZh extends L10n {
   String get revokeRejectionTitle => '撤销拒绝？';
 
   @override
-  String get enterReasonHint => '理由を入力...';
+  String get enterReasonHint => '输入原因...';
 
   @override
-  String get returnToPendingButton => '申請中に戻す';
+  String get returnToPendingButton => '返回待处理';
 
   @override
-  String get approvalRevoked => '承認が取り消されました';
+  String get approvalRevoked => '批准已撤销';
 
   @override
-  String get rejectionRevoked => '拒否が取り消されました';
+  String get rejectionRevoked => '拒绝已撤销';
 
   @override
-  String get revokeApprovalSuccess => '承認を取り消して申請中に戻しました';
+  String get revokeApprovalSuccess => '批准已撤销 and returned to pending';
 
   @override
-  String get revokeRejectionSuccess => '拒否を取り消して申請中に戻しました';
+  String get revokeRejectionSuccess => '拒绝已撤销 and returned to pending';
 
   @override
   String get revokeApprovalFailed => '撤销批准失败';
@@ -2328,43 +2336,43 @@ class L10nZh extends L10n {
   String get userProfileLoadFailed => '加载用户资料失败';
 
   @override
-  String get gameProfileInfoMissing => 'ゲームプロフィール情報が不足しています';
+  String get gameProfileInfoMissing => 'Game profile info is missing';
 
   @override
-  String get approveWaitlistUser => '承認する';
+  String get approveWaitlistUser => '批准';
 
   @override
-  String get returnWaitlistToPending => '申請中に戻す';
+  String get returnWaitlistToPending => '返回待处理';
 
   @override
-  String get cancellationReasonTitle => 'キャンセル理由';
+  String get cancellationReasonTitle => '取消原因';
 
   @override
-  String get viewReason => '理由を確認';
+  String get viewReason => '查看原因';
 
   @override
-  String get noCancellationReasonRecorded => 'キャンセル理由の記録がありません';
+  String get noCancellationReasonRecorded => '无取消原因记录';
 
   @override
   String get closeButton => '关闭';
 
   @override
-  String get detailButton => '詳細';
+  String get detailButton => '详情';
 
   @override
-  String get editButton => '編集';
+  String get editButton => '编辑';
 
   @override
   String get deleteButton => '删除';
 
   @override
-  String get capacityExceededTitle => '定員超過のため承認できません';
+  String get capacityExceededTitle => '由于容量已满无法批准';
 
   @override
-  String get eventInfoFetchFailed => 'イベント情報の取得に失敗しました';
+  String get eventInfoFetchFailed => '失败： fetch event info';
 
   @override
-  String get capacityCheckFailed => '定員チェックに失敗しました';
+  String get capacityCheckFailed => '容量检查失败';
 
   @override
   String get noBlockedUsersSet => '未设置屏蔽用户';
@@ -2472,40 +2480,40 @@ class L10nZh extends L10n {
   String get noAvailableImages => '没有可用的图片';
 
   @override
-  String get groupTitle => 'グループ';
+  String get groupTitle => '群组s';
 
   @override
-  String get editGeneralAnnouncementsTooltip => '全体連絡事項を編集';
+  String get editGeneralAnnouncementsTooltip => '编辑 general announcements';
 
   @override
-  String get groupManagement => 'グループ管理';
+  String get groupManagement => '群组管理';
 
   @override
-  String get createGroup => 'グループ作成';
+  String get createGroup => '创建群组';
 
   @override
-  String get noGroupsYet => 'まだグループがありません';
+  String get noGroupsYet => '暂无群组';
 
   @override
-  String get createGroupDescription => 'チーム戦を開催するために\\nグループ（チーム）を作成しましょう';
+  String get createGroupDescription => '创建群组（队伍）\n用于团队活动';
 
   @override
-  String get viewUnassignedParticipants => '未割り当て参加者を確認';
+  String get viewUnassignedParticipants => '查看 unassigned participants';
 
   @override
-  String get generalAnnouncements => '全体連絡事項';
+  String get generalAnnouncements => '公告';
 
   @override
-  String get visibleToAllParticipants => '全参加者が閲覧可能';
+  String get visibleToAllParticipants => '对所有参与者可见';
 
   @override
-  String get editAction => '編集';
+  String get editAction => '编辑';
 
   @override
-  String get addMemberAction => 'メンバー追加';
+  String get addMemberAction => '添加成员';
 
   @override
-  String get deleteAction => '削除';
+  String get deleteAction => '删除';
 
   @override
   String get groupDescriptionLabel => '群组说明';
@@ -2514,196 +2522,204 @@ class L10nZh extends L10n {
   String get groupAnnouncementsLabel => '群组公告';
 
   @override
-  String get noMembersInGroup => 'メンバーがいません';
+  String get noMembersInGroup => '否 members';
 
   @override
-  String get addMemberFromMenuHint => 'メニューからメンバーを追加してください';
+  String get addMemberFromMenuHint => '从菜单添加成员';
 
   @override
-  String get addToGroup => 'グループに追加';
+  String get addToGroup => '添加到群组';
 
   @override
-  String get failedToRemoveParticipant => '参加者の削除に失敗しました';
+  String get failedToRemoveParticipant => '移除参与者失败';
 
   @override
-  String get failedToAddParticipant => '参加者の追加に失敗しました';
+  String get failedToAddParticipant => '添加参与者失败';
 
   @override
-  String get noParticipantsToAdd => '追加できる参加者がいません';
+  String get noParticipantsToAdd => '无可添加的参与者';
 
   @override
-  String get generalAnnouncementsUpdated => '全体連絡事項を更新しました';
+  String get generalAnnouncementsUpdated => 'General announcements updated';
 
   @override
-  String get editGeneralAnnouncementsTitle => '全体連絡事項の編集';
+  String get editGeneralAnnouncementsTitle => '编辑公告';
 
   @override
-  String get generalAnnouncementsLabel => '全体連絡事項';
+  String get generalAnnouncementsLabel => '公告';
 
   @override
-  String get generalAnnouncementsHint => '例：イベント開始時刻が30分変更になりました';
+  String get generalAnnouncementsHint =>
+      '例如：, Event start time has been changed by 30 minutes';
 
   @override
-  String get createNewGroup => '新しいグループを作成';
+  String get createNewGroup => '创建新群组';
 
   @override
   String get groupNameLabel => '群组名称';
 
   @override
-  String get groupNameHint => '例：チームA';
+  String get groupNameHint => '例如：, Team A';
 
   @override
-  String get groupDescriptionOptional => 'グループ説明（任意）';
+  String get groupDescriptionOptional => '群组描述 (Optional)';
 
   @override
-  String get groupDescriptionHint => '例：攻撃担当のメンバー';
+  String get groupDescriptionHint => '例如：, Attack team members';
 
   @override
-  String get createAction => '作成';
+  String get createAction => '创建';
 
   @override
-  String get pleaseEnterGroupName => 'グループ名を入力してください';
+  String get pleaseEnterGroupName => 'Please enter a group name';
 
   @override
-  String get failedToCreateGroup => 'グループの作成に失敗しました';
+  String get failedToCreateGroup => '创建群组失败';
 
   @override
-  String get editGroup => 'グループを編集';
+  String get editGroup => '编辑群组';
 
   @override
-  String get groupAnnouncementsOptional => 'グループ連絡事項';
+  String get groupAnnouncementsOptional => '群组公告';
 
   @override
-  String get groupAnnouncementsHint => '例：次回の練習は19時からです';
+  String get groupAnnouncementsHint => '例如：, Next practice at 7 PM';
 
   @override
   String get updateAction => '更新';
 
   @override
-  String get failedToUpdateGroup => 'グループの更新に失敗しました';
+  String get failedToUpdateGroup => '更新群组失败';
 
   @override
-  String get cannotDeleteGroup => 'グループを削除できません';
+  String get cannotDeleteGroup => '无法删除群组';
 
   @override
-  String get cannotDeleteGroupReason => '戦績データを保護するため、関連する戦績があるグループは削除できません。';
+  String get cannotDeleteGroupReason => '为保护数据，无法删除有相关比赛记录的群组。';
 
   @override
-  String get deleteGroupHint => 'どうしても削除が必要な場合は、先に関連する戦績データを個別に削除してください。';
+  String get deleteGroupHint => '如需删除，请先删除相关比赛记录。';
 
   @override
-  String get understoodAction => '了解';
+  String get understoodAction => '确定';
 
   @override
-  String get goToMatchManagement => '戦績管理へ';
+  String get goToMatchManagement => '前往比赛管理';
 
   @override
-  String get deleteGroupTitle => 'グループを削除';
+  String get deleteGroupTitle => '删除群组';
 
   @override
-  String get failedToDeleteGroup => 'グループの削除に失敗しました';
+  String get failedToDeleteGroup => '删除群组失败';
 
   @override
-  String get gameInfoNotFound => 'ゲーム情報が見つかりません';
+  String get gameInfoNotFound => '未找到游戏信息';
 
   @override
-  String get failedToShowGameProfile => 'ゲームプロフィールの表示に失敗しました';
+  String get failedToShowGameProfile => '失败： show game profile';
 
   @override
-  String get collapseText => '折りたたむ';
+  String get collapseText => '收起';
 
   @override
-  String get showMoreText => 'もっと見る';
+  String get showMoreText => '显示更多';
 
   @override
-  String get unassignedParticipantsDialogTitle => '未割り当て参加者';
+  String get unassignedParticipantsDialogTitle => '未分配的参与者';
 
   @override
-  String get approvedNotAssignedDescription => '承認済みでグループに割り当てられていない参加者：';
+  String get approvedNotAssignedDescription => '未分配到群组的已批准参与者：';
 
   @override
-  String get createGroupForParticipantsHint => 'グループを作成してこれらの参加者を割り当ててください';
+  String get createGroupForParticipantsHint => '创建群组并分配这些参与者';
 
   @override
-  String get defaultUserName => 'ユーザー';
+  String get defaultUserName => '用户';
 
   @override
-  String get sortNewest => '新しい順';
+  String get sortNewest => '最新 first';
 
   @override
-  String get sortOldest => '古い順';
+  String get sortOldest => '最旧 first';
 
   @override
-  String get sortReportCount => '報告数順';
+  String get sortReportCount => 'By report count';
 
   @override
-  String get sortPendingReports => '未処理報告優先';
+  String get sortPendingReports => '待处理 reports first';
 
   @override
-  String get sortStatus => 'ステータス順';
+  String get sortStatus => 'By status';
 
   @override
-  String get matchResultTitle => '戦績・結果';
+  String get matchResultTitle => '比赛结果s';
 
   @override
-  String get matchResultLabel => '試合結果';
+  String get matchResultLabel => '比赛结果';
 
   @override
-  String get showPendingReportsOnly => '未処理報告のみ表示';
+  String get showPendingReportsOnly => '仅显示待处理的举报';
 
   @override
-  String get addMatch => '試合追加';
+  String get addMatch => '添加比赛';
 
   @override
-  String get noPendingReports => '未処理の報告はありません';
+  String get noPendingReports => '无待处理的举报';
 
   @override
-  String get problemMatchesDescription => '問題が発生した試合は、ここに表示されます';
+  String get problemMatchesDescription =>
+      '比赛es with problems will be displayed here';
 
   @override
-  String get teamMatchDescription => 'チーム（グループ）対戦の試合結果を記録して管理しましょう';
+  String get teamMatchDescription =>
+      'Record and manage team (group) match results';
 
   @override
-  String get individualMatchDescription => '参加者同士の個人戦の試合結果を記録して管理しましょう';
+  String get individualMatchDescription =>
+      'Record and manage individual match results between participants';
 
   @override
-  String get needTwoTeamsForMatch => '試合を開催するには2つ以上のチーム（グループ）が必要です';
+  String get needTwoTeamsForMatch =>
+      'At least 2 teams (groups) are required to hold a match';
 
   @override
-  String get needTwoParticipantsForMatch => '試合を開催するには2人以上の参加者が必要です';
+  String get needTwoParticipantsForMatch =>
+      'At least 2 participants are required to hold a match';
 
   @override
-  String get needGroupsForTeamMatch => 'チーム戦を開催するには事前にグループの作成が必要です';
+  String get needGroupsForTeamMatch =>
+      '群组s need to be created before holding team matches';
 
   @override
-  String get goToGroupManagement => 'グループ管理画面へ';
+  String get goToGroupManagement => '前往群组管理';
 
   @override
-  String get needParticipantsForMatch => 'イベントに参加者を追加してから試合を開始できます';
+  String get needParticipantsForMatch =>
+      '添加 participants to the event before starting matches';
 
   @override
-  String get goToParticipantManagement => '参加者管理画面へ';
+  String get goToParticipantManagement => '前往参与者管理';
 
   @override
-  String get changeStatus => 'ステータス変更';
+  String get changeStatus => '更改状态';
 
   @override
-  String get editResult => '結果編集';
+  String get editResult => '编辑结果';
 
   @override
-  String get inputResult => '結果入力';
+  String get inputResult => '输入结果';
 
   @override
   String get matchResultSaved => '比赛结果已保存';
 
   @override
-  String get changeStatusTitle => 'ステータス変更';
+  String get changeStatusTitle => '更改状态';
 
   @override
-  String get matchReportsTitle => '試合報告';
+  String get matchReportsTitle => '比赛举报';
 
   @override
-  String get noReportsForMatch => 'この試合に関する報告はありません';
+  String get noReportsForMatch => '否 reports for this match';
 
   @override
   String get deleteMatchTitle => '删除比赛';
@@ -2763,49 +2779,49 @@ class L10nZh extends L10n {
   String get adminActionLabel => '运营处理';
 
   @override
-  String get violationTitle => '違反';
+  String get violationTitle => '违规s';
 
   @override
-  String get violationRecords => '違反記録';
+  String get violationRecords => '违规记录';
 
   @override
-  String get operationGuideTooltip => '操作説明';
+  String get operationGuideTooltip => '操作指南';
 
   @override
-  String get noViolationRecords => '違反記録はありません';
+  String get noViolationRecords => '无违规记录';
 
   @override
-  String get noViolationReportsYet => 'このイベントでは違反報告がまだありません';
+  String get noViolationReportsYet => '否 violation reports for this event yet';
 
   @override
-  String get violationProcessButton => '違反処理';
+  String get violationProcessButton => '处理违规';
 
   @override
-  String get waitingAppealPeriod => '異議申立期間中（待機）';
+  String get waitingAppealPeriod => 'Waiting for appeal period';
 
   @override
-  String get processAppeal => '異議申立を処理';
+  String get processAppeal => '处理申诉';
 
   @override
-  String get revertToPending => '未処理に戻す';
+  String get revertToPending => '恢复为待处理';
 
   @override
-  String get statusInvestigating => '調査中';
+  String get statusInvestigating => '调查中';
 
   @override
-  String get statusResolved => '処理済み';
+  String get statusResolved => '已解决';
 
   @override
   String get retryButton => '重试';
 
   @override
-  String get severityMinor => '軽微';
+  String get severityMinor => '轻微';
 
   @override
-  String get severityModerate => '中程度';
+  String get severityModerate => '中等';
 
   @override
-  String get severitySevere => '重大';
+  String get severitySevere => '严重';
 
   @override
   String get violationTypeLabel => '违规类型 *';
@@ -2814,163 +2830,174 @@ class L10nZh extends L10n {
   String get severityLabel => '严重程度 *';
 
   @override
-  String get reportedAtLabel => '報告日時';
+  String get reportedAtLabel => '举报ed At';
 
   @override
   String get statusLabel => '状态';
 
   @override
-  String get penaltyLabel => 'ペナルティ';
+  String get penaltyLabel => '处罚';
 
   @override
   String get notesLabel => '备注';
 
   @override
-  String get detailContentLabel => '詳細内容:';
+  String get detailContentLabel => '详情:';
 
   @override
-  String get processViolationTitle => '違反処理';
+  String get processViolationTitle => '处理违规';
 
   @override
-  String get penaltyContentLabel => 'ペナルティ内容';
+  String get penaltyContentLabel => '处罚 Content';
 
   @override
-  String get penaltyContentHint => '例: 警告1回、1週間参加停止';
+  String get penaltyContentHint => '例如：, 1 warning, 1 week suspension';
 
   @override
-  String get notesOptionalLabel => '備考（任意）';
+  String get notesOptionalLabel => '备注 (Optional)';
 
   @override
-  String get processingNotesHint => '処理に関するメモ';
+  String get processingNotesHint => '备注 about processing';
 
   @override
   String get doneButtonText => '完成';
 
   @override
-  String get pleaseEnterPenalty => 'ペナルティ内容を入力してください';
+  String get pleaseEnterPenalty => '请输入处罚 content';
 
   @override
-  String get violationProcessed => '違反を処理しました';
+  String get violationProcessed => '违规已处理';
 
   @override
-  String get processButton => '処理する';
+  String get processButton => '处理';
 
   @override
-  String get deleteViolationRecordTitle => '違反記録削除';
+  String get deleteViolationRecordTitle => '删除 违规 Record';
 
   @override
-  String get importantCannotUndo => '⚠️ 重要：この操作は取り消せません';
+  String get importantCannotUndo =>
+      '⚠️ Important: This action cannot be undone';
 
   @override
-  String get deleteViolationRecordConfirm => 'この違反記録を完全に削除しますか？';
+  String get deleteViolationRecordConfirm =>
+      'Are you sure you want to permanently delete this violation record?';
 
   @override
-  String get rejectViolationRecordTitle => '違反記録却下';
+  String get rejectViolationRecordTitle => '拒绝 违规 Record';
 
   @override
-  String get aboutRejection => 'ℹ️ 却下について';
+  String get aboutRejection => 'ℹ️ 关于拒绝';
 
   @override
-  String get rejectViolationRecordConfirm => 'この違反記録を却下しますか？';
+  String get rejectViolationRecordConfirm =>
+      'Do you want to reject this violation record?';
 
   @override
-  String get rejectReasonOptionalLabel => '却下理由（任意）';
+  String get rejectReasonOptionalLabel => '拒绝原因 (Optional)';
 
   @override
-  String get rejectReasonHint => '却下する理由を記載してください';
+  String get rejectReasonHint => 'Please describe the reason for rejection';
 
   @override
-  String get violationRecordRejected => '違反記録を却下しました。関係者に通知されます。';
+  String get violationRecordRejected =>
+      '违规 record rejected. Related parties will be notified.';
 
   @override
-  String get reporterLabel => '報告者:';
+  String get reporterLabel => '举报者:';
 
   @override
   String get gameProfileNotFound => '未找到游戏资料';
 
   @override
-  String get selectGameTitle => 'ゲームを選択';
+  String get selectGameTitle => '选择游戏';
 
   @override
-  String get violationManagementGuide => '違反管理の操作説明';
+  String get violationManagementGuide => '违规管理指南';
 
   @override
   String get guideBasicOperations => '📝 基本操作';
 
   @override
-  String get guideCardButtonsDesc => '違反記録カードにある各ボタンの機能を説明します。';
+  String get guideCardButtonsDesc =>
+      'Explanation of each button on the violation record card.';
 
   @override
-  String get guideImportantOperations => '⚠️ 重要な操作';
+  String get guideImportantOperations => '⚠️ 重要操作';
 
   @override
-  String get guideRestoreFeature => '🔄 復旧機能';
+  String get guideRestoreFeature => '🔄 恢复 Feature';
 
   @override
-  String get guideDetailTitle => '詳細';
+  String get guideDetailTitle => '详情';
 
   @override
-  String get guideDetailDesc => '違反記録の詳細情報を表示します。';
+  String get guideDetailDesc =>
+      '查看 detailed information about the violation record.';
 
   @override
-  String get guideEditTitle => '編集';
+  String get guideEditTitle => '编辑';
 
   @override
-  String get guideEditDesc => '違反の種類、重要度、説明などを編集できます。';
+  String get guideEditDesc => '编辑 violation type, severity, description, etc.';
 
   @override
-  String get guideProcessTitle => '処理';
+  String get guideProcessTitle => '处理';
 
   @override
-  String get guideProcessDesc => '違反を確認し、ペナルティを記録して解決済みにします。';
+  String get guideProcessDesc =>
+      '确认 the violation, record a penalty, and mark as resolved.';
 
   @override
-  String get guideCautionOperations => '以下の操作は慎重に実行してください。';
+  String get guideCautionOperations =>
+      'Please execute the following operations carefully.';
 
   @override
-  String get guideRejectTitle => '却下';
+  String get guideRejectTitle => '拒绝';
 
   @override
-  String get guideRejectDesc => '違反として不適切と判断した場合に使用。記録は残りますが「却下済み」になります。';
+  String get guideRejectDesc =>
+      'Use when judged inappropriate as a violation. Record remains but marked as \'拒绝ed\'.';
 
   @override
-  String get guideDeleteTitle => '削除';
+  String get guideDeleteTitle => '删除';
 
   @override
-  String get guideMistakeRecovery => '誤操作した場合の対処法です。';
+  String get guideMistakeRecovery => 'How to handle mistakes.';
 
   @override
-  String get guideRecoveryTitle => '復旧';
+  String get guideRecoveryTitle => '恢复';
 
   @override
-  String get guideRecoveryDesc => '処理済み・却下済みの記録を未処理状態に戻します。削除した記録は復旧できません。';
+  String get guideRecoveryDesc =>
+      '恢复 processed/rejected records to pending status. 删除d records cannot be restored.';
 
   @override
-  String get guideRecoveryHint => 'ヒント：誤って処理や却下した場合は「復旧」ボタンで元に戻せます';
+  String get guideRecoveryHint =>
+      'Tip: Use the \'恢复\' button to undo accidental processing or rejection';
 
   @override
-  String get restoreViolationRecordTitle => '違反記録復旧';
+  String get restoreViolationRecordTitle => '恢复违规记录';
 
   @override
-  String get restoreReasonOptionalLabel => '復旧理由（任意）';
+  String get restoreReasonOptionalLabel => '恢复 Reason (Optional)';
 
   @override
-  String get restoreReasonHint => '復旧する理由を記載してください';
+  String get restoreReasonHint => 'Please describe the reason for restoration';
 
   @override
-  String get violationRecordRestored => '違反記録を復旧しました';
+  String get violationRecordRestored => '违规 record restored';
 
   @override
-  String get restoreButton => '復旧する';
+  String get restoreButton => '恢复';
 
   @override
-  String get appealSubmittedWaiting => '異議申立済み - 処理待ち';
+  String get appealSubmittedWaiting => '申诉已提交 - 等待中';
 
   @override
-  String get processableStatus => '処理可能';
+  String get processableStatus => 'Ready to 处理';
 
   @override
-  String get appealDeadlineExpired => '異議申立期限切れ - 処理可能';
+  String get appealDeadlineExpired => '申诉截止时间已过 - 准备处理';
 
   @override
   String get gameProfileTitle => '游戏资料';
@@ -3015,16 +3042,16 @@ class L10nZh extends L10n {
   String get snsAccountsTitle => '社交账号';
 
   @override
-  String get userDetailsTitle => 'ユーザー詳細';
+  String get userDetailsTitle => '用户详情';
 
   @override
-  String get userListTitle => 'ユーザー一覧';
+  String get userListTitle => '用户列表';
 
   @override
-  String get searchByUsernameOrGameIdHint => 'ユーザー名やゲームIDで検索...';
+  String get searchByUsernameOrGameIdHint => '按用户名或游戏ID搜索...';
 
   @override
-  String get noParticipantsYet => 'まだ参加者はいません';
+  String get noParticipantsYet => '暂无参与者';
 
   @override
   String get gameExperience => '游戏经验';
@@ -3033,22 +3060,22 @@ class L10nZh extends L10n {
   String get clanLabel => '战队';
 
   @override
-  String get eventDefault => 'イベント';
+  String get eventDefault => 'Event';
 
   @override
-  String get reportViolation => '違反を報告';
+  String get reportViolation => '举报违规';
 
   @override
-  String get profileDisplaySection => 'プロフィール表示';
+  String get profileDisplaySection => '资料显示';
 
   @override
-  String get gameProfileDescription => 'ゲーム内でのプロフィール情報';
+  String get gameProfileDescription => 'In-game profile information';
 
   @override
-  String get userProfileLabel => 'ユーザープロフィール';
+  String get userProfileLabel => '用户资料';
 
   @override
-  String get userProfileDescription => 'アプリ内でのユーザー情報';
+  String get userProfileDescription => 'In-app user information';
 
   @override
   String get visibilityPrivate => '私密';
@@ -3240,88 +3267,88 @@ class L10nZh extends L10n {
   String get cannotRevertToDraftTitle => '无法还原为草稿';
 
   @override
-  String get selectedDateLabel => '選択した日付';
+  String get selectedDateLabel => '所选日期';
 
   @override
-  String get backToCalendar => 'カレンダーに戻る';
+  String get backToCalendar => '返回日历';
 
   @override
-  String get weekdayMonday => '月曜日';
+  String get weekdayMonday => '星期一';
 
   @override
-  String get weekdayTuesday => '火曜日';
+  String get weekdayTuesday => '星期二';
 
   @override
-  String get weekdayWednesday => '水曜日';
+  String get weekdayWednesday => '星期三';
 
   @override
-  String get weekdayThursday => '木曜日';
+  String get weekdayThursday => '星期四';
 
   @override
-  String get weekdayFriday => '金曜日';
+  String get weekdayFriday => '星期五';
 
   @override
-  String get weekdaySaturday => '土曜日';
+  String get weekdaySaturday => '星期六';
 
   @override
-  String get weekdaySunday => '日曜日';
+  String get weekdaySunday => '星期日';
 
   @override
-  String get weekdayShortMon => '月';
+  String get weekdayShortMon => '一';
 
   @override
-  String get weekdayShortTue => '火';
+  String get weekdayShortTue => '二';
 
   @override
-  String get weekdayShortWed => '水';
+  String get weekdayShortWed => '三';
 
   @override
-  String get weekdayShortThu => '木';
+  String get weekdayShortThu => '四';
 
   @override
-  String get weekdayShortFri => '金';
+  String get weekdayShortFri => '五';
 
   @override
-  String get weekdayShortSat => '土';
+  String get weekdayShortSat => '六';
 
   @override
   String get weekdayShortSun => '日';
 
   @override
-  String get eventsLabel => 'イベント';
+  String get eventsLabel => '活动';
 
   @override
-  String get displayFilter => '表示フィルター';
+  String get displayFilter => '显示筛选';
 
   @override
-  String get applyButton => '適用';
+  String get applyButton => '申请';
 
   @override
-  String get publishedEventsFilter => '公開済みイベント';
+  String get publishedEventsFilter => '已发布的活动';
 
   @override
-  String get draftEventsFilter => '下書きイベント';
+  String get draftEventsFilter => '草稿活动';
 
   @override
-  String get completedEventsFilter => '完了済みイベント';
+  String get completedEventsFilter => '已完成的活动';
 
   @override
-  String get hostEventCalendar => '主催イベントカレンダー';
+  String get hostEventCalendar => '主办活动日历';
 
   @override
-  String get noEventsOnSelectedDate => '選択した日にはイベントがありません';
+  String get noEventsOnSelectedDate => '所选日期无活动';
 
   @override
-  String get userNotLoggedIn => 'ユーザーがログインしていません';
+  String get userNotLoggedIn => '用户未登录';
 
   @override
-  String get participatingEvents => '参加予定イベント';
+  String get participatingEvents => '参与中的活动';
 
   @override
   String get noParticipatingEvents => '没有参与中的活动';
 
   @override
-  String get tryJoinNewEvents => '新しいイベントに参加してみませんか？';
+  String get tryJoinNewEvents => 'Why not join a new event?';
 
   @override
   String get createEventTitle => '创建新活动';
@@ -3559,46 +3586,46 @@ class L10nZh extends L10n {
   String get registrationDeadlineSectionLabel => '报名截止';
 
   @override
-  String get matchDetailTitle => '試合詳細';
+  String get matchDetailTitle => '比赛详情s';
 
   @override
-  String get recommendedEventsTitle => 'おすすめイベント';
+  String get recommendedEventsTitle => '推荐活动';
 
   @override
-  String get profileImageCropTitle => 'プロフィール画像を調整';
+  String get profileImageCropTitle => 'Adjust 资料 图片';
 
   @override
-  String get removeParticipantDialogTitle => '参加者の除名';
+  String get removeParticipantDialogTitle => '移除参与者';
 
   @override
-  String get rejectParticipantDialogTitle => '参加申請の拒否';
+  String get rejectParticipantDialogTitle => '拒绝申请';
 
   @override
-  String get selectFromPastEventsTitle => '過去のイベントから選択';
+  String get selectFromPastEventsTitle => '从过去的活动中选择';
 
   @override
-  String get matchReportManagementTitle => '試合報告管理';
+  String get matchReportManagementTitle => '比赛举报管理';
 
   @override
-  String get paymentManagementTitle => '参加費管理';
+  String get paymentManagementTitle => '支付管理';
 
   @override
-  String get participantManagementTitle => '参加者管理';
+  String get participantManagementTitle => '参与者管理';
 
   @override
-  String get groupInfoTitle => 'グループ情報';
+  String get groupInfoTitle => '群组信息';
 
   @override
-  String get participantListTitle => '参加者一覧';
+  String get participantListTitle => '参与者列表';
 
   @override
-  String get violationReportMenuTitle => '違反報告';
+  String get violationReportMenuTitle => '举报违规';
 
   @override
-  String get approveApplicationDialogTitle => '参加申請を承認しますか？';
+  String get approveApplicationDialogTitle => '批准此申请？';
 
   @override
-  String get rejectApplicationDialogTitle => '参加申請を拒否しますか？';
+  String get rejectApplicationDialogTitle => '拒绝此申请？';
 
   @override
   String get applicationMessageLabel => '申请留言:';
@@ -3658,25 +3685,26 @@ class L10nZh extends L10n {
   String get doneButtonLabel => '完成';
 
   @override
-  String get noRecommendedEvents => 'おすすめイベントがありません';
+  String get noRecommendedEvents => '无推荐活动';
 
   @override
-  String get registerFavoriteGamesHint => 'お気に入りのゲームを登録すると\\n関連するイベントが表示されます';
+  String get registerFavoriteGamesHint =>
+      'Register your favorite games\nto see related events';
 
   @override
-  String get participantMenuTitle => '参加者メニュー';
+  String get participantMenuTitle => '参与者菜单';
 
   @override
-  String get loginRequired => 'ログインが必要です';
+  String get loginRequired => 'Login required';
 
   @override
-  String get groupInfoDescription => '自分の所属グループとメンバーを確認';
+  String get groupInfoDescription => 'Check your group and members';
 
   @override
-  String get participantListDescription => 'イベントの参加者一覧を確認';
+  String get participantListDescription => '查看 event participants';
 
   @override
-  String get violationReportDescription => '迷惑行為や違反行為を報告';
+  String get violationReportDescription => '举报 misconduct or violations';
 
   @override
   String get participantMode => '参与者模式';
@@ -3712,31 +3740,31 @@ class L10nZh extends L10n {
   String get managementVisibilityLimited => '限定';
 
   @override
-  String get addInviteMembersDescription => 'イベントに招待するメンバーを追加してください';
+  String get addInviteMembersDescription => '添加要邀请参加此活动的成员';
 
   @override
-  String get addInviteMembersEmptyMessage => '招待するメンバーを追加してください';
+  String get addInviteMembersEmptyMessage => '添加要邀请的成员';
 
   @override
-  String get addInviteMembersButton => '招待メンバーを追加';
+  String get addInviteMembersButton => '添加邀请成员';
 
   @override
-  String get eventDateAfterNow => '開催日時は現在時刻より後に設定してください';
+  String get eventDateAfterNow => '活动日期必须是未来的日期';
 
   @override
-  String get changeToRevertToDraft => '下書きに変更';
+  String get changeToRevertToDraft => '更改为草稿';
 
   @override
-  String get participantsWillBeNotified => '参加者に通知が送信されます';
+  String get participantsWillBeNotified => '将通知参与者';
 
   @override
-  String get eventUpdatedSuccess => 'イベントを更新しました';
+  String get eventUpdatedSuccess => 'Event updated successfully';
 
   @override
-  String get changesSavedSuccess => '変更を保存しました';
+  String get changesSavedSuccess => '更改已保存';
 
   @override
-  String get draftSavedSuccess => '下書きを保存しました';
+  String get draftSavedSuccess => '草稿已保存';
 
   @override
   String get validationEventNameRequired => '请输入活动名称';
@@ -3745,46 +3773,49 @@ class L10nZh extends L10n {
   String get validationEventDescriptionRequired => '请输入活动说明';
 
   @override
-  String get validationRulesRequired => '参加ルールを入力してください';
+  String get validationRulesRequired => 'Please enter participation rules';
 
   @override
-  String get validationGameRequired => 'ゲームを選択してください';
+  String get validationGameRequired => 'Please select a game';
 
   @override
-  String get validationPlatformRequired => 'プラットフォームを選択してください';
+  String get validationPlatformRequired => 'Please select a platform';
 
   @override
-  String get validationEventDateRequired => '開催日時を設定してください';
+  String get validationEventDateRequired => 'Please set event date';
 
   @override
-  String get validationEventDateFuture => '開催日時は現在時刻より後に設定してください';
+  String get validationEventDateFuture => '活动日期必须是未来的日期';
 
   @override
-  String get validationRegistrationDeadlineRequired => '参加申込締切を設定してください';
+  String get validationRegistrationDeadlineRequired =>
+      'Please set registration deadline';
 
   @override
   String get validationMaxParticipantsRequired => '请输入最大参与人数';
 
   @override
-  String get validationMaxParticipantsPositive => '最大参加人数は正の整数で入力してください';
+  String get validationMaxParticipantsPositive =>
+      'Max participants must be a positive integer';
 
   @override
-  String get validationInviteMembersRequired => '招待メンバーを追加してください';
+  String get validationInviteMembersRequired => 'Please add invite members';
 
   @override
-  String get validationPrizeContentRequired => '賞品内容を入力してください';
+  String get validationPrizeContentRequired => 'Please enter prize content';
 
   @override
-  String get validationManagerRequiredForPrize => '賞品設定時は運営者を追加してください';
+  String get validationManagerRequiredForPrize =>
+      'Please add a manager when setting prizes';
 
   @override
-  String get validationStreamingUrlRequired => '配信URLを入力してください';
+  String get validationStreamingUrlRequired => 'Please enter streaming URL';
 
   @override
-  String get atLeastOneStreamingUrlRequired => '最低1つの配信URLを入力してください';
+  String get atLeastOneStreamingUrlRequired => '请输入至少一个直播URL';
 
   @override
-  String get cautionRequired => '注意が必要です';
+  String get cautionRequired => '需要注意';
 
   @override
   String get eventCancellationDialogTitle => '确认取消活动';
@@ -3967,103 +3998,103 @@ class L10nZh extends L10n {
   String get eventChangeSummaryNoChanges => '无变更';
 
   @override
-  String get eventChangeTypeEventDate => '開催日時';
+  String get eventChangeTypeEventDate => 'Event Date';
 
   @override
-  String get eventChangeTypeRegistrationDeadline => '申込み締切';
+  String get eventChangeTypeRegistrationDeadline => 'Registration Deadline';
 
   @override
-  String get eventChangeTypeMaxParticipants => '最大参加者数';
+  String get eventChangeTypeMaxParticipants => 'Max 参与者';
 
   @override
-  String get eventChangeTypeHasParticipationFee => '参加費';
+  String get eventChangeTypeHasParticipationFee => 'Participation Fee';
 
   @override
-  String get eventChangeTypeParticipationFeeText => '参加費詳細';
+  String get eventChangeTypeParticipationFeeText => 'Fee 详情';
 
   @override
-  String get eventChangeTypeRules => 'ルール';
+  String get eventChangeTypeRules => 'Rules';
 
   @override
-  String get eventChangeTypeEventTags => 'イベントタグ';
+  String get eventChangeTypeEventTags => 'Event Tags';
 
   @override
-  String get eventChangeTypeContactInfo => '連絡先';
+  String get eventChangeTypeContactInfo => 'Contact Info';
 
   @override
-  String get eventChangeTypeVisibility => '公開設定';
+  String get eventChangeTypeVisibility => 'Visibility';
 
   @override
-  String get eventChangeTypeEventPassword => 'イベントパスワード';
+  String get eventChangeTypeEventPassword => 'Event Password';
 
   @override
-  String get eventChangeTypePlatforms => '対応プラットフォーム';
+  String get eventChangeTypePlatforms => 'Platforms';
 
   @override
-  String get eventChangeTypeGameId => 'ゲーム';
+  String get eventChangeTypeGameId => 'Game';
 
   @override
-  String get eventChangeTypeStatus => 'イベントステータス';
+  String get eventChangeTypeStatus => 'Event 状态';
 
   @override
-  String get eventChangeTypeName => 'イベント名';
+  String get eventChangeTypeName => 'Event Name';
 
   @override
-  String get eventChangeTypeSubtitle => 'サブタイトル';
+  String get eventChangeTypeSubtitle => 'Subtitle';
 
   @override
-  String get eventChangeTypeDescription => '説明';
+  String get eventChangeTypeDescription => 'Description';
 
   @override
-  String get eventChangeTypeAdditionalInfo => '追加情報';
+  String get eventChangeTypeAdditionalInfo => '附加信息';
 
   @override
-  String get eventChangeTypeHasStreaming => '配信';
+  String get eventChangeTypeHasStreaming => 'Streaming';
 
   @override
-  String get eventChangeTypeStreamingUrls => '配信URL';
+  String get eventChangeTypeStreamingUrls => 'Streaming URLs';
 
   @override
-  String get eventChangeTypePolicy => 'ポリシー';
+  String get eventChangeTypePolicy => 'Policy';
 
   @override
-  String get eventChangeTypeManagerIds => '共同編集者';
+  String get eventChangeTypeManagerIds => 'Co-editors';
 
   @override
-  String get eventChangeTypeImageUrl => 'イベント画像';
+  String get eventChangeTypeImageUrl => 'Event 图片';
 
   @override
-  String get eventChangeTypeLanguage => '言語設定';
+  String get eventChangeTypeLanguage => 'Language';
 
   @override
-  String get eventChangeTypeBlockedUserIds => 'ブロックユーザー';
+  String get eventChangeTypeBlockedUserIds => 'Blocked 用户s';
 
   @override
-  String get eventChangeTypeSponsorIds => 'スポンサー';
+  String get eventChangeTypeSponsorIds => 'Sponsors';
 
   @override
-  String get eventChangeTypeHasPrize => '賞品';
+  String get eventChangeTypeHasPrize => 'Prize';
 
   @override
-  String get eventChangeTypePrizeContent => '賞品内容';
+  String get eventChangeTypePrizeContent => 'Prize Content';
 
   @override
-  String get eventChangeTypeParticipationFeeSupplement => '参加費補足';
+  String get eventChangeTypeParticipationFeeSupplement => 'Fee Supplement';
 
   @override
-  String get eventChangeTypeGameName => 'ゲーム名';
+  String get eventChangeTypeGameName => 'Game Name';
 
   @override
-  String get eventChangeNotSet => '（未設定）';
+  String get eventChangeNotSet => '(否t set)';
 
   @override
-  String get eventChangeYes => 'あり';
+  String get eventChangeYes => '是';
 
   @override
-  String get eventChangeNo => 'なし';
+  String get eventChangeNo => '否';
 
   @override
-  String get listSeparator => '、';
+  String get listSeparator => ', ';
 
   @override
   String get notificationNewFollowerTitle => '新关注者';
@@ -5968,40 +5999,43 @@ class L10nZh extends L10n {
   String get optionalLabel => '可选';
 
   @override
-  String get takePhotoLabel => 'カメラで撮影';
+  String get takePhotoLabel => 'Take Photo';
 
   @override
-  String get selectFromGalleryLabel => 'ギャラリーから選択';
+  String get selectFromGalleryLabel => '选择 from Gallery';
 
   @override
-  String get imageDeletedMessage => '画像を削除しました';
+  String get imageDeletedMessage => '图片已删除';
 
   @override
-  String get deleteImageConfirmMessage => 'この画像を削除しますか？この操作は取り消せません。';
+  String get deleteImageConfirmMessage => '删除此图片？此操作无法撤销。';
 
   @override
-  String get replaceImageDescription => '新しい画像で置き換えます（古い画像は自動削除）';
+  String get replaceImageDescription =>
+      'Replace with a new image (old image will be deleted)';
 
   @override
-  String get deleteImageDescription => 'この画像を完全に削除します';
+  String get deleteImageDescription => '永久删除此图片';
 
   @override
-  String get replaceImageInfo => '古い画像は自動的に削除され、新しい画像に置き換わります';
+  String get replaceImageInfo =>
+      'The old image will be automatically deleted and replaced with a new one';
 
   @override
-  String get imageReplacedMessage => '画像を置き換えました（古い画像は自動削除されました）';
+  String get imageReplacedMessage => '图片已替换 (old image automatically deleted)';
 
   @override
-  String get imageLoadFailedMessage => '画像の読み込みに失敗しました';
+  String get imageLoadFailedMessage => '失败： load image';
 
   @override
-  String get uploadDateTimeLabel => 'アップロード日時';
+  String get uploadDateTimeLabel => '上传 Date';
 
   @override
-  String get replaceAllLabel => '全て置換';
+  String get replaceAllLabel => 'Replace All';
 
   @override
-  String get noEvidenceImagesDescription => '「画像を追加」ボタンから画像をアップロードできます';
+  String get noEvidenceImagesDescription =>
+      '上传 images using the \'添加 图片\' button';
 
   @override
   String get replaceImageDialogDescription => '旧图片将自动删除并替换为新图片';
@@ -6193,79 +6227,79 @@ class L10nZh extends L10n {
   String get validationEventPasswordInvalidChars => '密码只能包含字母数字和常用符号';
 
   @override
-  String get participantMatchYourMatch => 'あなたの試合';
+  String get participantMatchYourMatch => '您的比赛';
 
   @override
-  String get participantMatchInfoTitle => '試合情報';
+  String get participantMatchInfoTitle => '比赛信息';
 
   @override
-  String get participantMatchFormatLabel => '形式';
+  String get participantMatchFormatLabel => '格式';
 
   @override
-  String get participantMatchTeamLabel => 'チーム';
+  String get participantMatchTeamLabel => '队伍';
 
   @override
-  String get participantMatchParticipantsLabel => '参加者';
+  String get participantMatchParticipantsLabel => '参与者';
 
   @override
-  String get participantMatchWinnerLabel => '勝者';
+  String get participantMatchWinnerLabel => '获胜者';
 
   @override
-  String get participantMatchAdminNoticeTitle => '運営からのお知らせ';
+  String get participantMatchAdminNoticeTitle => '主办者通知';
 
   @override
-  String get participantMatchAdminNoticeDesc => '運営側からの重要な情報です';
+  String get participantMatchAdminNoticeDesc => '主办者的重要信息';
 
   @override
-  String get participantMatchYourReportStatus => 'あなたの報告状況';
+  String get participantMatchYourReportStatus => '您的报告状态';
 
   @override
-  String get participantMatchAdminResponse => '運営回答';
+  String get participantMatchAdminResponse => '管理员回复';
 
   @override
-  String get participantMatchEvidenceDesc => '運営がアップロードした試合の証拠画像です';
+  String get participantMatchEvidenceDesc => '主办者上传的比赛证据图片';
 
   @override
-  String get participantMatchReportProblemTitle => '問題の報告';
+  String get participantMatchReportProblemTitle => '报告问题';
 
   @override
-  String get participantMatchReportProblemDesc => '試合結果に誤りがある場合は運営に報告できます';
+  String get participantMatchReportProblemDesc => '如果比赛结果有误，您可以向主办者报告';
 
   @override
-  String get participantMatchReportProblemButton => '問題を報告する';
+  String get participantMatchReportProblemButton => '报告问题';
 
   @override
-  String get participantMatchReportDialogTitle => '問題を報告';
+  String get participantMatchReportDialogTitle => '报告问题';
 
   @override
-  String get participantMatchIssueTypeTitle => '問題の種類';
+  String get participantMatchIssueTypeTitle => '问题类型';
 
   @override
-  String get participantMatchDetailDescHint => '問題の詳細を説明してください...';
+  String get participantMatchDetailDescHint => '请详细描述问题...';
 
   @override
-  String get participantMatchSubmitReport => '報告する';
+  String get participantMatchSubmitReport => '提交报告';
 
   @override
-  String get participantMatchEnterDetailDesc => '詳細説明を入力してください';
+  String get participantMatchEnterDetailDesc => '请输入详细说明';
 
   @override
-  String get participantMatchReportSuccess => '問題を報告しました。運営が確認次第対応いたします。';
+  String get participantMatchReportSuccess => '问题已报告。主办者将审核并相应处理。';
 
   @override
-  String get participantMatchIssueScoreError => 'スコア誤り';
+  String get participantMatchIssueScoreError => '比分错误';
 
   @override
-  String get participantMatchIssueWinnerError => '勝者判定誤り';
+  String get participantMatchIssueWinnerError => '获胜者判定错误';
 
   @override
-  String get participantMatchIssueParticipantError => '参加者誤り';
+  String get participantMatchIssueParticipantError => '参与者错误';
 
   @override
-  String get participantMatchIssueStatusError => '試合ステータス誤り';
+  String get participantMatchIssueStatusError => '比赛状态错误';
 
   @override
-  String get participantMatchIssueOther => 'その他';
+  String get participantMatchIssueOther => '其他';
 
   @override
   String get recordMethodLabel => '记录方式';
@@ -6391,22 +6425,22 @@ class L10nZh extends L10n {
 
   @override
   String mutualFollowTabCount(int count) {
-    return '相互フォロー ($count)';
+    return 'Mutual ($count)';
   }
 
   @override
   String followingTabCount(int count) {
-    return 'フォロー中 ($count)';
+    return '关注中 ($count)';
   }
 
   @override
   String followersTabCount(int count) {
-    return 'フォロワー ($count)';
+    return '粉丝 ($count)';
   }
 
   @override
   String dataFetchFailedWithError(String error) {
-    return 'データの取得に失敗しました: $error';
+    return '失败： fetch data: $error';
   }
 
   @override
@@ -6421,7 +6455,7 @@ class L10nZh extends L10n {
 
   @override
   String lastUpdated(String date) {
-    return '更新: $date';
+    return '更新d: $date';
   }
 
   @override
@@ -6446,22 +6480,22 @@ class L10nZh extends L10n {
 
   @override
   String versionLabel(String version) {
-    return 'バージョン $version';
+    return '版本 $version';
   }
 
   @override
   String signOutFailed(String error) {
-    return 'サインアウトに失敗しました: $error';
+    return '失败： sign out: $error';
   }
 
   @override
   String failedToOpenPage(String page) {
-    return '$pageのページを開けませんでした。';
+    return '失败： open $page page.';
   }
 
   @override
   String errorOpeningPage(String page) {
-    return '$pageのページを開く際にエラーが発生しました。';
+    return '错误 occurred while opening $page page.';
   }
 
   @override
@@ -6551,12 +6585,12 @@ class L10nZh extends L10n {
 
   @override
   String editProfileDescription(String gameName) {
-    return '$gameName のプロフィール情報を変更できます';
+    return 'You can modify $gameName profile information';
   }
 
   @override
   String deleteProfileConfirm(String gameName) {
-    return '$gameName のプロフィールを削除しますか？\\n\\nお気に入りゲームからも削除されます。\\n\\nこの操作は元に戻せません。';
+    return '删除 $gameName profile?\n\n这也将从收藏中移除。\n\n此操作无法撤销。';
   }
 
   @override
@@ -6686,37 +6720,37 @@ class L10nZh extends L10n {
 
   @override
   String errorLabel(String error) {
-    return 'エラー: $error';
+    return '错误: $error';
   }
 
   @override
   String applicationDateTime(String dateTime) {
-    return '申請日時: $dateTime';
+    return 'Applied: $dateTime';
   }
 
   @override
   String messageLabel(String message) {
-    return 'メッセージ: $message';
+    return '消息: $message';
   }
 
   @override
   String rejectionReasonLabel(String reason) {
-    return '拒否理由: $reason';
+    return '拒绝ion reason: $reason';
   }
 
   @override
   String userCancelledParticipation(String userName) {
-    return '$userNameさんがキャンセルしました';
+    return '$userName cancelled';
   }
 
   @override
   String cancellationDateTimeLabel(String dateTime) {
-    return 'キャンセル日時: $dateTime';
+    return '已取消 at: $dateTime';
   }
 
   @override
   String capacityExceededMessage(int current, int max) {
-    return 'イベントが満員です（現在 $current/$max人）。\\n\\n承認済み参加者が辞退してから、再度承認してください。';
+    return '活动已满 ($current/$max participants).\n\n请等待已批准的参与者退出后再批准。';
   }
 
   @override
@@ -6761,127 +6795,127 @@ class L10nZh extends L10n {
 
   @override
   String unassignedParticipantsWarning(int count) {
-    return '$count名の承認済み参加者が\\nグループ未割り当てです';
+    return '$count approved participants\nare not assigned to groups';
   }
 
   @override
   String unassignedParticipantsTitle(int count) {
-    return '未割り当て参加者 ($count)';
+    return '未分配的参与者 ($count)';
   }
 
   @override
   String participantsCount(int count) {
-    return '参加者: $count名';
+    return '参与者: $count';
   }
 
   @override
   String selectGroupToAddParticipant(String name) {
-    return '$nameを追加するグループ';
+    return '选择 group to add $name';
   }
 
   @override
   String membersCount(int count) {
-    return '$count人';
+    return '$count people';
   }
 
   @override
   String participantRemovedFromGroup(String participantName, String groupName) {
-    return '$participantNameを$groupNameから削除しました';
+    return '移除d $participantName from $groupName';
   }
 
   @override
   String participantAddedToGroup(String participantName, String groupName) {
-    return '$participantNameを$groupNameに追加しました';
+    return '添加ed $participantName to $groupName';
   }
 
   @override
   String addMemberToGroup(String groupName) {
-    return '$groupNameにメンバーを追加';
+    return '添加 member to $groupName';
   }
 
   @override
   String failedToUpdateGeneralAnnouncements(String error) {
-    return '全体連絡事項の更新に失敗しました: $error';
+    return '更新失败 general announcements: $error';
   }
 
   @override
   String groupCreated(String name) {
-    return 'グループ「$name」を作成しました';
+    return '创建d group \"$name\"';
   }
 
   @override
   String failedToCreateGroupWithError(String error) {
-    return 'グループの作成に失敗しました: $error';
+    return '创建群组失败: $error';
   }
 
   @override
   String groupUpdated(String name) {
-    return 'グループ「$name」を更新しました';
+    return '更新d group \"$name\"';
   }
 
   @override
   String failedToUpdateGroupWithError(String error) {
-    return 'グループの更新に失敗しました: $error';
+    return '更新群组失败: $error';
   }
 
   @override
   String groupHasRelatedMatches(String groupName, int matchCount) {
-    return '「$groupName」は$matchCount件の戦績データに関連付けられています。';
+    return '\"$groupName\" is linked to $matchCount match records.';
   }
 
   @override
   String deleteGroupConfirmation(String name) {
-    return '「$name」を削除しますか？\\nこの操作は取り消せません。';
+    return '删除 \"$name\"?\n此操作无法撤销。';
   }
 
   @override
   String groupDeleted(String name) {
-    return 'グループ「$name」を削除しました';
+    return '删除d group \"$name\"';
   }
 
   @override
   String failedToLoadParticipants(Object error) {
-    return '参加者の読み込みに失敗しました: $error';
+    return '加载参与者失败: $error';
   }
 
   @override
   String failedToLoadData(Object error) {
-    return 'データの読み込みに失敗しました: $error';
+    return '加载数据失败: $error';
   }
 
   @override
   String confirmReportsCount(Object count) {
-    return '問題報告を確認 ($count件)';
+    return 'Check reports ($count)';
   }
 
   @override
   String winnerLabel(Object winner) {
-    return '勝者: $winner';
+    return '获胜者: $winner';
   }
 
   @override
   String matchRegisteredMessage(Object name) {
-    return '試合「$name」を登録しました';
+    return '比赛 \"$name\" has been registered';
   }
 
   @override
   String failedToRegisterMatch(Object error) {
-    return '試合の登録に失敗しました: $error';
+    return '失败： register match: $error';
   }
 
   @override
   String failedToSaveMatchResult(Object error) {
-    return '試合結果の保存に失敗しました: $error';
+    return '保存比赛结果失败: $error';
   }
 
   @override
   String statusChangedMessage(Object status) {
-    return 'ステータスを「$status」に変更しました';
+    return '状态已更改 to \"$status\"';
   }
 
   @override
   String failedToChangeStatus(Object error) {
-    return 'ステータス変更に失敗しました: $error';
+    return '更改状态失败: $error';
   }
 
   @override
@@ -6926,77 +6960,77 @@ class L10nZh extends L10n {
 
   @override
   String failedToGetViolationRecords(Object error) {
-    return 'イベント違反記録の取得に失敗: $error';
+    return '失败： get violation records: $error';
   }
 
   @override
   String failedToLoadDataError(Object error) {
-    return 'データの取得に失敗しました: $error';
+    return '加载数据失败: $error';
   }
 
   @override
   String reportedAt(Object dateTime) {
-    return '報告日時: $dateTime';
+    return '举报ed: $dateTime';
   }
 
   @override
   String penaltyValue(Object penalty) {
-    return 'ペナルティ: $penalty';
+    return '处罚: $penalty';
   }
 
   @override
   String violationDetailTitle(Object type) {
-    return '違反詳細 - $type';
+    return '违规详情s - $type';
   }
 
   @override
   String violatorLabel(Object name) {
-    return '違反者: $name';
+    return '违规者: $name';
   }
 
   @override
   String realNameLabel(Object name) {
-    return '実名: $name';
+    return 'Real name: $name';
   }
 
   @override
   String failedToProcess(Object error) {
-    return '処理に失敗しました: $error';
+    return '处理失败: $error';
   }
 
   @override
   String failedToDelete(Object error) {
-    return '削除に失敗しました: $error';
+    return '删除失败: $error';
   }
 
   @override
   String failedToReject(Object error) {
-    return '却下に失敗しました: $error';
+    return '拒绝失败: $error';
   }
 
   @override
   String failedToGetGameProfile(Object error) {
-    return 'ゲームプロフィールの取得に失敗しました: $error';
+    return '失败： get game profile: $error';
   }
 
   @override
   String restoreViolationRecordConfirm(Object status) {
-    return 'この違反記録を未処理状態に戻しますか？\\n現在のステータス: $status';
+    return 'Do you want to restore this violation record to pending status?\nCurrent status: $status';
   }
 
   @override
   String failedToRestore(Object error) {
-    return '復旧に失敗しました: $error';
+    return '恢复失败: $error';
   }
 
   @override
   String appealPeriodRemaining(Object hours) {
-    return '異議申立期間中 - あと$hours時間';
+    return '申诉期 - $hours 小时剩余';
   }
 
   @override
   String deadlineLabel(Object dateTime) {
-    return '期限: $dateTime';
+    return 'Deadline: $dateTime';
   }
 
   @override
@@ -7026,7 +7060,7 @@ class L10nZh extends L10n {
 
   @override
   String currentlyParticipantsApplied(int count) {
-    return '現在$count名が参加申込済みです';
+    return '当前 $count 名参与者已申请';
   }
 
   @override
@@ -7041,32 +7075,32 @@ class L10nZh extends L10n {
 
   @override
   String eventLoadFailed(Object error) {
-    return 'イベントの読み込みに失敗しました: $error';
+    return '失败： load events: $error';
   }
 
   @override
   String monthDayFormat(Object day, Object month) {
-    return '$month月$day日';
+    return '$month/$day';
   }
 
   @override
   String yearWeekdayFormat(Object weekday, Object year) {
-    return '$year年 $weekday';
+    return '$year $weekday';
   }
 
   @override
   String yearMonthFormat(Object month, Object year) {
-    return '$year年$month月';
+    return '$month/$year';
   }
 
   @override
   String eventsOnDate(Object day, Object month) {
-    return '$month月$day日のイベント';
+    return '活动 on $month/$day';
   }
 
   @override
   String participantCountFormat(Object current, Object max) {
-    return '$current/$max人';
+    return '$current/$max';
   }
 
   @override
@@ -7319,17 +7353,17 @@ class L10nZh extends L10n {
     String oldValue,
     String newValue,
   ) {
-    return '$typeName: 「$oldValue」→「$newValue」';
+    return '$typeName: \"$oldValue\" → \"$newValue\"';
   }
 
   @override
   String eventChangeValueChanged(String oldValue, String newValue) {
-    return '「$oldValue」から「$newValue」に変更されました';
+    return '更改d from \"$oldValue\" to \"$newValue\"';
   }
 
   @override
   String eventChangeDetailBullet(String text) {
-    return '・$text';
+    return '• $text';
   }
 
   @override
@@ -8195,47 +8229,47 @@ class L10nZh extends L10n {
 
   @override
   String imageLoadError(Object error) {
-    return '画像の読み込みに失敗しました: $error';
+    return '失败： load images: $error';
   }
 
   @override
   String imagesUploadedMessage(Object count) {
-    return '$count枚の画像をアップロードしました';
+    return '$count images uploaded';
   }
 
   @override
   String imageUploadError(Object error) {
-    return '画像のアップロードに失敗しました: $error';
+    return '失败： upload image: $error';
   }
 
   @override
   String imageDeleteError(Object error) {
-    return '画像の削除に失敗しました: $error';
+    return '删除失败 image: $error';
   }
 
   @override
   String imageReplaceError(Object error) {
-    return '画像の置き換えに失敗しました: $error';
+    return '失败： replace image: $error';
   }
 
   @override
   String replaceAllImagesConfirmMessage(Object count) {
-    return '現在の$count枚の画像を全て削除し、新しい画像に置き換えますか？\\n\\nこの操作は取り消せません。';
+    return '删除 all $count current images and replace with new ones?\n\n此操作无法撤销。';
   }
 
   @override
   String imageSelectError(Object error) {
-    return '画像の選択に失敗しました: $error';
+    return '失败： select image: $error';
   }
 
   @override
   String imagesReplacedMessage(Object count) {
-    return '$count枚の新しい画像に置き換えました';
+    return 'Replaced with $count new images';
   }
 
   @override
   String batchReplaceError(Object error) {
-    return '画像の一括置き換えに失敗しました: $error';
+    return '失败： batch replace images: $error';
   }
 
   @override
@@ -8410,42 +8444,42 @@ class L10nZh extends L10n {
 
   @override
   String participantMatchCompletedAt(Object dateTime) {
-    return '完了: $dateTime';
+    return '完成时间: $dateTime';
   }
 
   @override
   String participantMatchReportedAt(Object dateTime) {
-    return '$dateTime 報告';
+    return '报告时间: $dateTime';
   }
 
   @override
   String participantMatchUploaderLabel(Object name) {
-    return 'アップロード者: $name';
+    return '上传者: $name';
   }
 
   @override
   String participantMatchUploadedAtLabel(Object dateTime) {
-    return 'アップロード日時: $dateTime';
+    return '上传时间: $dateTime';
   }
 
   @override
   String participantMatchMatchLabel(Object name) {
-    return '試合: $name';
+    return '比赛: $name';
   }
 
   @override
   String participantMatchParticipantsDialogLabel(Object names) {
-    return '参加者: $names';
+    return '参与者: $names';
   }
 
   @override
   String participantMatchReportFailed(Object error) {
-    return '報告の送信に失敗しました: $error';
+    return '报告提交失败: $error';
   }
 
   @override
   String participantMatchAndMore(Object count, Object names) {
-    return '$names 他$count名';
+    return '$names等$count人';
   }
 
   @override
@@ -9331,13 +9365,55 @@ class L10nZhTw extends L10nZh {
   String get verifyingUserInfo => '正在驗證用戶資訊';
 
   @override
+  String get followScreenTitle => '追蹤中';
+
+  @override
+  String get mutualFollowTab => 'Mutual';
+
+  @override
+  String get followingTab => '追蹤中';
+
+  @override
+  String get followersTab => '粉絲';
+
+  @override
   String get noMutualFollows => '沒有相互追蹤';
 
   @override
   String get noMutualFollowsHint => '新增相互追蹤後\n可以從這裡輕鬆選擇營運者';
 
   @override
+  String get noFollowing => '否t following anyone';
+
+  @override
+  String get noFollowingHint => '追蹤 users to receive\nevent updates';
+
+  @override
+  String get noFollowers => '無粉絲';
+
+  @override
+  String get noFollowersHint => 'Waiting for users\nto follow you';
+
+  @override
+  String get fetchingData => '正在取得資料...';
+
+  @override
   String get retry => '重試';
+
+  @override
+  String get searchUser => '搜尋使用者s';
+
+  @override
+  String get searchUserPlaceholder => '搜尋 by username or ID...';
+
+  @override
+  String get searchUserHint => '搜尋 by username or ID';
+
+  @override
+  String get searchUserDescription => '搜尋 to find users\nyou want to follow';
+
+  @override
+  String get searchingUser => '正在搜尋使用者s...';
 
   @override
   String get userSearchError => '搜尋使用者時發生錯誤';
@@ -9382,6 +9458,12 @@ class L10nZhTw extends L10nZh {
   String get notConfigured => '未設定';
 
   @override
+  String get today => '今天';
+
+  @override
+  String get yesterday => '昨天';
+
+  @override
   String get pleaseSetGameProfile => '請設定遊戲資料';
 
   @override
@@ -9397,7 +9479,96 @@ class L10nZhTw extends L10nZh {
   String get gameProfileWillBeDeleted => '遊戲資料也將被刪除';
 
   @override
+  String get delete => '刪除';
+
+  @override
   String get addFavoriteGame => '新增收藏的遊戲';
+
+  @override
+  String get account => '帳戶';
+
+  @override
+  String get signedIn => 'Signed In';
+
+  @override
+  String get tapToViewProfile => '點擊檢視個人資料';
+
+  @override
+  String get profileVisibilitySettings => '個人資料可見性';
+
+  @override
+  String get profileVisibilityDescription =>
+      'Configure what others can see on your profile';
+
+  @override
+  String get eventsAsOrganizer => '作為主辦者的活動';
+
+  @override
+  String get eventsAsOrganizerDescription => '顯示 events you host or co-edit';
+
+  @override
+  String get upcomingEventsVisibility => '即將舉行的活動';
+
+  @override
+  String get upcomingEventsDescription => '顯示 events you\'re attending';
+
+  @override
+  String get pastEventsVisibility => '過去的活動';
+
+  @override
+  String get pastEventsDescription => '顯示 events you\'ve attended';
+
+  @override
+  String get appInfo => '應用程式資訊';
+
+  @override
+  String get infoAndSupport => 'Info & Support';
+
+  @override
+  String get accountManagement => '帳戶管理';
+
+  @override
+  String get accountManagementDescription => '重要帳戶操作';
+
+  @override
+  String get deleteAccountTitle => '刪除帳戶';
+
+  @override
+  String get deleteAccountDescription => '刪除您的帳戶和所有資料';
+
+  @override
+  String get signOutTitle => '登出';
+
+  @override
+  String get signedOut => '已登出';
+
+  @override
+  String get failedToGetUserInfo => '取得使用者資訊失敗rmation';
+
+  @override
+  String get failedToShowProfile => '失敗： show profile';
+
+  @override
+  String get failedToOpenContactForm => '失敗： open contact form.';
+
+  @override
+  String get errorOpeningContactForm => '開啟聯絡表單時發生錯誤。';
+
+  @override
+  String get rateAppTitle => '評價應用程式';
+
+  @override
+  String get rateAppMessage =>
+      'Thank you for using Go!\nHow would you like to rate?';
+
+  @override
+  String get rateWithStars => 'Rate with Stars';
+
+  @override
+  String get writeReview => 'Write a Review';
+
+  @override
+  String get later => '稍後';
 
   @override
   String get markAllAsRead => '全部已讀';
@@ -9865,7 +10036,52 @@ class L10nZhTw extends L10nZh {
   String get noCompletedEventsYet => '還沒有已完成的活動';
 
   @override
+  String get gameProfileEditTitle => '編輯 個人資料';
+
+  @override
+  String get gameProfileCreateTitle => '建立 遊戲個人資料';
+
+  @override
+  String get deleteProfileTooltip => '刪除個人資料';
+
+  @override
   String get saving => '儲存中...';
+
+  @override
+  String get gameName => '遊戲名稱';
+
+  @override
+  String get selectedGame => '所選遊戲';
+
+  @override
+  String get editExistingProfile => '編輯現有個人資料';
+
+  @override
+  String get createNewProfile => '建立新個人資料';
+
+  @override
+  String get createProfileDescription => '所有欄位均為選填。您可以稍後編輯';
+
+  @override
+  String get basicInfo => '基本資訊';
+
+  @override
+  String get gameUsername => 'In-遊戲使用者名稱';
+
+  @override
+  String get gameUsernameHint => '例如： Player001, GamerTag';
+
+  @override
+  String get gameUserId => 'In-遊戲使用者ID';
+
+  @override
+  String get gameUserIdHint => '例如： #1234, @username, user_id_12345';
+
+  @override
+  String get clanName => '公會名稱';
+
+  @override
+  String get clanNameHint => '例如： TeamAlpha, ProGuild, [ABC]Clan';
 
   @override
   String get skillLevelSection => '技能等級';
@@ -9893,6 +10109,12 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get skillLevelExpertDescription => '最高水準的實力，比賽前列或職業經驗';
+
+  @override
+  String get rankOrLevel => 'Rank / Level';
+
+  @override
+  String get rankOrLevelHint => '例如： Diamond, Level 50, Platinum III';
 
   @override
   String get playStyleSection => '遊戲風格';
@@ -9940,6 +10162,9 @@ class L10nZhTw extends L10nZh {
   String get playStyleCollectorDescription => '以收集物品、完成成就為目標';
 
   @override
+  String get playStyleDescription => '選擇 what applies (選填)';
+
+  @override
   String get activityTimeSection => '活動時間段';
 
   @override
@@ -9959,6 +10184,85 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get activityTimeWeekday => '平日為主';
+
+  @override
+  String get activityTimeDescription => '選擇您通常玩遊戲的時間';
+
+  @override
+  String get voiceChatSection => '語音聊天';
+
+  @override
+  String get inGameVC => '遊戲內語音';
+
+  @override
+  String get vcAvailable => 'Available';
+
+  @override
+  String get vcUnavailable => 'Unavailable';
+
+  @override
+  String get vcDetails => '語音詳情';
+
+  @override
+  String get vcDetailsHint =>
+      '例如： Mainly in-game VC, Discord: user#1234, VC available after 9pm';
+
+  @override
+  String get additionalInfo => '附加資訊';
+
+  @override
+  String get achievements => '成就 / 亮點';
+
+  @override
+  String get achievementsHint => '例如： 世界排名第100，錦標賽冠軍，直播經驗';
+
+  @override
+  String get freeNotes => '備註 / Memo';
+
+  @override
+  String get freeNotesHint =>
+      '例如： Beginners welcome, Casual play, Voice chat 確定';
+
+  @override
+  String get snsAccountsSection => 'Social 帳戶s';
+
+  @override
+  String get snsAccountsDescription =>
+      'Enter if you have game-specific social accounts';
+
+  @override
+  String get snsUsernameHint => '使用者name (without @)';
+
+  @override
+  String get youtubeChannelHint => 'Channel name (without @)';
+
+  @override
+  String get discordUsernameHint => '使用者名稱#1234（帶標籤）';
+
+  @override
+  String get saveChanges => '儲存變更';
+
+  @override
+  String get createProfile => '建立個人資料';
+
+  @override
+  String get failedToGetUserInfoShort => '取得使用者資訊失敗';
+
+  @override
+  String get profileUpdated => '個人資料已更新';
+
+  @override
+  String get profileCreated => '個人資料已建立';
+
+  @override
+  String get saveFailed => '失敗： save. Please try again.';
+
+  @override
+  String get deleteProfileTitle => '刪除個人資料';
+
+  @override
+  String get profileAndFavoriteDeleted =>
+      '刪除d game profile and removed from favorites';
 
   @override
   String get gameSelection => '選擇遊戲';
@@ -10819,16 +11123,67 @@ class L10nZhTw extends L10nZh {
   String get dashboardCancelEvent => '取消活動';
 
   @override
+  String get participantsTitle => '參與者';
+
+  @override
+  String get participationApplications => 'Applications';
+
+  @override
+  String get tabPending => '待處理';
+
+  @override
   String get tabApproved => '已批准';
 
   @override
   String get tabRejected => '已拒絕';
 
   @override
+  String get tabWaitlisted => '候補';
+
+  @override
+  String get tabCancelled => '已取消';
+
+  @override
+  String get dataLoadFailed => '載入資料失敗';
+
+  @override
+  String get noPendingParticipants => '無待處理的參與者';
+
+  @override
+  String get noApprovedParticipants => '無已核准的參與者';
+
+  @override
+  String get noRejectedParticipants => '無已拒絕的參與者';
+
+  @override
+  String get noWaitlistedParticipants => '無候補參與者';
+
+  @override
+  String get noCancelledParticipants => '無已取消的參與者';
+
+  @override
+  String get noParticipants => '無參與者';
+
+  @override
   String get loadingText => '載入中...';
 
   @override
+  String get gameAccountInfo => '遊戲帳戶資訊';
+
+  @override
   String get inGameUsername => '遊戲內使用者名稱';
+
+  @override
+  String get inGameUserId => 'In-game 使用者 ID';
+
+  @override
+  String get noGameAccountInfo => '無遊戲帳戶資訊 registered';
+
+  @override
+  String get approve => '核准';
+
+  @override
+  String get reject => '拒絕';
 
   @override
   String get statusPending => '待批准';
@@ -10843,16 +11198,84 @@ class L10nZhTw extends L10nZh {
   String get statusWaitlisted => '候補名單';
 
   @override
+  String get statusUnknown => '未知';
+
+  @override
+  String get approveApplicationTitle => '核准申請';
+
+  @override
+  String get rejectApplicationTitle => '拒絕申請';
+
+  @override
+  String get approveApplicationMessageHint => '您可以向申請者發送訊息 (選填)';
+
+  @override
+  String get rejectApplicationMessageHint =>
+      'You can send a rejection reason (選填)';
+
+  @override
+  String get messageInputLabel => '訊息';
+
+  @override
+  String get rejectReasonInputLabel => '拒絕原因';
+
+  @override
+  String get approveMessagePlaceholder => '關於核准或活動參與的詳細說明';
+
+  @override
+  String get rejectMessagePlaceholder =>
+      'Reason for rejection or suggestions for improvement';
+
+  @override
   String get approveButton => '核准';
 
   @override
   String get rejectButton => '駁回';
 
   @override
+  String get waitlistUserApproved => '候補 user approved';
+
+  @override
+  String get applicationApproved => '申請已核准';
+
+  @override
+  String get approvalFailed => '核准失敗';
+
+  @override
+  String get applicationRejectedSuccess => '申請已拒絕';
+
+  @override
+  String get rejectionFailed => '拒絕失敗';
+
+  @override
+  String get revokeApprovalAndReturnToPending => '撤銷核准並返回待處理';
+
+  @override
+  String get revokeRejectionAndReturnToPending => '撤銷拒絕並返回待處理';
+
+  @override
   String get revokeApprovalTitle => '撤銷核准？';
 
   @override
   String get revokeRejectionTitle => '撤銷拒絕？';
+
+  @override
+  String get enterReasonHint => '輸入原因...';
+
+  @override
+  String get returnToPendingButton => '返回待處理';
+
+  @override
+  String get approvalRevoked => '核准已撤銷';
+
+  @override
+  String get rejectionRevoked => '拒絕已撤銷';
+
+  @override
+  String get revokeApprovalSuccess => '核准已撤銷 and returned to pending';
+
+  @override
+  String get revokeRejectionSuccess => '拒絕已撤銷 and returned to pending';
 
   @override
   String get revokeApprovalFailed => '撤銷核准失敗';
@@ -10870,10 +11293,43 @@ class L10nZhTw extends L10nZh {
   String get userProfileLoadFailed => '載入用戶資料失敗';
 
   @override
+  String get gameProfileInfoMissing => 'Game profile info is missing';
+
+  @override
+  String get approveWaitlistUser => '核准';
+
+  @override
+  String get returnWaitlistToPending => '返回待處理';
+
+  @override
+  String get cancellationReasonTitle => '取消原因';
+
+  @override
+  String get viewReason => '檢視原因';
+
+  @override
+  String get noCancellationReasonRecorded => '無取消原因紀錄';
+
+  @override
   String get closeButton => '關閉';
 
   @override
+  String get detailButton => '詳細資訊';
+
+  @override
+  String get editButton => '編輯';
+
+  @override
   String get deleteButton => '刪除';
+
+  @override
+  String get capacityExceededTitle => '由於容量已滿無法核准';
+
+  @override
+  String get eventInfoFetchFailed => '失敗： fetch event info';
+
+  @override
+  String get capacityCheckFailed => '容量檢查失敗';
 
   @override
   String get noBlockedUsersSet => '未設定封鎖用戶';
@@ -10981,16 +11437,246 @@ class L10nZhTw extends L10nZh {
   String get noAvailableImages => '沒有可用的圖片';
 
   @override
+  String get groupTitle => '群組s';
+
+  @override
+  String get editGeneralAnnouncementsTooltip => '編輯 general announcements';
+
+  @override
+  String get groupManagement => '群組管理';
+
+  @override
+  String get createGroup => '建立群組';
+
+  @override
+  String get noGroupsYet => '暫無群組';
+
+  @override
+  String get createGroupDescription => '建立群組（隊伍）\n用於團隊活動';
+
+  @override
+  String get viewUnassignedParticipants => '檢視 unassigned participants';
+
+  @override
+  String get generalAnnouncements => '公告';
+
+  @override
+  String get visibleToAllParticipants => '對所有參與者可見';
+
+  @override
+  String get editAction => '編輯';
+
+  @override
+  String get addMemberAction => '新增成員';
+
+  @override
+  String get deleteAction => '刪除';
+
+  @override
   String get groupDescriptionLabel => '群組說明';
 
   @override
   String get groupAnnouncementsLabel => '群組公告';
 
   @override
+  String get noMembersInGroup => '否 members';
+
+  @override
+  String get addMemberFromMenuHint => '從選單新增成員';
+
+  @override
+  String get addToGroup => '新增至群組';
+
+  @override
+  String get failedToRemoveParticipant => '移除參與者失敗';
+
+  @override
+  String get failedToAddParticipant => '新增參與者失敗';
+
+  @override
+  String get noParticipantsToAdd => '無可新增的參與者';
+
+  @override
+  String get generalAnnouncementsUpdated => 'General announcements updated';
+
+  @override
+  String get editGeneralAnnouncementsTitle => '編輯公告';
+
+  @override
+  String get generalAnnouncementsLabel => '公告';
+
+  @override
+  String get generalAnnouncementsHint =>
+      '例如：, Event start time has been changed by 30 minutes';
+
+  @override
+  String get createNewGroup => '建立新群組';
+
+  @override
   String get groupNameLabel => '群組名稱';
 
   @override
+  String get groupNameHint => '例如：, Team A';
+
+  @override
+  String get groupDescriptionOptional => '群組描述 (Optional)';
+
+  @override
+  String get groupDescriptionHint => '例如：, Attack team members';
+
+  @override
+  String get createAction => '建立';
+
+  @override
+  String get pleaseEnterGroupName => 'Please enter a group name';
+
+  @override
+  String get failedToCreateGroup => '建立群組失敗';
+
+  @override
+  String get editGroup => '編輯群組';
+
+  @override
+  String get groupAnnouncementsOptional => '群組公告';
+
+  @override
+  String get groupAnnouncementsHint => '例如：, Next practice at 7 PM';
+
+  @override
+  String get updateAction => '更新';
+
+  @override
+  String get failedToUpdateGroup => '更新群組失敗';
+
+  @override
+  String get cannotDeleteGroup => '無法刪除群組';
+
+  @override
+  String get cannotDeleteGroupReason => '為保護資料，無法刪除有相關比賽紀錄的群組。';
+
+  @override
+  String get deleteGroupHint => '如需刪除，請先刪除相關比賽紀錄。';
+
+  @override
+  String get understoodAction => '確定';
+
+  @override
+  String get goToMatchManagement => '前往比賽管理';
+
+  @override
+  String get deleteGroupTitle => '刪除群組';
+
+  @override
+  String get failedToDeleteGroup => '刪除群組失敗';
+
+  @override
+  String get gameInfoNotFound => '未找到遊戲資訊';
+
+  @override
+  String get failedToShowGameProfile => '失敗： show game profile';
+
+  @override
+  String get collapseText => '收合';
+
+  @override
+  String get showMoreText => '顯示更多';
+
+  @override
+  String get unassignedParticipantsDialogTitle => '未分配的參與者';
+
+  @override
+  String get approvedNotAssignedDescription => '未分配到群組的已核准參與者：';
+
+  @override
+  String get createGroupForParticipantsHint => '建立群組並分配這些參與者';
+
+  @override
+  String get defaultUserName => '使用者';
+
+  @override
+  String get sortNewest => '最新 first';
+
+  @override
+  String get sortOldest => '最舊 first';
+
+  @override
+  String get sortReportCount => 'By report count';
+
+  @override
+  String get sortPendingReports => '待處理 reports first';
+
+  @override
+  String get sortStatus => 'By status';
+
+  @override
+  String get matchResultTitle => '比賽結果s';
+
+  @override
+  String get matchResultLabel => '比賽結果';
+
+  @override
+  String get showPendingReportsOnly => '僅顯示待處理的檢舉';
+
+  @override
+  String get addMatch => '新增比賽';
+
+  @override
+  String get noPendingReports => '無待處理的檢舉';
+
+  @override
+  String get problemMatchesDescription =>
+      '比賽es with problems will be displayed here';
+
+  @override
+  String get teamMatchDescription =>
+      'Record and manage team (group) match results';
+
+  @override
+  String get individualMatchDescription =>
+      'Record and manage individual match results between participants';
+
+  @override
+  String get needTwoTeamsForMatch =>
+      'At least 2 teams (groups) are required to hold a match';
+
+  @override
+  String get needTwoParticipantsForMatch =>
+      'At least 2 participants are required to hold a match';
+
+  @override
+  String get needGroupsForTeamMatch =>
+      '群組s need to be created before holding team matches';
+
+  @override
+  String get goToGroupManagement => '前往群組管理';
+
+  @override
+  String get needParticipantsForMatch =>
+      '新增 participants to the event before starting matches';
+
+  @override
+  String get goToParticipantManagement => '前往參與者管理';
+
+  @override
+  String get changeStatus => '變更狀態';
+
+  @override
+  String get editResult => '編輯結果';
+
+  @override
+  String get inputResult => '輸入結果';
+
+  @override
   String get matchResultSaved => '比賽結果已儲存';
+
+  @override
+  String get changeStatusTitle => '變更狀態';
+
+  @override
+  String get matchReportsTitle => '比賽檢舉';
+
+  @override
+  String get noReportsForMatch => '否 reports for this match';
 
   @override
   String get deleteMatchTitle => '刪除比賽';
@@ -11050,7 +11736,49 @@ class L10nZhTw extends L10nZh {
   String get adminActionLabel => '營運處理';
 
   @override
+  String get violationTitle => '違規s';
+
+  @override
+  String get violationRecords => '違規紀錄';
+
+  @override
+  String get operationGuideTooltip => '操作指南';
+
+  @override
+  String get noViolationRecords => '無違規紀錄';
+
+  @override
+  String get noViolationReportsYet => '否 violation reports for this event yet';
+
+  @override
+  String get violationProcessButton => '處理違規';
+
+  @override
+  String get waitingAppealPeriod => 'Waiting for appeal period';
+
+  @override
+  String get processAppeal => '處理申訴';
+
+  @override
+  String get revertToPending => '還原為待處理';
+
+  @override
+  String get statusInvestigating => '調查中';
+
+  @override
+  String get statusResolved => '已解決';
+
+  @override
   String get retryButton => '重試';
+
+  @override
+  String get severityMinor => '輕微';
+
+  @override
+  String get severityModerate => '中等';
+
+  @override
+  String get severitySevere => '嚴重';
 
   @override
   String get violationTypeLabel => '違規類型 *';
@@ -11059,16 +11787,174 @@ class L10nZhTw extends L10nZh {
   String get severityLabel => '嚴重程度 *';
 
   @override
+  String get reportedAtLabel => '檢舉ed At';
+
+  @override
   String get statusLabel => '狀態';
+
+  @override
+  String get penaltyLabel => '處罰';
 
   @override
   String get notesLabel => '備註';
 
   @override
+  String get detailContentLabel => '詳細資訊:';
+
+  @override
+  String get processViolationTitle => '處理違規';
+
+  @override
+  String get penaltyContentLabel => '處罰 Content';
+
+  @override
+  String get penaltyContentHint => '例如：, 1 warning, 1 week suspension';
+
+  @override
+  String get notesOptionalLabel => '備註 (Optional)';
+
+  @override
+  String get processingNotesHint => '備註 about processing';
+
+  @override
   String get doneButtonText => '完成';
 
   @override
+  String get pleaseEnterPenalty => '請輸入處罰 content';
+
+  @override
+  String get violationProcessed => '違規已處理';
+
+  @override
+  String get processButton => '處理';
+
+  @override
+  String get deleteViolationRecordTitle => '刪除 違規 Record';
+
+  @override
+  String get importantCannotUndo =>
+      '⚠️ Important: This action cannot be undone';
+
+  @override
+  String get deleteViolationRecordConfirm =>
+      'Are you sure you want to permanently delete this violation record?';
+
+  @override
+  String get rejectViolationRecordTitle => '拒絕 違規 Record';
+
+  @override
+  String get aboutRejection => 'ℹ️ 關於拒絕';
+
+  @override
+  String get rejectViolationRecordConfirm =>
+      'Do you want to reject this violation record?';
+
+  @override
+  String get rejectReasonOptionalLabel => '拒絕原因 (Optional)';
+
+  @override
+  String get rejectReasonHint => 'Please describe the reason for rejection';
+
+  @override
+  String get violationRecordRejected =>
+      '違規 record rejected. Related parties will be notified.';
+
+  @override
+  String get reporterLabel => '檢舉者:';
+
+  @override
   String get gameProfileNotFound => '找不到遊戲個人檔案';
+
+  @override
+  String get selectGameTitle => '選擇遊戲';
+
+  @override
+  String get violationManagementGuide => '違規管理指南';
+
+  @override
+  String get guideBasicOperations => '📝 基本操作';
+
+  @override
+  String get guideCardButtonsDesc =>
+      'Explanation of each button on the violation record card.';
+
+  @override
+  String get guideImportantOperations => '⚠️ 重要操作';
+
+  @override
+  String get guideRestoreFeature => '🔄 還原 Feature';
+
+  @override
+  String get guideDetailTitle => '詳細資訊';
+
+  @override
+  String get guideDetailDesc =>
+      '檢視 detailed information about the violation record.';
+
+  @override
+  String get guideEditTitle => '編輯';
+
+  @override
+  String get guideEditDesc => '編輯 violation type, severity, description, etc.';
+
+  @override
+  String get guideProcessTitle => '處理';
+
+  @override
+  String get guideProcessDesc =>
+      '確認 the violation, record a penalty, and mark as resolved.';
+
+  @override
+  String get guideCautionOperations =>
+      'Please execute the following operations carefully.';
+
+  @override
+  String get guideRejectTitle => '拒絕';
+
+  @override
+  String get guideRejectDesc =>
+      'Use when judged inappropriate as a violation. Record remains but marked as \'拒絕ed\'.';
+
+  @override
+  String get guideDeleteTitle => '刪除';
+
+  @override
+  String get guideMistakeRecovery => 'How to handle mistakes.';
+
+  @override
+  String get guideRecoveryTitle => '還原';
+
+  @override
+  String get guideRecoveryDesc =>
+      '還原 processed/rejected records to pending status. 刪除d records cannot be restored.';
+
+  @override
+  String get guideRecoveryHint =>
+      'Tip: Use the \'還原\' button to undo accidental processing or rejection';
+
+  @override
+  String get restoreViolationRecordTitle => '還原違規紀錄';
+
+  @override
+  String get restoreReasonOptionalLabel => '還原 Reason (Optional)';
+
+  @override
+  String get restoreReasonHint => 'Please describe the reason for restoration';
+
+  @override
+  String get violationRecordRestored => '違規 record restored';
+
+  @override
+  String get restoreButton => '還原';
+
+  @override
+  String get appealSubmittedWaiting => '申訴已提交 - 等待中';
+
+  @override
+  String get processableStatus => 'Ready to 處理';
+
+  @override
+  String get appealDeadlineExpired => '申訴截止時間已過 - 準備處理';
 
   @override
   String get gameProfileTitle => '遊戲資料';
@@ -11113,10 +11999,40 @@ class L10nZhTw extends L10nZh {
   String get snsAccountsTitle => '社群帳號';
 
   @override
+  String get userDetailsTitle => '使用者詳情';
+
+  @override
+  String get userListTitle => '使用者列表';
+
+  @override
+  String get searchByUsernameOrGameIdHint => '按使用者名稱或遊戲ID搜尋...';
+
+  @override
+  String get noParticipantsYet => '暫無參與者';
+
+  @override
   String get gameExperience => '遊戲經歷';
 
   @override
   String get clanLabel => '戰隊';
+
+  @override
+  String get eventDefault => 'Event';
+
+  @override
+  String get reportViolation => '檢舉違規';
+
+  @override
+  String get profileDisplaySection => '個人資料顯示';
+
+  @override
+  String get gameProfileDescription => 'In-game profile information';
+
+  @override
+  String get userProfileLabel => '使用者個人資料';
+
+  @override
+  String get userProfileDescription => 'In-app user information';
 
   @override
   String get visibilityPrivate => '私密';
@@ -11308,7 +12224,88 @@ class L10nZhTw extends L10nZh {
   String get cannotRevertToDraftTitle => '無法還原為草稿';
 
   @override
+  String get selectedDateLabel => '所選日期';
+
+  @override
+  String get backToCalendar => '返回行事曆';
+
+  @override
+  String get weekdayMonday => '星期一';
+
+  @override
+  String get weekdayTuesday => '星期二';
+
+  @override
+  String get weekdayWednesday => '星期三';
+
+  @override
+  String get weekdayThursday => '星期四';
+
+  @override
+  String get weekdayFriday => '星期五';
+
+  @override
+  String get weekdaySaturday => '星期六';
+
+  @override
+  String get weekdaySunday => '星期日';
+
+  @override
+  String get weekdayShortMon => '一';
+
+  @override
+  String get weekdayShortTue => '二';
+
+  @override
+  String get weekdayShortWed => '三';
+
+  @override
+  String get weekdayShortThu => '四';
+
+  @override
+  String get weekdayShortFri => '五';
+
+  @override
+  String get weekdayShortSat => '六';
+
+  @override
+  String get weekdayShortSun => '日';
+
+  @override
+  String get eventsLabel => '活動';
+
+  @override
+  String get displayFilter => '顯示篩選';
+
+  @override
+  String get applyButton => '申請';
+
+  @override
+  String get publishedEventsFilter => '已發布的活動';
+
+  @override
+  String get draftEventsFilter => '草稿活動';
+
+  @override
+  String get completedEventsFilter => '已完成的活動';
+
+  @override
+  String get hostEventCalendar => '主辦活動行事曆';
+
+  @override
+  String get noEventsOnSelectedDate => '所選日期無活動';
+
+  @override
+  String get userNotLoggedIn => '使用者未登入';
+
+  @override
+  String get participatingEvents => '參與中的活動';
+
+  @override
   String get noParticipatingEvents => '沒有參與中的活動';
+
+  @override
+  String get tryJoinNewEvents => 'Why not join a new event?';
 
   @override
   String get createEventTitle => '建立新活動';
@@ -11546,6 +12543,48 @@ class L10nZhTw extends L10nZh {
   String get registrationDeadlineSectionLabel => '報名截止';
 
   @override
+  String get matchDetailTitle => '比賽詳情s';
+
+  @override
+  String get recommendedEventsTitle => '推薦活動';
+
+  @override
+  String get profileImageCropTitle => 'Adjust 個人資料 圖片';
+
+  @override
+  String get removeParticipantDialogTitle => '移除參與者';
+
+  @override
+  String get rejectParticipantDialogTitle => '拒絕申請';
+
+  @override
+  String get selectFromPastEventsTitle => '從過去的活動中選擇';
+
+  @override
+  String get matchReportManagementTitle => '比賽檢舉管理';
+
+  @override
+  String get paymentManagementTitle => '付款管理';
+
+  @override
+  String get participantManagementTitle => '參與者管理';
+
+  @override
+  String get groupInfoTitle => '群組資訊';
+
+  @override
+  String get participantListTitle => '參與者列表';
+
+  @override
+  String get violationReportMenuTitle => '檢舉違規';
+
+  @override
+  String get approveApplicationDialogTitle => '核准此申請？';
+
+  @override
+  String get rejectApplicationDialogTitle => '拒絕此申請？';
+
+  @override
   String get applicationMessageLabel => '申請留言:';
 
   @override
@@ -11603,6 +12642,28 @@ class L10nZhTw extends L10nZh {
   String get doneButtonLabel => '完成';
 
   @override
+  String get noRecommendedEvents => '無推薦活動';
+
+  @override
+  String get registerFavoriteGamesHint =>
+      'Register your favorite games\nto see related events';
+
+  @override
+  String get participantMenuTitle => '參與者選單';
+
+  @override
+  String get loginRequired => 'Login required';
+
+  @override
+  String get groupInfoDescription => 'Check your group and members';
+
+  @override
+  String get participantListDescription => '檢視 event participants';
+
+  @override
+  String get violationReportDescription => '檢舉 misconduct or violations';
+
+  @override
   String get participantMode => '參與者模式';
 
   @override
@@ -11636,13 +12697,82 @@ class L10nZhTw extends L10nZh {
   String get managementVisibilityLimited => '限定';
 
   @override
+  String get addInviteMembersDescription => '新增要邀請參加此活動的成員';
+
+  @override
+  String get addInviteMembersEmptyMessage => '新增要邀請的成員';
+
+  @override
+  String get addInviteMembersButton => '新增邀請成員';
+
+  @override
+  String get eventDateAfterNow => '活動日期必須是未來的日期';
+
+  @override
+  String get changeToRevertToDraft => '變更為草稿';
+
+  @override
+  String get participantsWillBeNotified => '將通知參與者';
+
+  @override
+  String get eventUpdatedSuccess => 'Event updated successfully';
+
+  @override
+  String get changesSavedSuccess => '變更已儲存';
+
+  @override
+  String get draftSavedSuccess => '草稿已儲存';
+
+  @override
   String get validationEventNameRequired => '請輸入活動名稱';
 
   @override
   String get validationEventDescriptionRequired => '請輸入活動說明';
 
   @override
+  String get validationRulesRequired => 'Please enter participation rules';
+
+  @override
+  String get validationGameRequired => 'Please select a game';
+
+  @override
+  String get validationPlatformRequired => 'Please select a platform';
+
+  @override
+  String get validationEventDateRequired => 'Please set event date';
+
+  @override
+  String get validationEventDateFuture => '活動日期必須是未來的日期';
+
+  @override
+  String get validationRegistrationDeadlineRequired =>
+      'Please set registration deadline';
+
+  @override
   String get validationMaxParticipantsRequired => '請輸入最大參與人數';
+
+  @override
+  String get validationMaxParticipantsPositive =>
+      'Max participants must be a positive integer';
+
+  @override
+  String get validationInviteMembersRequired => 'Please add invite members';
+
+  @override
+  String get validationPrizeContentRequired => 'Please enter prize content';
+
+  @override
+  String get validationManagerRequiredForPrize =>
+      'Please add a manager when setting prizes';
+
+  @override
+  String get validationStreamingUrlRequired => 'Please enter streaming URL';
+
+  @override
+  String get atLeastOneStreamingUrlRequired => '請輸入至少一個直播URL';
+
+  @override
+  String get cautionRequired => '需要注意';
 
   @override
   String get eventCancellationDialogTitle => '確認取消活動';
@@ -11823,6 +12953,105 @@ class L10nZhTw extends L10nZh {
 
   @override
   String get eventChangeSummaryNoChanges => '無變更';
+
+  @override
+  String get eventChangeTypeEventDate => 'Event Date';
+
+  @override
+  String get eventChangeTypeRegistrationDeadline => 'Registration Deadline';
+
+  @override
+  String get eventChangeTypeMaxParticipants => 'Max 參與者';
+
+  @override
+  String get eventChangeTypeHasParticipationFee => 'Participation Fee';
+
+  @override
+  String get eventChangeTypeParticipationFeeText => 'Fee 詳細資訊';
+
+  @override
+  String get eventChangeTypeRules => 'Rules';
+
+  @override
+  String get eventChangeTypeEventTags => 'Event Tags';
+
+  @override
+  String get eventChangeTypeContactInfo => 'Contact Info';
+
+  @override
+  String get eventChangeTypeVisibility => 'Visibility';
+
+  @override
+  String get eventChangeTypeEventPassword => 'Event Password';
+
+  @override
+  String get eventChangeTypePlatforms => 'Platforms';
+
+  @override
+  String get eventChangeTypeGameId => 'Game';
+
+  @override
+  String get eventChangeTypeStatus => 'Event 狀態';
+
+  @override
+  String get eventChangeTypeName => 'Event Name';
+
+  @override
+  String get eventChangeTypeSubtitle => 'Subtitle';
+
+  @override
+  String get eventChangeTypeDescription => 'Description';
+
+  @override
+  String get eventChangeTypeAdditionalInfo => '附加資訊';
+
+  @override
+  String get eventChangeTypeHasStreaming => 'Streaming';
+
+  @override
+  String get eventChangeTypeStreamingUrls => 'Streaming URLs';
+
+  @override
+  String get eventChangeTypePolicy => 'Policy';
+
+  @override
+  String get eventChangeTypeManagerIds => 'Co-editors';
+
+  @override
+  String get eventChangeTypeImageUrl => 'Event 圖片';
+
+  @override
+  String get eventChangeTypeLanguage => 'Language';
+
+  @override
+  String get eventChangeTypeBlockedUserIds => 'Blocked 使用者s';
+
+  @override
+  String get eventChangeTypeSponsorIds => 'Sponsors';
+
+  @override
+  String get eventChangeTypeHasPrize => 'Prize';
+
+  @override
+  String get eventChangeTypePrizeContent => 'Prize Content';
+
+  @override
+  String get eventChangeTypeParticipationFeeSupplement => 'Fee Supplement';
+
+  @override
+  String get eventChangeTypeGameName => 'Game Name';
+
+  @override
+  String get eventChangeNotSet => '(否t set)';
+
+  @override
+  String get eventChangeYes => '是';
+
+  @override
+  String get eventChangeNo => '否';
+
+  @override
+  String get listSeparator => ', ';
 
   @override
   String get notificationNewFollowerTitle => '新關注者';
@@ -13727,6 +14956,45 @@ class L10nZhTw extends L10nZh {
   String get optionalLabel => '可選';
 
   @override
+  String get takePhotoLabel => 'Take Photo';
+
+  @override
+  String get selectFromGalleryLabel => '選擇 from Gallery';
+
+  @override
+  String get imageDeletedMessage => '圖片已刪除';
+
+  @override
+  String get deleteImageConfirmMessage => '刪除此圖片？此操作無法復原。';
+
+  @override
+  String get replaceImageDescription =>
+      'Replace with a new image (old image will be deleted)';
+
+  @override
+  String get deleteImageDescription => '永久刪除此圖片';
+
+  @override
+  String get replaceImageInfo =>
+      'The old image will be automatically deleted and replaced with a new one';
+
+  @override
+  String get imageReplacedMessage => '圖片已替換 (old image automatically deleted)';
+
+  @override
+  String get imageLoadFailedMessage => '失敗： load image';
+
+  @override
+  String get uploadDateTimeLabel => '上傳 Date';
+
+  @override
+  String get replaceAllLabel => 'Replace All';
+
+  @override
+  String get noEvidenceImagesDescription =>
+      '上傳 images using the \'新增 圖片\' button';
+
+  @override
   String get replaceImageDialogDescription => '舊圖片將自動刪除並替換為新圖片';
 
   @override
@@ -13916,6 +15184,81 @@ class L10nZhTw extends L10nZh {
   String get validationEventPasswordInvalidChars => '密碼只能包含字母數字和常用符號';
 
   @override
+  String get participantMatchYourMatch => '您的比賽';
+
+  @override
+  String get participantMatchInfoTitle => '比賽資訊';
+
+  @override
+  String get participantMatchFormatLabel => '格式';
+
+  @override
+  String get participantMatchTeamLabel => '隊伍';
+
+  @override
+  String get participantMatchParticipantsLabel => '參與者';
+
+  @override
+  String get participantMatchWinnerLabel => '獲勝者';
+
+  @override
+  String get participantMatchAdminNoticeTitle => '主辦者通知';
+
+  @override
+  String get participantMatchAdminNoticeDesc => '主辦者的重要資訊';
+
+  @override
+  String get participantMatchYourReportStatus => '您的回報狀態';
+
+  @override
+  String get participantMatchAdminResponse => '管理員回覆';
+
+  @override
+  String get participantMatchEvidenceDesc => '主辦者上傳的比賽證據圖片';
+
+  @override
+  String get participantMatchReportProblemTitle => '回報問題';
+
+  @override
+  String get participantMatchReportProblemDesc => '如果比賽結果有誤，您可以向主辦者回報';
+
+  @override
+  String get participantMatchReportProblemButton => '回報問題';
+
+  @override
+  String get participantMatchReportDialogTitle => '回報問題';
+
+  @override
+  String get participantMatchIssueTypeTitle => '問題類型';
+
+  @override
+  String get participantMatchDetailDescHint => '請詳細描述問題...';
+
+  @override
+  String get participantMatchSubmitReport => '提交回報';
+
+  @override
+  String get participantMatchEnterDetailDesc => '請輸入詳細說明';
+
+  @override
+  String get participantMatchReportSuccess => '問題已回報。主辦者將審核並相應處理。';
+
+  @override
+  String get participantMatchIssueScoreError => '比分錯誤';
+
+  @override
+  String get participantMatchIssueWinnerError => '獲勝者判定錯誤';
+
+  @override
+  String get participantMatchIssueParticipantError => '參與者錯誤';
+
+  @override
+  String get participantMatchIssueStatusError => '比賽狀態錯誤';
+
+  @override
+  String get participantMatchIssueOther => '其他';
+
+  @override
   String get recordMethodLabel => '記錄方式';
 
   @override
@@ -14038,6 +15381,26 @@ class L10nZhTw extends L10nZh {
   }
 
   @override
+  String mutualFollowTabCount(int count) {
+    return 'Mutual ($count)';
+  }
+
+  @override
+  String followingTabCount(int count) {
+    return '追蹤中 ($count)';
+  }
+
+  @override
+  String followersTabCount(int count) {
+    return '粉絲 ($count)';
+  }
+
+  @override
+  String dataFetchFailedWithError(String error) {
+    return '失敗： fetch data: $error';
+  }
+
+  @override
   String gameCount(int count) {
     return '$count個';
   }
@@ -14045,6 +15408,11 @@ class L10nZhTw extends L10nZh {
   @override
   String gameProfileConfigured(int configured, int total) {
     return '$configured/$total 遊戲已設定';
+  }
+
+  @override
+  String lastUpdated(String date) {
+    return '更新d: $date';
   }
 
   @override
@@ -14065,6 +15433,26 @@ class L10nZhTw extends L10nZh {
   @override
   String deleteFailed(String error) {
     return '刪除失敗：$error';
+  }
+
+  @override
+  String versionLabel(String version) {
+    return '版本 $version';
+  }
+
+  @override
+  String signOutFailed(String error) {
+    return '失敗： sign out: $error';
+  }
+
+  @override
+  String failedToOpenPage(String page) {
+    return '失敗： open $page page.';
+  }
+
+  @override
+  String errorOpeningPage(String page) {
+    return '錯誤 occurred while opening $page page.';
   }
 
   @override
@@ -14150,6 +15538,16 @@ class L10nZhTw extends L10nZh {
   @override
   String filteredEventCount(int filtered, int total) {
     return '$filtered個活動（共$total個）';
+  }
+
+  @override
+  String editProfileDescription(String gameName) {
+    return 'You can modify $gameName profile information';
+  }
+
+  @override
+  String deleteProfileConfirm(String gameName) {
+    return '刪除 $gameName profile?\n\n這也將從收藏中移除。\n\n此操作無法復原。';
   }
 
   @override
@@ -14278,6 +15676,41 @@ class L10nZhTw extends L10nZh {
   }
 
   @override
+  String errorLabel(String error) {
+    return '錯誤: $error';
+  }
+
+  @override
+  String applicationDateTime(String dateTime) {
+    return 'Applied: $dateTime';
+  }
+
+  @override
+  String messageLabel(String message) {
+    return '訊息: $message';
+  }
+
+  @override
+  String rejectionReasonLabel(String reason) {
+    return '拒絕ion reason: $reason';
+  }
+
+  @override
+  String userCancelledParticipation(String userName) {
+    return '$userName cancelled';
+  }
+
+  @override
+  String cancellationDateTimeLabel(String dateTime) {
+    return '已取消 at: $dateTime';
+  }
+
+  @override
+  String capacityExceededMessage(int current, int max) {
+    return '活動已滿 ($current/$max participants).\n\n請等待已核准的參與者退出後再核准。';
+  }
+
+  @override
   String memberCount(int count) {
     return '$count名成員';
   }
@@ -14315,6 +15748,131 @@ class L10nZhTw extends L10nZh {
   @override
   String cancellationErrorWithMessage(String error) {
     return '取消時發生錯誤: $error';
+  }
+
+  @override
+  String unassignedParticipantsWarning(int count) {
+    return '$count approved participants\nare not assigned to groups';
+  }
+
+  @override
+  String unassignedParticipantsTitle(int count) {
+    return '未分配的參與者 ($count)';
+  }
+
+  @override
+  String participantsCount(int count) {
+    return '參與者: $count';
+  }
+
+  @override
+  String selectGroupToAddParticipant(String name) {
+    return '選擇 group to add $name';
+  }
+
+  @override
+  String membersCount(int count) {
+    return '$count people';
+  }
+
+  @override
+  String participantRemovedFromGroup(String participantName, String groupName) {
+    return '移除d $participantName from $groupName';
+  }
+
+  @override
+  String participantAddedToGroup(String participantName, String groupName) {
+    return '新增ed $participantName to $groupName';
+  }
+
+  @override
+  String addMemberToGroup(String groupName) {
+    return '新增 member to $groupName';
+  }
+
+  @override
+  String failedToUpdateGeneralAnnouncements(String error) {
+    return '更新失敗 general announcements: $error';
+  }
+
+  @override
+  String groupCreated(String name) {
+    return '建立d group \"$name\"';
+  }
+
+  @override
+  String failedToCreateGroupWithError(String error) {
+    return '建立群組失敗: $error';
+  }
+
+  @override
+  String groupUpdated(String name) {
+    return '更新d group \"$name\"';
+  }
+
+  @override
+  String failedToUpdateGroupWithError(String error) {
+    return '更新群組失敗: $error';
+  }
+
+  @override
+  String groupHasRelatedMatches(String groupName, int matchCount) {
+    return '\"$groupName\" is linked to $matchCount match records.';
+  }
+
+  @override
+  String deleteGroupConfirmation(String name) {
+    return '刪除 \"$name\"?\n此操作無法復原。';
+  }
+
+  @override
+  String groupDeleted(String name) {
+    return '刪除d group \"$name\"';
+  }
+
+  @override
+  String failedToLoadParticipants(Object error) {
+    return '載入參與者失敗: $error';
+  }
+
+  @override
+  String failedToLoadData(Object error) {
+    return '載入資料失敗: $error';
+  }
+
+  @override
+  String confirmReportsCount(Object count) {
+    return 'Check reports ($count)';
+  }
+
+  @override
+  String winnerLabel(Object winner) {
+    return '獲勝者: $winner';
+  }
+
+  @override
+  String matchRegisteredMessage(Object name) {
+    return '比賽 \"$name\" has been registered';
+  }
+
+  @override
+  String failedToRegisterMatch(Object error) {
+    return '失敗： register match: $error';
+  }
+
+  @override
+  String failedToSaveMatchResult(Object error) {
+    return '儲存比賽結果失敗: $error';
+  }
+
+  @override
+  String statusChangedMessage(Object status) {
+    return '狀態已變更 to \"$status\"';
+  }
+
+  @override
+  String failedToChangeStatus(Object error) {
+    return '變更狀態失敗: $error';
   }
 
   @override
@@ -14358,6 +15916,81 @@ class L10nZhTw extends L10nZh {
   }
 
   @override
+  String failedToGetViolationRecords(Object error) {
+    return '失敗： get violation records: $error';
+  }
+
+  @override
+  String failedToLoadDataError(Object error) {
+    return '載入資料失敗: $error';
+  }
+
+  @override
+  String reportedAt(Object dateTime) {
+    return '檢舉ed: $dateTime';
+  }
+
+  @override
+  String penaltyValue(Object penalty) {
+    return '處罰: $penalty';
+  }
+
+  @override
+  String violationDetailTitle(Object type) {
+    return '違規詳情s - $type';
+  }
+
+  @override
+  String violatorLabel(Object name) {
+    return '違規者: $name';
+  }
+
+  @override
+  String realNameLabel(Object name) {
+    return 'Real name: $name';
+  }
+
+  @override
+  String failedToProcess(Object error) {
+    return '處理失敗: $error';
+  }
+
+  @override
+  String failedToDelete(Object error) {
+    return '刪除失敗: $error';
+  }
+
+  @override
+  String failedToReject(Object error) {
+    return '拒絕失敗: $error';
+  }
+
+  @override
+  String failedToGetGameProfile(Object error) {
+    return '失敗： get game profile: $error';
+  }
+
+  @override
+  String restoreViolationRecordConfirm(Object status) {
+    return 'Do you want to restore this violation record to pending status?\nCurrent status: $status';
+  }
+
+  @override
+  String failedToRestore(Object error) {
+    return '還原失敗: $error';
+  }
+
+  @override
+  String appealPeriodRemaining(Object hours) {
+    return '申訴期 - $hours 小時剩餘';
+  }
+
+  @override
+  String deadlineLabel(Object dateTime) {
+    return 'Deadline: $dateTime';
+  }
+
+  @override
   String discordIdCopied(Object discordId) {
     return '已複製 Discord ID「$discordId」';
   }
@@ -14383,6 +16016,11 @@ class L10nZhTw extends L10nZh {
   }
 
   @override
+  String currentlyParticipantsApplied(int count) {
+    return '目前 $count 名參與者已申請';
+  }
+
+  @override
   String participantsRequireCarefulChange(Object count) {
     return '目前有 $count 名參與者。變更需要謹慎考慮。';
   }
@@ -14390,6 +16028,36 @@ class L10nZhTw extends L10nZh {
   @override
   String cannotRevertToDraftMessage(Object count) {
     return '有 $count 名參與者，無法還原為草稿。';
+  }
+
+  @override
+  String eventLoadFailed(Object error) {
+    return '失敗： load events: $error';
+  }
+
+  @override
+  String monthDayFormat(Object day, Object month) {
+    return '$month/$day';
+  }
+
+  @override
+  String yearWeekdayFormat(Object weekday, Object year) {
+    return '$year $weekday';
+  }
+
+  @override
+  String yearMonthFormat(Object month, Object year) {
+    return '$month/$year';
+  }
+
+  @override
+  String eventsOnDate(Object day, Object month) {
+    return '活動 on $month/$day';
+  }
+
+  @override
+  String participantCountFormat(Object current, Object max) {
+    return '$current/$max';
   }
 
   @override
@@ -14634,6 +16302,25 @@ class L10nZhTw extends L10nZh {
   @override
   String eventChangeSummaryMinor(Object count) {
     return '輕微變更$count項';
+  }
+
+  @override
+  String eventChangeDisplayFormat(
+    String typeName,
+    String oldValue,
+    String newValue,
+  ) {
+    return '$typeName: \"$oldValue\" → \"$newValue\"';
+  }
+
+  @override
+  String eventChangeValueChanged(String oldValue, String newValue) {
+    return '變更d from \"$oldValue\" to \"$newValue\"';
+  }
+
+  @override
+  String eventChangeDetailBullet(String text) {
+    return '• $text';
   }
 
   @override
@@ -15498,6 +17185,51 @@ class L10nZhTw extends L10nZh {
   }
 
   @override
+  String imageLoadError(Object error) {
+    return '失敗： load images: $error';
+  }
+
+  @override
+  String imagesUploadedMessage(Object count) {
+    return '$count images uploaded';
+  }
+
+  @override
+  String imageUploadError(Object error) {
+    return '失敗： upload image: $error';
+  }
+
+  @override
+  String imageDeleteError(Object error) {
+    return '刪除失敗 image: $error';
+  }
+
+  @override
+  String imageReplaceError(Object error) {
+    return '失敗： replace image: $error';
+  }
+
+  @override
+  String replaceAllImagesConfirmMessage(Object count) {
+    return '刪除 all $count current images and replace with new ones?\n\n此操作無法復原。';
+  }
+
+  @override
+  String imageSelectError(Object error) {
+    return '失敗： select image: $error';
+  }
+
+  @override
+  String imagesReplacedMessage(Object count) {
+    return 'Replaced with $count new images';
+  }
+
+  @override
+  String batchReplaceError(Object error) {
+    return '失敗： batch replace images: $error';
+  }
+
+  @override
   String imagesUploadedSuccess(Object count) {
     return '已上傳$count張圖片';
   }
@@ -15665,6 +17397,46 @@ class L10nZhTw extends L10nZh {
   @override
   String validationForbiddenContent(Object fieldName) {
     return '$fieldName包含不適當的內容';
+  }
+
+  @override
+  String participantMatchCompletedAt(Object dateTime) {
+    return '完成時間: $dateTime';
+  }
+
+  @override
+  String participantMatchReportedAt(Object dateTime) {
+    return '回報時間: $dateTime';
+  }
+
+  @override
+  String participantMatchUploaderLabel(Object name) {
+    return '上傳者: $name';
+  }
+
+  @override
+  String participantMatchUploadedAtLabel(Object dateTime) {
+    return '上傳時間: $dateTime';
+  }
+
+  @override
+  String participantMatchMatchLabel(Object name) {
+    return '比賽: $name';
+  }
+
+  @override
+  String participantMatchParticipantsDialogLabel(Object names) {
+    return '參與者: $names';
+  }
+
+  @override
+  String participantMatchReportFailed(Object error) {
+    return '回報提交失敗: $error';
+  }
+
+  @override
+  String participantMatchAndMore(Object count, Object names) {
+    return '$names等$count人';
   }
 
   @override
