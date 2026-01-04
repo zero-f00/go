@@ -289,7 +289,9 @@ class PushNotificationService {
         case 'eventApproved':
         case 'eventRejected':
         case 'eventWaitlist':
-          // イベント承認/拒否/キャンセル待ちの場合、eventIdがあればイベント詳細画面へ
+        case 'eventCancelled':
+        case 'eventCancelProcessed':
+          // イベント関連通知の場合、eventIdがあればイベント詳細画面へ
           final eventId = data['eventId'] as String?;
           if (eventId != null && eventId.isNotEmpty) {
             NavigationService.instance.navigateToEventDetail(eventId);

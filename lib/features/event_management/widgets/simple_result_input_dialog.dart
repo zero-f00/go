@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../data/models/match_result_model.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// シンプルな結果入力タイプ
 enum SimpleResultType {
@@ -12,28 +13,6 @@ enum SimpleResultType {
 }
 
 extension SimpleResultTypeExtension on SimpleResultType {
-  String get displayName {
-    switch (this) {
-      case SimpleResultType.score:
-        return 'スコア制';
-      case SimpleResultType.ranking:
-        return '順位制';
-      case SimpleResultType.winLoss:
-        return '勝敗制';
-    }
-  }
-
-  String get description {
-    switch (this) {
-      case SimpleResultType.score:
-        return '各参加者のスコアを記録';
-      case SimpleResultType.ranking:
-        return '各参加者の順位を記録（1位、2位、3位...)';
-      case SimpleResultType.winLoss:
-        return '各参加者の勝敗を記録';
-    }
-  }
-
   IconData get icon {
     switch (this) {
       case SimpleResultType.score:
@@ -54,17 +33,6 @@ enum SimpleWinLossResult {
 }
 
 extension SimpleWinLossResultExtension on SimpleWinLossResult {
-  String get displayName {
-    switch (this) {
-      case SimpleWinLossResult.win:
-        return '勝ち';
-      case SimpleWinLossResult.loss:
-        return '負け';
-      case SimpleWinLossResult.draw:
-        return '引き分け';
-    }
-  }
-
   Color get color {
     switch (this) {
       case SimpleWinLossResult.win:
@@ -139,6 +107,7 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Dialog(
       backgroundColor: AppColors.backgroundLight,
       shape: RoundedRectangleBorder(
@@ -153,17 +122,17 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildHeader(),
+              _buildHeader(l10n),
               const SizedBox(height: AppDimensions.spacingL),
-              _buildMatchNameInput(),
+              _buildMatchNameInput(l10n),
               const SizedBox(height: AppDimensions.spacingL),
-              _buildResultTypeToggles(),
+              _buildResultTypeToggles(l10n),
               const SizedBox(height: AppDimensions.spacingL),
-              Expanded(child: _buildResultInput()),
+              Expanded(child: _buildResultInput(l10n)),
               const SizedBox(height: AppDimensions.spacingL),
-              _buildNotesInput(),
+              _buildNotesInput(l10n),
               const SizedBox(height: AppDimensions.spacingL),
-              _buildActionButtons(),
+              _buildActionButtons(l10n),
             ],
           ),
         ),
@@ -172,7 +141,7 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
   }
 
   /// ヘッダー
-  Widget _buildHeader() {
+  Widget _buildHeader(L10n l10n) {
     return Row(
       children: [
         Icon(
@@ -181,10 +150,10 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
           size: AppDimensions.iconL,
         ),
         const SizedBox(width: AppDimensions.spacingM),
-        const Expanded(
+        Expanded(
           child: Text(
-            '試合結果入力',
-            style: TextStyle(
+            l10n.matchResultInputTitle,
+            style: const TextStyle(
               fontSize: AppDimensions.fontSizeXL,
               fontWeight: FontWeight.w700,
               color: AppColors.textDark,
@@ -203,13 +172,13 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
   }
 
   /// 試合名入力
-  Widget _buildMatchNameInput() {
+  Widget _buildMatchNameInput(L10n l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '試合名',
-          style: TextStyle(
+        Text(
+          l10n.matchNameLabel,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeM,
             fontWeight: FontWeight.w600,
             color: AppColors.textDark,
@@ -219,7 +188,7 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
         TextFormField(
           controller: _matchNameController,
           decoration: InputDecoration(
-            hintText: '例: 第1回トーナメント決勝',
+            hintText: l10n.matchNameHint,
             filled: true,
             fillColor: AppColors.backgroundLight,
             border: OutlineInputBorder(
@@ -237,7 +206,7 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
           ),
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
-              return '試合名を入力してください';
+              return l10n.matchNameValidation;
             }
             return null;
           },
@@ -247,13 +216,13 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
   }
 
   /// 結果タイプトグル
-  Widget _buildResultTypeToggles() {
+  Widget _buildResultTypeToggles(L10n l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '記録方式',
-          style: TextStyle(
+        Text(
+          l10n.resultTypeLabel,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeM,
             fontWeight: FontWeight.w600,
             color: AppColors.textDark,
@@ -294,7 +263,7 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              type.displayName,
+                              _getResultTypeDisplayName(type, l10n),
                               style: TextStyle(
                                 fontSize: AppDimensions.fontSizeM,
                                 fontWeight: FontWeight.w600,
@@ -302,7 +271,7 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
                               ),
                             ),
                             Text(
-                              type.description,
+                              _getResultTypeDescription(type, l10n),
                               style: TextStyle(
                                 fontSize: AppDimensions.fontSizeS,
                                 color: AppColors.textDark.withValues(alpha: 0.7),
@@ -332,13 +301,35 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
     );
   }
 
+  String _getResultTypeDisplayName(SimpleResultType type, L10n l10n) {
+    switch (type) {
+      case SimpleResultType.score:
+        return l10n.resultTypeScore;
+      case SimpleResultType.ranking:
+        return l10n.resultTypeRanking;
+      case SimpleResultType.winLoss:
+        return l10n.resultTypeWinLoss;
+    }
+  }
+
+  String _getResultTypeDescription(SimpleResultType type, L10n l10n) {
+    switch (type) {
+      case SimpleResultType.score:
+        return l10n.resultTypeScoreDesc;
+      case SimpleResultType.ranking:
+        return l10n.resultTypeRankingDesc;
+      case SimpleResultType.winLoss:
+        return l10n.resultTypeWinLossDesc;
+    }
+  }
+
   /// 結果入力エリア
-  Widget _buildResultInput() {
+  Widget _buildResultInput(L10n l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '参加者の結果',
+          l10n.participantResultsLabel,
           style: const TextStyle(
             fontSize: AppDimensions.fontSizeM,
             fontWeight: FontWeight.w600,
@@ -359,7 +350,7 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
               itemBuilder: (context, index) {
                 final participantId = widget.participants[index];
                 final participantName = widget.participantNames[participantId] ?? participantId;
-                return _buildParticipantResultInput(participantId, participantName);
+                return _buildParticipantResultInput(participantId, participantName, l10n);
               },
             ),
           ),
@@ -369,7 +360,7 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
   }
 
   /// 参加者の結果入力
-  Widget _buildParticipantResultInput(String participantId, String participantName) {
+  Widget _buildParticipantResultInput(String participantId, String participantName, L10n l10n) {
     return Container(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
       padding: const EdgeInsets.all(AppDimensions.spacingM),
@@ -390,33 +381,33 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
             ),
           ),
           const SizedBox(height: AppDimensions.spacingS),
-          _buildResultInputByType(participantId),
+          _buildResultInputByType(participantId, l10n),
         ],
       ),
     );
   }
 
   /// 結果タイプ別の入力ウィジェット
-  Widget _buildResultInputByType(String participantId) {
+  Widget _buildResultInputByType(String participantId, L10n l10n) {
     switch (_selectedResultType) {
       case SimpleResultType.score:
-        return _buildScoreInput(participantId);
+        return _buildScoreInput(participantId, l10n);
       case SimpleResultType.ranking:
-        return _buildRankingInput(participantId);
+        return _buildRankingInput(participantId, l10n);
       case SimpleResultType.winLoss:
-        return _buildWinLossInput(participantId);
+        return _buildWinLossInput(participantId, l10n);
     }
   }
 
   /// スコア入力
-  Widget _buildScoreInput(String participantId) {
+  Widget _buildScoreInput(String participantId, L10n l10n) {
     return TextFormField(
       initialValue: _scores[participantId].toString(),
       keyboardType: TextInputType.number,
       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
       decoration: InputDecoration(
-        labelText: 'スコア',
-        suffixText: '点',
+        labelText: l10n.scoreLabel,
+        suffixText: l10n.pointsSuffix,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusS),
         ),
@@ -432,11 +423,11 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
   }
 
   /// 順位入力
-  Widget _buildRankingInput(String participantId) {
+  Widget _buildRankingInput(String participantId, L10n l10n) {
     return DropdownButtonFormField<int>(
       value: _rankings[participantId],
       decoration: InputDecoration(
-        labelText: '順位',
+        labelText: l10n.rankLabel,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusS),
         ),
@@ -449,7 +440,7 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
         final rank = index + 1;
         return DropdownMenuItem(
           value: rank,
-          child: Text('${rank}位'),
+          child: Text(l10n.rankPosition(rank)),
         );
       }),
       onChanged: (value) {
@@ -461,11 +452,11 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
   }
 
   /// 勝敗入力
-  Widget _buildWinLossInput(String participantId) {
+  Widget _buildWinLossInput(String participantId, L10n l10n) {
     return DropdownButtonFormField<SimpleWinLossResult>(
       value: _winLossResults[participantId],
       decoration: InputDecoration(
-        labelText: '結果',
+        labelText: l10n.winLossInputLabel,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusS),
         ),
@@ -488,7 +479,7 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
                 ),
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              Text(result.displayName),
+              Text(_getWinLossDisplayName(result, l10n)),
             ],
           ),
         );
@@ -501,14 +492,25 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
     );
   }
 
+  String _getWinLossDisplayName(SimpleWinLossResult result, L10n l10n) {
+    switch (result) {
+      case SimpleWinLossResult.win:
+        return l10n.winLabel;
+      case SimpleWinLossResult.loss:
+        return l10n.lossLabel;
+      case SimpleWinLossResult.draw:
+        return l10n.drawLabel;
+    }
+  }
+
   /// メモ入力
-  Widget _buildNotesInput() {
+  Widget _buildNotesInput(L10n l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'メモ（任意）',
-          style: TextStyle(
+        Text(
+          l10n.notesOptional,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeM,
             fontWeight: FontWeight.w600,
             color: AppColors.textDark,
@@ -519,7 +521,7 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
           controller: _notesController,
           maxLines: 2,
           decoration: InputDecoration(
-            hintText: '試合の詳細や特記事項',
+            hintText: l10n.matchDetailsHint,
             filled: true,
             fillColor: AppColors.backgroundLight,
             border: OutlineInputBorder(
@@ -541,13 +543,13 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
   }
 
   /// アクションボタン
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(L10n l10n) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('キャンセル'),
+          child: Text(l10n.cancel),
         ),
         const SizedBox(width: AppDimensions.spacingM),
         ElevatedButton(
@@ -569,9 +571,9 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
                     color: Colors.white,
                   ),
                 )
-              : const Text(
-                  '保存',
-                  style: TextStyle(
+              : Text(
+                  l10n.saveButton,
+                  style: const TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     fontWeight: FontWeight.w600,
                   ),
@@ -641,6 +643,7 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
           break;
       }
 
+      final l10n = L10n.of(context);
       final now = DateTime.now();
       final matchResult = MatchResult(
         eventId: widget.eventId,
@@ -652,7 +655,7 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
         createdAt: now,
         updatedAt: now,
         isTeamMatch: widget.isTeamMatch,
-        matchFormat: _selectedResultType.displayName,
+        matchFormat: _getResultTypeDisplayName(_selectedResultType, l10n),
         notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
       );
 
@@ -666,7 +669,7 @@ class _SimpleResultInputDialogState extends State<SimpleResultInputDialog> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('結果の保存中にエラーが発生しました: $e'),
+          content: Text(L10n.of(context).resultSaveError(e.toString())),
           backgroundColor: AppColors.error,
         ),
       );

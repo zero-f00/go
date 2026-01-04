@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/app_button.dart';
@@ -121,26 +122,27 @@ class _MatchResultInputScreenState
     }
   }
 
-  /// スコア種別を初期化
+  /// スコア種別を初期化（context利用不可のため仮名称を設定）
   void _initializeScoreTypes() {
     _scoreTypes = [];
 
     // 編集時で既存のスコアデータがある場合はデフォルトスコア種別を作成
+    // 注意: initStateから呼ばれるためcontextが使えない。後でUIビルド時にl10nを使って表示する
     if (widget.match.scores.isNotEmpty) {
       if (widget.match.isTeamMatch) {
         // チーム戦の場合はチーム対象のスコア
         _scoreTypes.add(ScoreType(
           id: 'default_score',
-          name: 'スコア',
-          unit: '点',
+          name: '_default_score_', // プレースホルダー：UIビルド時にl10n.scoreで表示
+          unit: '_points_', // プレースホルダー：UIビルド時にl10n.pointsUnitで表示
           targetType: ScoreTargetType.team,
         ));
       } else {
         // 個人戦の場合は個人対象のスコア（scoresに保存されているが個人対象として扱う）
         _scoreTypes.add(ScoreType(
           id: 'default_individual_score',
-          name: 'スコア',
-          unit: '点',
+          name: '_default_score_', // プレースホルダー：UIビルド時にl10n.scoreで表示
+          unit: '_points_', // プレースホルダー：UIビルド時にl10n.pointsUnitで表示
           targetType: ScoreTargetType.individual,
         ));
       }
@@ -152,11 +154,32 @@ class _MatchResultInputScreenState
         widget.match.individualScores!.isNotEmpty) {
       _scoreTypes.add(ScoreType(
         id: 'default_individual_score',
-        name: '個人スコア',
-        unit: '点',
+        name: '_individual_score_', // プレースホルダー：UIビルド時にl10n.individualScoresTitleで表示
+        unit: '_points_', // プレースホルダー：UIビルド時にl10n.pointsUnitで表示
         targetType: ScoreTargetType.individual,
       ));
     }
+  }
+
+  /// スコア種別名をローカライズして取得
+  String _getLocalizedScoreTypeName(ScoreType scoreType) {
+    final l10n = L10n.of(context);
+    if (scoreType.name == '_default_score_') {
+      return l10n.score;
+    } else if (scoreType.name == '_individual_score_') {
+      // 個人スコア = 個人 + スコア
+      return '${l10n.individualTargetLabel}${l10n.score}';
+    }
+    return scoreType.name;
+  }
+
+  /// スコア種別単位をローカライズして取得
+  String _getLocalizedScoreTypeUnit(ScoreType scoreType) {
+    final l10n = L10n.of(context);
+    if (scoreType.unit == '_points_') {
+      return l10n.pointsUnit;
+    }
+    return scoreType.unit;
   }
 
   /// 参加者名を読み込み
@@ -196,20 +219,22 @@ class _MatchResultInputScreenState
         );
 
         // ゲーム内ユーザー名を優先的に使用し、なければ表示名を使用
+        final defaultName = mounted ? L10n.of(context).userDefaultName : 'User';
         for (final entry in participantInfo.entries) {
           final userId = entry.key;
           final info = entry.value;
-          _memberNames[userId] = info['gameUsername'] ?? info['displayName'] ?? 'ユーザー';
+          _memberNames[userId] = info['gameUsername'] ?? info['displayName'] ?? defaultName;
         }
       }
     } catch (e) {
       // エラーが発生した場合はダミーデータを使用
       // チームメンバー取得エラー
+      final l10n = mounted ? L10n.of(context) : null;
       for (int i = 0; i < widget.match.participants.length; i++) {
         final teamId = widget.match.participants[i];
         _teamMembers[teamId] = ['${teamId}_user1', '${teamId}_user2'];
-        _memberNames['${teamId}_user1'] = 'ユーザー1';
-        _memberNames['${teamId}_user2'] = 'ユーザー2';
+        _memberNames['${teamId}_user1'] = l10n?.userNumberName(1) ?? 'User 1';
+        _memberNames['${teamId}_user2'] = l10n?.userNumberName(2) ?? 'User 2';
       }
     }
 
@@ -228,21 +253,25 @@ class _MatchResultInputScreenState
         widget.match.participants
       );
 
+      if (!mounted) return;
+      final l10n = L10n.of(context);
       setState(() {
         // ゲーム内ユーザー名を優先的に使用し、なければ表示名を使用
         _participantNames = participantInfo.map((userId, info) => MapEntry(
           userId,
-          info['gameUsername'] ?? info['displayName'] ?? 'ユーザー'
+          info['gameUsername'] ?? info['displayName'] ?? l10n.userDefaultName
         ));
         _updateRankingControllers(); // 初期順位も設定
       });
     } catch (e) {
       // エラーが発生した場合はダミーデータを使用
       // 個人戦参加者取得エラー
+      if (!mounted) return;
+      final l10n = L10n.of(context);
       setState(() {
         for (int i = 0; i < widget.match.participants.length; i++) {
           final participantId = widget.match.participants[i];
-          _participantNames[participantId] = 'ユーザー${i + 1}';
+          _participantNames[participantId] = l10n.userNumberName(i + 1);
         }
         _updateRankingControllers(); // 初期順位も設定
       });
@@ -358,6 +387,7 @@ class _MatchResultInputScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Scaffold(
       body: AppGradientBackground(
         child: SafeArea(
@@ -366,7 +396,7 @@ class _MatchResultInputScreenState
             child: Column(
               children: [
                 AppHeader(
-                  title: widget.match.isCompleted ? '試合結果編集' : '試合結果入力',
+                  title: widget.match.isCompleted ? l10n.matchResultEditTitle : l10n.matchResultInputTitle,
                   showBackButton: true,
                   onBackPressed: () => Navigator.of(context).pop(),
                 ),
@@ -401,6 +431,7 @@ class _MatchResultInputScreenState
 
   /// 試合情報カード
   Widget _buildMatchInfo() {
+    final l10n = L10n.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -451,7 +482,7 @@ class _MatchResultInputScreenState
                         borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                       ),
                       child: Text(
-                        widget.match.isTeamMatch ? 'チーム戦' : '個人戦',
+                        widget.match.isTeamMatch ? l10n.teamMatch : l10n.individualMatch,
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeS,
                           fontWeight: FontWeight.w600,
@@ -474,6 +505,7 @@ class _MatchResultInputScreenState
 
   /// 順位付けセクション
   Widget _buildRankingSection() {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -498,9 +530,9 @@ class _MatchResultInputScreenState
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                '順位付け',
-                style: TextStyle(
+              Text(
+                l10n.rankingSectionTitle,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -509,9 +541,9 @@ class _MatchResultInputScreenState
             ],
           ),
           const SizedBox(height: AppDimensions.spacingS),
-          const Text(
-            'カードをドラッグ&ドロップして順位を決定してください',
-            style: TextStyle(
+          Text(
+            l10n.rankingDragDropHint,
+            style: const TextStyle(
               fontSize: AppDimensions.fontSizeS,
               color: AppColors.textSecondary,
             ),
@@ -536,7 +568,7 @@ class _MatchResultInputScreenState
                 ),
                 const SizedBox(width: AppDimensions.spacingXS),
                 Text(
-                  '上が1位、下が最下位',
+                  l10n.rankingTopIsFirst,
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     color: AppColors.info,
@@ -579,6 +611,7 @@ class _MatchResultInputScreenState
 
   /// 順位カード
   Widget _buildRankingCard(String participantId, int rank) {
+    final l10n = L10n.of(context);
     Color rankColor;
     IconData rankIcon;
 
@@ -673,7 +706,7 @@ class _MatchResultInputScreenState
                   ),
                 ),
                 Text(
-                  '$rank位', // TODO: イベント設定から順位単位を取得
+                  l10n.rankPosition(rank),
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     color: rankColor,
@@ -725,6 +758,7 @@ class _MatchResultInputScreenState
 
   /// スコア種別追加ダイアログを表示
   void _showAddScoreTypeDialog() {
+    final l10n = L10n.of(context);
     final nameController = TextEditingController();
     final unitController = TextEditingController();
     ScoreTargetType selectedTargetType = ScoreTargetType.team;
@@ -766,9 +800,9 @@ class _MatchResultInputScreenState
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'スコア種別を追加',
-                          style: TextStyle(
+                        Text(
+                          l10n.addScoreTypeDialogTitle,
+                          style: const TextStyle(
                             fontSize: AppDimensions.fontSizeL,
                             fontWeight: FontWeight.w600,
                             color: AppColors.textDark,
@@ -793,25 +827,25 @@ class _MatchResultInputScreenState
                         children: [
                           TextField(
                             controller: nameController,
-                            decoration: const InputDecoration(
-                              labelText: 'スコア名',
-                              hintText: 'キル数、ポイント、ダメージなど',
-                              border: OutlineInputBorder(),
+                            decoration: InputDecoration(
+                              labelText: l10n.scoreNameLabel,
+                              hintText: l10n.scoreNameHint,
+                              border: const OutlineInputBorder(),
                             ),
                           ),
                           const SizedBox(height: AppDimensions.spacingM),
                           TextField(
                             controller: unitController,
-                            decoration: const InputDecoration(
-                              labelText: '単位',
-                              hintText: 'キル、ポイント、HPなど',
-                              border: OutlineInputBorder(),
+                            decoration: InputDecoration(
+                              labelText: l10n.scoreUnitLabel,
+                              hintText: l10n.scoreUnitHint,
+                              border: const OutlineInputBorder(),
                             ),
                           ),
                           const SizedBox(height: AppDimensions.spacingM),
-                          const Text(
-                            '対象',
-                            style: TextStyle(
+                          Text(
+                            l10n.targetLabel,
+                            style: const TextStyle(
                               fontSize: AppDimensions.fontSizeM,
                               fontWeight: FontWeight.w600,
                               color: AppColors.textDark,
@@ -819,8 +853,8 @@ class _MatchResultInputScreenState
                           ),
                           const SizedBox(height: AppDimensions.spacingS),
                           RadioListTile<ScoreTargetType>(
-                            title: const Text('グループ'),
-                            subtitle: const Text('チーム単位のスコア'),
+                            title: Text(l10n.groupTargetLabel),
+                            subtitle: Text(l10n.teamScoreSubtitle),
                             value: ScoreTargetType.team,
                             groupValue: selectedTargetType,
                             onChanged: (value) {
@@ -831,8 +865,8 @@ class _MatchResultInputScreenState
                             dense: true,
                           ),
                           RadioListTile<ScoreTargetType>(
-                            title: const Text('個人'),
-                            subtitle: const Text('個人単位のスコア'),
+                            title: Text(l10n.individualTargetLabel),
+                            subtitle: Text(l10n.individualScoreSubtitle),
                             value: ScoreTargetType.individual,
                             groupValue: selectedTargetType,
                             onChanged: (value) {
@@ -864,14 +898,14 @@ class _MatchResultInputScreenState
                       children: [
                         Expanded(
                           child: AppButton.secondary(
-                            text: 'キャンセル',
+                            text: l10n.cancel,
                             onPressed: () => Navigator.of(context).pop(),
                           ),
                         ),
                         const SizedBox(width: AppDimensions.spacingM),
                         Expanded(
                           child: AppButton.primary(
-                            text: '追加',
+                            text: l10n.addButton,
                             onPressed: () {
                               if (nameController.text.trim().isNotEmpty &&
                                   unitController.text.trim().isNotEmpty) {
@@ -955,6 +989,7 @@ class _MatchResultInputScreenState
 
   /// スコア入力セクション
   Widget _buildScoreSection() {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -979,9 +1014,9 @@ class _MatchResultInputScreenState
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                'スコア入力',
-                style: TextStyle(
+              Text(
+                l10n.scoreInputSectionTitle,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -998,7 +1033,7 @@ class _MatchResultInputScreenState
                   borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                 ),
                 child: Text(
-                  '任意',
+                  l10n.optionalLabel,
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     color: AppColors.secondary,
@@ -1011,14 +1046,14 @@ class _MatchResultInputScreenState
                 onPressed: _showAddScoreTypeDialog,
                 icon: const Icon(Icons.add_circle_outline),
                 color: AppColors.accent,
-                tooltip: 'スコア種別を追加',
+                tooltip: l10n.addScoreTypeTooltip,
               ),
             ],
           ),
           const SizedBox(height: AppDimensions.spacingS),
-          const Text(
-            'スコア種別を追加して複数の評価軸で記録できます',
-            style: TextStyle(
+          Text(
+            l10n.scoreInputHint,
+            style: const TextStyle(
               fontSize: AppDimensions.fontSizeS,
               color: AppColors.textSecondary,
             ),
@@ -1035,17 +1070,17 @@ class _MatchResultInputScreenState
                     color: AppColors.textLight,
                   ),
                   const SizedBox(height: AppDimensions.spacingM),
-                  const Text(
-                    'スコア種別を追加してください',
-                    style: TextStyle(
+                  Text(
+                    l10n.addScoreTypeEmptyTitle,
+                    style: const TextStyle(
                       fontSize: AppDimensions.fontSizeM,
                       color: AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: AppDimensions.spacingS),
-                  const Text(
-                    'キル数、ポイント、ダメージなど\nお好みの評価軸を設定できます',
-                    style: TextStyle(
+                  Text(
+                    l10n.addScoreTypeEmptySubtitle,
+                    style: const TextStyle(
                       fontSize: AppDimensions.fontSizeS,
                       color: AppColors.textLight,
                     ),
@@ -1065,6 +1100,7 @@ class _MatchResultInputScreenState
 
   /// スコア種別セクション
   Widget _buildScoreTypeSection(ScoreType scoreType) {
+    final l10n = L10n.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingL),
       child: Column(
@@ -1073,7 +1109,7 @@ class _MatchResultInputScreenState
           Row(
             children: [
               Text(
-                scoreType.name,
+                _getLocalizedScoreTypeName(scoreType),
                 style: const TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   fontWeight: FontWeight.w600,
@@ -1093,7 +1129,7 @@ class _MatchResultInputScreenState
                   borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                 ),
                 child: Text(
-                  scoreType.targetType == ScoreTargetType.team ? 'グループ' : '個人',
+                  scoreType.targetType == ScoreTargetType.team ? l10n.groupTargetLabel : l10n.individualTargetLabel,
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeXS,
                     color: scoreType.targetType == ScoreTargetType.team
@@ -1109,7 +1145,7 @@ class _MatchResultInputScreenState
                 icon: const Icon(Icons.remove_circle_outline),
                 color: AppColors.error,
                 iconSize: AppDimensions.iconS,
-                tooltip: '削除',
+                tooltip: l10n.deleteTooltip,
               ),
             ],
           ),
@@ -1183,7 +1219,7 @@ class _MatchResultInputScreenState
             ),
             const SizedBox(width: AppDimensions.spacingS),
             Text(
-              scoreType.unit,
+              _getLocalizedScoreTypeUnit(scoreType),
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 fontWeight: FontWeight.w600,
@@ -1300,7 +1336,7 @@ class _MatchResultInputScreenState
                           ),
                           const SizedBox(width: AppDimensions.spacingS),
                           Text(
-                            scoreType.unit,
+                            _getLocalizedScoreTypeUnit(scoreType),
                             style: const TextStyle(
                               fontSize: AppDimensions.fontSizeM,
                               fontWeight: FontWeight.w600,
@@ -1377,7 +1413,7 @@ class _MatchResultInputScreenState
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                scoreType.unit,
+                _getLocalizedScoreTypeUnit(scoreType),
                 style: const TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   fontWeight: FontWeight.w600,
@@ -1499,9 +1535,9 @@ class _MatchResultInputScreenState
                         ),
                       ),
                       const SizedBox(width: AppDimensions.spacingS),
-                      const Text(
-                        '点', // TODO: イベント設定からスコア単位を取得
-                        style: TextStyle(
+                      Text(
+                        L10n.of(context).pointsUnit, // TODO: イベント設定からスコア単位を取得
+                        style: const TextStyle(
                           fontSize: AppDimensions.fontSizeM,
                           fontWeight: FontWeight.w600,
                           color: AppColors.textDark,
@@ -1522,6 +1558,7 @@ class _MatchResultInputScreenState
 
   /// 下部アクションエリア
   Widget _buildBottomActions() {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       child: SafeArea(
@@ -1530,7 +1567,7 @@ class _MatchResultInputScreenState
           children: [
             Expanded(
               child: AppButton.secondary(
-                text: 'キャンセル',
+                text: l10n.cancel,
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ),
@@ -1538,8 +1575,8 @@ class _MatchResultInputScreenState
             Expanded(
               child: AppButton.primary(
                 text: _isLoading
-                  ? (widget.match.isCompleted ? '更新中...' : '保存中...')
-                  : (widget.match.isCompleted ? '結果を更新' : '結果を保存'),
+                  ? (widget.match.isCompleted ? l10n.updatingResult : l10n.savingResult)
+                  : (widget.match.isCompleted ? l10n.updateResult : l10n.saveResult),
                 onPressed: _isLoading ? null : _submitResult,
               ),
             ),
@@ -1551,8 +1588,8 @@ class _MatchResultInputScreenState
 
   /// エビデンス画像セクション
   Widget _buildEvidenceImageSection() {
+    final l10n = L10n.of(context);
     final currentUser = ref.watch(currentFirebaseUserProvider);
-    final displayName = ref.watch(displayNameProvider);
 
     if (currentUser == null) {
       return const SizedBox.shrink();
@@ -1584,7 +1621,7 @@ class _MatchResultInputScreenState
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                'エビデンス画像',
+                l10n.evidenceImageSectionTitle,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w600,
@@ -1606,7 +1643,7 @@ class _MatchResultInputScreenState
                     ),
                   ),
                   child: Text(
-                    '${_selectedEvidenceImages.length + _existingEvidenceImages.length}枚',
+                    l10n.imagesCountLabel(_selectedEvidenceImages.length + _existingEvidenceImages.length),
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeS,
                       fontWeight: FontWeight.w600,
@@ -1618,7 +1655,7 @@ class _MatchResultInputScreenState
           ),
           const SizedBox(height: AppDimensions.spacingM),
           Text(
-            '試合の証拠となる画像をアップロードできます',
+            l10n.evidenceImageInfo,
             style: TextStyle(
               fontSize: AppDimensions.fontSizeM,
               color: AppColors.textSecondary,
@@ -1630,7 +1667,7 @@ class _MatchResultInputScreenState
           SizedBox(
             width: double.infinity,
             child: AppButton.secondary(
-              text: '画像を追加',
+              text: l10n.addImageButtonLabel,
               icon: Icons.add_photo_alternate,
               onPressed: _showImageSourceDialog,
             ),
@@ -1640,7 +1677,7 @@ class _MatchResultInputScreenState
           if (_existingEvidenceImages.isNotEmpty) ...[
             const SizedBox(height: AppDimensions.spacingM),
             Text(
-              '既存の画像 (${_existingEvidenceImages.length}枚)',
+              l10n.existingImagesLabel(_existingEvidenceImages.length),
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 fontWeight: FontWeight.w600,
@@ -1713,7 +1750,7 @@ class _MatchResultInputScreenState
           if (_selectedEvidenceImages.isNotEmpty) ...[
             const SizedBox(height: AppDimensions.spacingM),
             Text(
-              '追加する画像 (${_selectedEvidenceImages.length}枚)',
+              l10n.newImagesLabel(_selectedEvidenceImages.length),
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 fontWeight: FontWeight.w600,
@@ -1780,6 +1817,7 @@ class _MatchResultInputScreenState
 
   /// 画像選択ダイアログを表示
   Future<void> _showImageSourceDialog() async {
+    final l10n = L10n.of(context);
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -1793,7 +1831,7 @@ class _MatchResultInputScreenState
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'エビデンス画像の追加',
+              l10n.addEvidenceImageTitle,
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 fontWeight: FontWeight.w600,
@@ -1805,7 +1843,7 @@ class _MatchResultInputScreenState
               children: [
                 Expanded(
                   child: AppButton.primary(
-                    text: 'カメラ',
+                    text: l10n.cameraLabel,
                     icon: Icons.camera_alt,
                     onPressed: () {
                       Navigator.of(context).pop();
@@ -1816,7 +1854,7 @@ class _MatchResultInputScreenState
                 const SizedBox(width: AppDimensions.spacingM),
                 Expanded(
                   child: AppButton.secondary(
-                    text: 'ギャラリー',
+                    text: l10n.galleryLabel,
                     icon: Icons.photo_library,
                     onPressed: () {
                       Navigator.of(context).pop();
@@ -1835,6 +1873,7 @@ class _MatchResultInputScreenState
 
   /// カメラで撮影
   Future<void> _takePicture() async {
+    final l10n = L10n.of(context);
     try {
       final XFile? photo = await _picker.pickImage(
         source: ImageSource.camera,
@@ -1849,17 +1888,19 @@ class _MatchResultInputScreenState
           _selectedEvidenceImages.add(File(photo.path));
         });
 
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('写真を撮影しました'),
+          SnackBar(
+            content: Text(l10n.photoTakenMessage),
             backgroundColor: AppColors.success,
           ),
         );
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('カメラでの撮影に失敗しました: $e'),
+          content: Text(l10n.cameraCaptureError(e.toString())),
           backgroundColor: AppColors.error,
         ),
       );
@@ -1868,6 +1909,7 @@ class _MatchResultInputScreenState
 
   /// ギャラリーから画像を選択
   Future<void> _pickImagesFromGallery() async {
+    final l10n = L10n.of(context);
     try {
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
@@ -1882,17 +1924,19 @@ class _MatchResultInputScreenState
           _selectedEvidenceImages.add(File(image.path));
         });
 
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('画像を選択しました'),
+          SnackBar(
+            content: Text(l10n.imageSelectedMessage),
             backgroundColor: AppColors.success,
           ),
         );
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('ギャラリーからの選択に失敗しました: $e'),
+          content: Text(l10n.gallerySelectError(e.toString())),
           backgroundColor: AppColors.error,
         ),
       );
@@ -1916,6 +1960,7 @@ class _MatchResultInputScreenState
 
   /// 運営メモセクション
   Widget _buildAdminNotesSection() {
+    final l10n = L10n.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -1942,7 +1987,7 @@ class _MatchResultInputScreenState
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                '運営メモ',
+                l10n.adminNotesSectionTitle,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w600,
@@ -1953,7 +1998,7 @@ class _MatchResultInputScreenState
           ),
           const SizedBox(height: AppDimensions.spacingS),
           Text(
-            '試合結果に関する運営側のメモを記入できます',
+            l10n.adminNotesDescription,
             style: TextStyle(
               fontSize: AppDimensions.fontSizeM,
               color: AppColors.textSecondary,
@@ -1981,7 +2026,7 @@ class _MatchResultInputScreenState
                     ),
                     const SizedBox(width: AppDimensions.spacingS),
                     Text(
-                      '公開メモ（ユーザー閲覧可能）',
+                      l10n.publicNoteTitle,
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeM,
                         fontWeight: FontWeight.w600,
@@ -1992,7 +2037,7 @@ class _MatchResultInputScreenState
                 ),
                 const SizedBox(height: AppDimensions.spacingS),
                 Text(
-                  '参加者が閲覧できるメモです。試合の詳細や特記事項を記入してください。',
+                  l10n.publicNoteDescription,
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     color: AppColors.textSecondary,
@@ -2002,7 +2047,7 @@ class _MatchResultInputScreenState
                 TextFormField(
                   controller: _adminPublicNotesController,
                   decoration: InputDecoration(
-                    hintText: '例：接続不良により再戦を実施、MVP賞を追加授与など...',
+                    hintText: l10n.publicNoteHint,
                     hintStyle: TextStyle(
                       fontSize: AppDimensions.fontSizeS,
                       color: AppColors.textLight,
@@ -2055,7 +2100,7 @@ class _MatchResultInputScreenState
                     ),
                     const SizedBox(width: AppDimensions.spacingS),
                     Text(
-                      'プライベートメモ（運営者のみ閲覧可能）',
+                      l10n.privateNoteTitle,
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeM,
                         fontWeight: FontWeight.w600,
@@ -2066,7 +2111,7 @@ class _MatchResultInputScreenState
                 ),
                 const SizedBox(height: AppDimensions.spacingS),
                 Text(
-                  '運営者のみが閲覧できる内部メモです。参加者には表示されません。',
+                  l10n.privateNoteDescription,
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     color: AppColors.textSecondary,
@@ -2076,7 +2121,7 @@ class _MatchResultInputScreenState
                 TextFormField(
                   controller: _adminPrivateNotesController,
                   decoration: InputDecoration(
-                    hintText: '例：参加者Aから異議申し立てあり、要確認事項など...',
+                    hintText: l10n.privateNoteHint,
                     hintStyle: TextStyle(
                       fontSize: AppDimensions.fontSizeS,
                       color: AppColors.textLight,
@@ -2113,6 +2158,7 @@ class _MatchResultInputScreenState
 
   /// 結果を提出
   Future<void> _submitResult() async {
+    final l10n = L10n.of(context);
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -2285,7 +2331,7 @@ class _MatchResultInputScreenState
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('一部の画像削除でエラーが発生しました: $e'),
+                content: Text(l10n.imageDeletePartialError(e.toString())),
                 backgroundColor: AppColors.warning,
               ),
             );
@@ -2299,7 +2345,7 @@ class _MatchResultInputScreenState
           // 現在のユーザーIDを取得
           final currentUser = ref.read(currentFirebaseUserProvider);
           if (currentUser == null) {
-            throw Exception('ユーザーが認証されていません');
+            throw Exception(l10n.userNotAuthenticatedError);
           }
 
           // 新規選択された画像をFirebase Storageにアップロード
@@ -2321,7 +2367,7 @@ class _MatchResultInputScreenState
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('エビデンス画像のアップロードに失敗しました: $e'),
+                content: Text(l10n.evidenceUploadError(e.toString())),
                 backgroundColor: AppColors.error,
               ),
             );
@@ -2355,7 +2401,7 @@ class _MatchResultInputScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('結果の保存に失敗しました: $e'),
+            content: Text(l10n.resultSaveFailedError(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );

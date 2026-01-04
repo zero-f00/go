@@ -1,15 +1,42 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 /// 試合ステータス
 enum MatchStatus {
-  scheduled('scheduled', '開催予定'),
-  inProgress('in_progress', '進行中'),
-  completed('completed', '完了');
+  scheduled('scheduled'),
+  inProgress('in_progress'),
+  completed('completed');
 
-  const MatchStatus(this.value, this.displayName);
+  const MatchStatus(this.value);
   final String value;
-  final String displayName;
+
+  /// ローカライズされた表示名を取得（後方互換性のため維持）
+  /// @deprecated 代わりに getDisplayName(context) を使用してください
+  String get displayName {
+    switch (this) {
+      case MatchStatus.scheduled:
+        return '開催予定';
+      case MatchStatus.inProgress:
+        return '進行中';
+      case MatchStatus.completed:
+        return '完了';
+    }
+  }
+
+  /// ローカライズされた表示名を取得
+  String getDisplayName(BuildContext context) {
+    final l10n = L10n.of(context);
+    switch (this) {
+      case MatchStatus.scheduled:
+        return l10n.matchStatusScheduled;
+      case MatchStatus.inProgress:
+        return l10n.matchStatusInProgress;
+      case MatchStatus.completed:
+        return l10n.matchStatusCompleted;
+    }
+  }
 
   static MatchStatus fromString(String value) {
     return MatchStatus.values.firstWhere(

@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../data/models/game_profile_model.dart';
 import '../../../data/models/user_model.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// ゲームプロフィール用SNS機能のミックスイン
 mixin GameProfileSNSMixin {
@@ -17,6 +18,7 @@ mixin GameProfileSNSMixin {
       required IconData icon,
       required Widget child,
     }) buildSection,
+    required L10n l10n,
   }) {
     // ゲーム専用SNSとグローバルSNSを統合
     final Map<String, String> effectiveSocialLinks = _getEffectiveSocialLinks(profile, userData);
@@ -26,13 +28,13 @@ mixin GameProfileSNSMixin {
     }
 
     return buildSection(
-      title: 'SNSアカウント',
+      title: l10n.snsAccountsTitle,
       icon: Icons.share,
       child: Wrap(
         spacing: AppDimensions.spacingM,
         runSpacing: AppDimensions.spacingM,
         children: effectiveSocialLinks.entries
-            .map((entry) => _buildSocialLinkButton(context, entry.key, entry.value, profile))
+            .map((entry) => _buildSocialLinkButton(context, entry.key, entry.value, profile, l10n))
             .toList(),
       ),
     );
@@ -64,7 +66,7 @@ mixin GameProfileSNSMixin {
   }
 
   /// SNSリンクボタンを構築
-  Widget _buildSocialLinkButton(BuildContext context, String platform, String username, GameProfile profile) {
+  Widget _buildSocialLinkButton(BuildContext context, String platform, String username, GameProfile profile, L10n l10n) {
     // プラットフォーム情報（ディープリンクとWebURL対応）
     final Map<String, Map<String, dynamic>> platformInfo = {
       'twitter': {
@@ -128,7 +130,7 @@ mixin GameProfileSNSMixin {
       child: InkWell(
         onTap: () => platform == 'discord'
           ? _copyDiscordUsername(username, (success, message) {
-              _showCopyResult(context, success, message);
+              _showCopyResult(context, success, message, l10n);
             })
           : _openSocialProfile(
               deepLink: info['deepLink'] as String?,
@@ -243,7 +245,7 @@ mixin GameProfileSNSMixin {
   }
 
   /// コピー結果をトースト表示
-  void _showCopyResult(BuildContext context, bool success, String message) {
+  void _showCopyResult(BuildContext context, bool success, String message, L10n l10n) {
     final snackBar = SnackBar(
       content: Row(
         children: [
@@ -256,8 +258,8 @@ mixin GameProfileSNSMixin {
           Expanded(
             child: Text(
               success
-                ? 'Discord ID「$message」をコピーしました'
-                : 'コピーに失敗しました: $message',
+                ? l10n.discordIdCopied(message)
+                : l10n.copyFailedWithError(message),
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeS,
                 fontWeight: FontWeight.w500,

@@ -125,9 +125,6 @@ class AppStrings {
   static const String additionalInfoLabel = '追加情報・注意事項';
   static const String additionalInfoHint = '参加条件、ルール補足、注意事項などを入力してください';
   static const String approvalMethodLabel = '参加承認方式';
-  static const String participationFeeLabel = '参加費用';
-  static const String feeAmountLabel = '費用金額';
-  static const String feeAmountHint = '参加費用の金額を入力してください';
 
   // Event tag labels
   static const String eventTagsLabel = 'イベントタグ';

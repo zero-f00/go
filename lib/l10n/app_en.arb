@@ -1,0 +1,3477 @@
+{
+  "@@locale": "en",
+  "appTitle": "Go.",
+  "homeTab": "Home",
+  "searchTab": "Search",
+  "notificationTab": "Notifications",
+  "userProfileTitle": "Profile",
+  "manageTab": "Manage",
+  "drawerFollow": "Following",
+  "drawerFavoriteGames": "Favorite Games",
+  "drawerSettings": "Settings",
+  "drawerRateApp": "Rate App",
+  "drawerFooterTitle": "Go - Game Event Manager",
+  "drawerVersion": "Version {version}",
+  "guestUser": "Guest User",
+  "setupIncomplete": " (Setup Incomplete)",
+  "tapToCompleteSetup": "Tap to complete initial setup",
+  "idNotSet": "ID: Not set",
+  "idLabel": "ID: {userId}",
+  "copiedUserId": "Copied user ID \"{userId}\"",
+  "copyFailed": "Copy failed",
+  "loading": "Loading...",
+  "error": "Error",
+  "ok": "OK",
+  "cancel": "Cancel",
+  "save": "Save",
+  "settingsTitle": "Settings",
+  "accountSection": "Account",
+  "signOut": "Sign Out",
+  "signIn": "Sign In",
+  "privacySettingsSection": "Profile Visibility",
+  "showManagedEvents": "Events as Organizer",
+  "showParticipatingEvents": "Upcoming Events",
+  "showParticipatedEvents": "Past Events",
+  "notificationCategoryFollow": "Follow",
+  "notificationCategoryEvent": "Event",
+  "notificationCategoryViolation": "Violation",
+  "notificationCategoryMatch": "Match",
+  "notificationCategorySystem": "System",
+  "appInfoSection": "App Info",
+  "version": "Version",
+  "infoSupportSection": "Info & Support",
+  "termsOfService": "Terms of Service",
+  "privacyPolicy": "Privacy Policy",
+  "contact": "Contact Us",
+  "accountManagementSection": "Account Management",
+  "deleteAccount": "Delete Account",
+  "appSettingsSection": "App Settings",
+  "languageSection": "Language",
+  "languageJapanese": "Japanese",
+  "languageEnglish": "English",
+  "languageKorean": "Korean",
+  "languageChineseSimplified": "Chinese (Simplified)",
+  "languageChineseTraditional": "Chinese (Traditional)",
+  "languageSystem": "Follow System",
+  "settingsSaved": "Settings saved",
+  "settingsSaveFailed": "Failed to save settings: {error}",
+  "userInfoLoadFailed": "Failed to load user information",
+  "eventStatusDraft": "Draft",
+  "eventStatusPublished": "Published",
+  "eventStatusUpcoming": "Upcoming",
+  "eventStatusActive": "Active",
+  "eventStatusCompleted": "Completed",
+  "eventStatusExpired": "Expired",
+  "eventStatusCancelled": "Cancelled",
+  "eventTypeDaily": "Daily",
+  "eventTypeWeekly": "Weekly",
+  "eventTypeSpecial": "Special",
+  "eventTypeSeasonal": "Seasonal",
+  "eventGame": "Game",
+  "eventGameNotSet": "Not Set",
+  "eventCancelled": "This event has been cancelled",
+  "eventCancellationReason": "Reason: {reason}",
+  "eventHasPrize": "Prize",
+  "eventCoinReward": "{amount} Coins",
+  "eventCoinRewardK": "{amount}k Coins",
+  "eventGemReward": "{amount} Gems",
+  "eventExpReward": "{amount} EXP",
+  "eventExpRewardK": "{amount}k EXP",
+  "eventParticipants": "{current}/{max}",
+  "eventFull": "Full",
+  "eventDaysRemaining": "{days} days left",
+  "eventDeadline": "Closed",
+  "eventDateTime": "Date: {date} {time}",
+  "eventPublishing": "Live",
+  "eventDaysUntilStart": "Starts in {days} days",
+  "eventStartingSoon": "Starting Soon",
+  "eventEndsToday": "Ends Today",
+  "eventEnded": "Ended",
+  "eventCancelledStatus": "Cancelled",
+  "hostEventTab": "Host Events",
+  "participantEventTab": "Participating Events",
+  "createNew": "Create New",
+  "signInRequired": "Sign In Required",
+  "signInToUseManagement": "Please sign in to use management features",
+  "initialSetupRequired": "Initial Setup Required",
+  "completeSetupToUseManagement": "Please complete initial setup to use management features",
+  "upcomingTab": "Upcoming",
+  "pastEventsTab": "Past Events",
+  "noUpcomingEvents": "No upcoming events",
+  "joinNewEventSuggestion": "Why not join a new event?",
+  "dataFetchFailed": "Failed to fetch data",
+  "tryAgain": "Please try again",
+  "noPastParticipatedEvents": "No past participated events",
+  "participateToGainRecord": "Participate in events to build your record",
+  "listView": "List View",
+  "calendarView": "Calendar View",
+  "participationCalendar": "Participation Calendar",
+  "noEventsOnThisDay": "No events on this day",
+  "calendarLoadFailed": "Failed to load calendar",
+  "statusCancelled": "Cancelled",
+  "statusScheduled": "Scheduled",
+  "statusEnded": "Ended",
+  "quickActions": "Quick Actions",
+  "copyEvent": "Copy Event",
+  "managementOptions": "Management Options",
+  "createdEvents": "Created Events",
+  "createdEventsDescription": "Manage events you created",
+  "collaborativeEvents": "Collaborative Events",
+  "collaborativeEventsDescription": "Manage events with edit permissions",
+  "draftEvents": "Draft Events",
+  "draftEventsDescription": "Manage temporarily saved events",
+  "pastEventHistory": "Past Event History",
+  "pastEventHistoryDescription": "View ended events and statistics",
+  "noCreatedEvents": "No events created yet",
+  "noCollaborativeEvents": "No collaborative events available",
+  "noDraftEvents": "No draft events saved",
+  "noCreatedEventsDetail": "Create your first event using the \"Create New\" button",
+  "noCollaborativeEventsDetail": "Events you receive edit permissions for will appear here",
+  "noDraftEventsDetail": "When you save a draft while creating an event, it will appear here",
+  "noPastEventsDetail": "When events end, they will appear here as history",
+  "createdEventsFullDescription": "List of events you created. You can edit, delete, or duplicate them.",
+  "collaborativeEventsFullDescription": "List of events you have edit permissions for. Manage them together with other users.",
+  "draftEventsFullDescription": "List of temporarily saved events. Continue editing and publish them.",
+  "pastEventsFullDescription": "List of ended events. View statistics and participant data.",
+  "matchStatusScheduled": "Scheduled",
+  "matchStatusInProgress": "In Progress",
+  "matchStatusCompleted": "Completed",
+  "reportStatusSubmitted": "Submitted",
+  "reportStatusReviewing": "Reviewing",
+  "reportStatusResolved": "Resolved",
+  "reportStatusRejected": "Rejected",
+  "pendingReportsCount": "{count}",
+  "resolvedReportsCount": "{count}",
+  "total": "Total",
+  "published": "Published",
+  "userInfoFetchFailed": "Failed to fetch user information: {error}",
+  "noCopyableEvents": "No copyable events\nCreate your first event",
+  "selectEventToCopy": "Select Event to Copy",
+  "noCopyableEventsShort": "No copyable events",
+  "eventListFetchFailed": "Failed to fetch event list: {error}",
+  "eventNameCopySuffix": "Copy of {eventName}",
+  "eventCopied": "Copied \"{eventName}\"",
+  "eventCopyFailed": "Failed to copy event: {error}",
+  "eventFetchError": "Error occurred while fetching events",
+  "loadingData": "Loading data...",
+  "verifyingUserInfo": "Verifying user info",
+  "markAllAsRead": "Mark All Read",
+  "loadingNotifications": "Loading notifications...",
+  "retry": "Retry",
+  "noNotifications": "No notifications",
+  "notificationsWillAppearHere": "New notifications will appear here",
+  "daysAgo": "{count} days ago",
+  "@daysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hoursAgo": "{count} hours ago",
+  "@hoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "minutesAgo": "{count} minutes ago",
+  "@minutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "justNow": "Just now",
+  "applicationStatusSubmitted": "Submitted",
+  "applicationStatusApproved": "Approved",
+  "applicationStatusRejected": "Rejected",
+  "eventInfoNotFound": "Event info not found",
+  "eventNotFoundMayBeDeleted": "Event not found. It may have been deleted.",
+  "errorFetchingEventInfo": "Error fetching event info",
+  "applicantInfoNotFound": "Applicant info not found",
+  "featureDeprecated": "This feature has been deprecated",
+  "errorCheckingApplicantInfo": "Error checking applicant info",
+  "unavailable": "Unavailable",
+  "notificationSenderWithdrawn": "The sender of this notification has withdrawn, so this notification cannot be processed.",
+  "confirm": "Confirm",
+  "becameMutualFollow": "You are now mutual followers!",
+  "applicationInfoNotFound": "Application info not found",
+  "errorOccurred": "An error occurred",
+  "violationInfoNotFound": "Violation report info not found",
+  "violationRecordNotFound": "Violation record not found",
+  "appealAlreadySubmitted": "An appeal has already been submitted for this violation record",
+  "errorWithDetails": "An error occurred: {error}",
+  "@errorWithDetails": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationDataNotFound": "Notification data not found",
+  "appealApproved": "Appeal approved",
+  "violationRecordCancelled": "Violation record has been cancelled.",
+  "appealRejected": "Appeal rejected",
+  "violationRecordMaintained": "Violation record will be maintained.",
+  "appealProcessed": "Appeal processing completed.",
+  "responseFromOrganizer": "\n\nResponse from organizer:\n{response}",
+  "@responseFromOrganizer": {
+    "placeholders": {
+      "response": {
+        "type": "String"
+      }
+    }
+  },
+  "eventInDraftCannotView": "This event is in draft status and cannot be viewed",
+  "reportInfoNotFound": "Report info not found",
+  "matchInfoNotFound": "Match info not found",
+  "navigationError": "Navigation error occurred",
+  "matchReportStatusReviewing": "Reviewing",
+  "matchReportStatusResolved": "Resolved",
+  "matchReportStatusRejected": "Rejected",
+  "matchReportStatusUpdated": "Report status has been updated",
+  "userInfoNotFound": "User info not found",
+  "errorFetchingUserInfo": "Error fetching user info",
+  "violationReportProcessed": "Violation report processed",
+  "violationReportProcessedDefault": "Violation report has been processed by the organizer.",
+  "violationReportDismissed": "Violation report dismissed",
+  "violationReportDismissedDefault": "Violation report was dismissed as the content could not be verified.",
+  "violationRecordDeleted": "Violation record deleted. Related parties will be notified.",
+  "violationRecordDeletedDefault": "Violation record has been deleted.",
+  "appealDialogTitle": "Appeal",
+  "violationRecordLabel": "Violation Record",
+  "appealReasonLabel": "Reason for Appeal *",
+  "appealReasonHint": "Please provide detailed reasons for your appeal\n\nExample:\n・Explanation of the situation\n・Details if there was a misunderstanding\n・Supporting evidence\n・Other relevant facts",
+  "appealReasonRequired": "Please enter the reason for your appeal",
+  "appealReasonMinLength": "Please provide at least 20 characters with detailed reasons",
+  "done": "Done",
+  "aboutAppeal": "About Appeals",
+  "appealNote1": "Our team will review and respond to your appeal",
+  "appealNote2": "Review may take several days",
+  "appealNote3": "False claims will be considered a new violation",
+  "appealNote4": "Once submitted, appeals cannot be withdrawn",
+  "submitAppeal": "Submit Appeal",
+  "appealSubmittedSuccess": "Appeal submitted. Please wait for a response from the organizer.",
+  "cannotGetUserInfo": "Cannot get user info",
+  "homeCreateEvent": "Create Event",
+  "homeSearchEvent": "Search Events",
+  "homeUpcomingEvents": "Upcoming Events",
+  "homeLoginRequired": "Please log in",
+  "homeUpcomingEventsFetchError": "Failed to fetch upcoming events\nPlease try again later",
+  "homeUserInfoFetchError": "Failed to fetch user info\nPlease try again later",
+  "homeSeeMore": "See More",
+  "homeNoUpcomingEvents": "No upcoming events",
+  "homeNoUpcomingEventsHint": "Events will appear here once you apply\nand are approved",
+  "homeExploreEvents": "Explore Events",
+  "homeYourActivity": "Your Activity",
+  "homeDataFetchFailed": "Failed to fetch data",
+  "homeDataFetchFailedAlt": "Could not retrieve data",
+  "homeThisMonthEvents": "This Month's Events",
+  "homeThisMonthParticipation": "This Month",
+  "homeApprovedEvents": "Approved Events",
+  "homePendingApplications": "Pending Applications",
+  "homePendingLabel": "Pending",
+  "homeAwaitingApproval": "Awaiting Approval",
+  "homeParticipationHistory": "Participation History",
+  "homeTotalParticipation": "Total",
+  "homeParticipatedSoFar": "Participated So Far",
+  "homeHostedEvents": "Hosted Events",
+  "homeHostingCount": "Hosting",
+  "homeHostedEventsSubtitle": "Events You Hosted",
+  "homeRecommendedEvents": "Recommended Events",
+  "homeRecommendedEventsFetchError": "Failed to fetch recommended events\nPlease try again later",
+  "homeNoRecommendedEvents": "No matching events found",
+  "homeNoRecommendedEventsHint": "No events for your favorite games\nare currently available",
+  "homeRegisterFavoriteGames": "Register your favorite games",
+  "homeRegisterFavoriteGamesHint": "Register your favorite games\nto get event recommendations",
+  "homeRegisterFavoriteGamesButton": "Register Favorite Games",
+  "homeManagedEvents": "Events You Manage",
+  "homeLoginRequiredShort": "Login required",
+  "homeNoManagedEvents": "No events you manage",
+  "homeNoManagedEventsHint": "Events you create will\nappear here.",
+  "homeEventSearchHint": "Search by event or game name...",
+  "homeAuthError": "Authentication error occurred",
+  "homeErrorOccurred": "An error occurred\n{error}",
+  "searchSectionTitle": "Search",
+  "searchTarget": "Search for:",
+  "searchTypeEvent": "Events",
+  "searchTypeUser": "Users",
+  "searchTypeGame": "Games",
+  "searchHint": "Search {searchType}...",
+  "@searchHint": {
+    "placeholders": {
+      "searchType": {
+        "type": "String"
+      }
+    }
+  },
+  "filterByFavoriteGames": "Filter by favorite games",
+  "favoriteGamesEmptyHint": "Add favorite games to see them here",
+  "favoriteLabel": "Favorite",
+  "relatedEventsTitle": "Related events for {gameName}",
+  "@relatedEventsTitle": {
+    "placeholders": {
+      "gameName": {
+        "type": "String"
+      }
+    }
+  },
+  "loadingEvents": "Loading events...",
+  "noRelatedEvents": "No related events",
+  "noRelatedEventsHint": "No public events found\nfor this game",
+  "userSearchResults": "User Search Results",
+  "searchByUsernameOrId": "Search by username or ID",
+  "searchByUsernameOrIdHint": "Search for other users by username or user ID",
+  "searchingUsers": "Searching users...",
+  "userSearchErrorPrefix": "Error searching users: {error}",
+  "@userSearchErrorPrefix": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "gameSearchResults": "Game Search Results",
+  "searchByGameName": "Search by game name",
+  "searchByGameNameHint": "Enter a game name to search\nand view related events",
+  "searchingGames": "Searching games...",
+  "gameSearchErrorPrefix": "Error searching games: {error}",
+  "@gameSearchErrorPrefix": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "eventSearchResults": "Event Search Results",
+  "searchByEventName": "Search by event name...",
+  "searchByEventNameHint": "Search by event name...",
+  "searchingEvents": "Searching events...",
+  "eventSearchErrorPrefix": "Error searching events: {error}",
+  "@eventSearchErrorPrefix": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "enterSearchKeyword": "Please enter a search term",
+  "searchResults": "Search Results",
+  "searchByTypeHint": "Search by {searchType} name",
+  "@searchByTypeHint": {
+    "placeholders": {
+      "searchType": {
+        "type": "String"
+      }
+    }
+  },
+  "keyboardSearchHint": "Enter keywords to search",
+  "keyboardSearchDescription": "Press Enter or tap the search button to search",
+  "userNotFound": "User not found",
+  "userNotFoundWithQuery": "No users found matching\n\"{query}\"",
+  "@userNotFoundWithQuery": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "gameNotFound": "Game not found",
+  "gameNotFoundWithQuery": "No games found matching\n\"{query}\"",
+  "@gameNotFoundWithQuery": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "eventNotFound": "Event not found",
+  "eventNotFoundWithQuery": "No public events found matching\n\"{query}\"",
+  "@eventNotFoundWithQuery": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "followScreenTitle": "Following",
+  "mutualFollowTab": "Mutual",
+  "mutualFollowTabCount": "Mutual ({count})",
+  "@mutualFollowTabCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "followingTab": "Following",
+  "followingTabCount": "Following ({count})",
+  "@followingTabCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "followersTab": "Followers",
+  "followersTabCount": "Followers ({count})",
+  "@followersTabCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noMutualFollows": "No mutual follows",
+  "noMutualFollowsHint": "Adding mutual follows makes it easy\nto select managers from here",
+  "noFollowing": "Not following anyone",
+  "noFollowingHint": "Follow users to receive\nevent updates",
+  "noFollowers": "No followers",
+  "noFollowersHint": "Waiting for users\nto follow you",
+  "fetchingData": "Fetching data...",
+  "dataFetchFailedWithError": "Failed to fetch data: {error}",
+  "@dataFetchFailedWithError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "searchUser": "Search Users",
+  "searchUserPlaceholder": "Search by username or ID...",
+  "searchUserHint": "Search by username or ID",
+  "searchUserDescription": "Search to find users\nyou want to follow",
+  "searchingUser": "Searching users...",
+  "userSearchError": "An error occurred while searching for users",
+  "favoriteGamesTitle": "Favorite Games",
+  "deleteSelectedGames": "Delete selected games",
+  "deleteMode": "Delete mode",
+  "exitDeleteMode": "Exit delete mode",
+  "gameCount": "{count}",
+  "@gameCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "loadingFavoriteGames": "Loading favorite games...",
+  "noFavoriteGames": "No favorite games",
+  "noFavoriteGamesHint": "Add games, create profiles,\nfollow users and join events!",
+  "quickAction": "Quick Action",
+  "addGame": "Add Game",
+  "gameProfile": "Game Profile",
+  "gameProfileConfigured": "{configured}/{total} games configured",
+  "@gameProfileConfigured": {
+    "placeholders": {
+      "configured": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "favoriteGamesList": "Favorite Games",
+  "configured": "Configured",
+  "notConfigured": "Not Set",
+  "lastUpdated": "Updated: {date}",
+  "@lastUpdated": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "today": "Today",
+  "yesterday": "Yesterday",
+  "pleaseSetGameProfile": "Please set up your game profile",
+  "editProfile": "Edit Profile",
+  "setProfile": "Set Profile",
+  "deleteSelectedGamesTitle": "Delete Selected Games",
+  "deleteSelectedGamesConfirm": "Remove {count} games from favorites?",
+  "@deleteSelectedGamesConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gameProfileWillBeDeleted": "Game profiles will also be deleted",
+  "delete": "Delete",
+  "gamesDeleted": "Deleted {count} games",
+  "@gamesDeleted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteFailed": "Failed to delete: {error}",
+  "@deleteFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "addFavoriteGame": "Add Favorite Game",
+  "account": "Account",
+  "signedIn": "Signed In",
+  "tapToViewProfile": "Tap to view profile",
+  "profileVisibilitySettings": "Profile Visibility",
+  "profileVisibilityDescription": "Configure what others can see on your profile",
+  "eventsAsOrganizer": "Events as Organizer",
+  "eventsAsOrganizerDescription": "Show events you host or co-edit",
+  "upcomingEventsVisibility": "Upcoming Events",
+  "upcomingEventsDescription": "Show events you're attending",
+  "pastEventsVisibility": "Past Events",
+  "pastEventsDescription": "Show events you've attended",
+  "appInfo": "App Info",
+  "versionLabel": "Version {version}",
+  "@versionLabel": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "infoAndSupport": "Info & Support",
+  "accountManagement": "Account Management",
+  "accountManagementDescription": "Important account operations",
+  "deleteAccountTitle": "Delete Account",
+  "deleteAccountDescription": "Delete your account and all data",
+  "signOutTitle": "Sign Out",
+  "signOutConfirmation": "Are you sure you want to sign out?\n\nLocal data will be preserved, but cloud sync will stop.",
+  "signedOut": "Signed out",
+  "signOutFailed": "Failed to sign out: {error}",
+  "@signOutFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "failedToGetUserInfo": "Failed to get user information",
+  "failedToShowProfile": "Failed to show profile",
+  "failedToOpenPage": "Failed to open {page} page.",
+  "@failedToOpenPage": {
+    "placeholders": {
+      "page": {
+        "type": "String"
+      }
+    }
+  },
+  "errorOpeningPage": "Error occurred while opening {page} page.",
+  "@errorOpeningPage": {
+    "placeholders": {
+      "page": {
+        "type": "String"
+      }
+    }
+  },
+  "failedToOpenContactForm": "Failed to open contact form.",
+  "errorOpeningContactForm": "Error occurred while opening contact form.",
+  "rateAppTitle": "Rate App",
+  "rateAppMessage": "Thank you for using Go!\nHow would you like to rate?",
+  "rateWithStars": "Rate with Stars",
+  "writeReview": "Write a Review",
+  "later": "Later",
+  "createButton": "Create",
+  "eventCountLabel": "{count} events",
+  "@eventCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "allGamesFilter": "All ({count})",
+  "@allGamesFilter": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "unknownGame": "Unknown Game",
+  "eventSearchHint": "Search by event or game name...",
+  "noMatchingEvents": "No matching events found",
+  "changeFilterSuggestion": "Try changing the filter",
+  "clearFilter": "Clear Filter",
+  "noEventsOnDate": "No events on this day",
+  "pastEventsHistoryTitle": "Past Events History",
+  "filteredEventCount": "{filtered} events (of {total} total)",
+  "@filteredEventCount": {
+    "placeholders": {
+      "filtered": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "statusFilterLabel": "Status",
+  "periodFilterLabel": "Period",
+  "gameFilterLabel": "Game",
+  "sortLabel": "Sort",
+  "allGames": "All Games",
+  "pastEventSearchHint": "Search by event name, description, or game...",
+  "filterAll": "All",
+  "filterCompleted": "Completed",
+  "filterCancelled": "Cancelled",
+  "sortDateNewest": "Date (Newest)",
+  "sortDateOldest": "Date (Oldest)",
+  "sortParticipantsDesc": "Participants (Most)",
+  "sortParticipantsAsc": "Participants (Least)",
+  "periodMonth": "Last Month",
+  "periodThreeMonth": "Last 3 Months",
+  "periodSixMonth": "Last 6 Months",
+  "periodYear": "Last Year",
+  "periodAll": "All Time",
+  "statusCompleted": "Completed",
+  "participantCountLabel": "Participants: ",
+  "noSearchResults": "No search results found",
+  "changeSearchCondition": "Please change your search criteria",
+  "noPastEvents": "No past events",
+  "noCompletedEventsYet": "No completed events yet",
+  "gameProfileEditTitle": "Edit Profile",
+  "gameProfileCreateTitle": "Create Game Profile",
+  "deleteProfileTooltip": "Delete Profile",
+  "saving": "Saving...",
+  "gameName": "Game Name",
+  "selectedGame": "Selected Game",
+  "editExistingProfile": "Edit Existing Profile",
+  "createNewProfile": "Create New Profile",
+  "editProfileDescription": "You can modify {gameName} profile information",
+  "@editProfileDescription": {
+    "placeholders": {
+      "gameName": {
+        "type": "String"
+      }
+    }
+  },
+  "createProfileDescription": "All fields are optional. You can edit later",
+  "basicInfo": "Basic Info",
+  "gameUsername": "In-Game Username",
+  "gameUsernameHint": "e.g. Player001, GamerTag",
+  "gameUserId": "In-Game User ID",
+  "gameUserIdHint": "e.g. #1234, @username, user_id_12345",
+  "clanName": "Clan Name",
+  "clanNameHint": "e.g. TeamAlpha, ProGuild, [ABC]Clan",
+  "skillLevelSection": "Skill Level",
+  "skillLevelBeginner": "Beginner",
+  "skillLevelBeginnerDescription": "Just started, learning basic controls",
+  "skillLevelIntermediate": "Intermediate",
+  "skillLevelIntermediateDescription": "Comfortable with basics, learning strategies",
+  "skillLevelAdvanced": "Advanced",
+  "skillLevelAdvancedDescription": "Mastered advanced strategies and techniques",
+  "skillLevelExpert": "Expert",
+  "skillLevelExpertDescription": "Pro level, can teach others",
+  "rankOrLevel": "Rank / Level",
+  "rankOrLevelHint": "e.g. Diamond, Level 50, Platinum III",
+  "playStyleSection": "Play Style",
+  "playStyleCasual": "Casual",
+  "playStyleCasualDescription": "Relaxed and fun gameplay",
+  "playStyleCompetitive": "Competitive",
+  "playStyleCompetitiveDescription": "Focused on ranked matches and tournaments",
+  "playStyleCooperative": "Co-op",
+  "playStyleCooperativeDescription": "Team-based cooperative play",
+  "playStyleSolo": "Solo",
+  "playStyleSoloDescription": "Playing alone at your own pace",
+  "playStyleSocial": "Social",
+  "playStyleSocialDescription": "Focused on player interaction",
+  "playStyleSpeedrun": "Speedrun",
+  "playStyleSpeedrunDescription": "Aiming for fastest completion",
+  "playStyleCollector": "Collector",
+  "playStyleCollectorDescription": "Focused on collecting items and achievements",
+  "playStyleDescription": "Select what applies (optional)",
+  "activityTimeSection": "Active Hours",
+  "activityTimeMorning": "Morning (6am-12pm)",
+  "activityTimeAfternoon": "Afternoon (12pm-6pm)",
+  "activityTimeEvening": "Evening (6pm-12am)",
+  "activityTimeNight": "Late Night (12am-6am)",
+  "activityTimeWeekend": "Weekends",
+  "activityTimeWeekday": "Weekdays",
+  "activityTimeDescription": "Select when you usually play",
+  "voiceChatSection": "Voice Chat",
+  "inGameVC": "In-Game VC",
+  "vcAvailable": "Available",
+  "vcUnavailable": "Unavailable",
+  "vcDetails": "VC Details",
+  "vcDetailsHint": "e.g. Mainly in-game VC, Discord: user#1234, VC available after 9pm",
+  "additionalInfo": "Additional Info",
+  "achievements": "Achievements / Highlights",
+  "achievementsHint": "e.g. World rank #100, Tournament winner, Streaming experience",
+  "freeNotes": "Notes / Memo",
+  "freeNotesHint": "e.g. Beginners welcome, Casual play, Voice chat OK",
+  "snsAccountsSection": "Social Accounts",
+  "snsAccountsDescription": "Enter if you have game-specific social accounts",
+  "snsUsernameHint": "Username (without @)",
+  "youtubeChannelHint": "Channel name (without @)",
+  "discordUsernameHint": "Username#1234 (with tag)",
+  "saveChanges": "Save Changes",
+  "createProfile": "Create Profile",
+  "failedToGetUserInfoShort": "Failed to get user info",
+  "profileUpdated": "Profile updated",
+  "profileCreated": "Profile created",
+  "saveFailed": "Failed to save. Please try again.",
+  "deleteProfileTitle": "Delete Profile",
+  "deleteProfileConfirm": "Delete {gameName} profile?\n\nThis will also remove it from favorites.\n\nThis action cannot be undone.",
+  "@deleteProfileConfirm": {
+    "placeholders": {
+      "gameName": {
+        "type": "String"
+      }
+    }
+  },
+  "profileAndFavoriteDeleted": "Deleted game profile and removed from favorites",
+  "gameSelection": "Select Game",
+  "searchSection": "Search",
+  "searchGameHint": "Search by game name...",
+  "gameSearchFailed": "Game search failed: {error}",
+  "@gameSearchFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "favoritesTab": "Favorites",
+  "searchTab2": "Search",
+  "noFavoriteGamesShort": "No favorite games",
+  "addFavoriteGamesFromProfile": "Add games to favorites\nfrom your profile",
+  "enterGameNameToSearch": "Enter a game name to search",
+  "gameNotFoundShort": "No games found",
+  "notSelected": "None",
+  "select": "Select",
+  "pleaseSelectGame": "Please select a game",
+  "profileUserNotFound": "User not found",
+  "profileFetchError": "Failed to fetch user info: {error}",
+  "profileShareFailed": "Failed to share",
+  "profileFetchingUserInfo": "Fetching user info...",
+  "profileRetry": "Retry",
+  "profileFollow": "Follow",
+  "profileFollowing": "Following",
+  "profileMutualFollow": "Mutual",
+  "profileSnsAccounts": "Social Accounts",
+  "profileLinkOpenFailed": "Failed to open link",
+  "profileErrorOccurred": "An error occurred: {error}",
+  "profileDiscordCopied": "Discord ID copied",
+  "profileCopyFailed": "Failed to copy",
+  "profileBio": "Bio",
+  "profileOtherInfo": "Other Info",
+  "profileFavoriteGames": "Favorite Games",
+  "profileNoFavoriteGames": "No favorite games set",
+  "profileFollowedUser": "Followed",
+  "profileFollowFailed": "Failed to follow",
+  "profileUnfollowedUser": "Unfollowed",
+  "profileUnfollowFailed": "Failed to unfollow",
+  "profileEventsAsOrganizer": "Events as Organizer",
+  "profileNoOrganizerEvents": "No events as organizer",
+  "profileOrganizerEventsEmptyHint": "Create an event or get invited\nas a co-editor to see events here",
+  "profileSeeMore": "See more",
+  "profileUpcomingEvents": "Upcoming Events",
+  "profileNoUpcomingEvents": "No upcoming events",
+  "profilePastEvents": "Past Events",
+  "profileNoPastEvents": "No past events",
+  "profilePastEventsEmptyHint": "Your event history will appear here\nafter you participate in events",
+  "profileGameProfileNotFound": "Game profile not found",
+  "userSettingsTitle": "User Settings",
+  "welcomeInitialSetup": "Welcome! Initial Setup",
+  "userInfoSection": "User Information",
+  "usernameLabel": "Username",
+  "userIdLabel": "User ID",
+  "userIdHelperText": "3-20 characters, letters, numbers, and underscore (_) only. Example: my_game_id123",
+  "bioLabel": "Bio",
+  "bioHint": "Briefly introduce yourself...",
+  "favoriteGamesSection": "Favorite Games",
+  "addButton": "Add",
+  "noFavoriteGamesRegistered": "No favorite games registered",
+  "addFavoriteGameTitle": "Add Favorite Game",
+  "communityOtherInfoSection": "Community & Other Info",
+  "communityOtherLabel": "Community & Other",
+  "communityOtherHint": "Community, Steam ID, other info\nExample: ABC Clan member, Steam: username123, Epic: epicname",
+  "communityOtherHelperText": "Enter your clan/guild, Steam/Epic game accounts, private contacts, etc.",
+  "snsAccountSection": "Social Accounts",
+  "snsAccountDescription": "These accounts will be used as defaults for new game profiles.\nYou can also set them individually for each game.",
+  "cancelButton": "Cancel",
+  "saveButton": "Save",
+  "completeSetupButton": "Complete Setup",
+  "doneButton": "Done",
+  "deleteAvatarTitle": "Delete Avatar",
+  "deleteAvatarMessage": "Delete avatar image?",
+  "imageSelectionFailed": "Failed to select image: {error}",
+  "@imageSelectionFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "welcomeUserName": "Hello, {userName}",
+  "@welcomeUserName": {
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  },
+  "welcomeDescription": "Set up your profile to enjoy game events even more.",
+  "initialSetupMessage": "Complete your profile setup to enjoy game events",
+  "enterUsernameError": "Please enter a username",
+  "usernameMinLengthError": "Username must be at least 2 characters",
+  "enterUserIdError": "Please enter a user ID",
+  "userIdLengthError": "User ID must be 3-20 characters",
+  "userIdFormatError": "Only letters, numbers, and underscore (_) allowed",
+  "userIdStartError": "Must start with a letter (e.g. game123)",
+  "userIdReservedError": "Please choose a different user ID",
+  "userIdDuplicateError": "This user ID is already taken",
+  "noAuthenticatedUser": "No authenticated user found",
+  "imageUploadFailed": "Failed to upload image: {error}",
+  "@imageUploadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "initialSetupSaveFailed": "Failed to save initial setup\n\n{error}",
+  "@initialSetupSaveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsSaveFailedWithError": "Failed to save settings\n\n{error}",
+  "@settingsSaveFailedWithError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsSavedTitle": "Settings Saved",
+  "settingsSavedMessage": "Settings have been saved.",
+  "guestUserDefault": "Guest User",
+  "userDefault": "User",
+  "eventNameCopied": "Event name copied",
+  "shareFailed": "Failed to share: {error}",
+  "@shareFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "shareEvent": "Share event",
+  "eventOverview": "Event Overview",
+  "copyEventName": "Copy event name",
+  "eventCancellationNotice": "Event Cancellation Notice",
+  "eventHasBeenCancelled": "This event has been cancelled",
+  "cancelledDateTime": "Cancelled at: {dateTime}",
+  "@cancelledDateTime": {
+    "placeholders": {
+      "dateTime": {
+        "type": "String"
+      }
+    }
+  },
+  "cancellationReason": "Cancellation reason",
+  "detailsAndNotes": "Details & Notes",
+  "schedule": "Schedule",
+  "eventDateTimeLabel": "Event Date & Time",
+  "registrationDeadline": "Registration Deadline",
+  "registrationExpired": "Registration Expired",
+  "registrationExpiredMessage": "The registration deadline has passed",
+  "gameInfo": "Game Information",
+  "gameInfoNotSet": "Game info not set",
+  "gameInfoNotSetDescription": "No game information specified for this event",
+  "prizeContent": "Prize Content",
+  "prizeDeliveryNote": "Prize delivery is handled directly between the organizer and participants. Please contact the organizer for delivery details.",
+  "participationFee": "Participation Fee",
+  "participationAmount": "Fee Amount",
+  "feeAmountYen": "¥{amount}",
+  "@feeAmountYen": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "feeNote": "Fee Notes",
+  "sponsor": "Sponsor",
+  "participationInfo": "Participation Info",
+  "participantCount": "Participant Count",
+  "eventFullMessage": "This event has reached its capacity",
+  "ageRestriction": "{age}+ years old",
+  "@ageRestriction": {
+    "placeholders": {
+      "age": {
+        "type": "int"
+      }
+    }
+  },
+  "rulesAndTerms": "Rules & Terms",
+  "streamingViewing": "Streaming/Viewing",
+  "cancellationPolicy": "Cancellation Policy",
+  "additionalNotes": "Additional Notes",
+  "organizerInfo": "Organizer Info",
+  "organizer": "Organizer",
+  "adminOnlyInfo": "Admin Only",
+  "visibilityScope": "Visibility",
+  "passwordSetting": "Password Setting",
+  "invitedUsers": "Invited Users",
+  "inviteOnlyPasswordNote": "Invite-only events control participation through password authentication",
+  "creator": "Creator",
+  "createdAt": "Created At",
+  "lastUpdatedBy": "Last Updated By",
+  "lastUpdatedAt": "Last Updated At",
+  "eventManagement": "Event Management",
+  "hasManagementPermission": "You have management permissions for this event",
+  "managementFeatures": "Management Features",
+  "eventEdit": "Edit Event",
+  "eventEditDescription": "Edit and update event information",
+  "operationManagement": "Operations Management",
+  "operationManagementDescription": "Manage participants, groups, and results",
+  "participantMenu": "Participant Menu",
+  "approvedParticipantFeatures": "Features for approved participants",
+  "participantFeatures": "Participant Features",
+  "groupInfo": "Group Info",
+  "groupInfoSubtitle": "View your assigned group",
+  "participantList": "Participant List",
+  "participantListSubtitle": "View event participants",
+  "matchResults": "Match Results",
+  "matchResultsSubtitle": "View match results and rankings",
+  "violationReport": "Violation Report",
+  "violationReportSubtitle": "Report misconduct",
+  "applicationCompleted": "Application completed",
+  "loginToApply": "Log in to apply",
+  "applyToParticipate": "Apply to Participate",
+  "appliedWaitlist": "Applied (Waitlist)",
+  "appliedPending": "Applied (Pending Approval)",
+  "applicationDate": "Applied on: {date}",
+  "@applicationDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "waitlistNote": "This event is full, but your application is on the waitlist.",
+  "cancelApplication": "Cancel Application",
+  "participationConfirmed": "Participation Confirmed",
+  "participationApproved": "Your participation has been approved",
+  "cancelParticipation": "Cancel Participation",
+  "waitlistPosition": "Waitlist position: #{position}",
+  "@waitlistPosition": {
+    "placeholders": {
+      "position": {
+        "type": "int"
+      }
+    }
+  },
+  "waitlistPromotionNote": "You will be approved in order if participants withdraw.",
+  "cancelWaitlist": "Cancel Waitlist",
+  "applicationRejected": "Your application was rejected",
+  "rejectionReason": "Reason: {reason}",
+  "@rejectionReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "cancelled": "Cancelled",
+  "cancelledAt": "Cancelled at: {dateTime}",
+  "@cancelledAt": {
+    "placeholders": {
+      "dateTime": {
+        "type": "String"
+      }
+    }
+  },
+  "cancellationReasonLabel": "Cancellation reason: {reason}",
+  "@cancellationReasonLabel": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "participationStatusFetchFailed": "Failed to fetch participation status",
+  "apply": "Apply",
+  "loginError": "Login Error",
+  "userNotFoundShort": "User not found",
+  "cancelWaitlistConfirmTitle": "Cancel waitlist?",
+  "cancelWaitlistConfirmMessage": "Cancelling the waitlist will completely withdraw your application for this event.\n\nIf you wish to participate again, you will need to submit a new application.",
+  "withdraw": "Withdraw",
+  "cancelWaitlistByUser": "Waitlist cancelled by user",
+  "waitlistCancelledSuccess": "Waitlist cancelled",
+  "waitlistCancelFailed": "Failed to cancel waitlist: {error}",
+  "@waitlistCancelFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "participationCancelledSuccess": "Participation cancelled",
+  "participationCancelFailed": "Failed to cancel participation",
+  "cancelError": "Error during cancellation: {error}",
+  "@cancelError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "participationCancelTitle": "Cancel Participation",
+  "participationCancelWarning": "If you cancel your participation, you may need organizer approval to participate again.",
+  "cancellationReasonRequired": "Cancellation reason (required)",
+  "cancellationReasonHint": "Please let the organizer know your reason for cancelling",
+  "back": "Back",
+  "confirmCancel": "Confirm Cancel",
+  "pleaseEnterCancellationReason": "Please enter a cancellation reason",
+  "eventEditTitle": "Edit Event",
+  "visibilityPublic": "Public",
+  "visibilityInviteOnly": "Invite Only",
+  "approvalAutomatic": "Auto Approval",
+  "changeImage": "Change Image",
+  "selectImage": "Select Image",
+  "takePhoto": "Take Photo",
+  "selectFromGallery": "Select from Gallery",
+  "selectFromPastEventImages": "Select from Past Event Images",
+  "selectFromPastEventImagesTitle": "Select from Past Event Images",
+  "noImagesAvailable": "No images available",
+  "pastImageLoadError": "Error loading past images: {error}",
+  "@pastImageLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "selectDateTime": "Please select date and time",
+  "registrationDeadlineLabel": "Registration Deadline",
+  "noRegistrationDeadline": "No deadline - Participants can register anytime",
+  "participantCancelDeadline": "Participant Cancel Deadline (Optional)",
+  "exampleHint": "Example: {example}",
+  "@exampleHint": {
+    "placeholders": {
+      "example": {
+        "type": "String"
+      }
+    }
+  },
+  "selectGame": "Please select a game",
+  "prizeDeliveryWarning": "Prize delivery is handled directly between the organizer and participants. The app does not mediate or guarantee deliveries.",
+  "prizeContentHint": "e.g. 1st: $1000, 2nd: $500, 3rd: $100",
+  "addSponsor": "Add Sponsor",
+  "addSponsorPlaceholder": "Add sponsors",
+  "aboutPrizeSetting": "About Prize Settings",
+  "prizeNote1": "Prize information is displayed as guidance for participants",
+  "prizeNote2": "Actual delivery is handled between organizer and participants",
+  "prizeNote3": "The app does not facilitate or guarantee delivery",
+  "prizeNote4": "Please discuss delivery methods with participants in advance",
+  "recommendedPaymentMethods": "Recommended: Choose a method both parties are comfortable with, such as PayPal, bank transfer, or cash.",
+  "understood": "Got it",
+  "blockedUsers": "Blocked Users",
+  "addBlockedUserPlaceholder": "Add users to block",
+  "eventOrganizers": "Event Organizers",
+  "addOrganizerPlaceholder": "Add event organizers",
+  "addSelf": "Add myself",
+  "fromMutualFollows": "From Mutual Follows",
+  "userSearch": "User Search",
+  "searchOrganizer": "Search Organizers",
+  "searchOrganizerDescription": "Add organizers to manage the event",
+  "selectFromMutualFollowsOrganizer": "Select organizer from mutual follows",
+  "selectFromMutualFollowsOrganizerDescription": "Add event organizers from your mutual follows",
+  "addSponsorDialogTitle": "Add Sponsor",
+  "addSponsorDialogMessage": "How would you like to add a sponsor?",
+  "selectFromMutualFollows": "Select from Mutual Follows",
+  "searchSponsor": "Search Sponsors",
+  "searchSponsorDescription": "Add event sponsors",
+  "selectFromMutualFollowsSponsor": "Select sponsor from mutual follows",
+  "selectFromMutualFollowsSponsorDescription": "Add event sponsors from your mutual follows",
+  "addBlockedUserDescription": "Add users to block from this event",
+  "cannotBlockOrganizerOrSponsor": "Cannot block organizers or sponsors",
+  "userNotAuthenticated": "User not authenticated",
+  "alreadyAddedAsOrganizer": "Already added as organizer",
+  "alreadyAddedAsSponsor": "Already added as sponsor",
+  "searchInviteMembers": "Search Invite Members",
+  "searchInviteMembersDescription": "Add members to invite to the event",
+  "addInviteMembersPlaceholder": "Add members to invite",
+  "addInviteMembers": "Please add invite members",
+  "streamingUrlHint": "Enter streaming URL (YouTube, Twitch, etc.)",
+  "streamingUrlRequired": "Please enter at least one streaming URL",
+  "cancellationPolicyHint": "e.g. Cancellation possible until 24 hours before event",
+  "creatingEvent": "Creating event...",
+  "savingDraft": "Saving draft...",
+  "enableRegistrationDeadline": "Please enable and set registration deadline",
+  "cancelDeadlineTooShort": "Cannot set cancellation deadline - too short between registration deadline and event time",
+  "setEventDateTimeFirst": "Please set event date and time first",
+  "eventDateTimeTooClose": "Cannot set registration deadline - event time is too close (can be set up to 3 hours before)",
+  "registrationDeadlineBeforeEventTime": "Registration deadline must be at least 3 hours before event time",
+  "cancelDeadlineAfterRegistration": "Cancel deadline must be after registration deadline",
+  "cancelDeadlineBeforeEventTime": "Cancellation deadline must be before event time",
+  "registrationDeadlineAfterNow": "Registration deadline must be in the future",
+  "registrationDeadlineThreeHoursBefore": "Registration deadline must be at least 3 hours before event time",
+  "eventDateTimeAfterNow": "Event date and time must be after current time",
+  "changeToDraft": "Change to Draft",
+  "participantCountCheckFailed": "Failed to check participant count: {error}",
+  "impactOnParticipants": "Impact on Participants",
+  "currentParticipantCount": "Current participants: {current}/{max}",
+  "@currentParticipantCount": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "draftImpactWarning": "Reverting to draft will affect participants as follows:",
+  "draftImpact1": "Event will become private and participants cannot access it",
+  "draftImpact2": "Participants will be notified",
+  "draftImpact3": "Applications will be retained but temporarily disabled",
+  "draftRecoveryNote": "Applications will automatically restore when republished from draft.",
+  "revertToDraft": "Revert to Draft",
+  "organizerDefault": "Organizer",
+  "userNotAuthenticatedLogin": "User not authenticated. Please log in.",
+  "eventUpdated": "Event updated",
+  "changesSaved": "Changes saved",
+  "draftSaved": "Draft saved",
+  "updateAndPublishEvent": "Update & Publish Event",
+  "publishEvent": "Publish Event",
+  "pleaseEnterEventName": "Please enter event name",
+  "pleaseEnterEventContent": "Please enter event content",
+  "pleaseEnterParticipationRules": "Please enter participation rules",
+  "pleaseSelectPlatform": "Please select a platform",
+  "pleaseSetEventDateTime": "Please set event date and time",
+  "eventDateTimeMustBeFuture": "Event date and time must be in the future",
+  "pleaseSetRegistrationDeadline": "Please set registration deadline",
+  "registrationDeadlineBeforeEvent": "Registration deadline must be before event time",
+  "pleaseEnterMaxParticipants": "Please enter maximum participants",
+  "maxParticipantsPositiveInteger": "Maximum participants must be a positive integer",
+  "pleaseAddInviteMembers": "Please add invite members",
+  "pleaseEnterPrizeContent": "Please enter prize content",
+  "pleaseAddOrganizerForPrize": "Please add an organizer when setting prizes",
+  "pleaseEnterStreamingUrl": "Please enter streaming URL",
+  "eventPublished": "Event published!",
+  "eventDetailViewNote": "You can manage participants and\nview event details on the event detail screen",
+  "checkLater": "Check Later",
+  "viewDetails": "View Details",
+  "checkInputContent": "Please check input content",
+  "fillRequiredFields": "Please fill in the following required fields (*):",
+  "attentionRequired": "Attention Required",
+  "participantExistsWarning": "There are currently {count} participants, so changes require careful consideration.",
+  "@participantExistsWarning": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "enterChangeReason": "Please enter reason for change:",
+  "changeReasonHint": "e.g. Updated due to schedule change",
+  "cannotRevertToDraft": "Cannot revert event to draft",
+  "cannotRevertWithParticipants": "Cannot revert to draft because there are {count} participants.",
+  "@cannotRevertWithParticipants": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "operationsDashboard": "Operations Dashboard",
+  "operationsMode": "Operations Mode",
+  "dashboardParticipants": "Participants",
+  "dashboardApproveReject": "Approve/Reject",
+  "dashboardGroupAssignment": "Group Assignment",
+  "dashboardRoomAllocation": "Room Allocation",
+  "dashboardManagementMenu": "Management Menu",
+  "dashboardParticipantsTitle": "Participants",
+  "dashboardParticipantsDesc": "Approve/reject applications, participant list",
+  "dashboardGroupTitle": "Groups",
+  "dashboardGroupDesc": "Team assignment",
+  "dashboardResultsTitle": "Results",
+  "dashboardResultsDesc": "Match results, rankings, statistics",
+  "dashboardViolationTitle": "Violations",
+  "dashboardViolationDesc": "Violation records, warnings, penalties",
+  "dashboardUserDetailTitle": "User Details",
+  "dashboardUserDetailDesc": "Participation history, details, overall rating",
+  "dashboardLoading": "Loading",
+  "dashboardCancelled": "Cancelled",
+  "dashboardCompleted": "Completed",
+  "dashboardDeleteEvent": "Delete Event",
+  "dashboardCancelEvent": "Cancel Event",
+  "participantsTitle": "Participants",
+  "participationApplications": "Applications",
+  "tabPending": "Pending",
+  "tabApproved": "Approved",
+  "tabRejected": "Rejected",
+  "tabWaitlisted": "Waitlisted",
+  "tabCancelled": "Cancelled",
+  "dataLoadFailed": "Failed to load data",
+  "errorLabel": "Error: {error}",
+  "@errorLabel": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "noPendingParticipants": "No pending participants",
+  "noApprovedParticipants": "No approved participants",
+  "noRejectedParticipants": "No rejected participants",
+  "noWaitlistedParticipants": "No waitlisted participants",
+  "noCancelledParticipants": "No cancelled participants",
+  "noParticipants": "No participants",
+  "loadingText": "Loading...",
+  "gameAccountInfo": "Game Account Info",
+  "inGameUsername": "In-Game Username",
+  "inGameUserId": "In-game User ID",
+  "noGameAccountInfo": "No game account info registered",
+  "applicationDateTime": "Applied: {dateTime}",
+  "@applicationDateTime": {
+    "placeholders": {
+      "dateTime": {
+        "type": "String"
+      }
+    }
+  },
+  "messageLabel": "Message: {message}",
+  "@messageLabel": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "rejectionReasonLabel": "Rejection reason: {reason}",
+  "@rejectionReasonLabel": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "approve": "Approve",
+  "reject": "Reject",
+  "statusPending": "Pending",
+  "statusApproved": "Approved",
+  "statusRejected": "Rejected",
+  "statusWaitlisted": "Waitlisted",
+  "statusUnknown": "Unknown",
+  "approveApplicationTitle": "Approve Application",
+  "rejectApplicationTitle": "Reject Application",
+  "approveApplicationMessageHint": "You can send a message to the applicant (optional)",
+  "rejectApplicationMessageHint": "You can send a rejection reason (optional)",
+  "messageInputLabel": "Message",
+  "rejectReasonInputLabel": "Rejection Reason",
+  "approveMessagePlaceholder": "Details about approval or event participation notes",
+  "rejectMessagePlaceholder": "Reason for rejection or suggestions for improvement",
+  "approveButton": "Approve",
+  "rejectButton": "Reject",
+  "waitlistUserApproved": "Waitlisted user approved",
+  "applicationApproved": "Application approved",
+  "approvalFailed": "Approval failed",
+  "applicationRejectedSuccess": "Application rejected",
+  "rejectionFailed": "Failed to reject",
+  "capacityExceededApprovalError": "Cannot approve due to full capacity. Please wait for an approved participant to withdraw.",
+  "revokeApprovalAndReturnToPending": "Revoke approval and return to pending",
+  "revokeRejectionAndReturnToPending": "Revoke rejection and return to pending",
+  "revokeApprovalTitle": "Revoke approval?",
+  "revokeRejectionTitle": "Revoke rejection?",
+  "revokeApprovalConfirmMessage": "This will revoke the approval and return to pending. Enter a reason (optional).",
+  "revokeRejectionConfirmMessage": "This will revoke the rejection and return to pending. Enter a reason (optional).",
+  "enterReasonHint": "Enter reason...",
+  "returnToPendingButton": "Return to Pending",
+  "approvalRevoked": "Approval revoked",
+  "rejectionRevoked": "Rejection revoked",
+  "revokeApprovalSuccess": "Approval revoked and returned to pending",
+  "revokeRejectionSuccess": "Rejection revoked and returned to pending",
+  "revokeApprovalFailed": "Failed to revoke approval",
+  "revokeRejectionFailed": "Failed to revoke rejection",
+  "withdrawnUserProfileNotAvailable": "Cannot view profile of withdrawn user",
+  "userNotFoundError": "User not found",
+  "userProfileLoadFailed": "Failed to load user profile",
+  "gameProfileInfoMissing": "Game profile info is missing",
+  "approveWaitlistUser": "Approve",
+  "returnWaitlistToPending": "Return to Pending",
+  "cancellationReasonTitle": "Cancellation Reason",
+  "userCancelledParticipation": "{userName} cancelled",
+  "@userCancelledParticipation": {
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  },
+  "viewReason": "View Reason",
+  "noCancellationReasonRecorded": "No cancellation reason recorded",
+  "cancellationDateTimeLabel": "Cancelled at: {dateTime}",
+  "@cancellationDateTimeLabel": {
+    "placeholders": {
+      "dateTime": {
+        "type": "String"
+      }
+    }
+  },
+  "closeButton": "Close",
+  "capacityExceededTitle": "Cannot approve due to capacity",
+  "capacityExceededMessage": "Event is full ({current}/{max} participants).\n\nPlease wait for an approved participant to withdraw before approving.",
+  "@capacityExceededMessage": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "eventInfoFetchFailed": "Failed to fetch event info",
+  "capacityCheckFailed": "Capacity check failed",
+  "noBlockedUsersSet": "No blocked users set",
+  "myGroup": "My Group",
+  "allGroups": "All Groups",
+  "noGroupAssigned": "No group assigned",
+  "waitForOrganizerGuidance": "Please wait for organizer guidance",
+  "noGroupsCreated": "No groups created",
+  "memberCount": "{count} members",
+  "@memberCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupMemberCount": "Group of {count}",
+  "@groupMemberCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupDescription": "Group Description",
+  "groupAnnouncements": "Group Announcements",
+  "membersLabel": "Members ({count})",
+  "@membersLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "user": "User",
+  "commonAnnouncements": "General Announcements",
+  "gameProfileDisplayFailed": "Failed to display game profile",
+  "participantDetails": "Participant Details",
+  "checkParticipantProfiles": "View event participant profiles",
+  "searchByUsernameOrGameId": "Search by username or game ID...",
+  "participantInfoLoadFailed": "Failed to load participant info: {error}",
+  "noParticipantsInEvent": "No participants",
+  "personCount": "{count}",
+  "@personCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "teamMatch": "Team Match",
+  "individualMatch": "Individual Match",
+  "matchResultsTitle": "Match Results",
+  "allMatches": "All Matches",
+  "myMatches": "My Matches",
+  "noMatchesRegistered": "No matches registered yet",
+  "noMyMatchesFound": "No matches you participated in",
+  "winner": "Winner: {name}",
+  "@winner": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "score": "Score",
+  "points": "{value} pts",
+  "@points": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "aboutViolationReport": "About Violation Reports",
+  "importantNotesForProperUse": "Important notes for proper use",
+  "reportPrecautions": "Reporting Precautions:",
+  "violationReportPrecaution1": "False or malicious reports are prohibited",
+  "violationReportPrecaution2": "Reports will be reviewed by organizers and handled as necessary",
+  "violationReportPrecaution3": "Reporter information is properly protected",
+  "violationReportPrecaution4": "Please avoid duplicate reports on the same issue",
+  "createViolationReport": "Create Violation Report",
+  "selectParticipantToReport": "Select a participant to report the violation",
+  "startViolationReport": "Start Violation Report",
+  "violationReportSent": "Violation report sent. Organizers will review it.",
+  "cancellationErrorWithMessage": "Error during cancellation: {error}",
+  "@cancellationErrorWithMessage": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "noAvailableImages": "No images available",
+  "groupTitle": "Groups",
+  "editGeneralAnnouncementsTooltip": "Edit general announcements",
+  "groupManagement": "Group Management",
+  "createGroup": "Create Group",
+  "noGroupsYet": "No groups yet",
+  "createGroupDescription": "Create groups (teams)\nfor team events",
+  "unassignedParticipantsWarning": "{count} approved participants\nare not assigned to groups",
+  "@unassignedParticipantsWarning": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "viewUnassignedParticipants": "View unassigned participants",
+  "unassignedParticipantsTitle": "Unassigned Participants ({count})",
+  "@unassignedParticipantsTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "generalAnnouncements": "General Announcements",
+  "visibleToAllParticipants": "Visible to all participants",
+  "editAction": "Edit",
+  "addMemberAction": "Add Member",
+  "deleteAction": "Delete",
+  "groupDescriptionLabel": "Group Description",
+  "groupAnnouncementsLabel": "Group Announcements",
+  "participantsCount": "Participants: {count}",
+  "@participantsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noMembersInGroup": "No members",
+  "addMemberFromMenuHint": "Add members from the menu",
+  "addToGroup": "Add to Group",
+  "selectGroupToAddParticipant": "Select group to add {name}",
+  "@selectGroupToAddParticipant": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "membersCount": "{count} people",
+  "@membersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "participantRemovedFromGroup": "Removed {participantName} from {groupName}",
+  "@participantRemovedFromGroup": {
+    "placeholders": {
+      "participantName": {
+        "type": "String"
+      },
+      "groupName": {
+        "type": "String"
+      }
+    }
+  },
+  "failedToRemoveParticipant": "Failed to remove participant",
+  "participantAddedToGroup": "Added {participantName} to {groupName}",
+  "@participantAddedToGroup": {
+    "placeholders": {
+      "participantName": {
+        "type": "String"
+      },
+      "groupName": {
+        "type": "String"
+      }
+    }
+  },
+  "failedToAddParticipant": "Failed to add participant",
+  "noParticipantsToAdd": "No participants to add",
+  "addMemberToGroup": "Add member to {groupName}",
+  "@addMemberToGroup": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    }
+  },
+  "generalAnnouncementsUpdated": "General announcements updated",
+  "failedToUpdateGeneralAnnouncements": "Failed to update general announcements: {error}",
+  "@failedToUpdateGeneralAnnouncements": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "editGeneralAnnouncementsTitle": "Edit General Announcements",
+  "generalAnnouncementsDescription": "Set announcements visible to all event participants.",
+  "generalAnnouncementsLabel": "General Announcements",
+  "generalAnnouncementsHint": "e.g., Event start time has been changed by 30 minutes",
+  "createNewGroup": "Create New Group",
+  "groupNameLabel": "Group Name",
+  "groupNameHint": "e.g., Team A",
+  "groupDescriptionOptional": "Group Description (Optional)",
+  "groupDescriptionHint": "e.g., Attack team members",
+  "createAction": "Create",
+  "pleaseEnterGroupName": "Please enter a group name",
+  "groupCreated": "Created group \"{name}\"",
+  "@groupCreated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "failedToCreateGroup": "Failed to create group",
+  "failedToCreateGroupWithError": "Failed to create group: {error}",
+  "@failedToCreateGroupWithError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "editGroup": "Edit Group",
+  "groupAnnouncementsOptional": "Group Announcements",
+  "groupAnnouncementsHint": "e.g., Next practice at 7 PM",
+  "updateAction": "Update",
+  "groupUpdated": "Updated group \"{name}\"",
+  "@groupUpdated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "failedToUpdateGroup": "Failed to update group",
+  "failedToUpdateGroupWithError": "Failed to update group: {error}",
+  "@failedToUpdateGroupWithError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "cannotDeleteGroup": "Cannot Delete Group",
+  "groupHasRelatedMatches": "\"{groupName}\" is linked to {matchCount} match records.",
+  "@groupHasRelatedMatches": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      },
+      "matchCount": {
+        "type": "int"
+      }
+    }
+  },
+  "cannotDeleteGroupReason": "Groups with related match records cannot be deleted to protect the data.",
+  "deleteGroupHint": "If deletion is necessary, please delete the related match records first.",
+  "understoodAction": "OK",
+  "goToMatchManagement": "Go to Match Management",
+  "deleteGroupTitle": "Delete Group",
+  "deleteGroupConfirmation": "Delete \"{name}\"?\nThis action cannot be undone.",
+  "@deleteGroupConfirmation": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDeleted": "Deleted group \"{name}\"",
+  "@groupDeleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "failedToDeleteGroup": "Failed to delete group",
+  "gameInfoNotFound": "Game info not found",
+  "failedToShowGameProfile": "Failed to show game profile",
+  "collapseText": "Collapse",
+  "showMoreText": "Show more",
+  "unassignedParticipantsDialogTitle": "Unassigned Participants",
+  "approvedNotAssignedDescription": "Approved participants not assigned to groups:",
+  "createGroupForParticipantsHint": "Create a group and assign these participants",
+  "failedToLoadParticipants": "Failed to load participants: {error}",
+  "defaultUserName": "User",
+  "failedToLoadData": "Failed to load data: {error}",
+  "sortNewest": "Newest first",
+  "sortOldest": "Oldest first",
+  "sortReportCount": "By report count",
+  "sortPendingReports": "Pending reports first",
+  "sortStatus": "By status",
+  "matchResultTitle": "Match Results",
+  "matchResultLabel": "Match Result",
+  "showPendingReportsOnly": "Show pending reports only",
+  "addMatch": "Add Match",
+  "noPendingReports": "No pending reports",
+  "problemMatchesDescription": "Matches with problems will be displayed here",
+  "teamMatchDescription": "Record and manage team (group) match results",
+  "individualMatchDescription": "Record and manage individual match results between participants",
+  "needTwoTeamsForMatch": "At least 2 teams (groups) are required to hold a match",
+  "needTwoParticipantsForMatch": "At least 2 participants are required to hold a match",
+  "needGroupsForTeamMatch": "Groups need to be created before holding team matches",
+  "goToGroupManagement": "Go to Group Management",
+  "needParticipantsForMatch": "Add participants to the event before starting matches",
+  "goToParticipantManagement": "Go to Participant Management",
+  "confirmReportsCount": "Check reports ({count})",
+  "changeStatus": "Change Status",
+  "winnerLabel": "Winner: {winner}",
+  "editResult": "Edit Result",
+  "inputResult": "Input Result",
+  "detailButton": "Details",
+  "editButton": "Edit",
+  "deleteButton": "Delete",
+  "matchRegisteredMessage": "Match \"{name}\" has been registered",
+  "failedToRegisterMatch": "Failed to register match: {error}",
+  "matchResultSaved": "Match result saved",
+  "failedToSaveMatchResult": "Failed to save match result: {error}",
+  "changeStatusTitle": "Change Status",
+  "statusChangedMessage": "Status changed to \"{status}\"",
+  "failedToChangeStatus": "Failed to change status: {error}",
+  "matchReportsTitle": "Match Reports",
+  "noReportsForMatch": "No reports for this match",
+  "deleteMatchTitle": "Delete Match",
+  "deleteMatchWarning": "This action cannot be undone.\nMatch data will be permanently deleted.",
+  "matchInfoTabLabel": "Match Info",
+  "issueReportTabLabel": "Issue Reports",
+  "matchCreatedAtLabel": "Created: {dateTime}",
+  "matchCompletedAtLabel": "Completed: {dateTime}",
+  "awaitingResultStatus": "Awaiting Results",
+  "scheduledStatus": "Scheduled",
+  "rankColumnLabel": "Rank",
+  "scoreColumnLabel": "Score",
+  "individualScoreLabel": "Individual Score",
+  "statusChangeFailedMessage": "Failed to change status: {error}",
+  "resultSavedMessage": "Match result saved",
+  "resultSaveFailedMessage": "Failed to save match result: {error}",
+  "publicMemoLabel": "Public Memo (Visible to Users)",
+  "publicMemoHint": "This memo is visible to participants",
+  "privateMemoLabel": "Private Memo (Organizers Only)",
+  "privateMemoHint": "Internal memo (not visible to participants)",
+  "noParticipantsText": "Participants: None",
+  "participantsPrefix": "Participants: ",
+  "noReportsHint": "Reports will appear here if issues are reported by participants",
+  "reporterPrefix": "Reporter: ",
+  "adminActionLabel": "Admin Action",
+  "matchDeletedMessage": "Match \"{name}\" has been deleted",
+  "failedToDeleteMatch": "Failed to delete match: {error}",
+  "selectStatusForMatch": "Select status for \"{name}\"",
+  "deleteMatchConfirmation": "Delete \"{name}\"?",
+  "failedToGetViolationRecords": "Failed to get violation records: {error}",
+  "failedToLoadDataError": "Failed to load data: {error}",
+  "violationTitle": "Violations",
+  "violationRecords": "Violation Records",
+  "operationGuideTooltip": "Operation Guide",
+  "noViolationRecords": "No violation records",
+  "noViolationReportsYet": "No violation reports for this event yet",
+  "reportedAt": "Reported: {dateTime}",
+  "penaltyValue": "Penalty: {penalty}",
+  "violationProcessButton": "Process Violation",
+  "waitingAppealPeriod": "Waiting for appeal period",
+  "processAppeal": "Process Appeal",
+  "revertToPending": "Revert to Pending",
+  "statusInvestigating": "Investigating",
+  "statusResolved": "Resolved",
+  "retryButton": "Retry",
+  "severityMinor": "Minor",
+  "severityModerate": "Moderate",
+  "severitySevere": "Severe",
+  "violationDetailTitle": "Violation Details - {type}",
+  "violatorLabel": "Violator: {name}",
+  "realNameLabel": "Real name: {name}",
+  "violationTypeLabel": "Violation Type *",
+  "severityLabel": "Severity *",
+  "reportedAtLabel": "Reported At",
+  "statusLabel": "Status",
+  "penaltyLabel": "Penalty",
+  "notesLabel": "Notes",
+  "detailContentLabel": "Details:",
+  "processViolationTitle": "Process Violation",
+  "penaltyContentLabel": "Penalty Content",
+  "penaltyContentHint": "e.g., 1 warning, 1 week suspension",
+  "notesOptionalLabel": "Notes (Optional)",
+  "processingNotesHint": "Notes about processing",
+  "doneButtonText": "Done",
+  "pleaseEnterPenalty": "Please enter penalty content",
+  "violationProcessed": "Violation processed",
+  "failedToProcess": "Failed to process: {error}",
+  "processButton": "Process",
+  "deleteViolationRecordTitle": "Delete Violation Record",
+  "importantCannotUndo": "⚠️ Important: This action cannot be undone",
+  "deleteViolationRecordConfirm": "Are you sure you want to permanently delete this violation record?",
+  "deleteViolationRecordWarning": "• Will be permanently deleted from database\n• This action cannot be undone\n• Using 'Reject' is usually recommended",
+  "failedToDelete": "Failed to delete: {error}",
+  "rejectViolationRecordTitle": "Reject Violation Record",
+  "aboutRejection": "ℹ️ About Rejection",
+  "rejectionDescription": "• Record remains but marked as rejected\n• Can be restored to pending later\n• Use when judged inappropriate as a violation",
+  "rejectViolationRecordConfirm": "Do you want to reject this violation record?",
+  "rejectReasonOptionalLabel": "Rejection Reason (Optional)",
+  "rejectReasonHint": "Please describe the reason for rejection",
+  "violationRecordRejected": "Violation record rejected. Related parties will be notified.",
+  "failedToReject": "Failed to reject: {error}",
+  "reporterLabel": "Reporter:",
+  "gameProfileNotFound": "Game profile not found",
+  "failedToGetGameProfile": "Failed to get game profile: {error}",
+  "selectGameTitle": "Select Game",
+  "violationManagementGuide": "Violation Management Guide",
+  "guideBasicOperations": "📝 Basic Operations",
+  "guideCardButtonsDesc": "Explanation of each button on the violation record card.",
+  "guideImportantOperations": "⚠️ Important Operations",
+  "guideRestoreFeature": "🔄 Restore Feature",
+  "guideDetailTitle": "Details",
+  "guideDetailDesc": "View detailed information about the violation record.",
+  "guideEditTitle": "Edit",
+  "guideEditDesc": "Edit violation type, severity, description, etc.",
+  "guideProcessTitle": "Process",
+  "guideProcessDesc": "Confirm the violation, record a penalty, and mark as resolved.",
+  "guideCautionOperations": "Please execute the following operations carefully.",
+  "guideRejectTitle": "Reject",
+  "guideRejectDesc": "Use when judged inappropriate as a violation. Record remains but marked as 'Rejected'.",
+  "guideDeleteTitle": "Delete",
+  "guideDeleteDesc": "Permanently delete from database. This action cannot be undone. 'Reject' is usually recommended.",
+  "guideMistakeRecovery": "How to handle mistakes.",
+  "guideRecoveryTitle": "Restore",
+  "guideRecoveryDesc": "Restore processed/rejected records to pending status. Deleted records cannot be restored.",
+  "guideRecoveryHint": "Tip: Use the 'Restore' button to undo accidental processing or rejection",
+  "restoreViolationRecordTitle": "Restore Violation Record",
+  "restoreViolationRecordConfirm": "Do you want to restore this violation record to pending status?\nCurrent status: {status}",
+  "restoreReasonOptionalLabel": "Restore Reason (Optional)",
+  "restoreReasonHint": "Please describe the reason for restoration",
+  "violationRecordRestored": "Violation record restored",
+  "failedToRestore": "Failed to restore: {error}",
+  "restoreButton": "Restore",
+  "appealSubmittedWaiting": "Appeal Submitted - Waiting",
+  "processableStatus": "Ready to Process",
+  "appealPeriodRemaining": "Appeal Period - {hours} hours remaining",
+  "appealDeadlineExpired": "Appeal Deadline Expired - Ready to Process",
+  "deadlineLabel": "Deadline: {dateTime}",
+  "gameProfileTitle": "Game Profile",
+  "gameInfoSection": "Game Information",
+  "inGameId": "In-Game ID",
+  "notSet": "Not Set",
+  "usernameUnknown": "Username Unknown",
+  "noUserIdSet": "No User ID",
+  "communicationSection": "Communication",
+  "voiceChat": "Voice Chat",
+  "vcUsable": "Voice Chat Available",
+  "vcNotUsable": "Voice Chat Unavailable",
+  "vcDetailsSection": "Voice Chat Details",
+  "achievementsGoals": "Achievements & Goals",
+  "notesSection": "Notes & Remarks",
+  "snsAccountsTitle": "SNS Accounts",
+  "discordIdCopied": "Copied Discord ID \"{discordId}\"",
+  "copyFailedWithError": "Copy failed: {error}",
+  "userDetailsTitle": "User Details",
+  "userListTitle": "User List",
+  "searchByUsernameOrGameIdHint": "Search by username or game ID...",
+  "noParticipantsYet": "No participants yet",
+  "participantInfoLoadError": "Failed to load participant information: {error}",
+  "gameExperience": "Game Experience",
+  "clanLabel": "Clan",
+  "eventDefault": "Event",
+  "reportViolation": "Report Violation",
+  "profileDisplaySection": "Profile Display",
+  "gameProfileDescription": "In-game profile information",
+  "userProfileLabel": "User Profile",
+  "userProfileDescription": "In-app user information",
+  "visibilityPrivate": "Private",
+  "approvalAuto": "Auto Approval",
+  "approvalManual": "Manual Approval",
+  "hidePassword": "Hide password",
+  "showPassword": "Show password",
+  "exampleCount": "e.g. 100",
+  "prizeDisclaimer": "Prize delivery is handled directly between the organizer and participants. The app does not mediate or guarantee delivery.",
+  "prizeSettingsTitle": "About Prize Settings",
+  "prizeInfoBullet1": "Prize information is displayed as guidance for participants",
+  "prizeInfoBullet2": "Actual delivery is handled between organizer and participants",
+  "prizeInfoBullet3": "The app does not mediate or guarantee deliveries",
+  "prizeInfoBullet4": "Discuss delivery methods with participants in advance",
+  "prizeRecommendation": "Recommended: Choose a method that both parties feel secure with, such as PayPal, bank transfer, or cash handover.",
+  "blockedUsersTitle": "Blocked Users",
+  "eventOperatorsTitle": "Event Operators",
+  "addOperatorPlaceholder": "Add event operators",
+  "addMyselfButton": "Add Myself",
+  "searchOperatorTitle": "Search Event Operators",
+  "searchOperatorDesc": "Add operators to manage the event",
+  "selectOperatorFromFollows": "Select Operator from Mutual Follows",
+  "selectOperatorFromFollowsDesc": "Add event operators from mutual follows",
+  "addSponsorTitle": "Add Sponsor",
+  "addSponsorQuestion": "How would you like to add a sponsor?",
+  "searchSponsorTitle": "Search Sponsors",
+  "searchSponsorDesc": "Add event sponsors",
+  "selectSponsorFromFollows": "Select Sponsor from Mutual Follows",
+  "selectSponsorFromFollowsDesc": "Add event sponsors from mutual follows",
+  "addBlockedUserDesc": "Add users to block from this event",
+  "cannotBlockOperatorOrSponsor": "Cannot block operators or sponsors",
+  "defaultUsername": "User",
+  "alreadyAddedAsOperator": "Already added as operator",
+  "errorOccurredWithDetails": "An error occurred: {error}",
+  "searchInviteMemberTitle": "Search Invite Members",
+  "searchInviteMemberDesc": "Add members to invite to the event",
+  "addInviteMemberPlaceholder": "Add members to invite",
+  "addInviteMemberButton": "Add Invite Member",
+  "contactInfoHint": "Official Discord, community site, streaming channel, etc.\ne.g. Official Discord: https://discord.gg/xxxxx\nCommunity: https://example.com\nYouTube: @channelname",
+  "setDeadlineFirst": "Please enable and set the registration deadline",
+  "deadlineTooCloseForCancel": "Cannot set cancel deadline - interval between registration deadline and event is too short",
+  "setEventDateFirst": "Please set event date first",
+  "eventDateTooCloseForDeadline": "Event date is too close to set registration deadline (must be at least 3 hours before)",
+  "deadlineMustBe3HoursBefore": "Registration deadline must be at least 3 hours before the event",
+  "cancelDeadlineBeforeEvent": "Cancel deadline must be before event date",
+  "deadlineMustBeFuture": "Registration deadline must be in the future",
+  "deadlineMust3HoursBeforeEvent": "Registration deadline must be at least 3 hours before event",
+  "eventDateMustBeFuture": "Event date must be in the future",
+  "failedToCheckParticipants": "Failed to check participant count.\nCannot revert to draft for safety.",
+  "impactOnParticipantsTitle": "Impact on Participants",
+  "currentParticipantsCount": "Currently {count} participants registered",
+  "impactOnRevertToDraft": "Reverting to draft will affect participants as follows:",
+  "impactEventHidden": "Event will be hidden and participants will lose access",
+  "impactParticipantsNotified": "Participants will be notified",
+  "impactRegistrationTemporarilyInvalid": "Registrations will be preserved but temporarily invalid",
+  "registrationReactivatedOnRepublish": "When republished from draft, registrations will automatically be restored.",
+  "revertToDraftButton": "Revert to Draft",
+  "pleaseLoginFirst": "User not authenticated. Please login.",
+  "enterEventName": "Please enter event name",
+  "enterEventDescription": "Please enter event description",
+  "enterParticipationRules": "Please enter participation rules",
+  "selectPlatform": "Please select a platform",
+  "setEventDate": "Please set event date",
+  "setRegistrationDeadline": "Please set registration deadline",
+  "deadlineBeforeEvent": "Registration deadline must be before event date",
+  "enterMaxParticipants": "Please enter maximum participants",
+  "maxParticipantsPositive": "Maximum participants must be a positive integer",
+  "enterPrizeContent": "Please enter prize content",
+  "addOperatorForPrize": "Please add operators when setting prizes",
+  "enterStreamingUrl": "Please enter streaming URL",
+  "eventDetailDescription": "You can manage participants and\ncheck event information on the detail screen",
+  "confirmButton": "Confirm",
+  "cautionNeeded": "Caution Needed",
+  "participantsRequireCarefulChange": "There are currently {count} participants. Changes require careful consideration.",
+  "cannotRevertToDraftTitle": "Cannot Revert to Draft",
+  "cannotRevertToDraftMessage": "Cannot revert to draft as there are {count} participants.\n\nMajor changes after registration deadline may cause confusion for participants.",
+  "eventLoadFailed": "Failed to load events: {error}",
+  "selectedDateLabel": "Selected Date",
+  "monthDayFormat": "{month}/{day}",
+  "yearWeekdayFormat": "{year} {weekday}",
+  "backToCalendar": "Back to calendar",
+  "weekdayMonday": "Monday",
+  "weekdayTuesday": "Tuesday",
+  "weekdayWednesday": "Wednesday",
+  "weekdayThursday": "Thursday",
+  "weekdayFriday": "Friday",
+  "weekdaySaturday": "Saturday",
+  "weekdaySunday": "Sunday",
+  "weekdayShortMon": "Mon",
+  "weekdayShortTue": "Tue",
+  "weekdayShortWed": "Wed",
+  "weekdayShortThu": "Thu",
+  "weekdayShortFri": "Fri",
+  "weekdayShortSat": "Sat",
+  "weekdayShortSun": "Sun",
+  "yearMonthFormat": "{month}/{year}",
+  "eventsOnDate": "Events on {month}/{day}",
+  "eventsLabel": "Events",
+  "displayFilter": "Display Filter",
+  "applyButton": "Apply",
+  "publishedEventsFilter": "Published Events",
+  "draftEventsFilter": "Draft Events",
+  "completedEventsFilter": "Completed Events",
+  "hostEventCalendar": "Host Event Calendar",
+  "noEventsOnSelectedDate": "No events on selected date",
+  "userNotLoggedIn": "User not logged in",
+  "participatingEvents": "Participating Events",
+  "noParticipatingEvents": "No participating events",
+  "tryJoinNewEvents": "Why not join a new event?",
+  "participantCountFormat": "{current}/{max}",
+  "createEventTitle": "Create New Event",
+  "basicInfoSection": "Basic Information",
+  "eventNameLabel": "Event Name",
+  "eventNameHint": "Enter event name",
+  "subtitleLabel": "Subtitle",
+  "subtitleHint": "Enter subtitle (optional)",
+  "descriptionLabel": "Event Description",
+  "descriptionHint": "Enter detailed description of the event",
+  "rulesLabel": "Rules",
+  "rulesHint": "Enter event rules",
+  "imageLabel": "Event Image",
+  "addImageButton": "Add Image",
+  "scheduleSection": "Schedule Settings",
+  "eventDateLabel": "Event Date & Time",
+  "gameSettingsSection": "Game & Participation Settings",
+  "gameSelectionLabel": "Select Game",
+  "platformLabel": "Target Platforms",
+  "maxParticipantsLabel": "Max Participants",
+  "additionalInfoLabel": "Additional Information",
+  "additionalInfoHint": "Enter additional information if any",
+  "eventTagsLabel": "Event Tags",
+  "eventTagsHint": "Enter tag and press Enter",
+  "prizeSection": "Prizes",
+  "hasPrizeLabel": "Has Prizes",
+  "prizeContentLabel": "Prize Content",
+  "sponsorsLabel": "Sponsors",
+  "managementSection": "Management",
+  "categorySection": "Visibility Settings",
+  "visibilityLabel": "Visibility",
+  "invitationSection": "Invitation Settings",
+  "eventPasswordLabel": "Event Password",
+  "eventPasswordHint": "Set password required for participation",
+  "inviteMembersLabel": "Invite Members",
+  "externalSection": "External Integration",
+  "contactLabel": "Community & Others",
+  "streamingLabel": "Streaming Schedule",
+  "streamingUrlLabel": "Streaming URL",
+  "streamingUrlInputHint": "Enter https://... and press Enter to add",
+  "streamingUrlDuplicate": "This URL has already been added",
+  "streamingUrlMaxReached": "You can add up to {maxUrls} streaming URLs",
+  "@streamingUrlMaxReached": {
+    "placeholders": {
+      "maxUrls": {"type": "int"}
+    }
+  },
+  "streamingUrlInvalid": "Please enter a valid URL (https://... or http://...)",
+  "streamingUrlCount": "{count}/{maxUrls} streaming URLs",
+  "@streamingUrlCount": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "maxUrls": {"type": "int"}
+    }
+  },
+  "deleteUrlTooltip": "Delete URL",
+  "otherSection": "Other",
+  "policyLabel": "Cancellation & Change Policy",
+  "saveDraftButton": "Save Draft",
+  "iosLabel": "iOS",
+  "androidLabel": "Android",
+  "noDeadlineInfo": "No deadline - Participants can apply anytime",
+  "participantCancelDeadlineLabel": "Participant Cancel Deadline (Optional)",
+  "selectGamePlaceholder": "Select a game",
+  "maxParticipantsHint": "e.g.: 100",
+  "prizeContentHintText": "e.g.: 1st place 100,000 yen, 2nd place 50,000 yen, 3rd place 10,000 yen",
+  "addSponsorButtonText": "Add Sponsor",
+  "eventOperatorsLabel": "Event Operators",
+  "addSelfButton": "Add Myself",
+  "fromMutualFollowsButton": "From Mutual Follows",
+  "userSearchButton": "User Search",
+  "blockedUsersLabel": "Blocked Users",
+  "addBlockedUserButton": "Add Blocked User",
+  "contactHint": "Event official Discord, community site, streaming channel, etc.\ne.g.: Official Discord: https://discord.gg/xxxxx\nCommunity: https://example.com\nYouTube: @channelname",
+  "minStreamingUrlError": "Please enter at least one streaming URL",
+  "policyHint": "e.g.: Cancellation available up to 24 hours before event start",
+  "createEventButton": "Create Event",
+  "creatingEventLoading": "Creating event...",
+  "savingDraftLoading": "Saving draft...",
+  "requiredFieldError": "{field} is required",
+  "@requiredFieldError": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "selectDateTimePlaceholder": "Select date and time",
+  "selectOperatorFromFollowsTitle": "Select Operator from Mutual Follows",
+  "addSponsorDialogQuestion": "How would you like to add a sponsor?",
+  "selectFromMutualFollowsButton": "Select from Mutual Follows",
+  "selectSponsorFromFollowsTitle": "Select Sponsor from Mutual Follows",
+  "searchBlockedUserTitle": "Search Blocked Users",
+  "searchBlockedUserDesc": "Add users to block from this event",
+  "cannotBlockOperatorOrSponsorError": "Cannot block operators or sponsors",
+  "userNotAuthenticatedError": "User not authenticated",
+  "addedAsOperatorMessage": "Added {username} as operator",
+  "@addedAsOperatorMessage": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
+  "alreadyAddedAsOperatorError": "Already added as operator",
+  "alreadyAddedAsSponsorError": "Already added as sponsor",
+  "prizeSettingsDialogTitle": "About Prize Settings",
+  "registrationDeadlineSectionLabel": "Registration Deadline",
+  "matchDetailTitle": "Match Details",
+  "recommendedEventsTitle": "Recommended Events",
+  "profileImageCropTitle": "Adjust Profile Image",
+  "removeParticipantDialogTitle": "Remove Participant",
+  "rejectParticipantDialogTitle": "Reject Application",
+  "selectFromPastEventsTitle": "Select from Past Events",
+  "matchReportManagementTitle": "Match Report Management",
+  "paymentManagementTitle": "Payment Management",
+  "participantManagementTitle": "Participant Management",
+  "groupInfoTitle": "Group Info",
+  "participantListTitle": "Participant List",
+  "violationReportMenuTitle": "Report Violation",
+  "approveApplicationDialogTitle": "Approve this application?",
+  "rejectApplicationDialogTitle": "Reject this application?",
+  "applicationMessageLabel": "Application Message:",
+  "approvalMessageLabel": "Approval Message:",
+  "rejectionReasonTitle": "Rejection Reason:",
+  "approvalSuccessMessage": "Application approved",
+  "rejectionSuccessMessage": "Application rejected",
+  "approvalFailedMessage": "Approval failed",
+  "cannotApproveFullCapacity": "Cannot approve - event is full",
+  "nearCapacityWarning": "Near capacity",
+  "approvalWillReachCapacity": "Approving will reach capacity.",
+  "continueApproval": "Continue with approval?",
+  "fullCapacityApprovalMessage": "This event has reached capacity.\n\nTo approve, revoke another participant's approval or increase the capacity.",
+  "@participantCountCheckFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "enterApprovalMessageOptional": "Enter approval message (optional)",
+  "enterRejectionReasonOptional": "Enter rejection reason (optional)",
+  "enterApprovalMessagePlaceholder": "Enter approval message...",
+  "enterRejectionReasonPlaceholder": "Enter rejection reason...",
+  "revokeApprovalReasonHint": "Enter reason (optional)...",
+  "approvalRevokedMessage": "Approval revoked",
+  "confirmButtonLabel": "Confirm",
+  "approveButtonLabel": "Approve",
+  "doneButtonLabel": "Done",
+  "noRecommendedEvents": "No recommended events",
+  "registerFavoriteGamesHint": "Register your favorite games\nto see related events",
+  "participantMenuTitle": "Participant Menu",
+  "loginRequired": "Login required",
+  "groupInfoDescription": "Check your group and members",
+  "participantListDescription": "View event participants",
+  "violationReportDescription": "Report misconduct or violations",
+  "participantMode": "Participant Mode",
+  "userSearchTitle": "Search Users",
+  "eventPaid": "Paid",
+  "eventFree": "Free",
+  "eventCancellationDate": "Cancelled: {date}",
+  "managementStatusDraft": "Draft",
+  "managementStatusPublished": "Published",
+  "managementStatusPublishing": "Public",
+  "managementStatusActive": "Active",
+  "managementStatusEnded": "Ended",
+  "managementStatusCancelled": "Cancelled",
+  "managementVisibilityLimited": "Limited",
+  "addInviteMembersDescription": "Add members to invite to this event",
+  "addInviteMembersEmptyMessage": "Add members to invite",
+  "addInviteMembersButton": "Add Invite Members",
+  "eventDateAfterNow": "Event date must be in the future",
+  "changeToRevertToDraft": "Change to Draft",
+  "participantsWillBeNotified": "Participants will be notified",
+  "eventUpdatedSuccess": "Event updated successfully",
+  "changesSavedSuccess": "Changes saved",
+  "draftSavedSuccess": "Draft saved",
+  "validationEventNameRequired": "Please enter an event name",
+  "validationEventDescriptionRequired": "Please enter an event description",
+  "validationRulesRequired": "Please enter participation rules",
+  "validationGameRequired": "Please select a game",
+  "validationPlatformRequired": "Please select a platform",
+  "validationEventDateRequired": "Please set event date",
+  "validationEventDateFuture": "Event date must be in the future",
+  "validationRegistrationDeadlineRequired": "Please set registration deadline",
+  "validationRegistrationDeadlineBeforeEvent": "Registration deadline must be before event date",
+  "validationMaxParticipantsRequired": "Please enter maximum participants",
+  "validationMaxParticipantsPositive": "Max participants must be a positive integer",
+  "validationInviteMembersRequired": "Please add invite members",
+  "validationPrizeContentRequired": "Please enter prize content",
+  "validationManagerRequiredForPrize": "Please add a manager when setting prizes",
+  "validationStreamingUrlRequired": "Please enter streaming URL",
+  "atLeastOneStreamingUrlRequired": "Please enter at least one streaming URL",
+  "cautionRequired": "Caution Required",
+  "eventCancellationDialogTitle": "Confirm Event Cancellation",
+  "eventCancellationImportantNotice": "Important Notice",
+  "eventCancellationDescription": "Cancelling this event will trigger the following actions:",
+  "eventCancellationNoticeList": "• Notify approved participants of cancellation\n• Notify users on waiting list of cancellation\n• Notify management team members of cancellation\n• Change event status to \"Cancelled\"\n\nThis action cannot be undone.",
+  "eventCancellationReasonRequired": "Cancellation Reason (Required)",
+  "eventCancellationReasonOrganizerConvenience": "Cancelled due to organizer's circumstances",
+  "eventCancellationReasonLackOfParticipants": "Cancelled due to insufficient participants",
+  "eventCancellationReasonServerNetworkTrouble": "Cancelled due to server/network issues",
+  "eventCancellationReasonGameMaintenance": "Cancelled due to game maintenance/outage",
+  "eventCancellationReasonEmergency": "Cancelled due to emergency",
+  "eventCancellationReasonOther": "Other reason (details below)",
+  "eventCancellationDetailLabel": "Details/Additional Explanation (Optional)",
+  "eventCancellationDetailHint": "Enter a message or detailed explanation for participants...",
+  "eventCancellationProcessing": "Processing cancellation...",
+  "eventCancellationConfirmButton": "Cancel Event",
+  "eventCancellationSuccessMessage": "Event has been cancelled. Notifications are being sent to relevant parties.",
+  "eventCancellationFailedMessage": "Failed to cancel event. Please try again.",
+  "eventCancellationErrorMessage": "An error occurred: {error}",
+  "participantCheckFailedMessage": "Failed to check participant count.\nFor safety, cannot revert to draft.",
+  "currentlyParticipantsApplied": "Currently {count} participants have applied",
+  "@currentlyParticipantsApplied": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adminMemoTitle": "Admin Memo - {userName}",
+  "@adminMemoTitle": {
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  },
+  "adminMemoOnlyAdminVisible": "Only visible and editable by admins",
+  "adminMemoContentLabel": "Memo Content",
+  "adminMemoHint": "Enter management notes or remarks",
+  "adminMemoSaved": "Memo saved",
+  "adminMemoSaveFailed": "Failed to save memo",
+  "adminMemoAdd": "Add admin memo",
+  "participantProfileLabel": "Profile",
+  "voiceChatAvailable": "Voice Chat Available",
+  "voiceChatNotUsed": "No Voice Chat",
+  "violationHistoryLabel": "Violation History",
+  "violationRiskNone": "No Risk",
+  "violationRiskLow": "Low Risk",
+  "violationRiskMedium": "Medium Risk",
+  "violationRiskHigh": "High Risk",
+  "violationStatTotal": "Total",
+  "violationStatResolved": "Resolved",
+  "violationStatPending": "Pending",
+  "violationStatCount": "{count}",
+  "violationLatest": "Latest: {type} ({date})",
+  "participationStatusPending": "Pending Approval",
+  "participationStatusWaitlisted": "Waitlisted",
+  "participationStatusApproved": "Approved",
+  "participationStatusRejected": "Rejected",
+  "participationStatusCancelled": "Cancelled",
+  "languageSettingLabel": "Event Language",
+  "languageOther": "Other",
+  "notificationEventVisibilityChangedTitle": "Event Visibility Changed",
+  "notificationEventVisibilityChangedMessage": "The visibility of \"{eventName}\" has been changed to public. You can now apply without a password.",
+  "notificationEventApprovedTitle": "Event Application Approved",
+  "notificationEventApprovedMessage": "Your application for \"{eventName}\" has been approved.",
+  "notificationEventApprovedWithAdminMessage": "Your application for \"{eventName}\" has been approved.\n\nMessage from organizer:\n{adminMessage}",
+  "notificationEventRejectedTitle": "Event Application Rejected",
+  "notificationEventRejectedMessage": "Your application for \"{eventName}\" has been rejected.",
+  "notificationEventRejectedWithAdminMessage": "Your application for \"{eventName}\" has been rejected.\n\nMessage from organizer:\n{adminMessage}",
+  "notificationEventApplicationTitle": "New Event Application",
+  "notificationEventApplicationMessage": "{applicantUsername} has applied for \"{eventTitle}\"",
+  "notificationViolationReportedToViolatedTitle": "Violation Report",
+  "notificationViolationReportedToViolatedMessage": "A violation has been reported in event \"{eventName}\". You can review the details and file an appeal if necessary. Tap to view details.",
+  "notificationViolationReportedToOrganizerTitle": "Violation Report Received",
+  "notificationViolationReportedToOrganizerMessage": "A new violation has been reported in event \"{eventName}\". Please check the management screen.",
+  "notificationViolationProcessedResolvedTitle": "Violation Report Processed",
+  "notificationViolationProcessedResolvedMessage": "The violation report for event \"{eventName}\" has been processed.",
+  "notificationViolationProcessedResolvedWithPenalty": "The violation report for event \"{eventName}\" has been processed.\nPenalty: {penalty}",
+  "notificationViolationProcessedDismissedTitle": "Violation Report Dismissed",
+  "notificationViolationProcessedDismissedMessage": "The violation report for event \"{eventName}\" has been dismissed after investigation.",
+  "notificationAppealSubmittedTitle": "Appeal Received",
+  "notificationAppealSubmittedMessage": "An appeal has been submitted for the violation report in event \"{eventName}\". Please check the management screen.",
+  "notificationAppealApprovedTitle": "Appeal Approved",
+  "notificationAppealApprovedMessage": "Your appeal for event \"{eventName}\" has been approved and the violation record has been cancelled.",
+  "notificationAppealRejectedTitle": "Appeal Rejected",
+  "notificationAppealRejectedMessage": "Your appeal for event \"{eventName}\" has been rejected and the violation record will be maintained.",
+  "notificationAppealWithResponseSuffix": "\n\nResponse from organizer:\n{appealResponse}",
+  "notificationViolationDeletedToViolatedTitle": "Violation Record Deleted",
+  "notificationViolationDeletedToViolatedMessage": "The violation record for event \"{eventName}\" has been deleted by the organizer.",
+  "notificationViolationDeletedToViolatedWithReason": "The violation record for event \"{eventName}\" has been deleted by the organizer.\nReason: {reason}",
+  "notificationViolationDeletedToReporterTitle": "Your Reported Violation Record Deleted",
+  "notificationViolationDeletedToReporterMessage": "The violation record you reported for event \"{eventName}\" has been deleted by the organizer.",
+  "notificationViolationDeletedToOrganizerMessage": "A violation record for event \"{eventName}\" has been deleted.",
+  "notificationViolationDeletedToOrganizerWithReason": "A violation record for event \"{eventName}\" has been deleted.\nReason: {reason}",
+  "notificationViolationDismissedToViolatedTitle": "Violation Record Dismissed",
+  "notificationViolationDismissedToViolatedMessage": "The violation record for event \"{eventName}\" has been dismissed by the organizer. This record will no longer be treated as a violation.",
+  "notificationViolationDismissedToViolatedWithReason": "The violation record for event \"{eventName}\" has been dismissed by the organizer. This record will no longer be treated as a violation.\nReason: {reason}",
+  "notificationViolationDismissedToReporterTitle": "Your Reported Violation Record Dismissed",
+  "notificationViolationDismissedToReporterMessage": "The violation record you reported for event \"{eventName}\" has been dismissed by the organizer. After investigation, it was determined not to be a violation.",
+  "notificationViolationDismissedToOrganizerMessage": "A violation record for event \"{eventName}\" has been dismissed.",
+  "notificationViolationDismissedToOrganizerWithReason": "A violation record for event \"{eventName}\" has been dismissed.\nReason: {reason}",
+  "notificationEventCancellationTitle": "Event Cancellation Notice",
+  "notificationEventCancellationApprovedMessage": "The event \"{eventName}\" you were confirmed to attend has been cancelled by the organizer.\n\nReason for cancellation:\n{reason}",
+  "notificationEventCancellationPendingMessage": "The event \"{eventName}\" you applied for has been cancelled by the organizer.\n\nReason for cancellation:\n{reason}",
+  "notificationEventCancellationManagerTitle": "Event Cancellation Complete",
+  "notificationEventCancellationManagerMessage": "Event \"{eventName}\" cancellation has been completed.\n\nConfirmed participants: {participantCount}\nPending applications: {pendingCount}\n\nNotifications have been sent to all related parties.\n\nReason for cancellation:\n{reason}",
+  "notificationEventReminderTitle": "Event Reminder",
+  "notificationEventReminderMessage": "Event \"{eventName}\" will start {timeText}.",
+  "notificationEventReminderTimeHours": "in {hours} hours",
+  "notificationEventReminderTimeSoon": "soon",
+  "notificationEventUpdateImportantTitle": "Important Event Changes",
+  "notificationEventUpdateTitle": "Event Updated",
+  "notificationEventUpdateMessage": "Event \"{eventName}\" has been updated by {updatedByUserName}.\n\nChanges: {changesSummary}\n\nTap to view details.",
+  "eventChangeSummaryCritical": "{count} critical change(s)",
+  "eventChangeSummaryModerate": "{count} change(s)",
+  "eventChangeSummaryMinor": "{count} minor change(s)",
+  "eventChangeSummaryNoChanges": "No changes",
+  "eventChangeTypeEventDate": "Event Date",
+  "eventChangeTypeRegistrationDeadline": "Registration Deadline",
+  "eventChangeTypeMaxParticipants": "Max Participants",
+  "eventChangeTypeHasParticipationFee": "Participation Fee",
+  "eventChangeTypeParticipationFeeText": "Fee Details",
+  "eventChangeTypeRules": "Rules",
+  "eventChangeTypeEventTags": "Event Tags",
+  "eventChangeTypeContactInfo": "Contact Info",
+  "eventChangeTypeVisibility": "Visibility",
+  "eventChangeTypeEventPassword": "Event Password",
+  "eventChangeTypePlatforms": "Platforms",
+  "eventChangeTypeGameId": "Game",
+  "eventChangeTypeStatus": "Event Status",
+  "eventChangeTypeName": "Event Name",
+  "eventChangeTypeSubtitle": "Subtitle",
+  "eventChangeTypeDescription": "Description",
+  "eventChangeTypeAdditionalInfo": "Additional Info",
+  "eventChangeTypeHasStreaming": "Streaming",
+  "eventChangeTypeStreamingUrls": "Streaming URLs",
+  "eventChangeTypePolicy": "Policy",
+  "eventChangeTypeManagerIds": "Co-editors",
+  "eventChangeTypeImageUrl": "Event Image",
+  "eventChangeTypeLanguage": "Language",
+  "eventChangeTypeBlockedUserIds": "Blocked Users",
+  "eventChangeTypeSponsorIds": "Sponsors",
+  "eventChangeTypeHasPrize": "Prize",
+  "eventChangeTypePrizeContent": "Prize Content",
+  "eventChangeTypeParticipationFeeSupplement": "Fee Supplement",
+  "eventChangeTypeGameName": "Game Name",
+  "eventChangeDisplayFormat": "{typeName}: \"{oldValue}\" → \"{newValue}\"",
+  "@eventChangeDisplayFormat": {
+    "placeholders": {
+      "typeName": {
+        "type": "String"
+      },
+      "oldValue": {
+        "type": "String"
+      },
+      "newValue": {
+        "type": "String"
+      }
+    }
+  },
+  "eventChangeValueChanged": "Changed from \"{oldValue}\" to \"{newValue}\"",
+  "@eventChangeValueChanged": {
+    "placeholders": {
+      "oldValue": {
+        "type": "String"
+      },
+      "newValue": {
+        "type": "String"
+      }
+    }
+  },
+  "eventChangeNotSet": "(Not set)",
+  "eventChangeYes": "Yes",
+  "eventChangeNo": "No",
+  "eventChangeDetailBullet": "• {text}",
+  "@eventChangeDetailBullet": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "listSeparator": ", ",
+  "notificationNewFollowerTitle": "New Follower",
+  "notificationNewFollowerMessage": "{fromUserName} is now following you",
+  "notificationEventDraftRevertedTitle": "Event Participation Cancelled",
+  "notificationEventDraftRevertedMessage": "\"{eventName}\" has been changed to draft status by the organizer, so your participation has been cancelled.",
+  "notificationEventInviteTitle": "You've Been Invited to an Event",
+  "notificationEventInviteMessage": "{createdByName} has invited you to \"{eventName}\"",
+  "notificationEventWaitlistTitle": "Event is Full",
+  "notificationEventWaitlistMessage": "\"{eventName}\" is now full. Your application is #{waitlistPosition} on the waitlist. You will be approved in order if a participant cancels.",
+  "notificationEventWaitlistRegisteredTitle": "Waitlist Registration Complete",
+  "notificationEventWaitlistRegisteredMessage": "\"{eventName}\" is full. You have been registered as #{waitlistPosition} on the waitlist. You will be approved in order if a participant cancels.",
+  "notificationEventFullTitle": "Event Full",
+  "notificationEventFullMessage": "Could not apply to \"{eventName}\" because it is full",
+  "notificationEventCapacityWarningTitle": "Event Capacity Warning",
+  "notificationEventCapacityWarningMessage": "\"{eventName}\" has reached {percentage}% capacity ({currentCount}/{maxParticipants} participants)",
+  "notificationEventCapacityVacancyTitle": "Event Vacancy Available",
+  "notificationEventCapacityVacancyMessage": "A vacancy has occurred in \"{eventName}\" due to participant cancellation. Please consider approving {waitlistCount} waitlisted applicants.",
+  "notificationParticipantCancelledTitle": "Participant Cancelled",
+  "notificationParticipantCancelledMessage": "{userName} has cancelled from event \"{eventName}\".\n\nCancellation reason: {cancellationReason}",
+  "notificationMatchReportTitle": "Match Report",
+  "notificationMatchReportMessage": "A match result has been reported.",
+  "notificationMatchReportResponseTitle": "Match Report Response",
+  "notificationMatchReportResponseMessage": "A response to the match report has been received.",
+  "violationReportDialogTitle": "Report Violation",
+  "violationReportTargetLabel": "Report Target",
+  "violationReportTypeLabel": "Violation Type",
+  "violationReportSeverityLabel": "Severity",
+  "violationReportDescriptionLabel": "Violation Details",
+  "violationReportDescriptionHint": "Please describe the specific violation",
+  "violationReportDescriptionRequired": "Please enter the violation details",
+  "violationReportDescriptionMinLength": "Please provide at least 10 characters of detail",
+  "violationReportNotesLabel": "Notes (Optional)",
+  "violationReportNotesHint": "Add any additional information if needed",
+  "violationReportSubmitButton": "Submit Report",
+  "violationReportSuccessMessage": "Violation report submitted successfully",
+  "violationReportUserNotFound": "Unable to retrieve user information",
+  "violationTypeHarassment": "Harassment",
+  "violationTypeCheating": "Cheating",
+  "violationTypeSpam": "Spam",
+  "violationTypeAbusiveLanguage": "Abusive Language",
+  "violationTypeNoShow": "No-Show",
+  "violationTypeDisruptiveBehavior": "Disruptive Behavior",
+  "violationTypeRuleViolation": "Rule Violation",
+  "violationTypeOther": "Other",
+  "violationSeverityMinor": "Minor",
+  "violationSeverityModerate": "Moderate",
+  "violationSeveritySevere": "Severe",
+  "groupMemoSaved": "Group memo saved",
+  "groupMemoSaveFailed": "Failed to save group memo",
+  "groupMemoDialogTitle": "Group Memo - {groupName}",
+  "groupMemoAdminOnly": "Admins only can view and edit",
+  "groupMemoLabel": "Group Memo",
+  "groupMemoHint": "Enter notes or reminders for group management",
+  "groupMemoAdd": "Add group memo",
+  "accountWithdrawalTitle": "Delete Account",
+  "accountWithdrawalCancel": "Cancel",
+  "accountWithdrawalConfirmButton": "Delete Account",
+  "accountWithdrawalImportantNotice": "Important Notice",
+  "accountWithdrawalWarningMessage": "This action cannot be undone. You will not be able to register again with the same account after deletion.",
+  "accountWithdrawalDataDeletionTitle": "Data to be Deleted",
+  "accountWithdrawalDataItem1": "Account information (username, profile picture, etc.)",
+  "accountWithdrawalDataItem2": "Events you created",
+  "accountWithdrawalDataItem3": "Participation request data",
+  "accountWithdrawalDataItem4": "Game profile information",
+  "accountWithdrawalDataItem5": "Other personal data",
+  "accountWithdrawalHistoryNote": "In event history, you will be shown as \"Deleted User\"",
+  "accountWithdrawalConfirmTitle": "Confirmation",
+  "accountWithdrawalCheckboxLabel": "I understand the above and agree to delete my account",
+  "accountWithdrawalTextInputLabel": "Please type \"DELETE\" to confirm",
+  "accountWithdrawalTextInputHint": "DELETE",
+  "accountWithdrawalUserNotFound": "User not found",
+  "accountWithdrawalSuccess": "Account deletion completed",
+  "accountWithdrawalReauthTitle": "Security verification required",
+  "accountWithdrawalReauthMessage": "For security reasons, you need to re-login to delete your account. Please log out, log in again, and retry the deletion process.",
+  "accountWithdrawalReauthLogout": "Log Out",
+  "accountWithdrawalFailed": "Account deletion failed: {error}",
+  "withdrawnUserDisplayName": "Deleted User",
+  "authDialogTitle": "Sign in with Account",
+  "authDialogDescription": "Sign in with your account to sync and backup your data.",
+  "authTermsAgreementPrefix": "I agree to the ",
+  "authTermsAnd": " and ",
+  "authTermsAgreementSuffix": "",
+  "signInWithGoogle": "Sign in with Google",
+  "signInWithApple": "Sign in with Apple ID",
+  "signingIn": "Signing in...",
+  "skipAndContinue": "Skip and continue",
+  "signInFailedGoogle": "Google sign-in failed",
+  "signInErrorGoogle": "An error occurred during Google sign-in",
+  "signInFailedApple": "Apple ID sign-in failed",
+  "signInErrorApple": "An error occurred during Apple ID sign-in",
+  "failedToOpenTerms": "Could not open Terms of Service page.",
+  "errorOpeningTerms": "An error occurred while opening Terms of Service page.",
+  "failedToOpenPrivacy": "Could not open Privacy Policy page.",
+  "errorOpeningPrivacy": "An error occurred while opening Privacy Policy page.",
+  "welcomeBack": "Welcome back!",
+  "signInCompleted": "Sign-in completed.\nEnjoy the app!",
+  "violatorSelectionTitle": "Select Violator",
+  "violatorSelectionDescription": "Select a participant to report a violation",
+  "searchParticipant": "Search participants",
+  "searchByNameOrId": "Search by name or user ID",
+  "participantDataFetchFailed": "Failed to fetch participant data: {error}",
+  "noApprovedParticipantsShort": "No approved participants",
+  "noSearchResultsShort": "No search results",
+  "reportButton": "Report",
+  "imagesAvailableCount": "{count} images available",
+  "tryDifferentKeyword": "Try a different keyword",
+  "loginRequiredTitle": "Login Required",
+  "loginRequiredForParticipation": "You need to log in to apply for participation.",
+  "closeButtonText": "Close",
+  "loginButtonText": "Login",
+  "errorTitle": "Error",
+  "participationApplicationTitle": "Apply for Participation",
+  "privateEventTitle": "Private Event",
+  "inviteOnlyEventTitle": "Invite Only Event",
+  "eventTargetGameLabel": "Event Target Game",
+  "checkingProfileTitle": "Checking Profile",
+  "checkingGameProfileText": "Checking game profile...",
+  "profileReadyTitle": "Profile Ready",
+  "gameUsernameSetText": "Your in-game username is set.",
+  "profileSetupRequiredTitle": "Profile Setup Required",
+  "registerFavoriteAndCreateProfileText": "Please add this game to favorites and create a profile.",
+  "createProfileForGameText": "Please create a profile for this game.",
+  "registerFavoriteAndCreateProfileButtonText": "Add to Favorites & Create Profile",
+  "createProfileButtonText": "Create Profile",
+  "usernameSetupRequiredTitle": "Username Setup Required",
+  "setGameUsernameInProfileText": "Please set your in-game username in your profile.",
+  "editProfileButtonText": "Edit Profile",
+  "gameUsernameLabel": "In-Game Username",
+  "userIdLabelText": "User ID",
+  "participationFeeLabel": "Participation Fee",
+  "contactOrganizerForDetailsText": "Please contact the organizer for details",
+  "enterPasswordHintText": "Please enter the password",
+  "messageToOrganizerLabel": "Message to Organizer (Optional)",
+  "messageToOrganizerHintText": "Enter a message to the organizer (optional)",
+  "cancelButtonText": "Cancel",
+  "checkingStatusText": "Checking...",
+  "setupProfileButtonText": "Set Up Profile",
+  "setupUsernameButtonText": "Set Up Username",
+  "cannotApplyButtonText": "Cannot Apply",
+  "applyButtonText": "Apply",
+  "joinButtonText": "Join",
+  "applicationCompleteTitle": "Application Complete",
+  "participationConfirmedText": "Your participation has been confirmed!",
+  "applicationReceivedText": "Your application has been received. Please wait for the organizer's approval.",
+  "okButtonText": "OK",
+  "unexpectedErrorText": "An unexpected error occurred. Please try again later.",
+  "profileCreationErrorText": "An error occurred while creating the profile.",
+  "gameInfoNotFoundText": "Game information could not be found.",
+  "gameFallbackText": "Game",
+  "participantCountLoadingText": "Loading participant count...",
+  "participantCountValueText": "{current}/{max}",
+  "eventFullNoteText": "* This event is full",
+  "eventNotFoundErrorText": "Event not found.",
+  "cannotApplyToEventErrorText": "You cannot apply to this event.",
+  "alreadyAppliedErrorText": "You have already applied to this event.",
+  "incorrectPasswordErrorText": "Incorrect password.",
+  "eventFullErrorText": "This event is full and not accepting applications.",
+  "permissionDeniedErrorText": "You do not have permission.",
+  "networkErrorText": "A network error occurred.",
+  "unknownErrorText": "An unexpected error occurred.",
+  "applicationCompleteText": "Application completed.",
+  "removalDialogTitle": "Remove Participant",
+  "removalDialogDescription": "Do you want to remove this participant from the event?\nPlease enter the reason for removal.",
+  "removalButtonText": "Remove",
+  "removalReasonHint": "Enter removal reason (optional)",
+  "rejectionDialogTitle": "Reject Application",
+  "rejectionDialogDescription": "Do you want to reject this application?\nPlease enter the reason for rejection.",
+  "rejectionButtonText": "Reject",
+  "rejectionReasonHint": "Enter rejection reason (optional)",
+  "reasonRequiredError": "Reason is required",
+  "userSearchHint": "Search by username or user ID",
+  "enterUsernameOrId": "Please enter a username or user ID",
+  "searchingText": "Searching...",
+  "mutualFollowLoadingError": "Could not get user information",
+  "mutualFollowFetchError": "Failed to get mutual follow information: {error}",
+  "mutualFollowLoading": "Loading mutual follow information...",
+  "retryText": "Retry",
+  "allMutualFollowsSelected": "All mutual follows have been selected",
+  "noSelectableMutualFollows": "No selectable mutual follows available",
+  "selectText": "Select",
+  "adjustProfileImage": "Adjust Profile Image",
+  "imageProcessingError": "Failed to process image: {error}",
+  "loadingImageText": "Loading image...",
+  "confirmProfileImage": "Confirm Profile Image",
+  "useThisImageConfirm": "Do you want to use this image as your profile picture?",
+  "useText": "Use",
+  "eventDetailTitle": "Event Details",
+  "notSetText": "Not set",
+  "gameLabel": "Game",
+  "eventPeriod": "Event Period",
+  "startLabel": "Start",
+  "endLabel": "End",
+  "daysRemainingText": "{days} days remaining",
+  "endsTodayText": "Ends today",
+  "daysUntilStartText": "{days} days until start",
+  "startingSoonText": "Starting soon",
+  "statisticsLabel": "Statistics",
+  "prizesLabel": "Prizes",
+  "closeText": "Close",
+  "editText": "Edit",
+  "joinText": "Join",
+  "resultCheckText": "View Results",
+  "duplicateText": "Duplicate",
+  "detailCheckText": "View Details",
+  "selectFromPastEvents": "Select from Past Events",
+  "noCopyableEventsMessage": "No events available to copy",
+  "searchEventsPlaceholder": "Search by event name or game name...",
+  "errorUnknown": "An unknown error occurred",
+  "errorNetwork": "Please check your network connection",
+  "errorPermission": "You do not have permission to access this",
+  "errorTimeout": "Connection timed out. Please try again",
+  "errorUnexpected": "An unexpected error occurred. Please try again later",
+  "errorServiceUnavailable": "Service is temporarily unavailable. Please try again later",
+  "errorResourceExhausted": "Service limit reached. Please try again later",
+  "errorDataInconsistency": "Data inconsistency detected. Please restart the app",
+  "errorAborted": "Operation was aborted. Please try again",
+  "errorOutOfRange": "Input value is out of range",
+  "errorNotImplemented": "This feature is currently unavailable",
+  "errorInternal": "Internal server error occurred",
+  "errorDataLoss": "Data corruption detected",
+  "errorFirebaseGeneric": "Firebase: {message}",
+  "errorUserNotFound": "User not found",
+  "errorWrongPassword": "Incorrect password",
+  "errorUserDisabled": "This user account has been disabled",
+  "errorTooManyRequests": "Too many requests. Please try again later",
+  "errorOperationNotAllowed": "This authentication method is not allowed",
+  "errorInvalidEmail": "Invalid email format",
+  "errorEmailAlreadyInUse": "This email is already in use",
+  "errorWeakPassword": "Password is too weak. Please use a stronger password",
+  "errorAuthGeneric": "Authentication error: {message}",
+  "errorDialogTitle": "Error",
+  "errorRetryHint": "Please try again later.",
+  "retryButtonText": "Retry",
+  "availableMutualFollowsCount": "You can select from {count} mutual follows",
+  "paymentStatsFetchFailed": "Failed to fetch statistics: {error}",
+  "paymentSummaryTitle": "Payment Summary",
+  "totalParticipantsLabel": "Total Participants",
+  "participantCountValue": "{count}",
+  "paidLabel": "Paid",
+  "collectedAmountLabel": "Collected Amount",
+  "pendingAmountLabel": "Pending Amount",
+  "tabAll": "All",
+  "tabUnpaid": "Unpaid",
+  "tabPendingConfirmation": "Pending",
+  "tabCompleted": "Completed",
+  "paymentDataLoadFailed": "Failed to load data",
+  "noPaymentRecords": "No payment records",
+  "noUnpaidParticipants": "No unpaid participants",
+  "noPendingPayments": "No pending payments",
+  "noCompletedPayments": "No completed payments",
+  "noDisputedPayments": "No disputed payments",
+  "participationFeeLabelWithAmount": "Fee: ¥{amount}",
+  "participantNoteLabel": "Note from participant",
+  "paymentEvidenceLabel": "Payment evidence: {filename}",
+  "evidenceExists": "Evidence attached",
+  "paymentStatusPending": "Unpaid",
+  "paymentStatusSubmitted": "Pending",
+  "paymentStatusVerified": "Verified",
+  "paymentStatusDisputed": "Disputed",
+  "paymentEvidenceDialogTitle": "Payment evidence for {name}",
+  "participantNoteDialogLabel": "Note from participant:",
+  "paymentVerifiedNote": "Payment verified",
+  "paymentEvidenceIssueNote": "Evidence has issues",
+  "paymentApprovedMessage": "Payment approved",
+  "paymentRejectedMessage": "Payment rejected",
+  "paymentProcessFailed": "Process failed: {error}",
+  "matchReportLoadFailed": "Failed to load report data: {error}",
+  "reloadButton": "Reload",
+  "filterNew": "New",
+  "filterReviewing": "Reviewing",
+  "filterResolved": "Resolved",
+  "filterRejected": "Rejected",
+  "noReportsAll": "No reports",
+  "noReportsFiltered": "No matching reports",
+  "matchInfoNotAvailable": "Match info unavailable",
+  "reporterLabelWithName": "Reporter: {name}",
+  "unknownUser": "Unknown",
+  "adminResponseWithContent": "Admin response: {response}",
+  "timeMinutesAgo": "{minutes} min ago",
+  "timeHoursAgo": "{hours} hr ago",
+  "timeDaysAgo": "{days} days ago",
+  "violationEditDialogTitle": "Edit Violation Record",
+  "reportTargetLabel": "Report Target",
+  "loadingUserInfo": "Loading user info...",
+  "violationDetailLabel": "Violation Details *",
+  "violationDetailHint": "Please describe the specific violation",
+  "enterViolationContentError": "Please enter violation content",
+  "minCharsDetailError": "Please provide at least {count} characters",
+  "memoOptionalLabel": "Memo (Optional)",
+  "unchangeableInfoLabel": "Unchangeable Information",
+  "reportedAtFormatted": "Reported at: {dateTime}",
+  "reporterFormatted": "Reporter: {name}",
+  "statusFormatted": "Status: {status}",
+  "updateButton": "Update",
+  "violationRecordUpdatedSuccess": "Violation record updated",
+  "errorFormatted": "Error: {error}",
+  "historyPeriodAll": "All Time",
+  "historyPeriodThisMonth": "This Month",
+  "historyPeriodLastThreeMonths": "Last 3 Months",
+  "historyPeriodLastSixMonths": "Last 6 Months",
+  "historyPeriodThisYear": "This Year",
+  "noParticipationHistory": "No participation history",
+  "noMatchingHistory": "No matching history",
+  "noPendingApplications": "No pending applications",
+  "noPendingApproval": "No pending approvals",
+  "noEventsThisPeriod": "No events in this period",
+  "userInfoNotAvailable": "User info not available",
+  "noHostingEvents": "No hosting events",
+  "eventNameLoading": "Loading event name...",
+  "countItems": "{count} items",
+  "noDataAvailable": "No data available",
+  "noEventsToParticipateThisMonth": "No events to participate this month",
+  "statusWithValue": "Status: {status}",
+  "applicationDateFormatted": "Applied: {date}",
+  "eventDateFormatted": "Event date: {date}",
+  "maxParticipantsFormatted": "Max participants: {count}",
+  "gameProfileConfirmationTitle": "Confirm Game Profile",
+  "gameProfileSendMessage": "The following profile will be sent when applying to \"{eventName}\".",
+  "editButtonText": "Edit",
+  "applyWithThisContent": "Apply with this",
+  "gameUserIdLabel": "In-game User ID",
+  "skillLevelLabel": "Skill Level",
+  "rankLevelLabel": "Rank/Level",
+  "playStyleLabel": "Play Style",
+  "activityTimeLabel": "Activity Time",
+  "inGameVoiceChatLabel": "In-game Voice Chat",
+  "useVoiceChat": "Use",
+  "notUseVoiceChat": "Don't use",
+  "voiceChatDetailsLabel": "Voice Chat Details",
+  "achievementsLabel": "Achievements",
+  "otherNotesLabel": "Other Notes",
+  "appealProcessDialogTitle": "Process Appeal",
+  "violationRecordSectionLabel": "Violation Record",
+  "appealContentLabel": "Appeal Content",
+  "processingResultLabel": "Processing Result *",
+  "approveLabel": "Approve",
+  "approveDescription": "Accept the appeal and cancel the violation record",
+  "rejectLabelDialog": "Reject",
+  "rejectDescription": "Reject the appeal and maintain the violation record",
+  "responseToAppellantLabel": "Response to Appellant *",
+  "responseToAppellantHint": "Explain the reason and details of the decision to the appellant",
+  "enterResponseError": "Please enter a response to the appellant",
+  "minCharsResponseError": "Please provide at least {count} characters",
+  "userInfoNotRetrievable": "Cannot retrieve user info",
+  "appealProcessedSuccess": "Appeal {status}. Appellant will be notified.",
+  "approveActionButton": "Approve",
+  "rejectActionButton": "Reject",
+  "violationReportSubmitted": "Your violation report has been submitted. We will review it.",
+  "closeKeyboardTooltip": "Close keyboard",
+  "fieldRequiredError": "{fieldName} is required",
+  "tagDuplicateError": "This tag has already been added",
+  "tagMaxReachedError": "You can add up to {maxTags} tags",
+  "tagTooLongError": "Tag must be {maxLength} characters or less",
+  "tagInvalidCharError": "Tag contains invalid characters",
+  "tagInputHint": "Enter tag and press Enter to add",
+  "tagCountLabel": "{count}/{max} tags",
+  "youtubeLoading": "Loading YouTube video...",
+  "playerLoadFailed": "Failed to load player",
+  "watchOnPlatform": "Watch on {platform}",
+  "openInYoutube": "Open in YouTube",
+  "openInExternalApp": "Open in external app",
+  "errorNetworkCheck": "Please check your network connection",
+  "errorAccessDenied": "Access denied",
+  "errorQuotaExceeded": "Service quota exceeded. Please try again later",
+  "errorDataIntegrity": "Data integrity issue. Please restart the app",
+  "errorCancelled": "Operation was cancelled. Please try again",
+  "errorFeatureUnavailable": "This feature is currently unavailable",
+  "errorServerInternal": "Internal server error occurred",
+  "errorDataCorrupted": "Data corruption detected",
+  "errorAccountDisabled": "This account has been disabled",
+  "errorAuthMethodNotAllowed": "This authentication method is not allowed",
+  "errorEmailAlreadyUsed": "This email is already in use",
+  "errorAuthUnknown": "Authentication error: {message}",
+  "errorEventNotFound": "Event not found",
+  "errorGameSearchFailed": "Game search failed: {error}",
+  "errorDocumentCreate": "Failed to create document: {error}",
+  "errorDocumentUpdate": "Failed to update document: {error}",
+  "errorDocumentSet": "Failed to set document: {error}",
+  "errorDocumentDelete": "Failed to delete document: {error}",
+  "errorDocumentGet": "Failed to get document: {error}",
+  "errorCollectionGet": "Failed to get collection: {error}",
+  "errorQueryExec": "Failed to execute query: {error}",
+  "errorDocumentWatch": "Failed to watch document: {error}",
+  "errorCollectionWatch": "Failed to watch collection: {error}",
+  "errorBatchExec": "Failed to execute batch: {error}",
+  "errorTransactionExec": "Failed to execute transaction: {error}",
+  "errorUserIdDuplicateCheck": "Failed to check user ID duplication: {error}",
+  "errorOfflineMode": "Failed to enable offline mode: {error}",
+  "errorOnlineMode": "Failed to return to online mode: {error}",
+  "errorCannotFollowSelf": "You cannot follow yourself",
+  "errorAlreadyFollowing": "Already following",
+  "errorFollowNotFound": "Follow relationship not found",
+  "errorUserNotAuthenticated": "User not authenticated",
+  "errorAvatarUpload": "Failed to upload avatar: {error}",
+  "errorAvatarDelete": "Failed to delete avatar: {error}",
+  "errorFileNotFound": "File not found",
+  "errorFileTooLarge": "File size too large (max 5MB)",
+  "errorUnsupportedFormat": "Unsupported file format (JPEG, PNG only)",
+  "errorUploadCancelled": "Upload cancelled",
+  "errorStorageNotFound": "Storage not found",
+  "errorStorageQuotaExceeded": "Storage quota exceeded",
+  "errorRetryLimitExceeded": "Retry limit exceeded",
+  "errorFileCorrupted": "File may be corrupted",
+  "errorUploadGeneric": "Upload error: {message}",
+  "errorGroupGet": "Failed to get group: {error}",
+  "labelGroupNameNotSet": "Group name not set",
+  "labelDeletedGroup": "Deleted group",
+  "labelUser": "User",
+  "labelGuestUser": "Guest User",
+  "errorViolationReport": "Failed to report violation: {error}",
+  "errorViolationRecordNotFound": "Violation record not found",
+  "errorViolationEdit": "Failed to edit violation record: {error}",
+  "errorViolationProcess": "Failed to process violation record: {error}",
+  "errorViolationDismiss": "Failed to dismiss violation record: {error}",
+  "errorViolationStatusUpdate": "Failed to update violation status: {error}",
+  "errorEventViolationGet": "Failed to get event violation records: {error}",
+  "errorUserViolationHistory": "Failed to get user violation history: {error}",
+  "errorPendingViolationGet": "Failed to get pending violation records: {error}",
+  "errorViolationStats": "Failed to get violation statistics: {error}",
+  "errorWarningHistory": "Failed to get warning history: {error}",
+  "errorViolationSearch": "Failed to search violation records: {error}",
+  "errorViolationWatch": "Failed to watch violation records: {error}",
+  "errorViolationRiskCalc": "Failed to calculate violation risk level: {error}",
+  "errorViolationDelete": "Failed to delete violation record: {error}",
+  "errorViolationAlreadyPending": "This violation record is already pending",
+  "errorViolationRecover": "Failed to recover violation record: {error}",
+  "errorViolationBatchProcess": "Failed to batch process violations: {error}",
+  "errorOrganizerViolationGet": "Failed to get organizer violation records: {error}",
+  "errorAppealSubmit": "Failed to submit appeal: {error}",
+  "errorAppealProcess": "Failed to process appeal: {error}",
+  "errorProbationUpdate": "Failed to update probation info: {error}",
+  "errorMatchResultGet": "Failed to get match result: {error}",
+  "errorMatchResultCreate": "Failed to create match result: {error}",
+  "errorMatchResultIdNotSet": "Match result ID not specified",
+  "errorMatchResultUpdate": "Failed to update match result: {error}",
+  "errorMatchResultDelete": "Failed to delete match result: {error}",
+  "errorRankingCalc": "Failed to calculate ranking: {error}",
+  "errorMatchResultNotFound": "Match result not found",
+  "errorEvidenceImageAdd": "Failed to add evidence image: {error}",
+  "errorEvidenceImageDelete": "Failed to delete evidence image: {error}",
+  "errorEvidenceImageReplace": "Failed to replace evidence image: {error}",
+  "errorEvidenceImageBatchReplace": "Failed to batch replace evidence images: {error}",
+  "errorEvidenceImageGet": "Failed to get evidence images: {error}",
+  "errorReportSubmit": "Failed to submit report: {error}",
+  "errorReportStatusUpdate": "Failed to update report status: {error}",
+  "errorReportGet": "Failed to get report: {error}",
+  "errorReportListGet": "Failed to get report list: {error}",
+  "errorEventReportGet": "Failed to get event reports: {error}",
+  "errorUserReportGet": "Failed to get user reports: {error}",
+  "errorPendingReportGet": "Failed to get pending reports: {error}",
+  "errorReporterNotFound": "Reporter information not found",
+  "errorEnhancedMatchResultGet": "Failed to get enhanced match result: {error}",
+  "errorEnhancedMatchResultCreate": "Failed to create enhanced match result: {error}",
+  "errorEnhancedMatchResultIdNotSet": "Enhanced match result ID not specified",
+  "errorEnhancedMatchResultUpdate": "Failed to update enhanced match result: {error}",
+  "errorEnhancedMatchResultDelete": "Failed to delete enhanced match result: {error}",
+  "errorEnhancedStatsCalc": "Failed to calculate enhanced statistics: {error}",
+  "errorLegacyResultNotFound": "Legacy match result not found",
+  "errorLegacyResultConvert": "Failed to convert legacy result: {error}",
+  "errorPaymentRecordCreate": "Failed to create payment record: {error}",
+  "errorPaymentProofUpload": "Failed to upload payment proof: {error}",
+  "errorPaymentConfirmUpdate": "Failed to update payment confirmation: {error}",
+  "errorPaymentRecordGet": "Failed to get payment records: {error}",
+  "errorPaymentRealtimeWatch": "Failed to watch realtime payments: {error}",
+  "errorParticipantPaymentGet": "Failed to get participant payments: {error}",
+  "errorPaymentStatsGet": "Failed to get payment statistics: {error}",
+  "errorPaymentRecordDelete": "Failed to delete payment record: {error}",
+  "errorPaymentStatusUpdate": "Failed to update payment status: {error}",
+  "errorUserDataUpdate": "Failed to update user data: {error}",
+  "errorUserDataGet": "Failed to get user data: {error}",
+  "errorCurrentUserDataGet": "Failed to get current user data: {error}",
+  "errorImageNotFound": "Image file not found",
+  "errorImageTooLarge": "Image file too large. Please use images under {maxKB}KB.",
+  "errorImageFormatUnsupported": "Unsupported image format. Only {formats} supported.",
+  "errorImageDecode": "Failed to decode image",
+  "errorGameProfileExists": "A profile for this game already exists",
+  "errorGameIdNotSet": "Game ID not set",
+  "errorGameProfileNotFound": "Profile not found",
+  "errorUserNotLoggedIn": "User not logged in",
+  "errorUserDataNotFound": "User data not found",
+  "errorCancelledEventCannotDelete": "Cancelled events cannot be deleted",
+  "errorCompletedEventCannotDelete": "Completed events cannot be deleted",
+  "errorEventHasParticipants": "Events with participants cannot be deleted. Please use the cancel function.",
+  "errorDeleteCheckFailed": "Failed to check delete eligibility: {error}",
+  "errorCapacityExceeded": "Cannot approve as it exceeds capacity (currently {current}/{max})",
+  "errorEventInviteSend": "Failed to send event invitation",
+  "errorEventCreate": "Failed to create event",
+  "errorEventUpdate": "Failed to update event",
+  "errorEventStatusUpdate": "Failed to update event status",
+  "errorEventGet": "Failed to get event",
+  "errorUserEventsGet": "Failed to get user events",
+  "errorPublicEventsGet": "Failed to get public events",
+  "errorEventDeleteNotFound": "Event to delete not found",
+  "errorEventDelete": "Failed to delete event",
+  "errorEventSearch": "Failed to search events",
+  "errorGameEventsGet": "Failed to get game related events",
+  "errorUserParticipatingEventsGet": "Failed to get user participating events",
+  "errorWrongEventPassword": "Incorrect password",
+  "errorAlreadyApplied": "Already applied",
+  "errorApplicationSubmit": "Failed to submit application",
+  "errorApplicationApprove": "Failed to approve application",
+  "errorApplicationReject": "Failed to reject application",
+  "errorNetworkConfirm": "Please check your internet connection: {error}",
+  "errorInvalidResponse": "Invalid response format: {error}",
+  "errorRequestFailed": "Request failed: {error}",
+  "matchResultInputTitle": "Match Result Input",
+  "matchNameLabel": "Match Name",
+  "matchNameRequired": "Match Name *",
+  "matchNameHint": "e.g., Semi-final, Round 3",
+  "matchNameValidation": "Please enter match name",
+  "gameTitleLabel": "Game Title",
+  "gameTitleHint": "e.g., Splatoon 3, Street Fighter 6",
+  "matchFormatLabel": "Match Format",
+  "matchFormatTournament": "Tournament",
+  "matchFormatLeague": "League",
+  "matchFormatFree": "Free Match",
+  "matchFormatPractice": "Practice Match",
+  "matchFormatOther": "Other",
+  "resultTypeLabel": "Record Method",
+  "resultTypeRanking": "Ranking System",
+  "resultTypeRankingDesc": "Record each participant's ranking (1st, 2nd, 3rd...)",
+  "resultTypeScore": "Score System",
+  "resultTypeScoreDesc": "Record each participant's score",
+  "resultTypeWinLoss": "Win/Loss System",
+  "resultTypeWinLossDesc": "Record each participant's win/loss result",
+  "resultTypeTime": "Time",
+  "resultTypeTimeDesc": "Record clear time or recorded time",
+  "resultTypeAchievement": "Achievement",
+  "resultTypeAchievementDesc": "Record achievements and ratings (stars, rank, etc.)",
+  "resultTypeCustom": "Custom",
+  "resultTypeCustomDesc": "Record results in free format",
+  "rankingInputLabel": "Ranking Input",
+  "rankLabel": "Rank",
+  "scoreInputLabel": "Score Input",
+  "scoreLabel": "Score",
+  "winLossInputLabel": "Result",
+  "winLabel": "Win",
+  "drawLabel": "Draw",
+  "lossLabel": "Loss",
+  "timeInputLabel": "Time Input",
+  "minutesLabel": "min",
+  "secondsLabel": "sec",
+  "millisecondsLabel": "ms",
+  "achievementInputLabel": "Achievement Input",
+  "achievedLabel": "Achieved",
+  "ratingLabel": "Rating",
+  "ratingNone": "None",
+  "customResultInputLabel": "Custom Result Input",
+  "customResultHint": "Please enter result details in the notes field",
+  "notesHint": "Memo, special notes, etc.",
+  "matchAddTitle": "Add Match",
+  "matchNameInputHint": "Enter match name",
+  "participantTeamsLabel": "Participant Teams (Groups)",
+  "participantsLabel": "Participants: ",
+  "selectButton": "Select",
+  "deselectButton": "Deselect",
+  "selectAtLeastTwoTeams": "Please select at least 2 teams (groups)",
+  "selectAtLeastTwoParticipants": "Please select at least 2 participants",
+  "registeringMatch": "Registering...",
+  "registerMatchButton": "Register Match",
+  "matchRegistered": "Match \"{matchName}\" registered",
+  "matchRegistrationFailed": "Failed to register match: {error}",
+  "groupDetailTitle": "Group Details",
+  "groupInfoLoadFailed": "Failed to load group information",
+  "memberCountLabel": "Members",
+  "groupNoticeLabel": "Group Notice",
+  "reportDetailTitle": "Report Details",
+  "problemTypeLabel": "Problem Type",
+  "reportDateLabel": "Report Date",
+  "detailDescriptionLabel": "Detailed Description",
+  "adminResponseLabel": "Admin Response",
+  "responseDate": "Response Date: {dateTime}",
+  "respondButton": "Respond",
+  "pleaseChangeStatus": "Please change the status",
+  "pleaseEnterResponse": "Please enter a response",
+  "statusUpdatedMessage": "Status updated",
+  "updateFailedMessage": "Update failed: {error}",
+  "@updateFailedMessage": {
+    "description": "Update failed message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "reportResponseTitle": "Respond to Report",
+  "matchLabel": "Match",
+  "problemLabel": "Problem",
+  "statusChangeTitle": "Change Status",
+  "responseContentLabel": "Response/Comment",
+  "requiredMark": "* Required",
+  "optionalMark": "* Optional",
+  "responseContentHint": "Enter your response or comment for the reporter",
+  "currentStatusLabel": "(Current Status)",
+  "recordInfoToRecord": "Information to Record",
+  "checkRequiredInfo": "Check the required information (multiple selection allowed)",
+  "scorePointsLabel": "Score/Points",
+  "scorePointsDesc": "Record scores or points from the game",
+  "rankingPositionLabel": "Ranking/Position",
+  "rankingPositionDesc": "Record participant rankings (1st, 2nd, 3rd...)",
+  "winLossResultLabel": "Win/Loss Result",
+  "winLossResultDesc": "Record win, loss, or draw results",
+  "selectAtLeastOneInfo": "Please select at least one type of information to record",
+  "participantResultsLabel": "Participant Results",
+  "pointsSuffix": "pts",
+  "matchDetailMemo": "Match details and special notes",
+  "resultSaveError": "Failed to save result: {error}",
+  "winLossWin": "Win",
+  "winLossLoss": "Loss",
+  "winLossDraw": "Draw",
+  "matchNameExampleHint": "e.g., 1st Tournament Final",
+  "resultTypeScoreLabel": "Score",
+  "resultTypeRankLabel": "Rank",
+  "resultTypeWinLossLabel": "Win/Loss",
+  "evidenceImageTitle": "Evidence Images",
+  "evidenceImageAdd": "Add Evidence Image",
+  "cameraCapture": "Take Photo",
+  "gallerySelect": "Select from Gallery",
+  "imageLoadFailed": "Failed to load image: {error}",
+  "cameraCaptureFailedError": "Failed to capture with camera: {error}",
+  "gallerySelectFailedError": "Failed to select from gallery: {error}",
+  "imageUploadFailedError": "Failed to upload image: {error}",
+  "imageDeleted": "Image deleted",
+  "imageDeleteFailedError": "Failed to delete image: {error}",
+  "deleteImageTitle": "Delete Image",
+  "deleteImageConfirm": "Delete this image? This action cannot be undone.",
+  "imageOperationsTitle": "Image Options",
+  "replaceImageLabel": "Replace Image",
+  "replaceImageDesc": "Replace with a new image (old image will be auto-deleted)",
+  "deleteImageLabel": "Delete Image",
+  "deleteImageDesc": "Permanently delete this image",
+  "replaceImageTitle": "Replace Image",
+  "replaceImageNote": "The old image will be automatically deleted and replaced with the new one",
+  "imageReplaced": "Image replaced (old image was auto-deleted)",
+  "imageReplaceFailedError": "Failed to replace image: {error}",
+  "replaceAllImagesTitle": "Replace All Images",
+  "replaceAllImagesConfirm": "Delete all {count} current images and replace with new ones?\n\nThis action cannot be undone.",
+  "replaceButton": "Replace",
+  "imageSelectFailedError": "Failed to select image: {error}",
+  "imageBatchReplaceFailedError": "Failed to batch replace images: {error}",
+  "replaceImageTooltip": "Replace image",
+  "deleteImageTooltip": "Delete image",
+  "imageLoadFailedSimple": "Failed to load image",
+  "uploaderLabel": "Uploader",
+  "uploadDateLabel": "Upload Date",
+  "replaceAllButton": "Replace",
+  "evidenceImageInfo": "You can upload images as match evidence",
+  "noEvidenceImages": "No evidence images",
+  "uploadFromAddButton": "You can upload images using the 'Add Image' button",
+  "imageCountFormat": "{count} images",
+  "@imageCountFormat": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "imagesUploadedCount": "Uploaded {count} image(s)",
+  "@imagesUploadedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "imagesReplacedCount": "Replaced with {count} new image(s)",
+  "@imagesReplacedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "imagesBulkReplaceFailedError": "Failed to bulk replace images: {error}",
+  "@imagesBulkReplaceFailedError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadedAtLabel": "Uploaded at",
+  "imageActionMenuTitle": "Image Actions",
+  "loadingMessage": "Loading...",
+  "userUnknown": "Unknown User",
+  "noneLabel": "None",
+  "eventLabel": "Event",
+  "noEventsTitle": "No events",
+  "noEventsMessage": "No events have been created yet",
+  "searchEventsHint": "Search by event name...",
+  "coEditorEvents": "Co-editor Events",
+  "applicationStatusPending": "Pending Approval",
+  "applicationStatusWaitlist": "Waitlist",
+  "applicationStatusCancelled": "Cancelled",
+  "urlAlreadyAdded": "This URL has already been added",
+  "maxUrlsReached": "Maximum of {maxUrls} streaming URLs allowed",
+  "invalidUrlFormat": "Please enter a valid URL (https://... or http://...)",
+  "imageLoadFailedGeneric": "Failed to load image",
+  "keyboardCloseLabel": "Close keyboard",
+  "keyboardCloseTooltip": "Close keyboard",
+  "fieldRequired": "This field is required",
+  "enterValidNumber": "Please enter a valid number",
+  "enterValidInteger": "Please enter a valid integer",
+  "eventTitle": "Event Title",
+  "avatarSelectTitle": "Select Avatar Image",
+  "avatarCropTitle": "Adjust Avatar",
+  "socialFollowing": "Following",
+  "socialFollower": "Followers",
+  "socialMutualFollow": "Mutual Follow",
+  "noMutualFollowersYet": "No mutual followers yet",
+  "noFollowersYet": "No followers yet",
+  "notFollowingAnyone": "Not following anyone yet",
+  "dataLoadFailedError": "Failed to load data: {error}",
+  "gameProfileLoadFailedError": "Failed to load game profile: {error}",
+  "userDataLoadFailedError": "Failed to load user data: {error}",
+  "gameDataLoadFailedError": "Failed to load game data: {error}",
+  "loadingGameProfile": "Loading game profile...",
+  "gameProfileNotFoundDesc": "User may not have created a profile for this game,\nor it may not be set to public.",
+  "newMatchReport": "New Match Report",
+  "reportReviewing": "Reviewing Report",
+  "reportReviewingMessage": "We are reviewing the issue you reported",
+  "reportResolved": "Report Resolved",
+  "reportResolvedMessage": "The issue you reported has been resolved",
+  "reportRejectedTitle": "About Your Report",
+  "reportRejectedMessage": "After reviewing your report, we determined that no correction is necessary",
+  "matchReportStatusSubmitted": "Submitted",
+  "skillLevelBeginnerDesc": "Just started, learning basic controls",
+  "skillLevelIntermediateDesc": "Comfortable with basics, learning strategies",
+  "skillLevelAdvancedDesc": "Mastered advanced strategies and techniques",
+  "skillLevelExpertDesc": "Professional level, can teach others",
+  "playStyleCoop": "Co-op",
+  "playStyleCasualDesc": "Relaxed and fun gameplay",
+  "playStyleCompetitiveDesc": "Focus on ranked matches and tournaments",
+  "playStyleCoopDesc": "Team-based cooperative play",
+  "playStyleSoloDesc": "Playing alone at your own pace",
+  "playStyleSocialDesc": "Emphasis on player interaction",
+  "playStyleSpeedrunDesc": "Aiming for fastest completion",
+  "playStyleCollectorDesc": "Focus on collecting items and achievements",
+  "playTimeMorning": "Morning (6-12)",
+  "playTimeAfternoon": "Afternoon (12-18)",
+  "playTimeEvening": "Evening (18-24)",
+  "playTimeNight": "Night (24-6)",
+  "playTimeWeekend": "Weekend",
+  "playTimeWeekday": "Weekday",
+  "violationTypeDisruptive": "Disruptive Behavior",
+  "violationTypeHarassmentDesc": "Harassment or bullying of other participants",
+  "violationTypeCheatingDesc": "Use of unauthorized software or terms violation",
+  "violationTypeSpamDesc": "Spam messages or nuisance behavior",
+  "violationTypeAbusiveLanguageDesc": "Abusive language, discriminatory remarks, inappropriate behavior",
+  "violationTypeNoShowDesc": "Absence without notice after event registration",
+  "violationTypeDisruptiveDesc": "Behavior that disrupts event progress",
+  "violationTypeRuleViolationDesc": "Violation of event rules",
+  "violationTypeOtherDesc": "Other terms violations",
+  "violationSeverityMinorDesc": "Minor violation. Can be handled with warning",
+  "violationSeverityModerateDesc": "Moderate violation. Temporary restrictions needed",
+  "violationSeveritySevereDesc": "Severe violation. Strict action required",
+  "violationStatusPending": "Pending",
+  "violationStatusUnderReview": "Under Review",
+  "violationStatusResolved": "Resolved",
+  "violationStatusDismissed": "Dismissed",
+  "violationStatusPendingDesc": "Reported but not yet addressed",
+  "violationStatusUnderReviewDesc": "Under detailed investigation",
+  "violationStatusResolvedDesc": "Appropriate action taken and completed",
+  "violationStatusDismissedDesc": "Investigation found no violation",
+  "appealStatusPending": "Pending Review",
+  "appealStatusUnderReview": "Under Review",
+  "appealStatusApproved": "Approved",
+  "appealStatusRejected": "Rejected",
+  "appealStatusPendingDesc": "Appeal submitted, awaiting review",
+  "appealStatusUnderReviewDesc": "Under detailed review by staff",
+  "appealStatusApprovedDesc": "Appeal approved, violation record removed",
+  "appealStatusRejectedDesc": "Appeal rejected, violation record maintained",
+  "riskLevelNone": "No Risk",
+  "riskLevelLow": "Low Risk",
+  "riskLevelMedium": "Medium Risk",
+  "riskLevelHigh": "High Risk",
+  "riskLevelNoneDesc": "No violation records",
+  "riskLevelLowDesc": "1-2 minor violations",
+  "riskLevelMediumDesc": "Moderate or multiple violations",
+  "riskLevelHighDesc": "Severe or numerous violations",
+  "eventStatusScheduled": "Scheduled",
+  "eventStatusOngoing": "Ongoing",
+  "eventCategoryDaily": "Daily",
+  "eventCategoryWeekly": "Weekly",
+  "eventCategorySpecial": "Special",
+  "eventCategorySeasonal": "Seasonal",
+  "approvalMethodAuto": "Auto Approval",
+  "profileSummaryRank": "Rank: {rank}",
+  "profileSummaryLevel": "Level: {level}",
+  "profileSummaryStyle": "Style: {styles}",
+  "appealCancelledNote": "Cancelled due to appeal",
+  "hashtags": "#Go. #GameEvent",
+  "rankPosition": "{rank}",
+  "notesOptional": "Notes (Optional)",
+  "matchDetailsHint": "Enter match details or notes...",
+  "matchResultEditTitle": "Edit Match Result",
+  "rankingSectionTitle": "Ranking",
+  "rankingDragDropHint": "Drag and drop cards to determine rankings",
+  "rankingTopIsFirst": "Top is 1st, bottom is last",
+  "scoreInputSectionTitle": "Score Input",
+  "scoreInputHint": "Add score types to record multiple evaluation metrics",
+  "addScoreTypeTooltip": "Add score type",
+  "addScoreTypeDialogTitle": "Add Score Type",
+  "scoreNameLabel": "Score Name",
+  "scoreNameHint": "Kills, points, damage, etc.",
+  "scoreUnitLabel": "Unit",
+  "scoreUnitHint": "kills, points, HP, etc.",
+  "targetLabel": "Target",
+  "groupTargetLabel": "Group",
+  "teamScoreSubtitle": "Team-based score",
+  "individualTargetLabel": "Individual",
+  "individualScoreSubtitle": "Individual score",
+  "addScoreTypeEmptyTitle": "Please add a score type",
+  "addScoreTypeEmptySubtitle": "Set your preferred evaluation metrics\nsuch as kills, points, damage, etc.",
+  "deleteTooltip": "Delete",
+  "userDefaultName": "User",
+  "userNumberName": "User {number}",
+  "updatingResult": "Updating...",
+  "savingResult": "Saving...",
+  "updateResult": "Update Result",
+  "saveResult": "Save Result",
+  "evidenceImageSectionTitle": "Evidence Images",
+  "imagesCountLabel": "{count} images",
+  "addImageButtonLabel": "Add Image",
+  "existingImagesLabel": "Existing images ({count})",
+  "newImagesLabel": "New images ({count})",
+  "addEvidenceImageTitle": "Add Evidence Image",
+  "cameraLabel": "Camera",
+  "galleryLabel": "Gallery",
+  "photoTakenMessage": "Photo taken",
+  "cameraCaptureError": "Failed to capture photo: {error}",
+  "imageSelectedMessage": "Image selected",
+  "gallerySelectError": "Failed to select from gallery: {error}",
+  "adminNotesSectionTitle": "Admin Notes",
+  "adminNotesDescription": "Add management notes for this match result",
+  "publicNoteTitle": "Public Note (Visible to users)",
+  "publicNoteDescription": "Notes visible to participants. Add match details or special notes.",
+  "publicNoteHint": "e.g., Rematch due to connection issues, MVP award added...",
+  "privateNoteTitle": "Private Note (Admin only)",
+  "privateNoteDescription": "Internal notes visible only to administrators. Not shown to participants.",
+  "privateNoteHint": "e.g., Participant A filed objection, needs verification...",
+  "imageDeletePartialError": "Error deleting some images: {error}",
+  "evidenceUploadError": "Failed to upload evidence images: {error}",
+  "resultSaveFailedError": "Failed to save result: {error}",
+  "pointsUnit": "pts",
+  "optionalLabel": "Optional",
+  "imageLoadError": "Failed to load images: {error}",
+  "takePhotoLabel": "Take Photo",
+  "selectFromGalleryLabel": "Select from Gallery",
+  "imagesUploadedMessage": "{count} images uploaded",
+  "imageUploadError": "Failed to upload image: {error}",
+  "imageDeletedMessage": "Image deleted",
+  "imageDeleteError": "Failed to delete image: {error}",
+  "deleteImageConfirmMessage": "Delete this image? This action cannot be undone.",
+  "replaceImageDescription": "Replace with a new image (old image will be deleted)",
+  "deleteImageDescription": "Permanently delete this image",
+  "replaceImageInfo": "The old image will be automatically deleted and replaced with a new one",
+  "imageReplacedMessage": "Image replaced (old image automatically deleted)",
+  "imageReplaceError": "Failed to replace image: {error}",
+  "replaceAllImagesConfirmMessage": "Delete all {count} current images and replace with new ones?\n\nThis action cannot be undone.",
+  "imageSelectError": "Failed to select image: {error}",
+  "imagesReplacedMessage": "Replaced with {count} new images",
+  "batchReplaceError": "Failed to batch replace images: {error}",
+  "imageLoadFailedMessage": "Failed to load image",
+  "uploadDateTimeLabel": "Upload Date",
+  "replaceAllLabel": "Replace All",
+  "noEvidenceImagesDescription": "Upload images using the 'Add Image' button",
+  "imagesUploadedSuccess": "{count} images uploaded",
+  "imageCountLabel": "{count} images",
+  "replaceImageDialogDescription": "The old image will be automatically deleted and replaced with the new one",
+  "imageBatchReplaceError": "Failed to batch replace images: {error}",
+  "imagesReplacedSuccess": "Replaced with {count} new images",
+  "imageLoadErrorSimple": "Failed to load image",
+  "evidenceImageDescription": "You can upload images as evidence for the match",
+  "eventDeletionConfirmTitle": "Confirm Event Deletion",
+  "warningLabel": "Warning",
+  "deleteDraftEventMessage": "This draft event will be permanently deleted.",
+  "deleteEventMessage": "This event will be permanently deleted.",
+  "deletedDataList": "Data to be deleted:\n• Event information\n• Group settings\n• Match results\n• Reminder settings\n• Related images\n\nThis action cannot be undone.",
+  "confirmDeletionCheckbox": "I confirm to delete this event",
+  "deletingText": "Deleting...",
+  "deleteEventButton": "Delete Event",
+  "eventDeletedSuccess": "Event deleted",
+  "eventDeleteFailed": "Failed to delete event. Please try again.",
+  "eventDeleteError": "An error occurred: {error}",
+  "matchInfoTab": "Match Info",
+  "problemReportTab": "Problem Report",
+  "createdDateLabel": "Created: {date}",
+  "completedDateLabel": "Completed: {date}",
+  "winnerWithDraw": "Draw",
+  "waitingResultInput": "Waiting for result",
+  "scheduledMatchStatus": "Scheduled",
+  "rankingTitle": "Ranking",
+  "rankPositionFormat": "{rank}",
+  "scoresTitle": "Scores",
+  "pointsFormat": "{points} pts",
+  "individualScoresTitle": "Individual Scores",
+  "resultInputButton": "Input Result",
+  "resultEditButton": "Edit Result",
+  "selectStatusPrompt": "Select status for \"{name}\"",
+  "statusChangeFailedError": "Failed to change status: {error}",
+  "matchDeletedSuccess": "Match \"{name}\" deleted",
+  "matchDeleteFailedError": "Failed to delete match: {error}",
+  "matchResultSaveFailedError": "Failed to save match result: {error}",
+  "publicNoteSubtitle": "Notes visible to participants",
+  "privateNoteSubtitle": "Internal notes (not visible to participants)",
+  "noParticipantsLabel": "Participants: None",
+  "reporterWithColon": "Reporter: ",
+  "viewDetailsButton": "View Details",
+  "adminResponseTitle": "Admin Response",
+  "validationEmailRequired": "Please enter your email address",
+  "validationEmailInvalid": "Invalid email format",
+  "validationPasswordRequired": "Please enter your password",
+  "validationPasswordMinLength": "Password must be at least {minLength} characters",
+  "validationPasswordComplexity": "Password must contain at least one uppercase letter, one lowercase letter, and one digit",
+  "validationPasswordConfirmRequired": "Please confirm your password",
+  "validationPasswordMismatch": "Passwords do not match",
+  "validationFieldRequired": "{fieldName} is required",
+  "validationFieldRequiredDefault": "This field is required",
+  "validationEventNameMinLength": "Event name must be at least 3 characters",
+  "validationEventNameMaxLength": "Event name must be 100 characters or less",
+  "validationEventNameForbiddenChars": "Event name contains invalid characters",
+  "validationEventDescriptionMinLength": "Event description must be at least 10 characters",
+  "validationEventDescriptionMaxLength": "Event description must be 2000 characters or less",
+  "validationEventRulesRequired": "Please enter event rules",
+  "validationEventRulesMinLength": "Event rules must be at least 5 characters",
+  "validationEventRulesMaxLength": "Event rules must be 1000 characters or less",
+  "validationNumberRequired": "Please enter a number",
+  "validationMaxParticipantsMin": "Maximum participants must be at least 2",
+  "validationMaxParticipantsMax": "Maximum participants must be 10,000 or less",
+  "validationParticipationFeeRequired": "Please enter participation fee",
+  "validationParticipationFeeMaxLength": "Participation fee must be 100 characters or less",
+  "validationForbiddenChars": "Contains invalid characters",
+  "validationUrlRequired": "Please enter {fieldName}",
+  "validationUrlInvalid": "Please enter a valid {fieldName} (starting with http:// or https://)",
+  "validationDateTimeRequired": "Please set {fieldName}",
+  "validationDateTimeAfter": "{fieldName} must be after {minDate}",
+  "validationDateTimeBefore": "{fieldName} must be before {maxDate}",
+  "validationTextMinLength": "{fieldName} must be at least {minLength} characters",
+  "validationTextMaxLength": "{fieldName} must be {maxLength} characters or less",
+  "validationImageRequired": "Please select an image",
+  "validationImageSizeMax": "Image file size must be 10MB or less",
+  "validationImageFormat": "Supported image formats: {formats}",
+  "validationListMinItems": "Please select at least {minItems} {fieldName}",
+  "validationListMaxItems": "{fieldName} must be {maxItems} or fewer",
+  "validationEventTagsRequired": "Please add at least one event tag",
+  "validationEventTagsMaxCount": "Maximum 10 event tags allowed",
+  "validationTagEmpty": "Empty tags are not allowed",
+  "validationTagMaxLength": "Tag must be 20 characters or less",
+  "validationTagForbiddenChars": "Tag contains invalid characters",
+  "validationTagInvalidChars": "Tags can only contain alphanumeric characters, hiragana, katakana, kanji, and some symbols",
+  "validationTagDuplicate": "Duplicate tags are not allowed",
+  "validationPhoneRequired": "Please enter a phone number",
+  "validationPhoneInvalid": "Invalid phone number format",
+  "validationPhoneInvalidWithExample": "Invalid phone number format (e.g., 090-1234-5678)",
+  "validationNumberRangeRequired": "Please enter {fieldName}",
+  "validationNumberRangeInvalid": "{fieldName} must be a number",
+  "validationNumberRangeMin": "{fieldName} must be {min} or greater",
+  "validationNumberRangeMax": "{fieldName} must be {max} or less",
+  "validationEventPasswordRequired": "Please set an event password",
+  "validationEventPasswordMinLength": "Password must be at least 4 characters",
+  "validationEventPasswordMaxLength": "Password must be 20 characters or less",
+  "validationEventPasswordInvalidChars": "Password can only contain alphanumeric characters and common symbols",
+  "validationHiraganaOnly": "{fieldName} must be in hiragana only",
+  "validationKatakanaOnly": "{fieldName} must be in katakana only",
+  "validationAlphanumericOnly": "{fieldName} must be alphanumeric only",
+  "validationForbiddenContent": "{fieldName} contains inappropriate content",
+  "recordMethodLabel": "Record Method",
+  "scoreSystemLabel": "Score System",
+  "rankingSystemLabel": "Ranking System",
+  "winLossSystemLabel": "Win/Loss System",
+  "scoreSystemDesc": "Record each participant's score",
+  "rankingSystemDesc": "Record each participant's ranking (1st, 2nd, 3rd...)",
+  "winLossSystemDesc": "Record each participant's win/loss result",
+  "resultLabel": "Result",
+  "groupInfoLoadError": "Failed to load group information",
+  "memberCountValue": "{count} members",
+  "defaultEventName": "Event",
+  "defaultApprovalMethod": "Auto-approve",
+  "defaultLanguage": "Japanese",
+  "noEventsCreatedYet": "No events have been created yet",
+  "createButtonLabel": "Create",
+  "eventCountFormat": "{count} events",
+  "@eventCountFormat": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "collaboratorEventsTitle": "Collaborator Events",
+  "createdEventsTitle": "Created Events",
+  "draftEventsTitle": "Draft Events",
+  "gameProfileFetchError": "Failed to fetch game profile: {error}",
+  "@gameProfileFetchError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "userDataFetchError": "Failed to fetch user data: {error}",
+  "@userDataFetchError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "gameDataFetchError": "Failed to fetch game data: {error}",
+  "@gameDataFetchError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "noGameProfileFound": "No game profile found",
+  "noGameProfileDetailMessage": "The user may not have created a profile for this game, or it may not be set to public.",
+  "validationEnterValidNumber": "Please enter a valid number",
+  "validationEnterValidInteger": "Please enter a valid integer",
+  "validationPositiveNumberRequired": "Please enter a number 0 or greater",
+  "firestorePermissionDeniedError": "No access permission to Firestore. Please check security rules.",
+  "firestoreConnectionError": "Failed to connect to Firestore. Please check your network connection.",
+  "dataFetchError": "Failed to fetch data: {error}",
+  "eventViolationFetchError": "Failed to fetch event violation records: {error}",
+  "capacityExceededError": "Capacity exceeded",
+  "dateFormatYearMonthDay": "{month}/{day}/{year}",
+  "dateTimeFormatFull": "{month}/{day}/{year} {hour}:{minute}",
+  "rankPositionLabel": "{rank}",
+  "skillLevelPro": "Pro",
+  "playStyleTank": "Tank",
+  "playStyleAttacker": "Attacker",
+  "playStyleSupport": "Support",
+  "playStyleHealer": "Healer",
+  "playStyleCommunication": "Social",
+  "selectAvatarImage": "Select Avatar Image",
+  "takePhotoFromCamera": "Take Photo",
+  "selectFromGalleryOption": "Select from Gallery",
+  "adjustAvatar": "Adjust Avatar",
+  "hideKeyboard": "Hide Keyboard",
+  "errorOccurredSimple": "An error occurred",
+
+  "notificationTitleEventApplication": "Event Application",
+  "notificationMessageEventApplication": "{applicantName} has applied to join \"{eventName}\"",
+  "@notificationMessageEventApplication": {
+    "placeholders": {
+      "applicantName": {"type": "String"},
+      "eventName": {"type": "String"}
+    }
+  },
+  "notificationTitleEventApproved": "Event Participation Approved",
+  "notificationMessageEventApproved": "Your participation in \"{eventName}\" has been approved",
+  "@notificationMessageEventApproved": {
+    "placeholders": {
+      "eventName": {"type": "String"}
+    }
+  },
+  "notificationMessageEventApprovedWithMessage": "Your participation in \"{eventName}\" has been approved\nAdmin message: {adminMessage}",
+  "@notificationMessageEventApprovedWithMessage": {
+    "placeholders": {
+      "eventName": {"type": "String"},
+      "adminMessage": {"type": "String"}
+    }
+  },
+  "notificationTitleEventRejected": "Event Application Result",
+  "notificationMessageEventRejected": "Your application to \"{eventName}\" was not approved",
+  "@notificationMessageEventRejected": {
+    "placeholders": {
+      "eventName": {"type": "String"}
+    }
+  },
+  "notificationMessageEventRejectedWithReason": "Your application to \"{eventName}\" was not approved\nReason: {reason}",
+  "@notificationMessageEventRejectedWithReason": {
+    "placeholders": {
+      "eventName": {"type": "String"},
+      "reason": {"type": "String"}
+    }
+  },
+  "notificationTitleEventPendingReverted": "Event Application Status Changed",
+  "notificationMessageEventPendingReverted": "Your application to \"{eventName}\" has been reverted to pending",
+  "@notificationMessageEventPendingReverted": {
+    "placeholders": {
+      "eventName": {"type": "String"}
+    }
+  },
+  "notificationMessageEventPendingRevertedWithReason": "Your application to \"{eventName}\" has been reverted to pending\nReason: {reason}",
+  "@notificationMessageEventPendingRevertedWithReason": {
+    "placeholders": {
+      "eventName": {"type": "String"},
+      "reason": {"type": "String"}
+    }
+  },
+  "notificationTitleEventWaitlist": "Event Full Notice",
+  "notificationMessageEventWaitlist": "\"{eventName}\" is now full. Your application is on the waitlist at position {position}. You will be approved in order when spots become available.",
+  "@notificationMessageEventWaitlist": {
+    "placeholders": {
+      "eventName": {"type": "String"},
+      "position": {"type": "int"}
+    }
+  },
+  "notificationTitleEventWaitlistRegistered": "Event Full - Waitlist Registration Complete",
+  "notificationMessageEventWaitlistRegistered": "\"{eventName}\" is full. You have been registered as waitlist number {position}. You will be approved in order when spots become available.",
+  "@notificationMessageEventWaitlistRegistered": {
+    "placeholders": {
+      "eventName": {"type": "String"},
+      "position": {"type": "int"}
+    }
+  },
+  "notificationTitleEventPromotedFromWaitlist": "Event Participation Approved (Promoted from Waitlist)",
+  "notificationMessageEventPromotedFromWaitlist": "Your participation in \"{eventName}\" has been approved. You have been promoted from the waitlist to an official participant.",
+  "@notificationMessageEventPromotedFromWaitlist": {
+    "placeholders": {
+      "eventName": {"type": "String"}
+    }
+  },
+  "notificationTitleEventFull": "Event Full",
+  "notificationMessageEventFull": "Could not apply to \"{eventName}\" because it is full",
+  "@notificationMessageEventFull": {
+    "placeholders": {
+      "eventName": {"type": "String"}
+    }
+  },
+  "notificationTitleEventCapacityWarning": "Event Near Capacity",
+  "notificationMessageEventCapacityWarning": "\"{eventName}\" has reached {percentage}% capacity ({currentCount}/{maxParticipants} participants)",
+  "@notificationMessageEventCapacityWarning": {
+    "placeholders": {
+      "eventName": {"type": "String"},
+      "percentage": {"type": "int"},
+      "currentCount": {"type": "int"},
+      "maxParticipants": {"type": "int"}
+    }
+  },
+  "notificationTitleEventSlotAvailable": "Event Slot Available",
+  "notificationMessageEventSlotAvailable": "A slot has become available in \"{eventName}\" due to a participant revert. Please consider approving {waitlistCount} waitlisted users.",
+  "@notificationMessageEventSlotAvailable": {
+    "placeholders": {
+      "eventName": {"type": "String"},
+      "waitlistCount": {"type": "int"}
+    }
+  },
+  "notificationTitleNewMatchReport": "New Match Report",
+  "notificationMessageNewMatchReport": "A {issueType} report has been submitted for \"{matchName}\"",
+  "@notificationMessageNewMatchReport": {
+    "placeholders": {
+      "matchName": {"type": "String"},
+      "issueType": {"type": "String"}
+    }
+  },
+  "notificationTitleEventInvite": "Event Invitation",
+  "notificationMessageEventInvite": "{createdByName} has invited you to \"{eventName}\"",
+  "@notificationMessageEventInvite": {
+    "placeholders": {
+      "createdByName": {"type": "String"},
+      "eventName": {"type": "String"}
+    }
+  },
+  "notificationTitleNewFollower": "New Follower",
+  "notificationMessageNewFollower": "{fromUserName} started following you",
+  "@notificationMessageNewFollower": {
+    "placeholders": {
+      "fromUserName": {"type": "String"}
+    }
+  },
+  "notificationTitleEventDraftReverted": "Event Participation Cancelled",
+  "notificationMessageEventDraftReverted": "Your participation in \"{eventName}\" has been cancelled because the organizer reverted it to draft status.",
+  "@notificationMessageEventDraftReverted": {
+    "placeholders": {
+      "eventName": {"type": "String"}
+    }
+  },
+  "defaultUserDisplayName": "User",
+  "autoApprovedFromWaitlistMessage": "Auto-approved from waitlist",
+  "shareTextEventDate": "Date",
+  "shareTextGame": "Game",
+  "shareTextParticipants": "Participants",
+  "shareTextParticipantCount": "{current}/{max}",
+  "@shareTextParticipantCount": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "max": {"type": "int"}
+    }
+  },
+  "shareTextPrizeAvailable": "Prize available",
+  "shareTextDetailsLink": "Details",
+  "shareTextProfileLink": "View Profile",
+  "shareHashtagGameEvent": "GameEvent",
+  "shareHashtagLookingForGamers": "LookingForGamers"
+}

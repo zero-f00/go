@@ -6,6 +6,7 @@ import 'dart:io' show Platform;
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../providers/auth_provider.dart';
+import '../../l10n/app_localizations.dart';
 import 'user_settings_dialog.dart';
 
 class AuthDialog extends ConsumerStatefulWidget {
@@ -51,12 +52,17 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
         // サインイン成功後、初回ユーザー設定ダイアログを表示
         await _showInitialUserSetup();
       } else {
-
         // Show user-friendly error message
-        _showErrorDialog('Googleサインインに失敗しました');
+        if (mounted) {
+          final l10n = L10n.of(context);
+          _showErrorDialog(l10n.signInFailedGoogle);
+        }
       }
     } catch (e) {
-      _showErrorDialog('Googleサインインエラーが発生しました');
+      if (mounted) {
+        final l10n = L10n.of(context);
+        _showErrorDialog(l10n.signInErrorGoogle);
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -84,12 +90,17 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
         // サインイン成功後、初回ユーザー設定ダイアログを表示
         await _showInitialUserSetup();
       } else {
-
         // Show user-friendly error message
-        _showErrorDialog('Apple IDサインインに失敗しました');
+        if (mounted) {
+          final l10n = L10n.of(context);
+          _showErrorDialog(l10n.signInFailedApple);
+        }
       }
     } catch (e) {
-      _showErrorDialog('Apple IDサインインエラーが発生しました');
+      if (mounted) {
+        final l10n = L10n.of(context);
+        _showErrorDialog(l10n.signInErrorApple);
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -101,15 +112,16 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
 
   void _showErrorDialog(String message) {
     if (mounted) {
+      final l10n = L10n.of(context);
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('エラー'),
+        builder: (dialogContext) => AlertDialog(
+          title: Text(l10n.error),
           content: Text(message),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l10n.ok),
             ),
           ],
         ),
@@ -119,6 +131,7 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Dialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusL),
@@ -133,20 +146,20 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildHeader(),
+              _buildHeader(l10n),
               const SizedBox(height: AppDimensions.spacingL),
               Flexible(
                 child: SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _buildDescription(),
+                      _buildDescription(l10n),
                       const SizedBox(height: AppDimensions.spacingXL),
-                      _buildTermsCheckbox(),
+                      _buildTermsCheckbox(l10n),
                       const SizedBox(height: AppDimensions.spacingL),
-                      _buildSignInButtons(),
+                      _buildSignInButtons(l10n),
                       const SizedBox(height: AppDimensions.spacingL),
-                      _buildSkipButton(),
+                      _buildSkipButton(l10n),
                     ],
                   ),
                 ),
@@ -158,7 +171,7 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(L10n l10n) {
     return Row(
       children: [
         Container(
@@ -174,10 +187,10 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
           ),
         ),
         const SizedBox(width: AppDimensions.spacingM),
-        const Expanded(
+        Expanded(
           child: Text(
-            'アカウントでサインイン',
-            style: TextStyle(
+            l10n.authDialogTitle,
+            style: const TextStyle(
               fontSize: AppDimensions.fontSizeL,
               fontWeight: FontWeight.w600,
               color: AppColors.textPrimary,
@@ -195,10 +208,10 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
     );
   }
 
-  Widget _buildDescription() {
-    return const Text(
-      'アカウントでサインインすると、データの同期やバックアップが利用できます。',
-      style: TextStyle(
+  Widget _buildDescription(L10n l10n) {
+    return Text(
+      l10n.authDialogDescription,
+      style: const TextStyle(
         fontSize: AppDimensions.fontSizeM,
         color: AppColors.textSecondary,
         height: 1.5,
@@ -207,7 +220,7 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
     );
   }
 
-  Widget _buildTermsCheckbox() {
+  Widget _buildTermsCheckbox(L10n l10n) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingS),
       child: Row(
@@ -235,26 +248,29 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
                     color: AppColors.textSecondary,
                   ),
                   children: [
+                    if (l10n.authTermsAgreementPrefix.isNotEmpty)
+                      TextSpan(text: l10n.authTermsAgreementPrefix),
                     TextSpan(
-                      text: '利用規約',
+                      text: l10n.termsOfService,
                       style: const TextStyle(
                         color: AppColors.accent,
                         decoration: TextDecoration.underline,
                       ),
                       recognizer: TapGestureRecognizer()
-                        ..onTap = _showTermsOfService,
+                        ..onTap = () => _showTermsOfService(l10n),
                     ),
-                    const TextSpan(text: 'と'),
+                    TextSpan(text: l10n.authTermsAnd),
                     TextSpan(
-                      text: 'プライバシーポリシー',
+                      text: l10n.privacyPolicy,
                       style: const TextStyle(
                         color: AppColors.accent,
                         decoration: TextDecoration.underline,
                       ),
                       recognizer: TapGestureRecognizer()
-                        ..onTap = _showPrivacyPolicy,
+                        ..onTap = () => _showPrivacyPolicy(l10n),
                     ),
-                    const TextSpan(text: 'に同意します'),
+                    if (l10n.authTermsAgreementSuffix.isNotEmpty)
+                      TextSpan(text: l10n.authTermsAgreementSuffix),
                   ],
                 ),
               ),
@@ -265,53 +281,53 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
     );
   }
 
-  Future<void> _showTermsOfService() async {
+  Future<void> _showTermsOfService(L10n l10n) async {
     final uri = Uri.parse('https://sites.google.com/view/go-mobile-terms-of-service/home');
     try {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
         if (mounted) {
-          _showErrorDialog('利用規約のページを開けませんでした。');
+          _showErrorDialog(l10n.failedToOpenTerms);
         }
       }
     } catch (e) {
       if (mounted) {
-        _showErrorDialog('利用規約のページを開く際にエラーが発生しました。');
+        _showErrorDialog(l10n.errorOpeningTerms);
       }
     }
   }
 
-  Future<void> _showPrivacyPolicy() async {
+  Future<void> _showPrivacyPolicy(L10n l10n) async {
     final uri = Uri.parse('https://sites.google.com/view/go-mobile-privacy-policy/home');
     try {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
         if (mounted) {
-          _showErrorDialog('プライバシーポリシーのページを開けませんでした。');
+          _showErrorDialog(l10n.failedToOpenPrivacy);
         }
       }
     } catch (e) {
       if (mounted) {
-        _showErrorDialog('プライバシーポリシーのページを開く際にエラーが発生しました。');
+        _showErrorDialog(l10n.errorOpeningPrivacy);
       }
     }
   }
 
-  Widget _buildSignInButtons() {
+  Widget _buildSignInButtons(L10n l10n) {
     return Column(
       children: [
-        _buildGoogleSignInButton(),
+        _buildGoogleSignInButton(l10n),
         if (Platform.isIOS) ...[
           const SizedBox(height: AppDimensions.spacingM),
-          _buildAppleSignInButton(),
+          _buildAppleSignInButton(l10n),
         ],
       ],
     );
   }
 
-  Widget _buildGoogleSignInButton() {
+  Widget _buildGoogleSignInButton(L10n l10n) {
     return SizedBox(
       width: double.infinity,
       height: 56,
@@ -338,7 +354,7 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
                 color: AppColors.primary,
               ),
         label: Text(
-          _isLoading ? 'サインイン中...' : 'Googleでサインイン',
+          _isLoading ? l10n.signingIn : l10n.signInWithGoogle,
           style: const TextStyle(
             fontSize: AppDimensions.fontSizeM,
             fontWeight: FontWeight.w500,
@@ -348,7 +364,7 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
     );
   }
 
-  Widget _buildAppleSignInButton() {
+  Widget _buildAppleSignInButton(L10n l10n) {
     return SizedBox(
       width: double.infinity,
       height: 56,
@@ -376,7 +392,7 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
                 size: 20,
               ),
         label: Text(
-          _isLoading ? 'サインイン中...' : 'Apple IDでサインイン',
+          _isLoading ? l10n.signingIn : l10n.signInWithApple,
           style: const TextStyle(
             fontSize: AppDimensions.fontSizeM,
             fontWeight: FontWeight.w500,
@@ -386,12 +402,12 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
     );
   }
 
-  Widget _buildSkipButton() {
+  Widget _buildSkipButton(L10n l10n) {
     return TextButton(
       onPressed: _isLoading ? null : _skipAndShowUserSettings,
-      child: const Text(
-        'スキップして続行',
-        style: TextStyle(
+      child: Text(
+        l10n.skipAndContinue,
+        style: const TextStyle(
           fontSize: AppDimensions.fontSizeM,
           color: AppColors.textSecondary,
         ),
@@ -440,15 +456,16 @@ class _AuthDialogState extends ConsumerState<AuthDialog> {
 
   void _showWelcomeBackDialog() {
     if (mounted) {
+      final l10n = L10n.of(context);
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('おかえりなさい！'),
-          content: const Text('サインインが完了しました。\nアプリを引き続きお楽しみください。'),
+        builder: (dialogContext) => AlertDialog(
+          title: Text(l10n.welcomeBack),
+          content: Text(l10n.signInCompleted),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l10n.ok),
             ),
           ],
         ),

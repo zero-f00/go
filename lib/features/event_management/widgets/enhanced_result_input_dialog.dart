@@ -4,6 +4,7 @@ import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../data/models/enhanced_match_result_model.dart';
 import '../../../shared/widgets/app_text_field.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 拡張された結果入力ダイアログ
 class EnhancedResultInputDialog extends ConsumerStatefulWidget {
@@ -114,6 +115,7 @@ class _EnhancedResultInputDialogState
   }
 
   Widget _buildHeader() {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -131,10 +133,10 @@ class _EnhancedResultInputDialogState
             size: AppDimensions.iconL,
           ),
           const SizedBox(width: AppDimensions.spacingM),
-          const Expanded(
+          Expanded(
             child: Text(
-              '試合結果入力',
-              style: TextStyle(
+              l10n.matchResultInputTitle,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeXL,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textDark,
@@ -151,19 +153,20 @@ class _EnhancedResultInputDialogState
   }
 
   Widget _buildBasicInfo() {
+    final l10n = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextFormField(
           controller: _matchNameController,
-          decoration: const InputDecoration(
-            labelText: '試合名 *',
-            hintText: '例: 準決勝、第3戦',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: l10n.matchNameRequired,
+            hintText: l10n.matchNameHint,
+            border: const OutlineInputBorder(),
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
-              return '試合名を入力してください';
+              return l10n.matchNameValidation;
             }
             return null;
           },
@@ -171,25 +174,25 @@ class _EnhancedResultInputDialogState
         const SizedBox(height: AppDimensions.spacingM),
         TextFormField(
           controller: _gameTitleController,
-          decoration: const InputDecoration(
-            labelText: 'ゲームタイトル',
-            hintText: '例: スプラトゥーン3、ストリートファイター6',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: l10n.gameTitleLabel,
+            hintText: l10n.gameTitleHint,
+            border: const OutlineInputBorder(),
           ),
         ),
         const SizedBox(height: AppDimensions.spacingM),
         DropdownButtonFormField<String>(
           value: _matchFormat,
-          decoration: const InputDecoration(
-            labelText: '試合形式',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: l10n.matchFormatLabel,
+            border: const OutlineInputBorder(),
           ),
-          items: const [
-            DropdownMenuItem(value: 'tournament', child: Text('トーナメント')),
-            DropdownMenuItem(value: 'league', child: Text('リーグ戦')),
-            DropdownMenuItem(value: 'free', child: Text('フリー対戦')),
-            DropdownMenuItem(value: 'practice', child: Text('練習試合')),
-            DropdownMenuItem(value: 'other', child: Text('その他')),
+          items: [
+            DropdownMenuItem(value: 'tournament', child: Text(l10n.matchFormatTournament)),
+            DropdownMenuItem(value: 'league', child: Text(l10n.matchFormatLeague)),
+            DropdownMenuItem(value: 'free', child: Text(l10n.matchFormatFree)),
+            DropdownMenuItem(value: 'practice', child: Text(l10n.matchFormatPractice)),
+            DropdownMenuItem(value: 'other', child: Text(l10n.matchFormatOther)),
           ],
           onChanged: (value) {
             setState(() {
@@ -202,12 +205,13 @@ class _EnhancedResultInputDialogState
   }
 
   Widget _buildResultTypeSelector() {
+    final l10n = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '結果記録方式',
-          style: TextStyle(
+        Text(
+          l10n.resultTypeLabel,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeL,
             fontWeight: FontWeight.bold,
             color: AppColors.textDark,
@@ -229,7 +233,7 @@ class _EnhancedResultInputDialogState
                     color: isSelected ? Colors.white : AppColors.textSecondary,
                   ),
                   const SizedBox(width: AppDimensions.spacingXS),
-                  Text(type.displayName),
+                  Text(type.getDisplayName(context)),
                 ],
               ),
               selected: isSelected,
@@ -262,7 +266,7 @@ class _EnhancedResultInputDialogState
               const SizedBox(width: AppDimensions.spacingS),
               Expanded(
                 child: Text(
-                  _selectedResultType.description,
+                  _selectedResultType.getDescription(context),
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     color: AppColors.textSecondary,
@@ -294,15 +298,16 @@ class _EnhancedResultInputDialogState
   }
 
   Widget _buildRankingInput() {
+    final l10n = L10n.of(context);
     final sortedParticipants = List<String>.from(widget.participants)
       ..sort((a, b) => (_rankings[a] ?? 999).compareTo(_rankings[b] ?? 999));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '順位入力',
-          style: TextStyle(
+        Text(
+          l10n.rankingInputLabel,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeL,
             fontWeight: FontWeight.bold,
             color: AppColors.textDark,
@@ -320,10 +325,10 @@ class _EnhancedResultInputDialogState
                     width: 60,
                     child: DropdownButtonFormField<int>(
                       value: _rankings[participantId],
-                      decoration: const InputDecoration(
-                        labelText: '順位',
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(
+                      decoration: InputDecoration(
+                        labelText: l10n.rankLabel,
+                        border: const OutlineInputBorder(),
+                        contentPadding: const EdgeInsets.symmetric(
                           horizontal: AppDimensions.spacingS,
                         ),
                       ),
@@ -331,7 +336,7 @@ class _EnhancedResultInputDialogState
                         widget.participants.length,
                         (index) => DropdownMenuItem(
                           value: index + 1,
-                          child: Text('${index + 1}位'),
+                          child: Text(l10n.rankPositionLabel(index + 1)),
                         ),
                       ),
                       onChanged: (value) {
@@ -381,12 +386,13 @@ class _EnhancedResultInputDialogState
   }
 
   Widget _buildScoreInput() {
+    final l10n = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'スコア入力',
-          style: TextStyle(
+        Text(
+          l10n.scoreInputLabel,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeL,
             fontWeight: FontWeight.bold,
             color: AppColors.textDark,
@@ -413,10 +419,10 @@ class _EnhancedResultInputDialogState
                     width: 100,
                     child: TextFormField(
                       initialValue: _scores[participantId]?.toString() ?? '0',
-                      decoration: const InputDecoration(
-                        labelText: 'スコア',
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(
+                      decoration: InputDecoration(
+                        labelText: l10n.scoreLabel,
+                        border: const OutlineInputBorder(),
+                        contentPadding: const EdgeInsets.symmetric(
                           horizontal: AppDimensions.spacingS,
                         ),
                       ),
@@ -438,12 +444,13 @@ class _EnhancedResultInputDialogState
   }
 
   Widget _buildWinLossInput() {
+    final l10n = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '勝敗入力',
-          style: TextStyle(
+        Text(
+          l10n.winLossInputLabel,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeL,
             fontWeight: FontWeight.bold,
             color: AppColors.textDark,
@@ -480,18 +487,18 @@ class _EnhancedResultInputDialogState
                     borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                     selectedColor: Colors.white,
                     fillColor: AppColors.primary,
-                    children: const [
+                    children: [
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 12),
-                        child: Text('勝利'),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(l10n.winLabel),
                       ),
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 12),
-                        child: Text('引分'),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(l10n.drawLabel),
                       ),
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 12),
-                        child: Text('敗北'),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(l10n.lossLabel),
                       ),
                     ],
                   ),
@@ -505,12 +512,13 @@ class _EnhancedResultInputDialogState
   }
 
   Widget _buildTimeInput() {
+    final l10n = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'タイム入力',
-          style: TextStyle(
+        Text(
+          l10n.timeInputLabel,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeL,
             fontWeight: FontWeight.bold,
             color: AppColors.textDark,
@@ -542,9 +550,9 @@ class _EnhancedResultInputDialogState
                       Expanded(
                         child: TextFormField(
                           initialValue: minutes.toString(),
-                          decoration: const InputDecoration(
-                            labelText: '分',
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: l10n.minutesLabel,
+                            border: const OutlineInputBorder(),
                           ),
                           keyboardType: TextInputType.number,
                           onChanged: (value) {
@@ -561,9 +569,9 @@ class _EnhancedResultInputDialogState
                       Expanded(
                         child: TextFormField(
                           initialValue: seconds.toString(),
-                          decoration: const InputDecoration(
-                            labelText: '秒',
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: l10n.secondsLabel,
+                            border: const OutlineInputBorder(),
                           ),
                           keyboardType: TextInputType.number,
                           onChanged: (value) {
@@ -581,9 +589,9 @@ class _EnhancedResultInputDialogState
                       Expanded(
                         child: TextFormField(
                           initialValue: milliseconds.toString(),
-                          decoration: const InputDecoration(
-                            labelText: 'ミリ秒',
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: l10n.millisecondsLabel,
+                            border: const OutlineInputBorder(),
                           ),
                           keyboardType: TextInputType.number,
                           onChanged: (value) {
@@ -608,12 +616,13 @@ class _EnhancedResultInputDialogState
   }
 
   Widget _buildAchievementInput() {
+    final l10n = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '達成度入力',
-          style: TextStyle(
+        Text(
+          l10n.achievementInputLabel,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeL,
             fontWeight: FontWeight.bold,
             color: AppColors.textDark,
@@ -646,24 +655,24 @@ class _EnhancedResultInputDialogState
                           });
                         },
                       ),
-                      const Text('達成'),
+                      Text(l10n.achievedLabel),
                       const SizedBox(width: AppDimensions.spacingL),
                       Expanded(
                         child: DropdownButtonFormField<String>(
                           value: _achievementRatings[participantId],
-                          decoration: const InputDecoration(
-                            labelText: '評価',
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: l10n.ratingLabel,
+                            border: const OutlineInputBorder(),
                           ),
-                          items: const [
-                            DropdownMenuItem(value: '', child: Text('なし')),
-                            DropdownMenuItem(value: 'S', child: Text('S')),
-                            DropdownMenuItem(value: 'A', child: Text('A')),
-                            DropdownMenuItem(value: 'B', child: Text('B')),
-                            DropdownMenuItem(value: 'C', child: Text('C')),
-                            DropdownMenuItem(value: '★★★', child: Text('★★★')),
-                            DropdownMenuItem(value: '★★', child: Text('★★')),
-                            DropdownMenuItem(value: '★', child: Text('★')),
+                          items: [
+                            DropdownMenuItem(value: '', child: Text(l10n.ratingNone)),
+                            const DropdownMenuItem(value: 'S', child: Text('S')),
+                            const DropdownMenuItem(value: 'A', child: Text('A')),
+                            const DropdownMenuItem(value: 'B', child: Text('B')),
+                            const DropdownMenuItem(value: 'C', child: Text('C')),
+                            const DropdownMenuItem(value: '★★★', child: Text('★★★')),
+                            const DropdownMenuItem(value: '★★', child: Text('★★')),
+                            const DropdownMenuItem(value: '★', child: Text('★')),
                           ],
                           onChanged: (value) {
                             setState(() {
@@ -684,21 +693,22 @@ class _EnhancedResultInputDialogState
   }
 
   Widget _buildCustomInput() {
+    final l10n = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'カスタム結果入力',
-          style: TextStyle(
+        Text(
+          l10n.customResultInputLabel,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeL,
             fontWeight: FontWeight.bold,
             color: AppColors.textDark,
           ),
         ),
         const SizedBox(height: AppDimensions.spacingS),
-        const Text(
-          '結果詳細は備考欄に記入してください',
-          style: TextStyle(
+        Text(
+          l10n.customResultHint,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeS,
             color: AppColors.textSecondary,
           ),
@@ -708,16 +718,18 @@ class _EnhancedResultInputDialogState
   }
 
   Widget _buildNotes() {
+    final l10n = L10n.of(context);
     return AppTextFieldMultiline(
       controller: _notesController,
-      label: '備考',
-      hintText: 'メモ、特記事項など',
+      label: l10n.notesLabel,
+      hintText: l10n.notesHint,
       maxLines: 3,
-      doneButtonText: '完了',
+      doneButtonText: l10n.doneButton,
     );
   }
 
   Widget _buildActions() {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -732,7 +744,7 @@ class _EnhancedResultInputDialogState
         children: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('キャンセル'),
+            child: Text(l10n.cancelButton),
           ),
           const SizedBox(width: AppDimensions.spacingM),
           ElevatedButton(
@@ -754,9 +766,9 @@ class _EnhancedResultInputDialogState
                       color: Colors.white,
                     ),
                   )
-                : const Text(
-                    '保存',
-                    style: TextStyle(
+                : Text(
+                    l10n.saveButton,
+                    style: const TextStyle(
                       fontSize: AppDimensions.fontSizeM,
                       fontWeight: FontWeight.w600,
                     ),
@@ -824,8 +836,9 @@ class _EnhancedResultInputDialogState
       widget.onResultSubmitted(matchResult);
       Navigator.of(context).pop();
     } catch (e) {
+      final l10n = L10n.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('エラーが発生しました: $e')),
+        SnackBar(content: Text(l10n.errorOccurredWithDetails(e.toString()))),
       );
     } finally {
       setState(() {

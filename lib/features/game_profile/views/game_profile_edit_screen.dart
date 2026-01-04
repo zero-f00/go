@@ -12,6 +12,8 @@ import '../../../shared/widgets/selection_button_group.dart';
 import '../../../data/models/game_profile_model.dart';
 import '../providers/game_profile_provider.dart';
 import '../../../shared/providers/auth_provider.dart';
+import '../../../shared/helpers/game_profile_localization_helper.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// ゲームプロフィール編集画面
 class GameProfileEditScreen extends ConsumerStatefulWidget {
@@ -205,13 +207,14 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Scaffold(
       body: AppGradientBackground(
         child: SafeArea(
           child: Column(
             children: [
               AppHeader(
-                title: widget.isEditing ? 'プロフィール編集' : 'ゲームプロフィール作成',
+                title: widget.isEditing ? l10n.gameProfileEditTitle : l10n.gameProfileCreateTitle,
                 showBackButton: true,
                 showUserIcon: false,
                 actions: [
@@ -223,7 +226,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
                         size: AppDimensions.iconM,
                       ),
                       onPressed: () => _onDeleteProfile(),
-                      tooltip: 'プロフィールを削除',
+                      tooltip: l10n.deleteProfileTooltip,
                     ),
                 ],
               ),
@@ -271,7 +274,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
                           ),
                         ),
                         if (_isSubmitting)
-                          const LoadingOverlay(message: '保存中...'),
+                          LoadingOverlay(message: l10n.saving),
                       ],
                     ),
                   ),
@@ -285,6 +288,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
   }
 
   Widget _buildGameNameDisplay() {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
@@ -301,7 +305,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'ゲーム名',
+                  l10n.gameName,
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     color: AppColors.textSecondary,
@@ -312,7 +316,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
                 Text(
                   _gameNameController.text.isNotEmpty
                       ? _gameNameController.text
-                      : '選択されたゲーム',
+                      : l10n.selectedGame,
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     color: AppColors.textDark,
@@ -363,6 +367,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
   }
 
   Widget _buildProfileStatusCard() {
+    final l10n = L10n.of(context);
     final isEditing = widget.isEditing;
 
     return Container(
@@ -399,7 +404,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  isEditing ? '既存プロフィールを編集' : '新しいプロフィールを作成',
+                  isEditing ? l10n.editExistingProfile : l10n.createNewProfile,
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     fontWeight: FontWeight.w600,
@@ -409,8 +414,8 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
                 const SizedBox(height: AppDimensions.spacingXS),
                 Text(
                   isEditing
-                      ? '${widget.gameName ?? widget.profile!.gameId} のプロフィール情報を変更できます'
-                      : 'すべての項目は任意入力です。後から編集も可能です',
+                      ? l10n.editProfileDescription(widget.gameName ?? widget.profile!.gameId)
+                      : l10n.createProfileDescription,
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     color: AppColors.textSecondary,
@@ -425,40 +430,42 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
   }
 
   Widget _buildBasicInfoSection() {
+    final l10n = L10n.of(context);
     return _buildSection(
-      title: '基本情報',
+      title: l10n.basicInfo,
       icon: Icons.info_outline,
       children: [
         _buildGameNameDisplay(),
         const SizedBox(height: AppDimensions.spacingM),
         TextInputField(
           controller: _gameUsernameController,
-          label: 'ゲーム内ユーザー名',
-          hintText: '例: プレイヤー001, GamerTag',
+          label: l10n.gameUsername,
+          hintText: l10n.gameUsernameHint,
         ),
         const SizedBox(height: AppDimensions.spacingM),
         TextInputField(
           controller: _gameUserIdController,
-          label: 'ゲーム内ユーザーID',
-          hintText: '例: #1234, @username, user_id_12345',
+          label: l10n.gameUserId,
+          hintText: l10n.gameUserIdHint,
         ),
         const SizedBox(height: AppDimensions.spacingM),
         TextInputField(
           controller: _clanController,
-          label: 'クラン名',
-          hintText: '例: TeamAlpha, ProGuild, [ABC]Clan',
+          label: l10n.clanName,
+          hintText: l10n.clanNameHint,
         ),
       ],
     );
   }
 
   Widget _buildExperienceSection() {
+    final l10n = L10n.of(context);
     return _buildSection(
-      title: 'スキルレベル',
+      title: l10n.skillLevelSection,
       icon: Icons.trending_up,
       children: [
         SelectionButtonGroup<SkillLevel>(
-          label: 'スキルレベル',
+          label: l10n.skillLevelSection,
           options: SkillLevel.values,
           selectedOption: _selectedSkillLevel,
           onSelectionChanged: (skillLevel) {
@@ -469,8 +476,8 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
                   : skillLevel;
             });
           },
-          optionBuilder: (skillLevel) => skillLevel.displayName,
-          tooltipBuilder: (skillLevel) => skillLevel.description,
+          optionBuilder: (skillLevel) => GameProfileLocalizationHelper.getSkillLevelDisplayName(context, skillLevel),
+          tooltipBuilder: (skillLevel) => GameProfileLocalizationHelper.getSkillLevelDescription(context, skillLevel),
         ),
         // 選択されたスキルレベルの説明を表示
         if (_selectedSkillLevel != null) ...[
@@ -487,7 +494,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
               ),
             ),
             child: Text(
-              _selectedSkillLevel!.description,
+              GameProfileLocalizationHelper.getSkillLevelDescription(context, _selectedSkillLevel!),
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeS,
                 color: AppColors.textPrimary,
@@ -499,20 +506,21 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
         const SizedBox(height: AppDimensions.spacingM),
         TextInputField(
           controller: _rankOrLevelController,
-          label: 'ランク・レベル',
-          hintText: '例: ダイヤモンド, レベル50, プラチナⅢ',
+          label: l10n.rankOrLevel,
+          hintText: l10n.rankOrLevelHint,
         ),
       ],
     );
   }
 
   Widget _buildPlayStyleSection() {
+    final l10n = L10n.of(context);
     return _buildSection(
-      title: 'プレイスタイル',
+      title: l10n.playStyleSection,
       icon: Icons.sports_esports,
       children: [
         Text(
-          '当てはまるものを選択してください（任意）',
+          l10n.playStyleDescription,
           style: const TextStyle(
             fontSize: AppDimensions.fontSizeS,
             color: AppColors.textSecondary,
@@ -528,8 +536,8 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
               _selectedPlayStyles = playStyles;
             });
           },
-          optionBuilder: (style) => style.displayName,
-          tooltipBuilder: (style) => style.description,
+          optionBuilder: (style) => GameProfileLocalizationHelper.getPlayStyleDisplayName(context, style),
+          tooltipBuilder: (style) => GameProfileLocalizationHelper.getPlayStyleDescription(context, style),
         ),
         // 選択されたプレイスタイルの説明を表示
         if (_selectedPlayStyles.isNotEmpty) ...[
@@ -550,7 +558,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  style.displayName,
+                  GameProfileLocalizationHelper.getPlayStyleDisplayName(context, style),
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     color: AppColors.textPrimary,
@@ -559,7 +567,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
                 ),
                 const SizedBox(height: AppDimensions.spacingXS),
                 Text(
-                  style.description,
+                  GameProfileLocalizationHelper.getPlayStyleDescription(context, style),
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     color: AppColors.textSecondary,
@@ -575,12 +583,13 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
   }
 
   Widget _buildActivityTimeSection() {
+    final l10n = L10n.of(context);
     return _buildSection(
-      title: '活動時間帯',
+      title: l10n.activityTimeSection,
       icon: Icons.schedule,
       children: [
         Text(
-          'よくプレイする時間帯を選択してください',
+          l10n.activityTimeDescription,
           style: const TextStyle(
             fontSize: AppDimensions.fontSizeS,
             color: AppColors.textSecondary,
@@ -596,15 +605,16 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
               _selectedActivityTimes = times;
             });
           },
-          optionBuilder: (time) => time.displayName,
+          optionBuilder: (time) => GameProfileLocalizationHelper.getActivityTimeDisplayName(context, time),
         ),
       ],
     );
   }
 
   Widget _buildVoiceChatSection() {
+    final l10n = L10n.of(context);
     return _buildSection(
-      title: 'ボイスチャット',
+      title: l10n.voiceChatSection,
       icon: Icons.mic,
       children: [
         Container(
@@ -634,7 +644,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'ゲーム内VC',
+                      l10n.inGameVC,
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeM,
                         fontWeight: FontWeight.w600,
@@ -645,7 +655,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
                     ),
                     const SizedBox(height: AppDimensions.spacingXS),
                     Text(
-                      _useInGameVC ? '利用可能' : '利用不可',
+                      _useInGameVC ? l10n.vcAvailable : l10n.vcUnavailable,
                       style: const TextStyle(
                         fontSize: AppDimensions.fontSizeS,
                         color: AppColors.textSecondary,
@@ -672,8 +682,8 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
         const SizedBox(height: AppDimensions.spacingM),
         AppTextField(
           controller: _voiceChatDetailsController,
-          label: 'VC詳細情報',
-          hintText: '例: ゲーム内VCメイン、Discord: user#1234、○時以降はVC可能',
+          label: l10n.vcDetails,
+          hintText: l10n.vcDetailsHint,
           maxLines: 3,
         ),
       ],
@@ -681,21 +691,22 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
   }
 
   Widget _buildAdditionalInfoSection() {
+    final l10n = L10n.of(context);
     return _buildSection(
-      title: 'その他の情報',
+      title: l10n.additionalInfo,
       icon: Icons.notes,
       children: [
         AppTextField(
           controller: _achievementsController,
-          label: '達成実績・アピールポイント',
-          hintText: '例: 世界ランキング100位、大会優勝歴あり、配信経験あり',
+          label: l10n.achievements,
+          hintText: l10n.achievementsHint,
           maxLines: 3,
         ),
         const SizedBox(height: AppDimensions.spacingM),
         AppTextField(
           controller: _notesController,
-          label: '自由記入・メモ',
-          hintText: '例: 初心者歓迎、まったりプレイ希望、ボイスチャット可能',
+          label: l10n.freeNotes,
+          hintText: l10n.freeNotesHint,
           maxLines: 4,
         ),
       ],
@@ -703,13 +714,14 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
   }
 
   Widget _buildGameSnsSection() {
+    final l10n = L10n.of(context);
     return _buildSection(
-      title: 'SNSアカウント',
+      title: l10n.snsAccountsSection,
       icon: Icons.share,
       children: [
-        const Text(
-          'このゲーム専用のSNSアカウントがある場合は入力してください',
-          style: TextStyle(
+        Text(
+          l10n.snsAccountsDescription,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeS,
             color: AppColors.textSecondary,
             fontWeight: FontWeight.w500,
@@ -720,42 +732,42 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
           icon: Icons.close,
           label: 'X (Twitter)',
           controller: _gameSnsControllers['twitter']!,
-          placeholder: 'ユーザー名（@なし）',
+          placeholder: l10n.snsUsernameHint,
         ),
         const SizedBox(height: AppDimensions.spacingS),
         _buildGameSnsInput(
           icon: Icons.music_note,
           label: 'TikTok',
           controller: _gameSnsControllers['tiktok']!,
-          placeholder: 'ユーザー名（@なし）',
+          placeholder: l10n.snsUsernameHint,
         ),
         const SizedBox(height: AppDimensions.spacingS),
         _buildGameSnsInput(
           icon: Icons.play_circle_fill,
           label: 'YouTube',
           controller: _gameSnsControllers['youtube']!,
-          placeholder: 'チャンネル名（@なし）',
+          placeholder: l10n.youtubeChannelHint,
         ),
         const SizedBox(height: AppDimensions.spacingS),
         _buildGameSnsInput(
           icon: Icons.camera_alt,
           label: 'Instagram',
           controller: _gameSnsControllers['instagram']!,
-          placeholder: 'ユーザー名（@なし）',
+          placeholder: l10n.snsUsernameHint,
         ),
         const SizedBox(height: AppDimensions.spacingS),
         _buildGameSnsInput(
           icon: Icons.videogame_asset,
           label: 'Twitch',
           controller: _gameSnsControllers['twitch']!,
-          placeholder: 'ユーザー名（@なし）',
+          placeholder: l10n.snsUsernameHint,
         ),
         const SizedBox(height: AppDimensions.spacingS),
         _buildGameSnsInput(
           icon: Icons.chat,
           label: 'Discord',
           controller: _gameSnsControllers['discord']!,
-          placeholder: 'ユーザー名#1234（#タグ込み）',
+          placeholder: l10n.discordUsernameHint,
         ),
       ],
     );
@@ -961,6 +973,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
   }
 
   Widget _buildActionButtons() {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -969,7 +982,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
         border: Border.all(color: AppColors.border),
       ),
       child: AppButton.primary(
-        text: widget.isEditing ? '変更を保存' : 'プロフィールを作成',
+        text: widget.isEditing ? l10n.saveChanges : l10n.createProfile,
         onPressed: _isSubmitting ? null : _onSave,
         isFullWidth: true,
         isEnabled: !_isSubmitting,
@@ -978,11 +991,12 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
   }
 
   void _onSave() async {
+    final l10n = L10n.of(context);
     // バリデーションを削除 - すべての項目が任意のため
 
     final currentUserData = await ref.read(currentUserDataProvider.future);
     if (currentUserData == null) {
-      _showErrorSnackBar('ユーザー情報の取得に失敗しました');
+      _showErrorSnackBar(l10n.failedToGetUserInfoShort);
       return;
     }
 
@@ -1057,16 +1071,16 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
       if (success && mounted) {
         Navigator.pop(context, true); // 成功フラグを返す
         _showSuccessSnackBar(
-          widget.isEditing ? 'プロフィールを更新しました' : 'プロフィールを作成しました',
+          widget.isEditing ? l10n.profileUpdated : l10n.profileCreated,
         );
       } else if (mounted) {
-        _showErrorSnackBar('保存に失敗しました。もう一度お試しください。');
+        _showErrorSnackBar(l10n.saveFailed);
       }
     } catch (e) {
       if (mounted) {
         final errorMessage = e.toString().contains('Exception: ')
             ? e.toString().replaceFirst('Exception: ', '')
-            : 'エラーが発生しました: $e';
+            : l10n.errorWithDetails(e.toString());
         _showErrorSnackBar(errorMessage);
       }
     } finally {
@@ -1079,24 +1093,25 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
   }
 
   void _onDeleteProfile() async {
+    final l10n = L10n.of(context);
     if (widget.profile == null) return;
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('プロフィールを削除'),
+        title: Text(l10n.deleteProfileTitle),
         content: Text(
-          '${widget.gameName ?? widget.profile!.gameId} のプロフィールを削除しますか？\n\nお気に入りゲームからも削除されます。\n\nこの操作は元に戻せません。',
+          l10n.deleteProfileConfirm(widget.gameName ?? widget.profile!.gameId),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('キャンセル'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('削除'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -1112,7 +1127,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
       // 現在のユーザー情報を取得
       final currentUserData = await ref.read(currentUserDataProvider.future);
       if (currentUserData == null) {
-        _showErrorSnackBar('ユーザー情報の取得に失敗しました');
+        _showErrorSnackBar(l10n.failedToGetUserInfoShort);
         return;
       }
 
@@ -1143,7 +1158,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
       ref.invalidate(gameProfileListProvider);
 
       if (mounted) {
-        _showSuccessSnackBar('ゲームプロフィールとお気に入りから削除しました');
+        _showSuccessSnackBar(l10n.profileAndFavoriteDeleted);
         // 少し待ってから画面を閉じる（メッセージを表示する時間を確保）
         Future.delayed(const Duration(milliseconds: 500), () {
           if (mounted) {
@@ -1153,7 +1168,7 @@ class _GameProfileEditScreenState extends ConsumerState<GameProfileEditScreen> {
       }
     } catch (e) {
       if (mounted) {
-        _showErrorSnackBar('エラーが発生しました: $e');
+        _showErrorSnackBar(l10n.errorWithDetails(e.toString()));
       }
     } finally {
       if (mounted) {

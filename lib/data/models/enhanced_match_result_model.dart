@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import '../../l10n/app_localizations.dart';
 
 /// 結果記録タイプ
 enum ResultType {
@@ -14,6 +15,8 @@ enum ResultType {
 
 /// 結果記録タイプの拡張
 extension ResultTypeExtension on ResultType {
+  /// ローカライズされた表示名を取得（後方互換性のため維持）
+  /// @deprecated 代わりに getDisplayName(context) を使用してください
   String get displayName {
     switch (this) {
       case ResultType.ranking:
@@ -31,6 +34,27 @@ extension ResultTypeExtension on ResultType {
     }
   }
 
+  /// ローカライズされた表示名を取得
+  String getDisplayName(BuildContext context) {
+    final l10n = L10n.of(context);
+    switch (this) {
+      case ResultType.ranking:
+        return l10n.resultTypeRanking;
+      case ResultType.score:
+        return l10n.resultTypeScore;
+      case ResultType.winLoss:
+        return l10n.resultTypeWinLoss;
+      case ResultType.timeAttack:
+        return l10n.resultTypeTime;
+      case ResultType.achievement:
+        return l10n.resultTypeAchievement;
+      case ResultType.custom:
+        return l10n.resultTypeCustom;
+    }
+  }
+
+  /// ローカライズされた説明を取得（後方互換性のため維持）
+  /// @deprecated 代わりに getDescription(context) を使用してください
   String get description {
     switch (this) {
       case ResultType.ranking:
@@ -45,6 +69,25 @@ extension ResultTypeExtension on ResultType {
         return '達成度や評価を記録（星の数、ランク等）';
       case ResultType.custom:
         return '自由形式で結果を記録';
+    }
+  }
+
+  /// ローカライズされた説明を取得
+  String getDescription(BuildContext context) {
+    final l10n = L10n.of(context);
+    switch (this) {
+      case ResultType.ranking:
+        return l10n.resultTypeRankingDesc;
+      case ResultType.score:
+        return l10n.resultTypeScoreDesc;
+      case ResultType.winLoss:
+        return l10n.resultTypeWinLossDesc;
+      case ResultType.timeAttack:
+        return l10n.resultTypeTimeDesc;
+      case ResultType.achievement:
+        return l10n.resultTypeAchievementDesc;
+      case ResultType.custom:
+        return l10n.resultTypeCustomDesc;
     }
   }
 

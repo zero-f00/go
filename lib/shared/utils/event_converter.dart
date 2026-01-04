@@ -520,7 +520,7 @@ class EventConverter {
       invitedUserIds: gameEvent.invitedUserIds,
       visibility: _mapStringToEventVisibility(gameEvent.visibility ?? 'パブリック'),
       eventTags: gameEvent.eventTags ?? [],
-      language: gameEvent.language ?? '日本語',
+      language: gameEvent.language,
       contactInfo: gameEvent.contactInfo,
       hasStreaming: gameEvent.hasStreaming ?? false,
       streamingUrls: gameEvent.streamingUrls,

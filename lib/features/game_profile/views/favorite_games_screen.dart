@@ -15,6 +15,7 @@ import '../providers/game_profile_provider.dart';
 import '../../../data/models/game_profile_model.dart';
 import '../../../shared/services/game_profile_service.dart';
 import '../../../shared/services/recommendation_service.dart';
+import '../../../l10n/app_localizations.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'game_profile_edit_screen.dart';
 
@@ -100,13 +101,14 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
       },
     );
 
+    final l10n = L10n.of(context);
     return Scaffold(
       body: AppGradientBackground(
         child: SafeArea(
           child: Column(
             children: [
               AppHeader(
-                title: 'お気に入りのゲーム',
+                title: l10n.favoriteGamesTitle,
                 showBackButton: true,
                 showUserIcon: false,
                 actions: _favoriteGames.isNotEmpty ? [
@@ -117,7 +119,7 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
                         color: AppColors.textWhite,
                       ),
                       onPressed: _confirmBulkDelete,
-                      tooltip: '選択したゲームを削除',
+                      tooltip: l10n.deleteSelectedGames,
                     ),
                   ],
                   IconButton(
@@ -126,7 +128,7 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
                       color: AppColors.textWhite,
                     ),
                     onPressed: _toggleDeleteMode,
-                    tooltip: _isDeleteMode ? '削除モードを終了' : '削除モード',
+                    tooltip: _isDeleteMode ? l10n.exitDeleteMode : l10n.deleteMode,
                   ),
                 ] : null,
               ),
@@ -167,6 +169,7 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
 
   /// 統一ヘッダーを構築
   Widget _buildUnifiedHeader() {
+    final l10n = L10n.of(context);
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       child: Row(
@@ -177,9 +180,9 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
             size: AppDimensions.iconM,
           ),
           const SizedBox(width: AppDimensions.spacingS),
-          const Text(
-            'お気に入りのゲーム',
-            style: TextStyle(
+          Text(
+            l10n.favoriteGamesTitle,
+            style: const TextStyle(
               fontSize: AppDimensions.fontSizeL,
               fontWeight: FontWeight.w700,
               color: AppColors.textDark,
@@ -197,7 +200,7 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
                 borderRadius: BorderRadius.circular(AppDimensions.radiusS),
               ),
               child: Text(
-                '${_favoriteGames.length}個',
+                l10n.gameCount(_favoriteGames.length),
                 style: const TextStyle(
                   fontSize: AppDimensions.fontSizeS,
                   color: AppColors.accent,
@@ -211,20 +214,21 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
   }
 
   Widget _buildLoadingView() {
-    return const Padding(
-      padding: EdgeInsets.all(AppDimensions.spacingXL),
+    final l10n = L10n.of(context);
+    return Padding(
+      padding: const EdgeInsets.all(AppDimensions.spacingXL),
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(
+            const CircularProgressIndicator(
               strokeWidth: 3,
               valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
             ),
-            SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.spacingM),
             Text(
-              'お気に入りゲームを読み込み中...',
-              style: TextStyle(
+              l10n.loadingFavoriteGames,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textSecondary,
                 fontWeight: FontWeight.w500,
@@ -260,6 +264,7 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
   }
 
   Widget _buildEmptyState() {
+    final l10n = L10n.of(context);
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -289,7 +294,7 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
                   ),
                   const SizedBox(height: AppDimensions.spacingL),
                   Text(
-                    'お気に入りゲームがありません',
+                    l10n.noFavoriteGames,
                     style: const TextStyle(
                       fontSize: AppDimensions.fontSizeXL,
                       fontWeight: FontWeight.w700,
@@ -299,7 +304,7 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
                   ),
                   const SizedBox(height: AppDimensions.spacingM),
                   Text(
-                    'ゲームを追加してプロフィールを作成し、\nユーザーをフォローしてイベントに参加しましょう！',
+                    l10n.noFavoriteGamesHint,
                     style: const TextStyle(
                       fontSize: AppDimensions.fontSizeM,
                       color: AppColors.textSecondary,
@@ -313,7 +318,7 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
                     constraints: const BoxConstraints(maxWidth: 200),
                     child: QuickActionButton(
                       icon: Icons.add_circle_outline,
-                      label: 'ゲームを追加',
+                      label: l10n.addGame,
                       onTap: _onAddGame,
                       backgroundColor: AppColors.accent,
                     ),
@@ -330,6 +335,7 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
 
 
   Widget _buildStatsHeader() {
+    final l10n = L10n.of(context);
     final profiledGamesCount = _gameProfiles.length;
     final totalGamesCount = _favoriteGames.length;
 
@@ -358,7 +364,7 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'ゲームプロフィール',
+                  l10n.gameProfile,
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeL,
                     fontWeight: FontWeight.w700,
@@ -367,7 +373,7 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
                 ),
                 const SizedBox(height: AppDimensions.spacingS),
                 Text(
-                  '$profiledGamesCount/$totalGamesCount ゲーム設定済み',
+                  l10n.gameProfileConfigured(profiledGamesCount, totalGamesCount),
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     color: AppColors.textOnPrimary,
@@ -394,6 +400,7 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
   }
 
   Widget _buildQuickActions() {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -412,9 +419,9 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                'クイックアクション',
-                style: TextStyle(
+              Text(
+                l10n.quickAction,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -428,7 +435,7 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
               Expanded(
                 child: QuickActionButton(
                   icon: Icons.add_circle_outline,
-                  label: 'ゲームを追加',
+                  label: l10n.addGame,
                   onTap: _onAddGame,
                   backgroundColor: AppColors.accent,
                 ),
@@ -441,6 +448,7 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
   }
 
   Widget _buildGamesSection() {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -459,9 +467,9 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                'お気に入りゲーム一覧',
-                style: TextStyle(
+              Text(
+                l10n.favoriteGamesList,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -589,6 +597,7 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
   }
 
   Widget _buildGameCardHeader(Game game, bool hasProfile) {
+    final l10n = L10n.of(context);
     return Row(
       children: [
         // ゲームアイコン（より大きく目立つように）
@@ -651,7 +660,7 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
                         ),
                         const SizedBox(width: AppDimensions.spacingXS),
                         Text(
-                          hasProfile ? '設定済み' : '未設定',
+                          hasProfile ? l10n.configured : l10n.notConfigured,
                           style: const TextStyle(
                             fontSize: AppDimensions.fontSizeXS,
                             color: AppColors.textWhite,
@@ -703,6 +712,7 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
   }
 
   Widget _buildGameCardFooter(bool hasProfile, GameProfile? profile) {
+    final l10n = L10n.of(context);
     return Row(
       children: [
         Expanded(
@@ -723,7 +733,7 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
                     ),
                     const SizedBox(width: AppDimensions.spacingS),
                     Text(
-                      '更新: ${_formatDate(profile.updatedAt)}',
+                      l10n.lastUpdated(_formatDate(context, profile.updatedAt)),
                       style: const TextStyle(
                         fontSize: AppDimensions.fontSizeS,
                         color: AppColors.textSecondary,
@@ -733,7 +743,7 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
                   ],
                 )
               : Text(
-                  'ゲームプロフィールを設定してください',
+                  l10n.pleaseSetGameProfile,
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     color: AppColors.textSecondary,
@@ -760,7 +770,7 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                hasProfile ? 'プロフィール編集' : 'プロフィール設定',
+                hasProfile ? l10n.editProfile : l10n.setProfile,
                 style: const TextStyle(
                   fontSize: AppDimensions.fontSizeS,
                   color: AppColors.primary,
@@ -790,16 +800,17 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
     );
   }
 
-  String _formatDate(DateTime date) {
+  String _formatDate(BuildContext context, DateTime date) {
+    final l10n = L10n.of(context);
     final now = DateTime.now();
     final difference = now.difference(date).inDays;
 
     if (difference == 0) {
-      return '今日';
+      return l10n.today;
     } else if (difference == 1) {
-      return '昨日';
+      return l10n.yesterday;
     } else if (difference < 7) {
-      return '$difference日前';
+      return l10n.daysAgo(difference);
     } else {
       return '${date.month}/${date.day}';
     }
@@ -829,13 +840,14 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
 
   /// 一括削除の確認ダイアログを表示
   void _confirmBulkDelete() {
+    final l10n = L10n.of(context);
     final selectedGames = _favoriteGames
         .where((game) => _selectedGameIds.contains(game.id))
         .toList();
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Row(
           children: [
             Icon(
@@ -844,8 +856,8 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
               size: AppDimensions.iconL,
             ),
             const SizedBox(width: AppDimensions.spacingM),
-            const Expanded(
-              child: Text('選択したゲームを削除'),
+            Expanded(
+              child: Text(l10n.deleteSelectedGamesTitle),
             ),
           ],
         ),
@@ -854,7 +866,7 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '以下の${selectedGames.length}つのゲームをお気に入りから削除しますか？',
+              l10n.deleteSelectedGamesConfirm(selectedGames.length),
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
               ),
@@ -899,10 +911,10 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
                     size: AppDimensions.iconM,
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'ゲームプロフィールも同時に削除されます',
-                      style: TextStyle(
+                      l10n.gameProfileWillBeDeleted,
+                      style: const TextStyle(
                         fontSize: AppDimensions.fontSizeS,
                         color: AppColors.textSecondary,
                       ),
@@ -915,19 +927,19 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル'),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               _executeBulkDelete(selectedGames);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.error,
               foregroundColor: AppColors.textWhite,
             ),
-            child: const Text('削除'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -936,10 +948,11 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
 
   /// 一括削除を実行
   void _executeBulkDelete(List<Game> gamesToDelete) async {
+    final l10n = L10n.of(context);
     try {
       final currentUser = await ref.read(currentUserDataProvider.future);
       if (currentUser == null) {
-        _showErrorSnackBar('ユーザー情報の取得に失敗しました');
+        _showErrorSnackBar(l10n.failedToGetUserInfo);
         return;
       }
 
@@ -1000,19 +1013,20 @@ class _FavoriteGamesScreenState extends ConsumerState<FavoriteGamesScreen> {
       }
 
       if (mounted) {
-        _showSuccessSnackBar('${gamesToDelete.length}つのゲームを削除しました');
+        _showSuccessSnackBar(l10n.gamesDeleted(gamesToDelete.length));
       }
     } catch (e) {
       // エラーが発生した場合は元の状態に戻す
       _loadData();
-      _showErrorSnackBar('削除に失敗しました: $e');
+      _showErrorSnackBar(l10n.deleteFailed(e.toString()));
     }
   }
 
   void _onAddGame() {
+    final l10n = L10n.of(context);
     GameSelectionDialog.show(
       context,
-      title: 'お気に入りゲームを追加',
+      title: l10n.addFavoriteGame,
       onGameSelected: (game) async {
         if (game != null && !_favoriteGames.any((g) => g.id == game.id)) {
           // ゲームを共有キャッシュに保存

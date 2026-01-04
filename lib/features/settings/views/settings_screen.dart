@@ -3,14 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
-import '../../../shared/constants/app_strings.dart';
 import '../../../shared/providers/auth_provider.dart';
+import '../../../shared/providers/locale_provider.dart';
 import '../../../shared/services/firebase_user_service.dart' as firebase_user;
 import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
 import '../../../shared/widgets/user_avatar.dart';
 import '../../../shared/widgets/account_withdrawal_dialog.dart';
 import '../../../data/models/user_model.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 設定画面
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -85,19 +86,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ref.invalidate(currentUserDataProvider);
 
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('設定を保存しました'),
+          SnackBar(
+            content: Text(l10n.settingsSaved),
             backgroundColor: AppColors.primary,
-            duration: Duration(seconds: 1),
+            duration: const Duration(seconds: 1),
           ),
         );
       }
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('設定の保存に失敗しました: $e'),
+            content: Text(l10n.settingsSaveFailed(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -113,13 +116,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Scaffold(
       body: AppGradientBackground(
         child: SafeArea(
           child: Column(
             children: [
               AppHeader(
-                title: '設定',
+                title: l10n.settingsTitle,
                 showBackButton: true,
                 onBackPressed: () => Navigator.pop(context),
               ),
@@ -149,6 +153,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           const SizedBox(height: AppDimensions.spacingL),
                           _buildPrivacySettingsSection(context),
                           const SizedBox(height: AppDimensions.spacingL),
+                          _buildAppSettingsSection(context),
+                          const SizedBox(height: AppDimensions.spacingL),
                           _buildAppInfoSection(context),
                           const SizedBox(height: AppDimensions.spacingL),
                           _buildAccountManagementSection(context),
@@ -167,6 +173,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   /// 統一ヘッダーを構築
   Widget _buildUnifiedHeader() {
+    final l10n = L10n.of(context);
     return Row(
       children: [
         Icon(
@@ -175,9 +182,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           size: AppDimensions.iconM,
         ),
         const SizedBox(width: AppDimensions.spacingS),
-        const Text(
-          '設定',
-          style: TextStyle(
+        Text(
+          l10n.settingsTitle,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeL,
             fontWeight: FontWeight.w700,
             color: AppColors.textDark,
@@ -187,7 +194,279 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  /// アプリ設定セクション（言語設定を含む）
+  Widget _buildAppSettingsSection(BuildContext context) {
+    final l10n = L10n.of(context);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundLight,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.tune,
+                color: AppColors.accent,
+                size: AppDimensions.iconM,
+              ),
+              const SizedBox(width: AppDimensions.spacingS),
+              Text(
+                l10n.appSettingsSection,
+                style: const TextStyle(
+                  fontSize: AppDimensions.fontSizeL,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacingL),
+          _buildLanguageSettingItem(context),
+        ],
+      ),
+    );
+  }
+
+  /// 言語設定アイテム
+  Widget _buildLanguageSettingItem(BuildContext context) {
+    final l10n = L10n.of(context);
+    final currentLanguage = ref.watch(localeProvider);
+    final currentLanguageName = _getLanguageDisplayName(currentLanguage, l10n);
+
+    return InkWell(
+      onTap: () => _showLanguageSelectionDialog(context),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+      child: Container(
+        padding: const EdgeInsets.all(AppDimensions.spacingM),
+        decoration: BoxDecoration(
+          color: AppColors.cardBackground,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+          border: Border.all(color: AppColors.borderLight),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppDimensions.spacingS),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+              ),
+              child: Icon(
+                Icons.language,
+                color: AppColors.primary,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: AppDimensions.spacingM),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.languageSection,
+                    style: const TextStyle(
+                      fontSize: AppDimensions.fontSizeM,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    currentLanguageName,
+                    style: const TextStyle(
+                      fontSize: AppDimensions.fontSizeS,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: AppColors.textSecondary,
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 言語の表示名を取得
+  String _getLanguageDisplayName(AppLanguage language, L10n l10n) {
+    switch (language) {
+      case AppLanguage.system:
+        return l10n.languageSystem;
+      case AppLanguage.ja:
+        return l10n.languageJapanese;
+      case AppLanguage.en:
+        return l10n.languageEnglish;
+      case AppLanguage.ko:
+        return l10n.languageKorean;
+      case AppLanguage.zh:
+        return l10n.languageChineseSimplified;
+      case AppLanguage.zhTW:
+        return l10n.languageChineseTraditional;
+    }
+  }
+
+  /// 言語選択ダイアログを表示
+  Future<void> _showLanguageSelectionDialog(BuildContext context) async {
+    final l10n = L10n.of(context);
+    final currentLanguage = ref.read(localeProvider);
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(
+              Icons.language,
+              color: AppColors.primary,
+              size: 24,
+            ),
+            const SizedBox(width: AppDimensions.spacingS),
+            Expanded(
+              child: Text(
+                l10n.languageSection,
+                style: const TextStyle(
+                  fontSize: AppDimensions.fontSizeL,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildLanguageDialogOption(
+                context: dialogContext,
+                language: AppLanguage.system,
+                currentLanguage: currentLanguage,
+                displayName: l10n.languageSystem,
+                icon: Icons.phone_android,
+              ),
+              _buildLanguageDialogOption(
+                context: dialogContext,
+                language: AppLanguage.ja,
+                currentLanguage: currentLanguage,
+                displayName: l10n.languageJapanese,
+                icon: Icons.translate,
+              ),
+              _buildLanguageDialogOption(
+                context: dialogContext,
+                language: AppLanguage.en,
+                currentLanguage: currentLanguage,
+                displayName: l10n.languageEnglish,
+                icon: Icons.translate,
+              ),
+              _buildLanguageDialogOption(
+                context: dialogContext,
+                language: AppLanguage.ko,
+                currentLanguage: currentLanguage,
+                displayName: l10n.languageKorean,
+                icon: Icons.translate,
+              ),
+              _buildLanguageDialogOption(
+                context: dialogContext,
+                language: AppLanguage.zh,
+                currentLanguage: currentLanguage,
+                displayName: l10n.languageChineseSimplified,
+                icon: Icons.translate,
+              ),
+              _buildLanguageDialogOption(
+                context: dialogContext,
+                language: AppLanguage.zhTW,
+                currentLanguage: currentLanguage,
+                displayName: l10n.languageChineseTraditional,
+                icon: Icons.translate,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.cancel),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 言語選択ダイアログのオプションアイテム
+  Widget _buildLanguageDialogOption({
+    required BuildContext context,
+    required AppLanguage language,
+    required AppLanguage currentLanguage,
+    required String displayName,
+    required IconData icon,
+  }) {
+    final isSelected = language == currentLanguage;
+
+    return InkWell(
+      onTap: () {
+        ref.read(localeProvider.notifier).setLanguage(language);
+        Navigator.of(context).pop();
+      },
+      borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacingM,
+          vertical: AppDimensions.spacingM,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primary.withValues(alpha: 0.1)
+              : AppColors.cardBackground,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.borderLight,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? AppColors.primary : AppColors.textSecondary,
+              size: 20,
+            ),
+            const SizedBox(width: AppDimensions.spacingM),
+            Expanded(
+              child: Text(
+                displayName,
+                style: TextStyle(
+                  fontSize: AppDimensions.fontSizeM,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  color: isSelected ? AppColors.primary : AppColors.textDark,
+                ),
+              ),
+            ),
+            if (isSelected)
+              Icon(
+                Icons.check_circle,
+                color: AppColors.primary,
+                size: 20,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildAccountSection(BuildContext context) {
+    final l10n = L10n.of(context);
     final isSignedIn = ref.watch(isSignedInProvider);
     final displayName = ref.watch(displayNameProvider);
     final userPhotoUrl = ref.watch(userPhotoUrlProvider);
@@ -211,9 +490,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                'アカウント',
-                style: TextStyle(
+              Text(
+                l10n.account,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -252,7 +531,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            isSignedIn ? 'サインイン済み' : 'ゲストユーザー',
+                            isSignedIn ? l10n.signedIn : l10n.guestUser,
                             style: const TextStyle(
                               fontSize: AppDimensions.fontSizeS,
                               color: AppColors.textSecondary,
@@ -260,9 +539,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           ),
                           if (isSignedIn) ...[
                             const SizedBox(height: 4),
-                            const Text(
-                              'タップしてプロフィールを表示',
-                              style: TextStyle(
+                            Text(
+                              l10n.tapToViewProfile,
+                              style: const TextStyle(
                                 fontSize: AppDimensions.fontSizeXS,
                                 color: AppColors.accent,
                               ),
@@ -289,7 +568,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               child: ElevatedButton.icon(
                 onPressed: () => _showSignOutConfirmation(context),
                 icon: const Icon(Icons.logout),
-                label: const Text('サインアウト'),
+                label: Text(l10n.signOut),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.error,
                   foregroundColor: Colors.white,
@@ -309,6 +588,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   /// プライバシー設定セクション
 
   Widget _buildPrivacySettingsSection(BuildContext context) {
+    final l10n = L10n.of(context);
     final isSignedIn = ref.watch(isSignedInProvider);
 
     if (!isSignedIn) {
@@ -334,9 +614,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                'プロフィール公開設定',
-                style: TextStyle(
+              Text(
+                l10n.profileVisibilitySettings,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -345,9 +625,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ],
           ),
           const SizedBox(height: AppDimensions.spacingS),
-          const Text(
-            '他のユーザーがあなたのプロフィールで閲覧できる情報を設定します',
-            style: TextStyle(
+          Text(
+            l10n.profileVisibilityDescription,
+            style: const TextStyle(
               fontSize: AppDimensions.fontSizeS,
               color: AppColors.textSecondary,
             ),
@@ -363,8 +643,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           else ...[
             _buildPrivacyToggle(
               icon: Icons.admin_panel_settings,
-              title: '運営者としてのイベント',
-              description: '主催・共同編集者として関わるイベントを表示',
+              title: l10n.eventsAsOrganizer,
+              description: l10n.eventsAsOrganizerDescription,
               value: _showManagedEvents,
               onChanged: (value) {
                 setState(() {
@@ -376,8 +656,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: AppDimensions.spacingM),
             _buildPrivacyToggle(
               icon: Icons.event_available,
-              title: '参加予定イベント',
-              description: '参加予定のイベントを表示',
+              title: l10n.upcomingEventsVisibility,
+              description: l10n.upcomingEventsDescription,
               value: _showParticipatingEvents,
               onChanged: (value) {
                 setState(() {
@@ -389,8 +669,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: AppDimensions.spacingM),
             _buildPrivacyToggle(
               icon: Icons.history,
-              title: '過去参加済みイベント',
-              description: '過去に参加したイベントを表示',
+              title: l10n.pastEventsVisibility,
+              description: l10n.pastEventsDescription,
               value: _showParticipatedEvents,
               onChanged: (value) {
                 setState(() {
@@ -481,6 +761,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildAppInfoSection(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -500,9 +781,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                'アプリ情報',
-                style: TextStyle(
+              Text(
+                l10n.appInfo,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -531,7 +812,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      AppStrings.appTitle,
+                      l10n.appTitle,
                       style: const TextStyle(
                         fontSize: AppDimensions.fontSizeM,
                         fontWeight: FontWeight.w600,
@@ -539,9 +820,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    const Text(
-                      'バージョン 1.0.0',
-                      style: TextStyle(
+                    Text(
+                      l10n.versionLabel('1.0.0'),
+                      style: const TextStyle(
                         fontSize: AppDimensions.fontSizeS,
                         color: AppColors.textSecondary,
                       ),
@@ -559,6 +840,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildInfoSection(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -578,9 +860,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                '情報・サポート',
-                style: TextStyle(
+              Text(
+                l10n.infoAndSupport,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -592,21 +874,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _buildInfoItem(
             context: context,
             icon: Icons.description,
-            title: '利用規約',
+            title: l10n.termsOfService,
             onTap: () => _onTermsOfServiceTap(context),
           ),
           const SizedBox(height: AppDimensions.spacingS),
           _buildInfoItem(
             context: context,
             icon: Icons.privacy_tip,
-            title: 'プライバシーポリシー',
+            title: l10n.privacyPolicy,
             onTap: () => _onPrivacyPolicyTap(context),
           ),
           const SizedBox(height: AppDimensions.spacingS),
           _buildInfoItem(
             context: context,
             icon: Icons.contact_support,
-            title: 'お問い合わせ',
+            title: l10n.contact,
             onTap: () => _onContactTap(context),
           ),
         ],
@@ -665,67 +947,71 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _onTermsOfServiceTap(BuildContext context) async {
+    final l10n = L10n.of(context);
     final uri = Uri.parse('https://sites.google.com/view/go-mobile-terms-of-service/home');
     try {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
         if (context.mounted) {
-          _showErrorDialog(context, '利用規約のページを開けませんでした。');
+          _showErrorDialog(context, l10n.failedToOpenPage(l10n.termsOfService));
         }
       }
     } catch (e) {
       if (context.mounted) {
-        _showErrorDialog(context, '利用規約のページを開く際にエラーが発生しました。');
+        _showErrorDialog(context, l10n.errorOpeningPage(l10n.termsOfService));
       }
     }
   }
 
   Future<void> _onPrivacyPolicyTap(BuildContext context) async {
+    final l10n = L10n.of(context);
     final uri = Uri.parse('https://sites.google.com/view/go-mobile-privacy-policy/home');
     try {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
         if (context.mounted) {
-          _showErrorDialog(context, 'プライバシーポリシーのページを開けませんでした。');
+          _showErrorDialog(context, l10n.failedToOpenPage(l10n.privacyPolicy));
         }
       }
     } catch (e) {
       if (context.mounted) {
-        _showErrorDialog(context, 'プライバシーポリシーのページを開く際にエラーが発生しました。');
+        _showErrorDialog(context, l10n.errorOpeningPage(l10n.privacyPolicy));
       }
     }
   }
 
   Future<void> _onContactTap(BuildContext context) async {
+    final l10n = L10n.of(context);
     final uri = Uri.parse('https://forms.gle/3zueBZCCpERfLUFk7');
     try {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
         if (context.mounted) {
-          _showErrorDialog(context, 'お問い合わせフォームを開けませんでした。');
+          _showErrorDialog(context, l10n.failedToOpenContactForm);
         }
       }
     } catch (e) {
       if (context.mounted) {
-        _showErrorDialog(context, 'お問い合わせフォームを開く際にエラーが発生しました。');
+        _showErrorDialog(context, l10n.errorOpeningContactForm);
       }
     }
   }
 
 
   void _showErrorDialog(BuildContext context, String message) {
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('エラー'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.error),
         content: Text(message),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.ok),
           ),
         ],
       ),
@@ -733,20 +1019,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _showSignOutConfirmation(BuildContext context) async {
+    final l10n = L10n.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('サインアウト'),
-        content: const Text('サインアウトしてもよろしいですか？\n\nローカルに保存されたデータは残りますが、クラウド同期は停止されます。'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.signOutTitle),
+        content: Text(l10n.signOutConfirmation),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('キャンセル'),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.cancel),
           ),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('サインアウト'),
+            child: Text(l10n.signOut),
           ),
         ],
       ),
@@ -792,18 +1079,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
 
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('サインアウトしました'),
+          SnackBar(
+            content: Text(l10n.signedOut),
             backgroundColor: AppColors.primary,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('サインアウトに失敗しました: $e'),
+            content: Text(l10n.signOutFailed(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -814,6 +1103,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   /// アカウント管理セクション
   Widget _buildAccountManagementSection(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -833,9 +1123,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                'アカウント管理',
-                style: TextStyle(
+              Text(
+                l10n.accountManagement,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -844,9 +1134,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ],
           ),
           const SizedBox(height: AppDimensions.spacingM),
-          const Text(
-            'アカウントに関する重要な操作',
-            style: TextStyle(
+          Text(
+            l10n.accountManagementDescription,
+            style: const TextStyle(
               fontSize: AppDimensions.fontSizeS,
               color: AppColors.textSecondary,
             ),
@@ -855,8 +1145,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _buildAccountManagementItem(
             context: context,
             icon: Icons.person_remove,
-            title: 'アカウント退会',
-            description: 'アカウントとすべてのデータを削除します',
+            title: l10n.deleteAccountTitle,
+            description: l10n.deleteAccountDescription,
             onTap: () => _showAccountWithdrawalDialog(context),
             isDestructive: true,
           ),
@@ -948,13 +1238,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   /// 自分のプロフィール画面に遷移
   Future<void> _navigateToUserProfile(BuildContext context) async {
+    final l10n = L10n.of(context);
     try {
       final currentUserData = await ref.read(currentUserDataProvider.future);
       if (currentUserData == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('ユーザー情報を取得できませんでした'),
+            SnackBar(
+              content: Text(l10n.failedToGetUserInfo),
               backgroundColor: AppColors.error,
             ),
           );
@@ -973,8 +1264,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('プロフィール画面の表示に失敗しました'),
+          SnackBar(
+            content: Text(l10n.failedToShowProfile),
             backgroundColor: AppColors.error,
           ),
         );

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/app_colors.dart';
-import '../constants/app_strings.dart';
 import '../constants/app_dimensions.dart';
 import 'notification_tab_icon.dart';
+import '../../l10n/app_localizations.dart';
 
 class AppBottomNavigation extends ConsumerWidget {
   final int currentIndex;
@@ -17,6 +17,7 @@ class AppBottomNavigation extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
     return Container(
       decoration: BoxDecoration(
         color: AppColors.cardBackground,
@@ -53,7 +54,7 @@ class AppBottomNavigation extends ConsumerWidget {
               Icons.home,
               size: AppDimensions.iconM,
             ),
-            label: AppStrings.homeTab,
+            label: l10n.homeTab,
           ),
           BottomNavigationBarItem(
             icon: Icon(
@@ -64,12 +65,12 @@ class AppBottomNavigation extends ConsumerWidget {
               Icons.search,
               size: AppDimensions.iconM,
             ),
-            label: AppStrings.searchTab,
+            label: l10n.searchTab,
           ),
           BottomNavigationBarItem(
             icon: NotificationTabIcon(isActive: false),
             activeIcon: NotificationTabIcon(isActive: true),
-            label: AppStrings.notificationTab,
+            label: l10n.notificationTab,
           ),
           BottomNavigationBarItem(
             icon: Icon(
@@ -80,7 +81,7 @@ class AppBottomNavigation extends ConsumerWidget {
               Icons.dashboard,
               size: AppDimensions.iconM,
             ),
-            label: AppStrings.manageTab,
+            label: l10n.manageTab,
           ),
         ],
       ),

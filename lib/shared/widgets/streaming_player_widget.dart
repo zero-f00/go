@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import '../../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../utils/streaming_utils.dart';
@@ -199,7 +200,7 @@ class _StreamingPlayerWidgetState extends State<StreamingPlayerWidget> {
   /// YouTubeプレイヤー
   Widget _buildYouTubePlayer() {
     if (_youtubeController == null) {
-      return _buildPlayerPlaceholder('YouTube動画を読み込み中...');
+      return _buildPlayerPlaceholder(L10n.of(context).youtubeLoading);
     }
 
     return Container(
@@ -231,19 +232,19 @@ class _StreamingPlayerWidgetState extends State<StreamingPlayerWidget> {
             : Container(
                 height: 200,
                 color: AppColors.backgroundLight,
-                child: const Center(
+                child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.error_outline,
                         color: AppColors.error,
                         size: 48,
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Text(
-                        'プレイヤーを読み込めませんでした',
-                        style: TextStyle(
+                        L10n.of(context).playerLoadFailed,
+                        style: const TextStyle(
                           color: AppColors.error,
                           fontSize: 14,
                         ),
@@ -295,7 +296,7 @@ class _StreamingPlayerWidgetState extends State<StreamingPlayerWidget> {
                 ),
                 const SizedBox(height: AppDimensions.spacingM),
                 Text(
-                  '$platformName で配信を視聴',
+                  L10n.of(context).watchOnPlatform(platformName),
                   style: const TextStyle(
                     color: AppColors.textDark,
                     fontSize: AppDimensions.fontSizeM,
@@ -386,8 +387,8 @@ class _StreamingPlayerWidgetState extends State<StreamingPlayerWidget> {
               ),
               label: Text(
                 platform == StreamingPlatform.youtube
-                    ? 'YouTubeで開く'
-                    : '外部アプリで開く',
+                    ? L10n.of(context).openInYoutube
+                    : L10n.of(context).openInExternalApp,
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.accent,

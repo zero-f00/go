@@ -16,7 +16,9 @@ import '../../../data/models/game_profile_model.dart';
 import '../../../data/models/event_group_model.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/event_info_card.dart';
+import '../../../shared/widgets/marquee_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// グループ管理画面
 class GroupRoomManagementScreen extends ConsumerStatefulWidget {
@@ -140,20 +142,21 @@ class _GroupRoomManagementScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Scaffold(
       body: AppGradientBackground(
         child: SafeArea(
           child: Column(
             children: [
               AppHeader(
-                title: 'グループ',
+                title: l10n.groupTitle,
                 showBackButton: true,
                 onBackPressed: () => Navigator.of(context).pop(),
                 actions: [
                   IconButton(
                     icon: const Icon(Icons.edit_note, color: Colors.white),
                     onPressed: _editGeneralAnnouncements,
-                    tooltip: '全体連絡事項を編集',
+                    tooltip: l10n.editGeneralAnnouncementsTooltip,
                   ),
                 ],
               ),
@@ -190,9 +193,9 @@ class _GroupRoomManagementScreenState
                               size: AppDimensions.iconM,
                             ),
                             const SizedBox(width: AppDimensions.spacingS),
-                            const Text(
-                              'グループ管理',
-                              style: TextStyle(
+                            Text(
+                              l10n.groupManagement,
+                              style: const TextStyle(
                                 fontSize: AppDimensions.fontSizeL,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.textDark,
@@ -221,9 +224,9 @@ class _GroupRoomManagementScreenState
           onPressed: _createNewGroup,
           backgroundColor: AppColors.accent,
           icon: const Icon(Icons.add, color: Colors.white),
-          label: const Text(
-            'グループ作成',
-            style: TextStyle(
+          label: Text(
+            l10n.createGroup,
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w600,
             ),
@@ -236,6 +239,7 @@ class _GroupRoomManagementScreenState
 
   /// グループ管理タブ
   Widget _buildGroupManagementTab() {
+    final l10n = L10n.of(context);
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -281,7 +285,7 @@ class _GroupRoomManagementScreenState
                     ),
                     const SizedBox(width: AppDimensions.spacingS),
                     Text(
-                      '全体連絡事項',
+                      l10n.generalAnnouncements,
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeM,
                         fontWeight: FontWeight.w600,
@@ -290,7 +294,7 @@ class _GroupRoomManagementScreenState
                     ),
                     const Spacer(),
                     Text(
-                      '全参加者が閲覧可能',
+                      l10n.visibleToAllParticipants,
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeXS,
                         color: AppColors.textSecondary,
@@ -344,6 +348,7 @@ class _GroupRoomManagementScreenState
 
   /// 空の状態を表示
   Widget _buildEmptyState() {
+    final l10n = L10n.of(context);
     return Center(
       child: Container(
         padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -356,18 +361,18 @@ class _GroupRoomManagementScreenState
               color: AppColors.textLight,
             ),
             const SizedBox(height: AppDimensions.spacingM),
-            const Text(
-              'まだグループがありません',
-              style: TextStyle(
+            Text(
+              l10n.noGroupsYet,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingS),
-            const Text(
-              'チーム戦を開催するために\nグループ（チーム）を作成しましょう',
-              style: TextStyle(
+            Text(
+              l10n.createGroupDescription,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textLight,
               ),
@@ -398,7 +403,7 @@ class _GroupRoomManagementScreenState
                         const SizedBox(width: AppDimensions.spacingS),
                         Flexible(
                           child: Text(
-                            '${_unassignedParticipants.length}名の承認済み参加者が\nグループ未割り当てです',
+                            l10n.unassignedParticipantsWarning(_unassignedParticipants.length),
                             style: TextStyle(
                               fontSize: AppDimensions.fontSizeM,
                               color: AppColors.warning,
@@ -414,7 +419,7 @@ class _GroupRoomManagementScreenState
                       onPressed: _showUnassignedParticipantsDialog,
                       icon: Icon(Icons.visibility, color: AppColors.accent),
                       label: Text(
-                        '未割り当て参加者を確認',
+                        l10n.viewUnassignedParticipants,
                         style: TextStyle(
                           color: AppColors.accent,
                           fontWeight: FontWeight.w600,
@@ -433,6 +438,7 @@ class _GroupRoomManagementScreenState
 
   /// 未割り当て参加者セクション
   Widget _buildUnassignedSection() {
+    final l10n = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -445,7 +451,7 @@ class _GroupRoomManagementScreenState
             ),
             const SizedBox(width: AppDimensions.spacingS),
             Text(
-              '未割り当て参加者 (${_unassignedParticipants.length})',
+              l10n.unassignedParticipantsTitle(_unassignedParticipants.length),
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 fontWeight: FontWeight.w600,
@@ -478,6 +484,7 @@ class _GroupRoomManagementScreenState
 
   /// グループカード
   Widget _buildGroupCard(EventGroup group) {
+    final l10n = L10n.of(context);
     // グループに所属する参加者の詳細情報を取得
     final groupParticipants = _getAllParticipants()
         .where((participant) => group.participants.contains(participant.userId))
@@ -522,12 +529,12 @@ class _GroupRoomManagementScreenState
               PopupMenuButton<String>(
                 onSelected: (value) => _handleGroupAction(group, value),
                 itemBuilder: (context) => [
-                  const PopupMenuItem(value: 'edit', child: Text('編集')),
-                  const PopupMenuItem(
+                  PopupMenuItem(value: 'edit', child: Text(l10n.editAction)),
+                  PopupMenuItem(
                     value: 'add_member',
-                    child: Text('メンバー追加'),
+                    child: Text(l10n.addMemberAction),
                   ),
-                  const PopupMenuItem(value: 'delete', child: Text('削除')),
+                  PopupMenuItem(value: 'delete', child: Text(l10n.deleteAction)),
                 ],
                 child: Icon(Icons.more_vert, color: AppColors.textSecondary),
               ),
@@ -548,9 +555,9 @@ class _GroupRoomManagementScreenState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'グループ説明:',
-                    style: TextStyle(
+                  Text(
+                    l10n.groupDescriptionLabel,
+                    style: const TextStyle(
                       fontSize: AppDimensions.fontSizeS,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textDark,
@@ -593,9 +600,9 @@ class _GroupRoomManagementScreenState
                         size: AppDimensions.iconS,
                       ),
                       const SizedBox(width: AppDimensions.spacingXS),
-                      const Text(
-                        'グループ連絡事項:',
-                        style: TextStyle(
+                      Text(
+                        l10n.groupAnnouncementsLabel,
+                        style: const TextStyle(
                           fontSize: AppDimensions.fontSizeS,
                           fontWeight: FontWeight.w600,
                           color: AppColors.textDark,
@@ -622,7 +629,7 @@ class _GroupRoomManagementScreenState
 
           // 参加者数
           Text(
-            '参加者: ${group.participants.length}名',
+            l10n.participantsCount(group.participants.length),
             style: TextStyle(
               fontSize: AppDimensions.fontSizeM,
               fontWeight: FontWeight.w600,
@@ -664,7 +671,7 @@ class _GroupRoomManagementScreenState
                   ),
                   const SizedBox(height: AppDimensions.spacingS),
                   Text(
-                    'メンバーがいません',
+                    l10n.noMembersInGroup,
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeM,
                       fontWeight: FontWeight.w600,
@@ -673,7 +680,7 @@ class _GroupRoomManagementScreenState
                   ),
                   const SizedBox(height: AppDimensions.spacingXS),
                   Text(
-                    'メニューからメンバーを追加してください',
+                    l10n.addMemberFromMenuHint,
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeS,
                       color: AppColors.textSecondary,
@@ -793,13 +800,14 @@ class _GroupRoomManagementScreenState
 
   /// 参加者アクションダイアログを表示
   void _showParticipantActions(ApprovedParticipant participant) {
+    final l10n = L10n.of(context);
     final isUnassigned = _unassignedParticipants.contains(participant);
 
     List<Widget> additionalActions = [];
     if (isUnassigned && _groups.isNotEmpty) {
       additionalActions.add(
         AppButton.primary(
-          text: 'グループに追加',
+          text: l10n.addToGroup,
           icon: Icons.group_add,
           onPressed: () {
             Navigator.pop(context);
@@ -824,6 +832,7 @@ class _GroupRoomManagementScreenState
 
   /// グループ選択ダイアログを表示
   void _showGroupSelectionDialog(ApprovedParticipant participant) {
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -838,7 +847,7 @@ class _GroupRoomManagementScreenState
               borderWidth: 1,
             ),
             const SizedBox(width: AppDimensions.spacingS),
-            Expanded(child: Text('${participant.gameUsername}を追加するグループ')),
+            Expanded(child: Text(l10n.selectGroupToAddParticipant(participant.gameUsername))),
           ],
         ),
         content: Column(
@@ -848,7 +857,7 @@ class _GroupRoomManagementScreenState
                 (group) => ListTile(
                   leading: Icon(Icons.group, color: AppColors.accent),
                   title: Text(group.name),
-                  subtitle: Text('${group.participants.length}人'),
+                  subtitle: Text(l10n.membersCount(group.participants.length)),
                   onTap: () {
                     Navigator.pop(context);
                     _addParticipantToGroup(participant, group);
@@ -860,7 +869,7 @@ class _GroupRoomManagementScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル'),
+            child: Text(l10n.cancel),
           ),
         ],
       ),
@@ -871,6 +880,7 @@ class _GroupRoomManagementScreenState
   Future<void> _removeParticipantFromGroup(
     ApprovedParticipant participant,
   ) async {
+    final l10n = L10n.of(context);
     try {
       // Firestoreから参加者を削除
       final groupToUpdate = _groups.firstWhere(
@@ -886,17 +896,21 @@ class _GroupRoomManagementScreenState
 
       _loadGroupData(); // データ再読み込み
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '${participant.gameUsername}を${groupToUpdate.name}から削除しました',
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              l10n.participantRemovedFromGroup(participant.gameUsername, groupToUpdate.name),
+            ),
           ),
-        ),
-      );
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('参加者の削除に失敗しました')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.failedToRemoveParticipant)),
+        );
+      }
     }
   }
 
@@ -905,6 +919,7 @@ class _GroupRoomManagementScreenState
     ApprovedParticipant participant,
     EventGroup group,
   ) async {
+    final l10n = L10n.of(context);
     try {
       await FirebaseFirestore.instance
           .collection('event_groups')
@@ -915,20 +930,25 @@ class _GroupRoomManagementScreenState
 
       _loadGroupData(); // データ再読み込み
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${participant.gameUsername}を${group.name}に追加しました'),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.participantAddedToGroup(participant.gameUsername, group.name)),
+          ),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('参加者の追加に失敗しました')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.failedToAddParticipant)),
+        );
+      }
     }
   }
 
   /// アクション処理
   void _handleGroupAction(EventGroup group, String action) {
+    final l10n = L10n.of(context);
     switch (action) {
       case 'edit':
         _editGroup(group);
@@ -937,9 +957,9 @@ class _GroupRoomManagementScreenState
         if (_unassignedParticipants.isNotEmpty) {
           _showGroupMemberSelectionDialog(group);
         } else {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('追加できる参加者がいません')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.noParticipantsToAdd)),
+          );
         }
         break;
       case 'delete':
@@ -950,10 +970,11 @@ class _GroupRoomManagementScreenState
 
   /// グループメンバー選択ダイアログ
   void _showGroupMemberSelectionDialog(EventGroup group) {
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('${group.name}にメンバーを追加'),
+        title: Text(l10n.addMemberToGroup(group.name)),
         content: SizedBox(
           width: double.maxFinite,
           child: ListView.builder(
@@ -983,7 +1004,7 @@ class _GroupRoomManagementScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル'),
+            child: Text(l10n.cancel),
           ),
         ],
       ),
@@ -1001,6 +1022,7 @@ class _GroupRoomManagementScreenState
 
   /// 全体連絡事項を更新
   Future<void> _updateGeneralAnnouncements(String announcements) async {
+    final l10n = L10n.of(context);
     try {
       await FirebaseFirestore.instance
           .collection('event_group_settings')
@@ -1016,8 +1038,8 @@ class _GroupRoomManagementScreenState
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('全体連絡事項を更新しました'),
+          SnackBar(
+            content: Text(l10n.generalAnnouncementsUpdated),
             backgroundColor: AppColors.success,
           ),
         );
@@ -1026,7 +1048,7 @@ class _GroupRoomManagementScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('全体連絡事項の更新に失敗しました: $e'),
+            content: Text(l10n.failedToUpdateGeneralAnnouncements(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -1036,6 +1058,7 @@ class _GroupRoomManagementScreenState
 
   /// 全体連絡事項編集ダイアログ
   void _showGeneralAnnouncementsDialog() {
+    final l10n = L10n.of(context);
     final announcementsController = TextEditingController(
       text: _commonDescription,
     );
@@ -1043,11 +1066,15 @@ class _GroupRoomManagementScreenState
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.campaign, color: AppColors.primary),
-            SizedBox(width: AppDimensions.spacingS),
-            Text('全体連絡事項の編集'),
+            const Icon(Icons.campaign, color: AppColors.primary),
+            const SizedBox(width: AppDimensions.spacingS),
+            Expanded(
+              child: MarqueeText(
+                text: l10n.editGeneralAnnouncementsTitle,
+              ),
+            ),
           ],
         ),
         content: SingleChildScrollView(
@@ -1055,9 +1082,9 @@ class _GroupRoomManagementScreenState
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'イベントに参加するすべてのユーザーが閲覧できる連絡事項を設定してください。',
-                style: TextStyle(
+              Text(
+                l10n.generalAnnouncementsDescription,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeS,
                   color: AppColors.textSecondary,
                 ),
@@ -1065,11 +1092,11 @@ class _GroupRoomManagementScreenState
               const SizedBox(height: AppDimensions.spacingM),
               AppTextFieldMultiline(
                 controller: announcementsController,
-                label: '全体連絡事項',
-                hintText: '例：イベント開始時刻が30分変更になりました',
+                label: l10n.generalAnnouncementsLabel,
+                hintText: l10n.generalAnnouncementsHint,
                 maxLines: 5,
                 minLines: 3,
-                doneButtonText: '完了',
+                doneButtonText: l10n.ok,
               ),
             ],
           ),
@@ -1077,10 +1104,10 @@ class _GroupRoomManagementScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル'),
+            child: Text(l10n.cancel),
           ),
           AppButton.primary(
-            text: '保存',
+            text: l10n.save,
             onPressed: () {
               Navigator.pop(context);
               _updateGeneralAnnouncements(announcementsController.text);
@@ -1093,30 +1120,31 @@ class _GroupRoomManagementScreenState
 
   /// 新規グループ作成ダイアログ
   void _showCreateGroupDialog() {
+    final l10n = L10n.of(context);
     final nameController = TextEditingController();
     final descriptionController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('新しいグループを作成'),
+        title: Text(l10n.createNewGroup),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'グループ名',
-                  hintText: '例：チームA',
+                decoration: InputDecoration(
+                  labelText: l10n.groupNameLabel,
+                  hintText: l10n.groupNameHint,
                 ),
               ),
               const SizedBox(height: AppDimensions.spacingM),
               TextField(
                 controller: descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'グループ説明（任意）',
-                  hintText: '例：攻撃担当のメンバー',
+                decoration: InputDecoration(
+                  labelText: l10n.groupDescriptionOptional,
+                  hintText: l10n.groupDescriptionHint,
                 ),
                 maxLines: 2,
               ),
@@ -1126,10 +1154,10 @@ class _GroupRoomManagementScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル'),
+            child: Text(l10n.cancel),
           ),
           AppButton.primary(
-            text: '作成',
+            text: l10n.createAction,
             onPressed: () {
               if (nameController.text.isNotEmpty) {
                 Navigator.pop(context);
@@ -1144,12 +1172,13 @@ class _GroupRoomManagementScreenState
 
   /// グループを作成
   Future<void> _createGroup(String name, String description) async {
+    final l10n = L10n.of(context);
     try {
       // 入力値の検証
       if (name.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('グループ名を入力してください'),
+          SnackBar(
+            content: Text(l10n.pleaseEnterGroupName),
             backgroundColor: AppColors.warning,
           ),
         );
@@ -1176,19 +1205,19 @@ class _GroupRoomManagementScreenState
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('グループ「$name」を作成しました'),
+              content: Text(l10n.groupCreated(name)),
               backgroundColor: AppColors.success,
             ),
           );
         }
       } else {
-        throw Exception('グループの作成に失敗しました');
+        throw Exception(l10n.failedToCreateGroup);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('グループの作成に失敗しました: $e'),
+            content: Text(l10n.failedToCreateGroupWithError(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -1202,6 +1231,7 @@ class _GroupRoomManagementScreenState
 
   /// グループ編集ダイアログ
   void _showEditGroupDialog(EventGroup group) {
+    final l10n = L10n.of(context);
     final nameController = TextEditingController(text: group.name);
     final descriptionController = TextEditingController(
       text: group.description,
@@ -1213,28 +1243,28 @@ class _GroupRoomManagementScreenState
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('グループを編集'),
+        title: Text(l10n.editGroup),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(labelText: 'グループ名'),
+                decoration: InputDecoration(labelText: l10n.groupNameLabel),
               ),
               const SizedBox(height: AppDimensions.spacingM),
               TextField(
                 controller: descriptionController,
-                decoration: const InputDecoration(labelText: 'グループ説明（任意）'),
+                decoration: InputDecoration(labelText: l10n.groupDescriptionOptional),
                 maxLines: 2,
               ),
               const SizedBox(height: AppDimensions.spacingM),
               AppTextFieldMultiline(
                 controller: announcementsController,
-                label: 'グループ連絡事項',
-                hintText: '例：次回の練習は19時からです',
+                label: l10n.groupAnnouncementsOptional,
+                hintText: l10n.groupAnnouncementsHint,
                 maxLines: 3,
-                doneButtonText: '完了',
+                doneButtonText: l10n.ok,
               ),
             ],
           ),
@@ -1242,10 +1272,10 @@ class _GroupRoomManagementScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル'),
+            child: Text(l10n.cancel),
           ),
           AppButton.primary(
-            text: '更新',
+            text: l10n.updateAction,
             onPressed: () {
               if (nameController.text.isNotEmpty) {
                 Navigator.pop(context);
@@ -1270,6 +1300,7 @@ class _GroupRoomManagementScreenState
     String description,
     String announcements,
   ) async {
+    final l10n = L10n.of(context);
     try {
       final updatedGroup = group.copyWith(
         name: name.trim(),
@@ -1286,19 +1317,19 @@ class _GroupRoomManagementScreenState
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('グループ「$name」を更新しました'),
+              content: Text(l10n.groupUpdated(name)),
               backgroundColor: AppColors.success,
             ),
           );
         }
       } else {
-        throw Exception('グループの更新に失敗しました');
+        throw Exception(l10n.failedToUpdateGroup);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('グループの更新に失敗しました: $e'),
+            content: Text(l10n.failedToUpdateGroupWithError(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -1324,37 +1355,38 @@ class _GroupRoomManagementScreenState
 
   /// 削除不可ダイアログ表示
   void _showCannotDeleteDialog(EventGroup group, int matchCount) {
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('グループを削除できません'),
+        title: Text(l10n.cannotDeleteGroup),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('「${group.name}」は$matchCount件の戦績データに関連付けられています。'),
+            Text(l10n.groupHasRelatedMatches(group.name, matchCount)),
             const SizedBox(height: AppDimensions.spacingM),
-            const Text(
-              '戦績データを保護するため、関連する戦績があるグループは削除できません。',
-              style: TextStyle(
+            Text(
+              l10n.cannotDeleteGroupReason,
+              style: const TextStyle(
                 fontWeight: FontWeight.w500,
                 color: AppColors.error,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingS),
-            const Text(
-              'どうしても削除が必要な場合は、先に関連する戦績データを個別に削除してください。',
-              style: TextStyle(fontSize: AppDimensions.fontSizeS),
+            Text(
+              l10n.deleteGroupHint,
+              style: const TextStyle(fontSize: AppDimensions.fontSizeS),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('了解'),
+            child: Text(l10n.understoodAction),
           ),
           AppButton.secondary(
-            text: '戦績管理へ',
+            text: l10n.goToMatchManagement,
             onPressed: () {
               Navigator.pop(context);
               _navigateToMatchResultManagement();
@@ -1367,18 +1399,19 @@ class _GroupRoomManagementScreenState
 
   /// 削除確認ダイアログ表示
   void _showDeleteConfirmDialog(EventGroup group) {
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('グループを削除'),
-        content: Text('「${group.name}」を削除しますか？\nこの操作は取り消せません。'),
+        title: Text(l10n.deleteGroupTitle),
+        content: Text(l10n.deleteGroupConfirmation(group.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル'),
+            child: Text(l10n.cancel),
           ),
           AppButton.danger(
-            text: '削除',
+            text: l10n.deleteAction,
             onPressed: () {
               Navigator.pop(context);
               _confirmDeleteGroup(group);
@@ -1391,31 +1424,37 @@ class _GroupRoomManagementScreenState
 
   /// グループ削除確認
   Future<void> _confirmDeleteGroup(EventGroup group) async {
+    final l10n = L10n.of(context);
     try {
       final success = await GroupService.deleteGroup(group.id);
 
       if (success) {
         _loadGroupData(); // データ再読み込み
 
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('グループ「${group.name}」を削除しました')));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.groupDeleted(group.name))),
+          );
+        }
       } else {
-        throw Exception('グループの削除に失敗しました');
+        throw Exception(l10n.failedToDeleteGroup);
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('グループの削除に失敗しました')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.failedToDeleteGroup)),
+        );
+      }
     }
   }
 
   /// ゲームプロフィール画面に遷移
   Future<void> _navigateToGameProfile(ApprovedParticipant participant) async {
+    final l10n = L10n.of(context);
     if (_gameId == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('ゲーム情報が見つかりません')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.gameInfoNotFound)),
+      );
       return;
     }
 
@@ -1465,9 +1504,9 @@ class _GroupRoomManagementScreenState
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('ゲームプロフィールの表示に失敗しました')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.failedToShowGameProfile)),
+        );
       }
     }
   }
@@ -1486,17 +1525,13 @@ class _GroupRoomManagementScreenState
     if (skillLevelStr == null) return null;
     switch (skillLevelStr.toLowerCase()) {
       case 'beginner':
-      case '初心者':
         return SkillLevel.beginner;
       case 'intermediate':
-      case '中級者':
         return SkillLevel.intermediate;
       case 'advanced':
-      case '上級者':
         return SkillLevel.advanced;
       case 'expert':
       case 'pro':
-      case 'プロ':
         return SkillLevel.expert;
       default:
         return SkillLevel.intermediate; // デフォルト
@@ -1510,27 +1545,20 @@ class _GroupRoomManagementScreenState
     // 基本的なロールマッピング（ゲームによって異なるため、簡単な例）
     switch (roleStr.toLowerCase()) {
       case 'tank':
-      case 'タンク':
       case 'defensive':
         return [PlayStyle.competitive]; // 競技志向として扱う
       case 'dps':
       case 'damage':
-      case 'アタッカー':
       case 'aggressive':
         return [PlayStyle.competitive]; // 競技志向として扱う
       case 'support':
-      case 'サポート':
       case 'supportive':
         return [PlayStyle.cooperative]; // 協力プレイとして扱う
       case 'healer':
-      case 'ヒーラー':
         return [PlayStyle.cooperative]; // 協力プレイとして扱う
       case 'casual':
-      case 'カジュアル':
         return [PlayStyle.casual];
       case 'social':
-      case 'ソーシャル':
-      case '交流':
         return [PlayStyle.social];
       default:
         return [PlayStyle.casual]; // デフォルト
@@ -1542,6 +1570,7 @@ class _GroupRoomManagementScreenState
     if (announcements.isEmpty) {
       return const SizedBox.shrink();
     }
+    final l10n = L10n.of(context);
     final isExpanded = _expandedAnnouncements.contains(groupId);
     const maxLines = 3;
 
@@ -1594,7 +1623,7 @@ class _GroupRoomManagementScreenState
               ),
               const SizedBox(width: AppDimensions.spacingXS),
               Text(
-                isExpanded ? '折りたたむ' : 'もっと見る',
+                isExpanded ? l10n.collapseText : l10n.showMoreText,
                 style: const TextStyle(
                   fontSize: AppDimensions.fontSizeXS,
                   color: AppColors.accent,
@@ -1610,6 +1639,7 @@ class _GroupRoomManagementScreenState
 
   /// 未割り当て参加者ダイアログを表示
   void _showUnassignedParticipantsDialog() {
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1617,7 +1647,7 @@ class _GroupRoomManagementScreenState
           children: [
             Icon(Icons.person_off, color: AppColors.warning),
             const SizedBox(width: AppDimensions.spacingS),
-            const Text('未割り当て参加者'),
+            Text(l10n.unassignedParticipantsDialogTitle),
           ],
         ),
         content: SizedBox(
@@ -1627,7 +1657,7 @@ class _GroupRoomManagementScreenState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '承認済みでグループに割り当てられていない参加者：',
+                l10n.approvedNotAssignedDescription,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   color: AppColors.textDark,
@@ -1715,7 +1745,7 @@ class _GroupRoomManagementScreenState
                     const SizedBox(width: AppDimensions.spacingS),
                     Expanded(
                       child: Text(
-                        'グループを作成してこれらの参加者を割り当ててください',
+                        l10n.createGroupForParticipantsHint,
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeS,
                           color: AppColors.info,
@@ -1731,10 +1761,10 @@ class _GroupRoomManagementScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('キャンセル'),
+            child: Text(l10n.cancel),
           ),
           AppButton.primary(
-            text: 'グループ作成',
+            text: l10n.createGroup,
             icon: Icons.add,
             onPressed: () {
               Navigator.of(context).pop();

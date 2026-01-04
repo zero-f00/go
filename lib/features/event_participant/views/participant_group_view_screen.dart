@@ -12,6 +12,7 @@ import '../../../shared/providers/auth_provider.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/models/game_profile_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 参加者用グループ閲覧画面
 class ParticipantGroupViewScreen extends ConsumerStatefulWidget {
@@ -66,9 +67,12 @@ class _ParticipantGroupViewScreenState
       await _loadGameId();
 
     } catch (e) {
-      setState(() {
-        _errorMessage = 'データの読み込みに失敗しました: $e';
-      });
+      if (mounted) {
+        final l10n = L10n.of(context);
+        setState(() {
+          _errorMessage = l10n.failedToLoadDataError(e.toString());
+        });
+      }
     } finally {
       setState(() {
         _isLoading = false;
@@ -139,6 +143,8 @@ class _ParticipantGroupViewScreenState
   Widget build(BuildContext context) {
     final currentUser = ref.watch(currentFirebaseUserProvider);
 
+    final l10n = L10n.of(context);
+
     if (currentUser == null) {
       return Scaffold(
         body: AppGradientBackground(
@@ -146,15 +152,15 @@ class _ParticipantGroupViewScreenState
             child: Column(
               children: [
                 AppHeader(
-                  title: 'グループ情報',
+                  title: l10n.groupInfo,
                   showBackButton: true,
                   onBackPressed: () => Navigator.of(context).pop(),
                 ),
-                const Expanded(
+                Expanded(
                   child: Center(
                     child: Text(
-                      'ログインが必要です',
-                      style: TextStyle(
+                      l10n.homeLoginRequiredShort,
+                      style: const TextStyle(
                         fontSize: AppDimensions.fontSizeL,
                         color: AppColors.textSecondary,
                       ),
@@ -174,7 +180,7 @@ class _ParticipantGroupViewScreenState
           child: Column(
             children: [
               AppHeader(
-                title: 'グループ情報',
+                title: l10n.groupInfo,
                 showBackButton: true,
                 onBackPressed: () => Navigator.of(context).pop(),
               ),
@@ -205,9 +211,9 @@ class _ParticipantGroupViewScreenState
                               size: AppDimensions.iconM,
                             ),
                             const SizedBox(width: AppDimensions.spacingS),
-                            const Text(
-                              'グループ情報',
-                              style: TextStyle(
+                            Text(
+                              l10n.groupInfo,
+                              style: const TextStyle(
                                 fontSize: AppDimensions.fontSizeL,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.textDark,
@@ -231,9 +237,9 @@ class _ParticipantGroupViewScreenState
                             fontWeight: FontWeight.w600,
                             fontSize: AppDimensions.fontSizeM,
                           ),
-                          tabs: const [
-                            Tab(text: '自分のグループ'),
-                            Tab(text: '全グループ'),
+                          tabs: [
+                            Tab(text: l10n.myGroup),
+                            Tab(text: l10n.allGroups),
                           ],
                         ),
                       ),
@@ -269,6 +275,7 @@ class _ParticipantGroupViewScreenState
   }
 
   Widget _buildMyGroupContent(String userId) {
+    final l10n = L10n.of(context);
     return StreamBuilder<EventGroup?>(
       stream: GroupService.getUserGroup(widget.eventId, userId),
       builder: (context, snapshot) {
@@ -277,7 +284,7 @@ class _ParticipantGroupViewScreenState
         }
 
         if (snapshot.hasError) {
-          return _buildErrorState('データの取得に失敗しました: ${snapshot.error}');
+          return _buildErrorState('${l10n.dataFetchFailed}: ${snapshot.error}');
         }
 
         final group = snapshot.data;
@@ -291,6 +298,7 @@ class _ParticipantGroupViewScreenState
   }
 
   Widget _buildAllGroupsContent() {
+    final l10n = L10n.of(context);
     return StreamBuilder<List<EventGroup>>(
       stream: GroupService.getEventGroups(widget.eventId),
       builder: (context, snapshot) {
@@ -299,7 +307,7 @@ class _ParticipantGroupViewScreenState
         }
 
         if (snapshot.hasError) {
-          return _buildErrorState('データの取得に失敗しました: ${snapshot.error}');
+          return _buildErrorState('${l10n.dataFetchFailed}: ${snapshot.error}');
         }
 
         final groups = snapshot.data ?? [];
@@ -332,6 +340,7 @@ class _ParticipantGroupViewScreenState
   }
 
   Widget _buildErrorState(String message) {
+    final l10n = L10n.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -343,7 +352,7 @@ class _ParticipantGroupViewScreenState
           ),
           const SizedBox(height: AppDimensions.spacingL),
           Text(
-            'エラーが発生しました',
+            l10n.errorOccurred,
             style: TextStyle(
               fontSize: AppDimensions.fontSizeL,
               color: AppColors.textDark,
@@ -364,6 +373,7 @@ class _ParticipantGroupViewScreenState
   }
 
   Widget _buildNoGroupState() {
+    final l10n = L10n.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -375,7 +385,7 @@ class _ParticipantGroupViewScreenState
           ),
           const SizedBox(height: AppDimensions.spacingL),
           Text(
-            'グループが割り当てられていません',
+            l10n.noGroupAssigned,
             style: TextStyle(
               fontSize: AppDimensions.fontSizeL,
               color: AppColors.textSecondary,
@@ -383,7 +393,7 @@ class _ParticipantGroupViewScreenState
           ),
           const SizedBox(height: AppDimensions.spacingM),
           Text(
-            '運営からの案内をお待ちください',
+            l10n.waitForOrganizerGuidance,
             style: TextStyle(
               fontSize: AppDimensions.fontSizeM,
               color: AppColors.textSecondary,
@@ -396,6 +406,7 @@ class _ParticipantGroupViewScreenState
   }
 
   Widget _buildNoGroupsState() {
+    final l10n = L10n.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -407,7 +418,7 @@ class _ParticipantGroupViewScreenState
           ),
           const SizedBox(height: AppDimensions.spacingL),
           Text(
-            'グループが作成されていません',
+            l10n.noGroupsCreated,
             style: TextStyle(
               fontSize: AppDimensions.fontSizeL,
               color: AppColors.textSecondary,
@@ -415,7 +426,7 @@ class _ParticipantGroupViewScreenState
           ),
           const SizedBox(height: AppDimensions.spacingM),
           Text(
-            '運営からの案内をお待ちください',
+            l10n.waitForOrganizerGuidance,
             style: TextStyle(
               fontSize: AppDimensions.fontSizeM,
               color: AppColors.textSecondary,
@@ -455,6 +466,7 @@ class _ParticipantGroupViewScreenState
   }
 
   Widget _buildGroupCard(EventGroup group, {bool showSensitiveInfo = false}) {
+    final l10n = L10n.of(context);
     return InkWell(
       onTap: () => _showGroupMembersDialog(group),
       borderRadius: BorderRadius.circular(AppDimensions.radiusM),
@@ -497,7 +509,7 @@ class _ParticipantGroupViewScreenState
                     ),
                     const SizedBox(height: AppDimensions.spacingXS),
                     Text(
-                      '${group.participants.length}名のメンバー',
+                      l10n.memberCount(group.participants.length),
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeS,
                         color: AppColors.textSecondary,
@@ -576,7 +588,7 @@ class _ParticipantGroupViewScreenState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'グループ連絡',
+                          l10n.groupAnnouncements,
                           style: TextStyle(
                             fontSize: AppDimensions.fontSizeS,
                             fontWeight: FontWeight.w600,
@@ -608,6 +620,7 @@ class _ParticipantGroupViewScreenState
   }
 
   Widget _buildGroupHeader(EventGroup group) {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
@@ -644,7 +657,7 @@ class _ParticipantGroupViewScreenState
                 ),
                 const SizedBox(height: AppDimensions.spacingXS),
                 Text(
-                  '${group.participants.length}名のグループ',
+                  l10n.groupMemberCount(group.participants.length),
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     color: AppColors.textSecondary,
@@ -659,6 +672,7 @@ class _ParticipantGroupViewScreenState
   }
 
   Widget _buildDescriptionSection(EventGroup group) {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
@@ -678,7 +692,7 @@ class _ParticipantGroupViewScreenState
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                'グループ説明',
+                l10n.groupDescription,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   fontWeight: FontWeight.w600,
@@ -702,6 +716,7 @@ class _ParticipantGroupViewScreenState
   }
 
   Widget _buildAnnouncementsSection(EventGroup group) {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
@@ -723,7 +738,7 @@ class _ParticipantGroupViewScreenState
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                'グループ連絡',
+                l10n.groupAnnouncements,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   fontWeight: FontWeight.w600,
@@ -747,6 +762,7 @@ class _ParticipantGroupViewScreenState
   }
 
   Widget _buildMembersSection(EventGroup group) {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
@@ -766,7 +782,7 @@ class _ParticipantGroupViewScreenState
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                'メンバー (${group.participants.length}名)',
+                l10n.membersLabel(group.participants.length),
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   fontWeight: FontWeight.w600,
@@ -783,6 +799,7 @@ class _ParticipantGroupViewScreenState
   }
 
   Widget _buildMemberRow(String userId) {
+    final l10n = L10n.of(context);
     return GestureDetector(
       onTap: () => _navigateToUserProfile(userId),
       child: Container(
@@ -811,7 +828,7 @@ class _ParticipantGroupViewScreenState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        userData?.displayName ?? 'ユーザー',
+                        userData?.displayName ?? l10n.user,
                         style: const TextStyle(
                           fontSize: AppDimensions.fontSizeM,
                           fontWeight: FontWeight.w600,
@@ -860,8 +877,10 @@ class _ParticipantGroupViewScreenState
       // ユーザーデータを取得
       final userData = await _getUserData(userId);
       if (userData == null) {
+        if (!mounted) return;
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('ユーザー情報が見つかりません')),
+          SnackBar(content: Text(l10n.userNotFoundError)),
         );
         return;
       }
@@ -880,6 +899,7 @@ class _ParticipantGroupViewScreenState
       );
 
       // ゲームプロフィール画面に遷移
+      if (!mounted) return;
       Navigator.pushNamed(
         context,
         '/game_profile_view',
@@ -891,14 +911,17 @@ class _ParticipantGroupViewScreenState
         },
       );
     } catch (e) {
+      if (!mounted) return;
+      final l10n = L10n.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('ゲームプロフィールの表示に失敗しました: $e')),
+        SnackBar(content: Text('${l10n.gameProfileDisplayFailed}: $e')),
       );
     }
   }
 
   /// 全体連絡事項セクション
   Widget _buildCommonDescriptionSection() {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -918,7 +941,7 @@ class _ParticipantGroupViewScreenState
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                '全体連絡事項',
+                l10n.commonAnnouncements,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w600,
@@ -943,6 +966,7 @@ class _ParticipantGroupViewScreenState
 
   /// グループメンバー表示ダイアログを表示
   void _showGroupMembersDialog(EventGroup group) {
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -985,7 +1009,7 @@ class _ParticipantGroupViewScreenState
                 const SizedBox(height: AppDimensions.spacingM),
 
                 Text(
-                  '${group.participants.length}名のメンバー',
+                  l10n.memberCount(group.participants.length),
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     color: AppColors.textSecondary,
@@ -1015,11 +1039,12 @@ class _ParticipantGroupViewScreenState
 
   /// メンバーアイテムを構築
   Widget _buildMemberItem(String userId) {
+    final l10n = L10n.of(context);
     return FutureBuilder<UserData?>(
       future: _getUserData(userId),
       builder: (context, snapshot) {
         final userData = snapshot.data;
-        final displayName = userData?.displayName ?? 'ユーザー$userId';
+        final displayName = userData?.displayName ?? l10n.user;
 
         return InkWell(
           onTap: () {

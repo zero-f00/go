@@ -13,6 +13,7 @@ import '../../../shared/providers/auth_provider.dart';
 import '../widgets/match_report_detail_dialog.dart';
 import '../widgets/match_report_status_dialog.dart';
 import '../../../shared/widgets/user_action_modal.dart';
+import '../../../l10n/app_localizations.dart';
 import 'match_result_input_screen.dart';
 
 /// 試合詳細画面
@@ -123,10 +124,10 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
             if (userData != null) {
               _reporterNames[reporterId] = userData.displayName;
             } else {
-              _reporterNames[reporterId] = '不明';
+              _reporterNames[reporterId] = 'unknown';
             }
           } catch (e) {
-            _reporterNames[reporterId] = '不明';
+            _reporterNames[reporterId] = 'unknown';
           }
         }
       }
@@ -143,7 +144,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
           child: Column(
             children: [
               AppHeader(
-                title: '試合詳細',
+                title: L10n.of(context).matchDetailTitle,
                 showBackButton: true,
                 onBackPressed: () => Navigator.of(context).pop(),
               ),
@@ -174,12 +175,12 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                     fontSize: AppDimensions.fontSizeM,
                   ),
                   tabs: [
-                    const Tab(text: '試合情報'),
+                    Tab(text: L10n.of(context).matchInfoTabLabel),
                     Tab(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text('問題報告'),
+                          Text(L10n.of(context).issueReportTabLabel),
                           if (_pendingReportCount > 0) ...[
                             const SizedBox(width: AppDimensions.spacingXS),
                             Container(
@@ -277,28 +278,31 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
               ),
               PopupMenuButton<String>(
                 onSelected: _handleAction,
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'change_status',
-                    child: Row(
-                      children: [
-                        Icon(Icons.edit, color: AppColors.info),
-                        SizedBox(width: AppDimensions.spacingS),
-                        Text('ステータス変更'),
-                      ],
+                itemBuilder: (context) {
+                  final l10n = L10n.of(context);
+                  return [
+                    PopupMenuItem(
+                      value: 'change_status',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.edit, color: AppColors.info),
+                          const SizedBox(width: AppDimensions.spacingS),
+                          Text(l10n.changeStatus),
+                        ],
+                      ),
                     ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'delete',
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete, color: AppColors.error),
-                        SizedBox(width: AppDimensions.spacingS),
-                        Text('削除'),
-                      ],
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.delete, color: AppColors.error),
+                          const SizedBox(width: AppDimensions.spacingS),
+                          Text(l10n.delete),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ];
+                },
                 child: Container(
                   padding: const EdgeInsets.all(AppDimensions.spacingS),
                   decoration: BoxDecoration(
@@ -322,12 +326,17 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                 color: AppColors.textSecondary,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              Text(
-                '作成: ${_formatDateTime(_currentMatch.createdAt)}',
-                style: TextStyle(
-                  fontSize: AppDimensions.fontSizeM,
-                  color: AppColors.textSecondary,
-                ),
+              Builder(
+                builder: (context) {
+                  final l10n = L10n.of(context);
+                  return Text(
+                    l10n.createdDateLabel(_formatDateTime(_currentMatch.createdAt)),
+                    style: TextStyle(
+                      fontSize: AppDimensions.fontSizeM,
+                      color: AppColors.textSecondary,
+                    ),
+                  );
+                },
               ),
               if (_currentMatch.completedAt != null) ...[
                 const SizedBox(width: AppDimensions.spacingL),
@@ -337,12 +346,17 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                   color: AppColors.success,
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
-                Text(
-                  '完了: ${_formatDateTime(_currentMatch.completedAt!)}',
-                  style: TextStyle(
-                    fontSize: AppDimensions.fontSizeM,
-                    color: AppColors.success,
-                  ),
+                Builder(
+                  builder: (context) {
+                    final l10n = L10n.of(context);
+                    return Text(
+                      l10n.completedDateLabel(_formatDateTime(_currentMatch.completedAt!)),
+                      style: TextStyle(
+                        fontSize: AppDimensions.fontSizeM,
+                        color: AppColors.success,
+                      ),
+                    );
+                  },
                 ),
               ],
             ],
@@ -367,7 +381,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
-                  _currentMatch.status.displayName,
+                  _currentMatch.status.getDisplayName(context),
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     fontWeight: FontWeight.w600,
@@ -432,13 +446,19 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                   size: AppDimensions.iconM,
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
-                Text(
-                  '勝者: ${widget.participantNames[_currentMatch.winner] ?? _currentMatch.winner ?? '引き分け'}',
-                  style: TextStyle(
-                    fontSize: AppDimensions.fontSizeL,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.success,
-                  ),
+                Builder(
+                  builder: (context) {
+                    final l10n = L10n.of(context);
+                    final winnerName = widget.participantNames[_currentMatch.winner] ?? _currentMatch.winner ?? l10n.winnerWithDraw;
+                    return Text(
+                      l10n.winner(winnerName),
+                      style: TextStyle(
+                        fontSize: AppDimensions.fontSizeL,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.success,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -518,11 +538,13 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                   size: AppDimensions.iconM,
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
-                Text(
-                  '結果入力待ち',
-                  style: TextStyle(
-                    fontSize: AppDimensions.fontSizeL,
-                    color: AppColors.warning,
+                Builder(
+                  builder: (context) => Text(
+                    L10n.of(context).waitingResultInput,
+                    style: TextStyle(
+                      fontSize: AppDimensions.fontSizeL,
+                      color: AppColors.warning,
+                    ),
                   ),
                 ),
               ],
@@ -570,11 +592,13 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                   size: AppDimensions.iconM,
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
-                Text(
-                  '開催予定',
-                  style: TextStyle(
-                    fontSize: AppDimensions.fontSizeL,
-                    color: AppColors.info,
+                Builder(
+                  builder: (context) => Text(
+                    L10n.of(context).scheduledMatchStatus,
+                    style: TextStyle(
+                      fontSize: AppDimensions.fontSizeL,
+                      color: AppColors.info,
+                    ),
                   ),
                 ),
               ],
@@ -605,12 +629,14 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
               size: AppDimensions.iconM,
             ),
             const SizedBox(width: AppDimensions.spacingS),
-            Text(
-              '順位',
-              style: TextStyle(
-                fontSize: AppDimensions.fontSizeL,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textDark,
+            Builder(
+              builder: (context) => Text(
+                L10n.of(context).rankingTitle,
+                style: TextStyle(
+                  fontSize: AppDimensions.fontSizeL,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textDark,
+                ),
               ),
             ),
           ],
@@ -695,12 +721,14 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                         ),
                       ),
                     ),
-                    Text(
-                      '$rank位',
-                      style: TextStyle(
-                        fontSize: AppDimensions.fontSizeL,
-                        fontWeight: FontWeight.w600,
-                        color: rankColor,
+                    Builder(
+                      builder: (context) => Text(
+                        L10n.of(context).rankPositionFormat(rank),
+                        style: TextStyle(
+                          fontSize: AppDimensions.fontSizeL,
+                          fontWeight: FontWeight.w600,
+                          color: rankColor,
+                        ),
                       ),
                     ),
                   ],
@@ -726,12 +754,14 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
               size: AppDimensions.iconM,
             ),
             const SizedBox(width: AppDimensions.spacingS),
-            Text(
-              'スコア',
-              style: TextStyle(
-                fontSize: AppDimensions.fontSizeL,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textDark,
+            Builder(
+              builder: (context) => Text(
+                L10n.of(context).scoresTitle,
+                style: TextStyle(
+                  fontSize: AppDimensions.fontSizeL,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textDark,
+                ),
               ),
             ),
           ],
@@ -773,14 +803,16 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                         ),
                       ),
                     ),
-                    Text(
-                      '${entry.value}点',
-                      style: TextStyle(
-                        fontSize: AppDimensions.fontSizeL,
-                        fontWeight: FontWeight.w600,
-                        color: entry.key == _currentMatch.winner
-                          ? AppColors.success
-                          : AppColors.textDark,
+                    Builder(
+                      builder: (context) => Text(
+                        L10n.of(context).pointsFormat(entry.value),
+                        style: TextStyle(
+                          fontSize: AppDimensions.fontSizeL,
+                          fontWeight: FontWeight.w600,
+                          color: entry.key == _currentMatch.winner
+                            ? AppColors.success
+                            : AppColors.textDark,
+                        ),
                       ),
                     ),
                   ],
@@ -806,12 +838,14 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
               size: AppDimensions.iconM,
             ),
             const SizedBox(width: AppDimensions.spacingS),
-            Text(
-              '個人スコア',
-              style: TextStyle(
-                fontSize: AppDimensions.fontSizeL,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textDark,
+            Builder(
+              builder: (context) => Text(
+                L10n.of(context).individualScoresTitle,
+                style: TextStyle(
+                  fontSize: AppDimensions.fontSizeL,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textDark,
+                ),
               ),
             ),
           ],
@@ -853,12 +887,14 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                         ),
                       ),
                     ),
-                    Text(
-                      '${entry.value}点',
-                      style: TextStyle(
-                        fontSize: AppDimensions.fontSizeL,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.info,
+                    Builder(
+                      builder: (context) => Text(
+                        L10n.of(context).pointsFormat(entry.value),
+                        style: TextStyle(
+                          fontSize: AppDimensions.fontSizeL,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.info,
+                        ),
                       ),
                     ),
                   ],
@@ -885,12 +921,17 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
               padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingM),
             ),
             icon: Icon(_currentMatch.isCompleted ? Icons.edit : Icons.input),
-            label: Text(
-              _currentMatch.isCompleted ? '結果編集' : '結果入力',
-              style: const TextStyle(
-                fontSize: AppDimensions.fontSizeL,
-                fontWeight: FontWeight.w600,
-              ),
+            label: Builder(
+              builder: (context) {
+                final l10n = L10n.of(context);
+                return Text(
+                  _currentMatch.isCompleted ? l10n.resultEditButton : l10n.resultInputButton,
+                  style: const TextStyle(
+                    fontSize: AppDimensions.fontSizeL,
+                    fontWeight: FontWeight.w600,
+                  ),
+                );
+              },
             ),
           ),
         ),
@@ -943,12 +984,14 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                         ),
                       ),
                       const SizedBox(width: AppDimensions.spacingM),
-                      Text(
-                        'ステータス変更',
-                        style: TextStyle(
-                          fontSize: AppDimensions.fontSizeL,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                      Builder(
+                        builder: (context) => Text(
+                          L10n.of(context).changeStatus,
+                          style: TextStyle(
+                            fontSize: AppDimensions.fontSizeL,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ],
@@ -978,50 +1021,53 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
   void _showStatusChangeDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.edit, color: AppColors.info),
-            const SizedBox(width: AppDimensions.spacingS),
-            const Text('ステータス変更'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('「${_currentMatch.matchName}」のステータスを選択してください'),
-            const SizedBox(height: AppDimensions.spacingL),
-            ...MatchStatus.values.map((status) => RadioListTile<MatchStatus>(
-              title: Row(
-                children: [
-                  Icon(
-                    _getStatusIcon(status),
-                    color: _getStatusColor(status),
-                    size: AppDimensions.iconS,
-                  ),
-                  const SizedBox(width: AppDimensions.spacingS),
-                  Text(status.displayName),
-                ],
-              ),
-              value: status,
-              groupValue: _currentMatch.status,
-              onChanged: (value) {
-                if (value != null) {
-                  Navigator.of(context).pop();
-                  _changeMatchStatus(value);
-                }
-              },
-            )),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('キャンセル'),
+      builder: (dialogContext) {
+        final l10n = L10n.of(dialogContext);
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.edit, color: AppColors.info),
+              const SizedBox(width: AppDimensions.spacingS),
+              Text(l10n.changeStatus),
+            ],
           ),
-        ],
-      ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.selectStatusPrompt(_currentMatch.matchName)),
+              const SizedBox(height: AppDimensions.spacingL),
+              ...MatchStatus.values.map((status) => RadioListTile<MatchStatus>(
+                title: Row(
+                  children: [
+                    Icon(
+                      _getStatusIcon(status),
+                      color: _getStatusColor(status),
+                      size: AppDimensions.iconS,
+                    ),
+                    const SizedBox(width: AppDimensions.spacingS),
+                    Text(status.getDisplayName(context)),
+                  ],
+                ),
+                value: status,
+                groupValue: _currentMatch.status,
+                onChanged: (value) {
+                  if (value != null) {
+                    Navigator.of(dialogContext).pop();
+                    _changeMatchStatus(value);
+                  }
+                },
+              )),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l10n.cancelButtonText),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -1042,18 +1088,20 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
       widget.onMatchUpdated();
 
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('ステータスを「${newStatus.displayName}」に変更しました'),
+            content: Text(l10n.statusChangedMessage(newStatus.getDisplayName(context))),
             backgroundColor: AppColors.success,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('ステータス変更に失敗しました: $e'),
+            content: Text(l10n.statusChangeFailedMessage(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -1063,6 +1111,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
 
   /// 削除確認ダイアログ
   void _showDeleteConfirmationDialog() {
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1070,14 +1119,14 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
           children: [
             Icon(Icons.warning, color: AppColors.error),
             const SizedBox(width: AppDimensions.spacingS),
-            const Text('試合削除'),
+            Text(l10n.deleteMatchTitle),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('「${_currentMatch.matchName}」を削除しますか？'),
+            Text(l10n.deleteMatchConfirmation(_currentMatch.matchName)),
             const SizedBox(height: AppDimensions.spacingM),
             Container(
               padding: const EdgeInsets.all(AppDimensions.spacingM),
@@ -1088,14 +1137,14 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                   color: AppColors.error.withValues(alpha: 0.3),
                 ),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.info_outline, color: AppColors.error, size: 20),
-                  SizedBox(width: AppDimensions.spacingS),
+                  const Icon(Icons.info_outline, color: AppColors.error, size: 20),
+                  const SizedBox(width: AppDimensions.spacingS),
                   Expanded(
                     child: Text(
-                      'この操作は取り消せません。\n試合データは完全に削除されます。',
-                      style: TextStyle(
+                      L10n.of(context).deleteMatchWarning,
+                      style: const TextStyle(
                         fontSize: AppDimensions.fontSizeS,
                         color: AppColors.error,
                       ),
@@ -1109,7 +1158,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('キャンセル'),
+            child: Text(L10n.of(context).cancel),
           ),
           ElevatedButton(
             onPressed: () {
@@ -1120,7 +1169,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
               backgroundColor: AppColors.error,
               foregroundColor: Colors.white,
             ),
-            child: const Text('削除'),
+            child: Text(L10n.of(context).delete),
           ),
         ],
       ),
@@ -1137,10 +1186,11 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
       widget.onMatchUpdated();
 
       if (mounted) {
+        final l10n = L10n.of(context);
         Navigator.of(context).pop(true); // 削除完了を通知
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('試合「${_currentMatch.matchName}」を削除しました'),
+            content: Text(l10n.matchDeletedMessage(_currentMatch.matchName)),
             backgroundColor: AppColors.success,
           ),
         );
@@ -1149,7 +1199,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('試合の削除に失敗しました: $e'),
+            content: Text(L10n.of(context).failedToDeleteMatch(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -1187,7 +1237,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('試合結果を保存しました'),
+            content: Text(L10n.of(context).matchResultSaved),
             backgroundColor: AppColors.success,
           ),
         );
@@ -1196,7 +1246,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('試合結果の保存に失敗しました: $e'),
+            content: Text(L10n.of(context).failedToSaveMatchResult(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -1250,7 +1300,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                'エビデンス画像',
+                L10n.of(context).evidenceImageTitle,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w600,
@@ -1268,7 +1318,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                   borderRadius: BorderRadius.circular(AppDimensions.radiusXS),
                 ),
                 child: Text(
-                  '${_currentMatch.evidenceImages.length}枚',
+                  L10n.of(context).imageCountLabel(_currentMatch.evidenceImages.length),
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     fontWeight: FontWeight.w600,
@@ -1387,7 +1437,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '公開メモ（ユーザー閲覧可能）',
+                            L10n.of(context).publicNoteTitle,
                             style: TextStyle(
                               fontSize: AppDimensions.fontSizeM,
                               fontWeight: FontWeight.w600,
@@ -1395,7 +1445,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                             ),
                           ),
                           Text(
-                            '参加者に公開される運営メモです',
+                            L10n.of(context).publicMemoHint,
                             style: TextStyle(
                               fontSize: AppDimensions.fontSizeS,
                               color: AppColors.info,
@@ -1480,7 +1530,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'プライベートメモ（運営者のみ閲覧可能）',
+                            L10n.of(context).privateNoteTitle,
                             style: TextStyle(
                               fontSize: AppDimensions.fontSizeM,
                               fontWeight: FontWeight.w600,
@@ -1488,7 +1538,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                             ),
                           ),
                           Text(
-                            '内部管理用のメモです（参加者には表示されません）',
+                            L10n.of(context).privateMemoHint,
                             style: TextStyle(
                               fontSize: AppDimensions.fontSizeS,
                               color: AppColors.warning,
@@ -1535,12 +1585,13 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
 
   /// 参加者リストをタップ可能な形式で構築
   Widget _buildParticipantsList() {
+    final l10n = L10n.of(context);
     final participants = _currentMatch.participants;
 
     if (participants.isEmpty) {
-      return const Text(
-        '参加者: なし',
-        style: TextStyle(
+      return Text(
+        l10n.noParticipantsLabel,
+        style: const TextStyle(
           fontSize: AppDimensions.fontSizeS,
           color: AppColors.textSecondary,
         ),
@@ -1549,9 +1600,9 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
 
     return Wrap(
       children: [
-        const Text(
-          '参加者: ',
-          style: TextStyle(
+        Text(
+          l10n.participantsPrefix,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeS,
             color: AppColors.textSecondary,
           ),
@@ -1673,7 +1724,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
               ),
               const SizedBox(height: AppDimensions.spacingL),
               Text(
-                'この試合に関する報告はありません',
+                L10n.of(context).noReportsForMatch,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w600,
@@ -1705,7 +1756,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                     const SizedBox(width: AppDimensions.spacingS),
                     Expanded(
                       child: Text(
-                        '問題が発生した場合は、参加者から報告が届きます',
+                        L10n.of(context).noReportsHint,
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeM,
                           color: AppColors.info,
@@ -1770,7 +1821,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                         ),
                         const SizedBox(width: AppDimensions.spacingXS),
                         Text(
-                          report.status.displayName,
+                          report.status.getDisplayName(context),
                           style: TextStyle(
                             fontSize: AppDimensions.fontSizeS,
                             fontWeight: FontWeight.bold,
@@ -1781,7 +1832,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                     ),
                   ),
                   Text(
-                    _formatReportDateTime(report.createdAt),
+                    _formatReportDateTime(report.createdAt, context),
                     style: const TextStyle(
                       fontSize: AppDimensions.fontSizeS,
                       color: AppColors.textSecondary,
@@ -1800,9 +1851,9 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                     color: AppColors.accent,
                   ),
                   const SizedBox(width: AppDimensions.spacingXS),
-                  const Text(
-                    '報告者: ',
-                    style: TextStyle(
+                  Text(
+                    L10n.of(context).reporterLabel,
+                    style: const TextStyle(
                       fontSize: AppDimensions.fontSizeS,
                       fontWeight: FontWeight.w500,
                       color: AppColors.textSecondary,
@@ -1824,7 +1875,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                         vertical: 2,
                       ),
                       child: Text(
-                        _reporterNames[report.reporterId] ?? '不明',
+                        _reporterNames[report.reporterId] ?? L10n.of(context).unknownUser,
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeS,
                           fontWeight: FontWeight.w500,
@@ -1897,7 +1948,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '運営対応',
+                              L10n.of(context).adminActionLabel,
                               style: TextStyle(
                                 fontSize: AppDimensions.fontSizeS,
                                 fontWeight: FontWeight.w600,
@@ -1930,7 +1981,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                     TextButton.icon(
                       onPressed: () => _showReportDetail(report),
                       icon: const Icon(Icons.visibility, size: AppDimensions.iconS),
-                      label: const Text('詳細を確認'),
+                      label: Text(L10n.of(context).viewDetailsButton),
                       style: TextButton.styleFrom(
                         foregroundColor: AppColors.info,
                       ),
@@ -1939,7 +1990,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
                     ElevatedButton.icon(
                       onPressed: () => _showReportDetail(report),
                       icon: const Icon(Icons.edit_note, size: AppDimensions.iconS),
-                      label: const Text('対応する'),
+                      label: Text(L10n.of(context).respondButton),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
@@ -2030,18 +2081,19 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen>
   }
 
   /// 報告日時フォーマット
-  String _formatReportDateTime(DateTime dateTime) {
+  String _formatReportDateTime(DateTime dateTime, BuildContext context) {
+    final l10n = L10n.of(context);
     final now = DateTime.now();
     final difference = now.difference(dateTime);
 
     if (difference.inMinutes < 1) {
-      return 'たった今';
+      return l10n.justNow;
     } else if (difference.inHours < 1) {
-      return '${difference.inMinutes}分前';
+      return l10n.minutesAgo(difference.inMinutes);
     } else if (difference.inDays < 1) {
-      return '${difference.inHours}時間前';
+      return l10n.hoursAgo(difference.inHours);
     } else if (difference.inDays < 7) {
-      return '${difference.inDays}日前';
+      return l10n.daysAgo(difference.inDays);
     } else {
       return '${dateTime.month}/${dateTime.day}';
     }

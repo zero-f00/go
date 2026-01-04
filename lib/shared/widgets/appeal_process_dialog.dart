@@ -6,6 +6,7 @@ import '../../data/models/violation_record_model.dart';
 import '../services/violation_service.dart';
 import '../services/notification_service.dart';
 import '../providers/auth_provider.dart';
+import '../../l10n/app_localizations.dart';
 import 'app_text_field.dart';
 
 /// 異議申立処理ダイアログ
@@ -43,9 +44,10 @@ class _AppealProcessDialogState extends ConsumerState<AppealProcessDialog> {
     });
 
     try {
+      final l10n = L10n.of(context);
       final currentUser = ref.read(currentFirebaseUserProvider);
       if (currentUser == null) {
-        throw Exception('ユーザー情報が取得できません');
+        throw Exception(l10n.userInfoNotAvailable);
       }
 
       final violationService = ref.read(violationServiceProvider);
@@ -71,10 +73,12 @@ class _AppealProcessDialogState extends ConsumerState<AppealProcessDialog> {
       );
 
       if (mounted && context.mounted) {
-        final statusText = _selectedStatus == AppealStatus.approved ? '承認' : '却下';
+        final statusText = _selectedStatus == AppealStatus.approved
+            ? l10n.appealApproved
+            : l10n.appealRejected;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('異議申立を${statusText}しました。申立者に通知されます。'),
+            content: Text(l10n.appealProcessedSuccess(statusText)),
             backgroundColor: AppColors.success,
           ),
         );
@@ -82,9 +86,10 @@ class _AppealProcessDialogState extends ConsumerState<AppealProcessDialog> {
       }
     } catch (e) {
       if (mounted && context.mounted) {
+        final l10nError = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('エラー: $e'),
+            content: Text(l10nError.errorFormatted(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -100,6 +105,7 @@ class _AppealProcessDialogState extends ConsumerState<AppealProcessDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     final screenHeight = MediaQuery.of(context).size.height;
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     final maxDialogHeight = screenHeight - keyboardHeight - 100;
@@ -131,9 +137,9 @@ class _AppealProcessDialogState extends ConsumerState<AppealProcessDialog> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    '異議申立処理',
-                    style: TextStyle(
+                  Text(
+                    l10n.appealProcessDialogTitle,
+                    style: const TextStyle(
                       fontSize: AppDimensions.fontSizeL,
                       fontWeight: FontWeight.bold,
                     ),
@@ -175,9 +181,9 @@ class _AppealProcessDialogState extends ConsumerState<AppealProcessDialog> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
-                                        '違反記録',
-                                        style: TextStyle(
+                                      Text(
+                                        l10n.violationRecordSectionLabel,
+                                        style: const TextStyle(
                                           fontSize: AppDimensions.fontSizeXS,
                                           color: AppColors.textSecondary,
                                         ),
@@ -237,9 +243,9 @@ class _AppealProcessDialogState extends ConsumerState<AppealProcessDialog> {
                                   size: AppDimensions.iconM,
                                 ),
                                 const SizedBox(width: AppDimensions.spacingM),
-                                const Text(
-                                  '異議申立内容',
-                                  style: TextStyle(
+                                Text(
+                                  l10n.appealContentLabel,
+                                  style: const TextStyle(
                                     fontSize: AppDimensions.fontSizeM,
                                     fontWeight: FontWeight.bold,
                                     color: AppColors.info,
@@ -271,7 +277,7 @@ class _AppealProcessDialogState extends ConsumerState<AppealProcessDialog> {
 
                       // 処理結果選択
                       Text(
-                        '処理結果 *',
+                        l10n.processingResultLabel,
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeS,
                           fontWeight: FontWeight.bold,
@@ -296,16 +302,16 @@ class _AppealProcessDialogState extends ConsumerState<AppealProcessDialog> {
                             ),
                             child: RadioListTile<AppealStatus>(
                               title: Text(
-                                '承認',
+                                l10n.approveLabel,
                                 style: TextStyle(
                                   color: AppColors.success,
                                   fontWeight: FontWeight.w600,
                                   fontSize: AppDimensions.fontSizeM,
                                 ),
                               ),
-                              subtitle: const Text(
-                                '異議申立を認め、違反記録を取り消します',
-                                style: TextStyle(fontSize: AppDimensions.fontSizeS),
+                              subtitle: Text(
+                                l10n.approveDescription,
+                                style: const TextStyle(fontSize: AppDimensions.fontSizeS),
                               ),
                               value: AppealStatus.approved,
                               groupValue: _selectedStatus,
@@ -333,16 +339,16 @@ class _AppealProcessDialogState extends ConsumerState<AppealProcessDialog> {
                             ),
                             child: RadioListTile<AppealStatus>(
                               title: Text(
-                                '却下',
+                                l10n.rejectLabelDialog,
                                 style: TextStyle(
                                   color: AppColors.error,
                                   fontWeight: FontWeight.w600,
                                   fontSize: AppDimensions.fontSizeM,
                                 ),
                               ),
-                              subtitle: const Text(
-                                '異議申立を却下し、違反記録を維持します',
-                                style: TextStyle(fontSize: AppDimensions.fontSizeS),
+                              subtitle: Text(
+                                l10n.rejectDescription,
+                                style: const TextStyle(fontSize: AppDimensions.fontSizeS),
                               ),
                               value: AppealStatus.rejected,
                               groupValue: _selectedStatus,
@@ -360,7 +366,7 @@ class _AppealProcessDialogState extends ConsumerState<AppealProcessDialog> {
 
                       // 運営者回答
                       Text(
-                        '申立者への回答 *',
+                        l10n.responseToAppellantLabel,
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeS,
                           fontWeight: FontWeight.bold,
@@ -370,20 +376,20 @@ class _AppealProcessDialogState extends ConsumerState<AppealProcessDialog> {
                       const SizedBox(height: AppDimensions.spacingS),
                       AppTextFieldMultiline(
                         controller: _responseController,
-                        label: '申立者への回答',
-                        hintText: '処理結果の理由や詳細を申立者に説明してください',
+                        label: l10n.responseToAppellantLabel,
+                        hintText: l10n.responseToAppellantHint,
                         isRequired: true,
                         maxLines: 4,
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return '申立者への回答を入力してください';
+                            return l10n.enterResponseError;
                           }
                           if (value.trim().length < 10) {
-                            return '10文字以上で詳細な回答を記載してください';
+                            return l10n.minCharsResponseError(10);
                           }
                           return null;
                         },
-                        doneButtonText: '完了',
+                        doneButtonText: l10n.doneButtonText,
                       ),
                     ],
                   ),
@@ -410,7 +416,7 @@ class _AppealProcessDialogState extends ConsumerState<AppealProcessDialog> {
                     onPressed: _isSubmitting
                         ? null
                         : () => Navigator.of(context).pop(),
-                    child: const Text('キャンセル'),
+                    child: Text(l10n.cancelButtonText),
                   ),
                   const SizedBox(width: AppDimensions.spacingM),
                   ElevatedButton(
@@ -436,7 +442,9 @@ class _AppealProcessDialogState extends ConsumerState<AppealProcessDialog> {
                             ),
                           )
                         : Text(
-                            _selectedStatus == AppealStatus.approved ? '承認する' : '却下する',
+                            _selectedStatus == AppealStatus.approved
+                                ? l10n.approveButton
+                                : l10n.rejectButton,
                             style: const TextStyle(color: Colors.white),
                           ),
                   ),

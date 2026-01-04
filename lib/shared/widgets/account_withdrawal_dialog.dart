@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../providers/auth_provider.dart';
@@ -31,6 +32,8 @@ class _AccountWithdrawalDialogState extends ConsumerState<AccountWithdrawalDialo
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
+
     return AlertDialog(
       backgroundColor: AppColors.cardBackground,
       shape: RoundedRectangleBorder(
@@ -44,11 +47,13 @@ class _AccountWithdrawalDialogState extends ConsumerState<AccountWithdrawalDialo
             size: AppDimensions.iconM,
           ),
           const SizedBox(width: AppDimensions.spacingS),
-          const Text(
-            'アカウント退会',
-            style: TextStyle(
-              color: AppColors.error,
-              fontWeight: FontWeight.bold,
+          Expanded(
+            child: Text(
+              l10n.accountWithdrawalTitle,
+              style: const TextStyle(
+                color: AppColors.error,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
@@ -60,13 +65,13 @@ class _AccountWithdrawalDialogState extends ConsumerState<AccountWithdrawalDialo
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildWarningSection(),
+              _buildWarningSection(l10n),
               const SizedBox(height: AppDimensions.spacingL),
-              _buildDataDeletionInfo(),
+              _buildDataDeletionInfo(l10n),
               const SizedBox(height: AppDimensions.spacingL),
-              _buildConfirmationSection(),
+              _buildConfirmationSection(l10n),
               const SizedBox(height: AppDimensions.spacingL),
-              _buildTextConfirmation(),
+              _buildTextConfirmation(l10n),
             ],
           ),
         ),
@@ -74,13 +79,13 @@ class _AccountWithdrawalDialogState extends ConsumerState<AccountWithdrawalDialo
       actions: [
         TextButton(
           onPressed: _isProcessing ? null : () => Navigator.of(context).pop(),
-          child: const Text(
-            'キャンセル',
-            style: TextStyle(color: AppColors.textSecondary),
+          child: Text(
+            l10n.accountWithdrawalCancel,
+            style: const TextStyle(color: AppColors.textSecondary),
           ),
         ),
         ElevatedButton(
-          onPressed: _canProceed() ? _performWithdrawal : null,
+          onPressed: _canProceed(l10n) ? () => _performWithdrawal(l10n) : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.error,
             foregroundColor: Colors.white,
@@ -98,13 +103,13 @@ class _AccountWithdrawalDialogState extends ConsumerState<AccountWithdrawalDialo
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 )
-              : const Text('退会する'),
+              : Text(l10n.accountWithdrawalConfirmButton),
         ),
       ],
     );
   }
 
-  Widget _buildWarningSection() {
+  Widget _buildWarningSection(L10n l10n) {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
@@ -126,19 +131,21 @@ class _AccountWithdrawalDialogState extends ConsumerState<AccountWithdrawalDialo
                 size: AppDimensions.iconS,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                '重要な注意事項',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.error,
+              Expanded(
+                child: Text(
+                  l10n.accountWithdrawalImportantNotice,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.error,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: AppDimensions.spacingS),
-          const Text(
-            'この操作は元に戻すことができません。退会後は同じアカウントでの再登録はできません。',
-            style: TextStyle(
+          Text(
+            l10n.accountWithdrawalWarningMessage,
+            style: const TextStyle(
               color: AppColors.textDark,
               fontSize: AppDimensions.fontSizeS,
             ),
@@ -148,25 +155,27 @@ class _AccountWithdrawalDialogState extends ConsumerState<AccountWithdrawalDialo
     );
   }
 
-  Widget _buildDataDeletionInfo() {
+  Widget _buildDataDeletionInfo(L10n l10n) {
+    final dataItems = [
+      l10n.accountWithdrawalDataItem1,
+      l10n.accountWithdrawalDataItem2,
+      l10n.accountWithdrawalDataItem3,
+      l10n.accountWithdrawalDataItem4,
+      l10n.accountWithdrawalDataItem5,
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '削除されるデータ',
-          style: TextStyle(
+        Text(
+          l10n.accountWithdrawalDataDeletionTitle,
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
             color: AppColors.textDark,
           ),
         ),
         const SizedBox(height: AppDimensions.spacingS),
-        ...[
-          'アカウント情報（ユーザー名、プロフィール画像など）',
-          '作成したイベント',
-          '参加申請データ',
-          'ゲームプロフィール情報',
-          'その他の個人データ',
-        ].map((item) => Padding(
+        ...dataItems.map((item) => Padding(
           padding: const EdgeInsets.only(bottom: AppDimensions.spacingXS),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,10 +208,10 @@ class _AccountWithdrawalDialogState extends ConsumerState<AccountWithdrawalDialo
                 size: AppDimensions.iconS,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'イベント履歴等では「退会したユーザー」として表示されます',
-                  style: TextStyle(
+                  l10n.accountWithdrawalHistoryNote,
+                  style: const TextStyle(
                     color: AppColors.textDark,
                     fontSize: AppDimensions.fontSizeS,
                   ),
@@ -215,13 +224,13 @@ class _AccountWithdrawalDialogState extends ConsumerState<AccountWithdrawalDialo
     );
   }
 
-  Widget _buildConfirmationSection() {
+  Widget _buildConfirmationSection(L10n l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '確認',
-          style: TextStyle(
+        Text(
+          l10n.accountWithdrawalConfirmTitle,
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
             color: AppColors.textDark,
           ),
@@ -239,10 +248,10 @@ class _AccountWithdrawalDialogState extends ConsumerState<AccountWithdrawalDialo
                   onChanged: (value) => setState(() => _confirmationChecked = value ?? false),
                   activeColor: AppColors.error,
                 ),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    '上記の内容を理解し、アカウント退会に同意します',
-                    style: TextStyle(
+                    l10n.accountWithdrawalCheckboxLabel,
+                    style: const TextStyle(
                       color: AppColors.textDark,
                       fontSize: AppDimensions.fontSizeS,
                     ),
@@ -256,13 +265,13 @@ class _AccountWithdrawalDialogState extends ConsumerState<AccountWithdrawalDialo
     );
   }
 
-  Widget _buildTextConfirmation() {
+  Widget _buildTextConfirmation(L10n l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '「退会する」と入力してください',
-          style: TextStyle(
+        Text(
+          l10n.accountWithdrawalTextInputLabel,
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
             color: AppColors.textDark,
           ),
@@ -272,7 +281,7 @@ class _AccountWithdrawalDialogState extends ConsumerState<AccountWithdrawalDialo
           controller: _confirmationController,
           onChanged: (value) => setState(() => _confirmationText = value),
           decoration: InputDecoration(
-            hintText: '退会する',
+            hintText: l10n.accountWithdrawalTextInputHint,
             hintStyle: const TextStyle(color: AppColors.textSecondary),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppDimensions.radiusS),
@@ -290,13 +299,13 @@ class _AccountWithdrawalDialogState extends ConsumerState<AccountWithdrawalDialo
     );
   }
 
-  bool _canProceed() {
+  bool _canProceed(L10n l10n) {
     return _confirmationChecked &&
-           _confirmationText.trim() == '退会する' &&
+           _confirmationText.trim() == l10n.accountWithdrawalTextInputHint &&
            !_isProcessing;
   }
 
-  Future<void> _performWithdrawal() async {
+  Future<void> _performWithdrawal(L10n l10n) async {
     setState(() => _isProcessing = true);
 
     try {
@@ -304,7 +313,7 @@ class _AccountWithdrawalDialogState extends ConsumerState<AccountWithdrawalDialo
       final currentUser = ref.read(currentFirebaseUserProvider);
 
       if (currentUser == null) {
-        throw Exception('ユーザーが見つかりません');
+        throw Exception(l10n.accountWithdrawalUserNotFound);
       }
 
       // 退会処理を実行
@@ -349,7 +358,7 @@ class _AccountWithdrawalDialogState extends ConsumerState<AccountWithdrawalDialo
         // 成功メッセージを表示
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('アカウント退会が完了しました'),
+            content: Text(l10n.accountWithdrawalSuccess),
             backgroundColor: AppColors.success,
             duration: const Duration(seconds: 3),
           ),
@@ -370,26 +379,25 @@ class _AccountWithdrawalDialogState extends ConsumerState<AccountWithdrawalDialo
           // 再認証が必要であることを通知
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Column(
+              content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'セキュリティ確認が必要です',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    l10n.accountWithdrawalReauthTitle,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
-                    'アカウント退会にはセキュリティのため再ログインが必要です。'
-                    '一度ログアウトしてから再度ログインし、もう一度退会処理を行ってください。',
-                    style: TextStyle(fontSize: 12),
+                    l10n.accountWithdrawalReauthMessage,
+                    style: const TextStyle(fontSize: 12),
                   ),
                 ],
               ),
               backgroundColor: AppColors.warning,
               duration: const Duration(seconds: 10),
               action: SnackBarAction(
-                label: 'ログアウト',
+                label: l10n.accountWithdrawalReauthLogout,
                 textColor: Colors.white,
                 onPressed: () async {
                   // ログアウト処理を実行（authServiceは既に取得済み）
@@ -402,7 +410,7 @@ class _AccountWithdrawalDialogState extends ConsumerState<AccountWithdrawalDialo
           // その他のエラーの場合
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('退会処理に失敗しました: $e'),
+              content: Text(l10n.accountWithdrawalFailed(e.toString())),
               backgroundColor: AppColors.error,
               duration: const Duration(seconds: 5),
             ),

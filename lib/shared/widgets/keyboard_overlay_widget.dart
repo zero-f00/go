@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 
@@ -16,7 +17,7 @@ class KeyboardOverlayWidget extends StatefulWidget {
   const KeyboardOverlayWidget({
     super.key,
     required this.child,
-    this.doneText = '完了',
+    this.doneText,
     this.onDone,
     this.showToolbar = true,
     this.focusNode,
@@ -125,13 +126,15 @@ class _KeyboardOverlayWidgetState extends State<KeyboardOverlayWidget> {
   }
 
   OverlayEntry _createOverlayEntry() {
+    final l10n = L10n.of(context);
     return OverlayEntry(
-      builder: (context) => Positioned(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
+      builder: (overlayContext) => Positioned(
+        bottom: MediaQuery.of(overlayContext).viewInsets.bottom,
         left: 0,
         right: 0,
         child: _KeyboardToolbar(
-          doneText: widget.doneText ?? '完了',
+          doneText: widget.doneText ?? l10n.doneButton,
+          closeKeyboardTooltip: l10n.closeKeyboardTooltip,
           onDone: () {
             widget.onDone?.call();
             _hideKeyboard();
@@ -157,10 +160,12 @@ class _KeyboardOverlayWidgetState extends State<KeyboardOverlayWidget> {
 
 class _KeyboardToolbar extends StatelessWidget {
   final String doneText;
+  final String closeKeyboardTooltip;
   final VoidCallback onDone;
 
   const _KeyboardToolbar({
     required this.doneText,
+    required this.closeKeyboardTooltip,
     required this.onDone,
   });
 
@@ -191,7 +196,7 @@ class _KeyboardToolbar extends StatelessWidget {
             _buildToolbarButton(
               icon: Icons.keyboard_arrow_down,
               onPressed: onDone,
-              tooltip: 'キーボードを閉じる',
+              tooltip: closeKeyboardTooltip,
             ),
             const Spacer(),
           ],
@@ -261,7 +266,7 @@ class EnhancedMultilineTextField extends StatefulWidget {
     this.isRequired = false,
     this.maxLines = 3,
     this.validator,
-    this.doneButtonText = '完了',
+    this.doneButtonText,
   });
 
   @override
@@ -345,7 +350,7 @@ class _EnhancedMultilineTextFieldState
                 (widget.isRequired
                     ? (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return '${widget.label}は必須項目です';
+                          return L10n.of(context).fieldRequiredError(widget.label);
                         }
                         return null;
                       }

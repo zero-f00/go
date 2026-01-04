@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/app_button.dart';
@@ -23,17 +24,19 @@ class EventCancellationDialog extends StatefulWidget {
 class _EventCancellationDialogState extends State<EventCancellationDialog> {
   final TextEditingController _reasonController = TextEditingController();
   bool _isLoading = false;
-  String? _selectedReason;
+  int? _selectedReasonIndex;
 
-  // 定型的な中止理由
-  final List<String> _predefinedReasons = [
-    '主催者の都合による中止',
-    '参加者不足による中止',
-    'サーバー・ネットワークトラブルによる中止',
-    'ゲーム側のメンテナンス・障害による中止',
-    '緊急事態による中止',
-    'その他の理由（詳細は下記に記載）',
-  ];
+  /// 定型的な中止理由リストを取得
+  List<String> _getPredefinedReasons(L10n l10n) {
+    return [
+      l10n.eventCancellationReasonOrganizerConvenience,
+      l10n.eventCancellationReasonLackOfParticipants,
+      l10n.eventCancellationReasonServerNetworkTrouble,
+      l10n.eventCancellationReasonGameMaintenance,
+      l10n.eventCancellationReasonEmergency,
+      l10n.eventCancellationReasonOther,
+    ];
+  }
 
   @override
   void dispose() {
@@ -43,6 +46,7 @@ class _EventCancellationDialogState extends State<EventCancellationDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
@@ -65,15 +69,15 @@ class _EventCancellationDialogState extends State<EventCancellationDialog> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildHeader(),
+                _buildHeader(l10n),
                 const SizedBox(height: AppDimensions.spacingL),
-                _buildWarningMessage(),
+                _buildWarningMessage(l10n),
                 const SizedBox(height: AppDimensions.spacingL),
-                _buildReasonSelection(),
+                _buildReasonSelection(l10n),
                 const SizedBox(height: AppDimensions.spacingL),
-                _buildCustomReasonInput(),
+                _buildCustomReasonInput(l10n),
                 const SizedBox(height: AppDimensions.spacingXL),
-                _buildActionButtons(),
+                _buildActionButtons(l10n),
               ],
             ),
           ),
@@ -83,7 +87,7 @@ class _EventCancellationDialogState extends State<EventCancellationDialog> {
   }
 
   /// ヘッダー部分
-  Widget _buildHeader() {
+  Widget _buildHeader(L10n l10n) {
     return Row(
       children: [
         Container(
@@ -103,9 +107,9 @@ class _EventCancellationDialogState extends State<EventCancellationDialog> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'イベント中止確認',
-                style: TextStyle(
+              Text(
+                l10n.eventCancellationDialogTitle,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeXL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -129,7 +133,7 @@ class _EventCancellationDialogState extends State<EventCancellationDialog> {
   }
 
   /// 警告メッセージ
-  Widget _buildWarningMessage() {
+  Widget _buildWarningMessage(L10n l10n) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -152,9 +156,9 @@ class _EventCancellationDialogState extends State<EventCancellationDialog> {
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                '重要な注意事項',
-                style: TextStyle(
+              Text(
+                l10n.eventCancellationImportantNotice,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w600,
                   color: AppColors.warning,
@@ -163,22 +167,18 @@ class _EventCancellationDialogState extends State<EventCancellationDialog> {
             ],
           ),
           const SizedBox(height: AppDimensions.spacingM),
-          const Text(
-            'イベントを中止すると以下の処理が実行されます：',
-            style: TextStyle(
+          Text(
+            l10n.eventCancellationDescription,
+            style: const TextStyle(
               fontSize: AppDimensions.fontSizeM,
               fontWeight: FontWeight.w500,
               color: AppColors.textDark,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingS),
-          const Text(
-            '• 承認済み参加者への中止通知\n'
-            '• 申込み待ちユーザーへの中止通知\n'
-            '• 運営チームメンバーへの中止通知\n'
-            '• イベントステータスの「中止」への変更\n\n'
-            'この操作は取り消しできません。',
-            style: TextStyle(
+          Text(
+            l10n.eventCancellationNoticeList,
+            style: const TextStyle(
               fontSize: AppDimensions.fontSizeS,
               color: AppColors.textSecondary,
               height: 1.4,
@@ -190,13 +190,14 @@ class _EventCancellationDialogState extends State<EventCancellationDialog> {
   }
 
   /// 中止理由選択
-  Widget _buildReasonSelection() {
+  Widget _buildReasonSelection(L10n l10n) {
+    final reasons = _getPredefinedReasons(l10n);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '中止理由（必須）',
-          style: TextStyle(
+        Text(
+          l10n.eventCancellationReasonRequired,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeL,
             fontWeight: FontWeight.w600,
             color: AppColors.textDark,
@@ -211,8 +212,10 @@ class _EventCancellationDialogState extends State<EventCancellationDialog> {
             border: Border.all(color: AppColors.border),
           ),
           child: Column(
-            children: _predefinedReasons.map((reason) {
-              return RadioListTile<String>(
+            children: reasons.asMap().entries.map((entry) {
+              final index = entry.key;
+              final reason = entry.value;
+              return RadioListTile<int>(
                 title: Text(
                   reason,
                   style: const TextStyle(
@@ -220,11 +223,11 @@ class _EventCancellationDialogState extends State<EventCancellationDialog> {
                     color: AppColors.textDark,
                   ),
                 ),
-                value: reason,
-                groupValue: _selectedReason,
+                value: index,
+                groupValue: _selectedReasonIndex,
                 onChanged: (value) {
                   setState(() {
-                    _selectedReason = value;
+                    _selectedReasonIndex = value;
                   });
                 },
                 activeColor: AppColors.primary,
@@ -239,13 +242,13 @@ class _EventCancellationDialogState extends State<EventCancellationDialog> {
   }
 
   /// カスタム理由入力
-  Widget _buildCustomReasonInput() {
+  Widget _buildCustomReasonInput(L10n l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '詳細・補足説明（任意）',
-          style: TextStyle(
+        Text(
+          l10n.eventCancellationDetailLabel,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeL,
             fontWeight: FontWeight.w600,
             color: AppColors.textDark,
@@ -254,24 +257,24 @@ class _EventCancellationDialogState extends State<EventCancellationDialog> {
         const SizedBox(height: AppDimensions.spacingM),
         AppTextFieldMultiline(
           controller: _reasonController,
-          hintText: '参加者へのメッセージや詳細な説明を入力してください...',
+          hintText: l10n.eventCancellationDetailHint,
           maxLines: 4,
           maxLength: 500,
-          doneButtonText: '完了',
+          doneButtonText: l10n.doneButtonLabel,
         ),
       ],
     );
   }
 
   /// アクションボタン
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(L10n l10n) {
     return Column(
       children: [
         SizedBox(
           width: double.infinity,
           child: AppButton(
-            text: _isLoading ? '中止処理中...' : 'イベントを中止する',
-            onPressed: _canConfirmCancellation() ? _confirmCancellation : null,
+            text: _isLoading ? l10n.eventCancellationProcessing : l10n.eventCancellationConfirmButton,
+            onPressed: _canConfirmCancellation() ? () => _confirmCancellation(l10n) : null,
             type: AppButtonType.danger,
             isEnabled: _canConfirmCancellation() && !_isLoading,
           ),
@@ -280,7 +283,7 @@ class _EventCancellationDialogState extends State<EventCancellationDialog> {
         SizedBox(
           width: double.infinity,
           child: AppButton(
-            text: 'キャンセル',
+            text: l10n.cancel,
             onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
             type: AppButtonType.secondary,
             isEnabled: !_isLoading,
@@ -292,11 +295,11 @@ class _EventCancellationDialogState extends State<EventCancellationDialog> {
 
   /// 中止確認が可能かチェック
   bool _canConfirmCancellation() {
-    return _selectedReason != null && _selectedReason!.isNotEmpty;
+    return _selectedReasonIndex != null;
   }
 
   /// イベント中止を実行
-  Future<void> _confirmCancellation() async {
+  Future<void> _confirmCancellation(L10n l10n) async {
     if (!_canConfirmCancellation() || _isLoading) return;
 
     setState(() {
@@ -304,10 +307,12 @@ class _EventCancellationDialogState extends State<EventCancellationDialog> {
     });
 
     try {
+      final reasons = _getPredefinedReasons(l10n);
+      final selectedReason = reasons[_selectedReasonIndex!];
       final customReason = _reasonController.text.trim();
       final fullReason = customReason.isEmpty
-        ? _selectedReason!
-        : '$_selectedReason\n\n$customReason';
+        ? selectedReason
+        : '$selectedReason\n\n$customReason';
 
       final success = await EventCancellationService.cancelEvent(
         eventId: widget.eventId,
@@ -318,18 +323,18 @@ class _EventCancellationDialogState extends State<EventCancellationDialog> {
         if (success) {
           Navigator.of(context).pop();
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('イベントを中止しました。関係者に通知を送信しています。'),
+            SnackBar(
+              content: Text(l10n.eventCancellationSuccessMessage),
               backgroundColor: AppColors.success,
-              duration: Duration(seconds: 4),
+              duration: const Duration(seconds: 4),
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('イベント中止処理に失敗しました。再度お試しください。'),
+            SnackBar(
+              content: Text(l10n.eventCancellationFailedMessage),
               backgroundColor: AppColors.error,
-              duration: Duration(seconds: 3),
+              duration: const Duration(seconds: 3),
             ),
           );
         }
@@ -338,7 +343,7 @@ class _EventCancellationDialogState extends State<EventCancellationDialog> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('エラーが発生しました: $e'),
+            content: Text(l10n.eventCancellationErrorMessage(e.toString())),
             backgroundColor: AppColors.error,
             duration: const Duration(seconds: 3),
           ),

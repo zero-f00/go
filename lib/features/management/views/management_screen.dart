@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/constants/app_colors.dart';
-import '../../../shared/constants/app_strings.dart';
 import '../../../shared/constants/app_dimensions.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
 import '../../../shared/widgets/app_drawer.dart';
@@ -55,9 +55,10 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
   late TabController _tabController;
   TabController? _participantTabController;
 
-  final List<String> _tabLabels = [
-    AppStrings.hostEventTab,
-    AppStrings.participantEventTab,
+  // タブラベルはbuildメソッド内で動的に取得する
+  List<String> _getTabLabels(L10n l10n) => [
+    l10n.hostEventTab,
+    l10n.participantEventTab,
   ];
 
   // イベント数のキャッシュ
@@ -81,7 +82,7 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _tabLabels.length, vsync: this);
+    _tabController = TabController(length: 2, vsync: this); // 主催イベント管理、参加イベント管理の2タブ
     _participantTabController = TabController(
       length: 2, // 参加予定と過去のイベント
       vsync: this,
@@ -247,7 +248,7 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
           }
         });
       }
-      return _buildAuthRequiredScreen('サインインが必要です', 'サインインして管理機能を使用してください');
+      return _buildAuthRequiredScreen(L10n.of(context).signInRequired, L10n.of(context).signInToUseManagement);
     }
 
     // ユーザーデータがローディング中の場合は待機画面を表示
@@ -265,7 +266,7 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
           }
         });
       }
-      return _buildAuthRequiredScreen('初回設定が必要です', '初回設定を完了して管理機能を使用してください');
+      return _buildAuthRequiredScreen(L10n.of(context).initialSetupRequired, L10n.of(context).completeSetupToUseManagement);
     }
 
     return Scaffold(
@@ -276,7 +277,7 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
           child: Column(
             children: [
               AppHeader(
-                title: AppStrings.manageTab,
+                title: L10n.of(context).manageTab,
                 showBackButton: false,
                 showUserIcon: true,
                 showAd: false,
@@ -292,7 +293,7 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
                 ),
                 child: AppTabBar(
                   controller: _tabController,
-                  tabLabels: _tabLabels,
+                  tabLabels: _getTabLabels(L10n.of(context)),
                 ),
               ),
               const SizedBox(height: AppDimensions.spacingS),
@@ -422,9 +423,9 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
           fontWeight: FontWeight.w600,
           fontSize: AppDimensions.fontSizeM,
         ),
-        tabs: const [
-          Tab(text: '参加予定'),
-          Tab(text: '過去のイベント'),
+        tabs: [
+          Tab(text: L10n.of(context).upcomingTab),
+          Tab(text: L10n.of(context).pastEventsTab),
         ],
       ),
     );
@@ -447,8 +448,8 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
             data: (events) {
               if (events.isEmpty) {
                 return _buildScrollableEmptyState(
-                  '参加予定のイベントがありません',
-                  '新しいイベントに参加してみませんか？',
+                  L10n.of(context).noUpcomingEvents,
+                  L10n.of(context).joinNewEventSuggestion,
                   Icons.event_available,
                 );
               }
@@ -456,8 +457,8 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
             },
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, stackTrace) => _buildScrollableEmptyState(
-              'データの取得に失敗しました',
-              '再度お試しください',
+              L10n.of(context).dataFetchFailed,
+              L10n.of(context).tryAgain,
               Icons.error_outline,
             ),
           );
@@ -480,8 +481,8 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
             data: (events) {
               if (events.isEmpty) {
                 return _buildScrollableEmptyState(
-                  '参加した過去のイベントがありません',
-                  'イベントに参加して実績を積み重ねましょう',
+                  L10n.of(context).noPastParticipatedEvents,
+                  L10n.of(context).participateToGainRecord,
                   Icons.history,
                 );
               }
@@ -489,8 +490,8 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
             },
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, stackTrace) => _buildScrollableEmptyState(
-              'データの取得に失敗しました',
-              '再度お試しください',
+              L10n.of(context).dataFetchFailed,
+              L10n.of(context).tryAgain,
               Icons.error_outline,
             ),
           );
@@ -586,7 +587,7 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
                             ),
                           ),
                           child: Text(
-                            _getEventStatusText(event),
+                            _getEventStatusText(context, event),
                             style: TextStyle(
                               fontSize: AppDimensions.fontSizeXS,
                               color: _getEventStatusColor(event),
@@ -712,13 +713,13 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
             icon: Icons.list,
             isSelected: _isParticipantListView,
             onTap: () => setState(() => _isParticipantListView = true),
-            tooltip: 'リスト表示',
+            tooltip: L10n.of(context).listView,
           ),
           _buildToggleItem(
             icon: Icons.calendar_month,
             isSelected: !_isParticipantListView,
             onTap: () => setState(() => _isParticipantListView = false),
-            tooltip: 'カレンダー表示',
+            tooltip: L10n.of(context).calendarView,
           ),
         ],
       ),
@@ -761,10 +762,10 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
   /// 参加イベントカレンダービュー（UnifiedCalendarWidgetを直接使用）
   Widget _buildParticipantCalendarView() {
     return UnifiedCalendarWidget(
-      title: '参加予定カレンダー',
+      title: L10n.of(context).participationCalendar,
       onLoadEvents: _loadParticipationEventsForCalendar,
       onEventTap: _navigateToEventDetailFromCalendar,
-      emptyMessage: 'この日は参加予定のイベントがありません',
+      emptyMessage: L10n.of(context).noEventsOnThisDay,
       emptyIcon: Icons.event_busy,
       getEventStatusColor: (event) {
         switch (event.status) {
@@ -864,8 +865,8 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('カレンダーの読み込みに失敗しました'),
+          SnackBar(
+            content: Text(L10n.of(context).calendarLoadFailed),
             backgroundColor: AppColors.error,
           ),
         );
@@ -889,17 +890,17 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
   }
 
   /// イベントステータステキストを取得
-  String _getEventStatusText(Event event) {
+  String _getEventStatusText(BuildContext context, Event event) {
     // イベントが中止された場合
     if (event.status == EventStatus.cancelled) {
-      return '中止';
+      return L10n.of(context).statusCancelled;
     }
 
     final now = DateTime.now();
     if (event.eventDate.isAfter(now)) {
-      return '開催予定';
+      return L10n.of(context).statusScheduled;
     } else {
-      return '終了';
+      return L10n.of(context).statusEnded;
     }
   }
 
@@ -927,9 +928,9 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                'クイックアクション',
-                style: TextStyle(
+              Text(
+                L10n.of(context).quickActions,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -942,7 +943,7 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
             children: [
               Expanded(
                 child: _buildActionButton(
-                  title: AppStrings.createNew,
+                  title: L10n.of(context).createNew,
                   icon: Icons.add_circle,
                   color: AppColors.success,
                   onTap: () {
@@ -953,7 +954,7 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
               const SizedBox(width: AppDimensions.spacingS),
               Expanded(
                 child: _buildActionButton(
-                  title: 'カレンダー表示',
+                  title: L10n.of(context).calendarView,
                   icon: Icons.calendar_month,
                   color: AppColors.primary,
                   onTap: () {
@@ -968,7 +969,7 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
             children: [
               Expanded(
                 child: _buildActionButton(
-                  title: 'イベントをコピー',
+                  title: L10n.of(context).copyEvent,
                   icon: Icons.content_copy,
                   color: AppColors.info,
                   onTap: () {
@@ -1087,9 +1088,9 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                '管理オプション',
-                style: TextStyle(
+              Text(
+                L10n.of(context).managementOptions,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -1099,8 +1100,8 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
           ),
           const SizedBox(height: AppDimensions.spacingL),
           _buildManagementOptionWithCount(
-            title: '作成したイベント',
-            subtitle: '自分が作成したイベントを管理',
+            title: L10n.of(context).createdEvents,
+            subtitle: L10n.of(context).createdEventsDescription,
             icon: Icons.event,
             count: _eventCounts[EventManagementType.createdEvents] ?? 0,
             activeCount:
@@ -1114,8 +1115,8 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
           ),
           const SizedBox(height: AppDimensions.spacingM),
           _buildManagementOptionWithCount(
-            title: '共同編集者のイベント',
-            subtitle: '編集権限を持つイベントを管理',
+            title: L10n.of(context).collaborativeEvents,
+            subtitle: L10n.of(context).collaborativeEventsDescription,
             icon: Icons.group,
             count:
                 _eventCounts[EventManagementType.collaborativeEvents] ??
@@ -1132,8 +1133,8 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
           ),
           const SizedBox(height: AppDimensions.spacingM),
           _buildManagementOptionWithCount(
-            title: '下書き保存されたイベント',
-            subtitle: '一時保存されたイベントを管理',
+            title: L10n.of(context).draftEvents,
+            subtitle: L10n.of(context).draftEventsDescription,
             icon: Icons.drafts,
             count: _eventCounts[EventManagementType.draftEvents] ?? 0,
             activeCount: null,
@@ -1146,8 +1147,8 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
           ),
           const SizedBox(height: AppDimensions.spacingM),
           _buildManagementOptionWithCount(
-            title: '過去のイベント履歴',
-            subtitle: '終了したイベントを閲覧・統計確認',
+            title: L10n.of(context).pastEventHistory,
+            subtitle: L10n.of(context).pastEventHistoryDescription,
             icon: Icons.history,
             count: _eventCounts[EventManagementType.pastEvents] ?? 0,
             activeCount: null,
@@ -1226,7 +1227,7 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
                       runSpacing: AppDimensions.spacingXS,
                       children: [
                         _buildStatusChip(
-                          '合計',
+                          L10n.of(context).total,
                           count.toString(),
                           Icons.event,
                           AppColors.info,
@@ -1234,7 +1235,7 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
                         ),
                         if (activeCount != null)
                           _buildStatusChip(
-                            '公開中',
+                            L10n.of(context).published,
                             activeCount.toString(),
                             Icons.public,
                             AppColors.success,
@@ -1283,8 +1284,8 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
       if (currentUser == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('ユーザー情報の取得に失敗しました'),
+            SnackBar(
+              content: Text(L10n.of(context).userInfoFetchFailed('')),
               backgroundColor: AppColors.error,
             ),
           );
@@ -1301,10 +1302,10 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
       if (userEvents.isEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('コピー可能なイベントがありません\nまず最初のイベントを作成してください'),
+            SnackBar(
+              content: Text(L10n.of(context).noCopyableEvents),
               backgroundColor: AppColors.warning,
-              duration: Duration(seconds: 3),
+              duration: const Duration(seconds: 3),
             ),
           );
         }
@@ -1316,8 +1317,8 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
         final selectedEvent = await PastEventsSelectionDialog.show(
           context,
           pastEvents: userEvents,
-          title: 'コピーするイベントを選択',
-          emptyMessage: 'コピー可能なイベントがありません',
+          title: L10n.of(context).selectEventToCopy,
+          emptyMessage: L10n.of(context).noCopyableEventsShort,
         );
 
         if (selectedEvent != null) {
@@ -1328,7 +1329,7 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('イベント一覧の取得に失敗しました: $e'),
+            content: Text(L10n.of(context).eventListFetchFailed(e.toString())),
             backgroundColor: AppColors.error,
             duration: const Duration(seconds: 3),
           ),
@@ -1339,6 +1340,9 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
 
   /// 選択されたイベントをコピーして作成画面へ遷移
   Future<void> _copySelectedEventAndNavigate(Event selectedEvent) async {
+    // asyncギャップ前にL10nを取得
+    final l10n = L10n.of(context);
+
     try {
       // EventをGameEventに変換
       final gameEvent = await converter.EventConverter.eventToGameEvent(
@@ -1348,7 +1352,7 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
       // コピー用のGameEventを作成（IDやタイムスタンプなどをクリア）
       final copiedGameEvent = GameEvent(
         id: '', // 新規作成なのでIDをクリア
-        name: '${gameEvent.name}のコピー', // タイトルに「のコピー」を追加
+        name: l10n.eventNameCopySuffix(gameEvent.name), // タイトルに「のコピー」を追加
         subtitle: gameEvent.subtitle,
         description: gameEvent.description,
         type: gameEvent.type,
@@ -1412,7 +1416,7 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
         // 成功メッセージを表示
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('「${selectedEvent.name}」をコピーしました'),
+            content: Text(L10n.of(context).eventCopied(selectedEvent.name)),
             backgroundColor: AppColors.success,
             duration: const Duration(seconds: 2),
           ),
@@ -1422,7 +1426,7 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('イベントのコピーに失敗しました: $e'),
+            content: Text(L10n.of(context).eventCopyFailed(e.toString())),
             backgroundColor: AppColors.error,
             duration: const Duration(seconds: 3),
           ),
@@ -1486,8 +1490,8 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
     if (currentUser == null) {
       if (mounted && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('ユーザー情報の取得に失敗しました'),
+          SnackBar(
+            content: Text(L10n.of(context).userInfoFetchFailed('')),
             backgroundColor: AppColors.error,
           ),
         );
@@ -1520,7 +1524,9 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
       }
     } catch (e) {
       // エラーが発生した場合でも画面遷移は行い、空の状態を表示
-      errorMessage = 'イベントの取得中にエラーが発生しました';
+      if (mounted && context.mounted) {
+        errorMessage = L10n.of(context).eventFetchError;
+      }
       events = []; // 空のリストで画面遷移
     }
 
@@ -1559,13 +1565,13 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
           context,
           MaterialPageRoute(
             builder: (context) => EventListScreen(
-              title: eventType.title,
+              title: eventType.getTitle(context),
               headerIcon: eventType.icon,
               initialEvents: events,
               isManagementMode: true,
               showCalendarToggle: eventType != EventManagementType.draftEvents,
-              emptyMessage: errorMessage ?? eventType.emptyMessage,
-              emptySubMessage: errorMessage ?? eventType.emptyDetailMessage,
+              emptyMessage: errorMessage ?? eventType.getEmptyMessage(context),
+              emptySubMessage: errorMessage ?? eventType.getEmptyDetailMessage(context),
               emptyIcon: eventType.icon,
             ),
           ),
@@ -1639,7 +1645,7 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
         child: SafeArea(
           child: Column(
             children: [
-              AppHeader(title: AppStrings.manageTab, showBackButton: false),
+              AppHeader(title: L10n.of(context).manageTab, showBackButton: false),
               Expanded(
                 child: Center(
                   child: Padding(
@@ -1674,9 +1680,9 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
                             ),
                           ),
                           const SizedBox(height: AppDimensions.spacingL),
-                          const Text(
-                            'データを読み込み中...',
-                            style: TextStyle(
+                          Text(
+                            L10n.of(context).loadingData,
+                            style: const TextStyle(
                               fontSize: AppDimensions.fontSizeL,
                               fontWeight: FontWeight.w600,
                               color: AppColors.textDark,
@@ -1684,9 +1690,9 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: AppDimensions.spacingS),
-                          const Text(
-                            'ユーザー情報を確認しています',
-                            style: TextStyle(
+                          Text(
+                            L10n.of(context).verifyingUserInfo,
+                            style: const TextStyle(
                               fontSize: AppDimensions.fontSizeM,
                               color: AppColors.textSecondary,
                             ),
@@ -1712,7 +1718,7 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
         child: SafeArea(
           child: Column(
             children: [
-              AppHeader(title: AppStrings.manageTab, showBackButton: false),
+              AppHeader(title: L10n.of(context).manageTab, showBackButton: false),
               Expanded(
                 child: Center(
                   child: Padding(

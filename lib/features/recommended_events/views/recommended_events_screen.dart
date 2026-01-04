@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../shared/widgets/event_list_screen.dart';
 import '../../../shared/services/recommendation_service.dart';
 import '../../game_event_management/models/game_event.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// おすすめイベント画面
 /// 共通コンポーネントEventListScreenを使用
@@ -20,8 +21,9 @@ class RecommendedEventsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return EventListScreen(
-      title: 'おすすめイベント',
+      title: l10n.recommendedEventsTitle,
       headerIcon: Icons.recommend,
       initialEvents: initialEvents,
       onRefresh: () async {
@@ -29,8 +31,8 @@ class RecommendedEventsScreen extends StatelessWidget {
         final stream = RecommendationService.getRecommendedEvents(firebaseUid);
         return await stream.first;
       },
-      emptyMessage: 'おすすめイベントがありません',
-      emptySubMessage: 'お気に入りのゲームを登録すると\n関連するイベントが表示されます',
+      emptyMessage: l10n.noRecommendedEvents,
+      emptySubMessage: l10n.registerFavoriteGamesHint,
       emptyIcon: Icons.recommend,
       listType: EventListType.recommended,
     );

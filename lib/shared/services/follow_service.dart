@@ -25,13 +25,13 @@ class FollowService {
     try {
       // 自分自身をフォローしようとしていないかチェック
       if (followerId == followeeId) {
-        throw Exception('自分自身をフォローすることはできません');
+        throw Exception('Cannot follow yourself');
       }
 
       // 既にフォローしていないかチェック
       final isAlreadyFollowing = await isFollowing(followerId, followeeId);
       if (isAlreadyFollowing) {
-        throw Exception('既にフォローしています');
+        throw Exception('Already following');
       }
 
       // フォロー関係を作成
@@ -66,7 +66,7 @@ class FollowService {
 
       final snapshot = await query.get();
       if (snapshot.docs.isEmpty) {
-        throw Exception('フォロー関係が見つかりません');
+        throw Exception('Follow relationship not found');
       }
 
       await snapshot.docs.first.reference.delete();

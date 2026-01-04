@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../features/game_event_management/models/game_event.dart';
+import '../../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import 'event_card.dart';
@@ -18,10 +19,11 @@ class ManagementEventCardWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildManagementHeader(),
+        _buildManagementHeader(l10n),
         EventCard(
           event: event,
           onTap: onTap,
@@ -31,7 +33,7 @@ class ManagementEventCardWrapper extends StatelessWidget {
   }
 
   /// 管理者向けヘッダー情報（公開状態のみ）
-  Widget _buildManagementHeader() {
+  Widget _buildManagementHeader(L10n l10n) {
     return Container(
       margin: const EdgeInsets.only(
         left: AppDimensions.spacingM,
@@ -40,17 +42,17 @@ class ManagementEventCardWrapper extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _buildPublishStatusBadge(),
+          _buildPublishStatusBadge(l10n),
           const SizedBox(width: AppDimensions.spacingM),
-          _buildVisibilityBadge(),
+          _buildVisibilityBadge(l10n),
         ],
       ),
     );
   }
 
   /// 公開状態バッジ（公開中/下書き/予約公開）
-  Widget _buildPublishStatusBadge() {
-    final publishStatus = _getPublishStatus();
+  Widget _buildPublishStatusBadge(L10n l10n) {
+    final publishStatus = _getPublishStatus(l10n);
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingM,
@@ -90,7 +92,7 @@ class ManagementEventCardWrapper extends StatelessWidget {
   }
 
   /// 可視性バッジ（限定公開の場合のみ表示）
-  Widget _buildVisibilityBadge() {
+  Widget _buildVisibilityBadge(L10n l10n) {
     // 限定公開の場合のみバッジを表示
     if (event.visibility == '限定公開') {
       return Container(
@@ -119,7 +121,7 @@ class ManagementEventCardWrapper extends StatelessWidget {
             ),
             const SizedBox(width: AppDimensions.spacingXS),
             Text(
-              '限定',
+              l10n.managementVisibilityLimited,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeS,
                 color: AppColors.textWhite,
@@ -135,7 +137,7 @@ class ManagementEventCardWrapper extends StatelessWidget {
 
 
   /// 公開状態情報を取得
-  ({String label, IconData icon, Color color}) _getPublishStatus() {
+  ({String label, IconData icon, Color color}) _getPublishStatus(L10n l10n) {
     // visibilityフィールドで公開状態を判定
     // プライベート = 下書き
     // パブリック = 公開中
@@ -144,7 +146,7 @@ class ManagementEventCardWrapper extends StatelessWidget {
     if (event.visibility == 'プライベート' || event.visibility.isEmpty) {
       // 下書き状態
       return (
-        label: '下書き',
+        label: l10n.managementStatusDraft,
         icon: Icons.drafts,
         color: AppColors.warning,
       );
@@ -154,27 +156,27 @@ class ManagementEventCardWrapper extends StatelessWidget {
     switch (event.status) {
       case GameEventStatus.draft:
         return (
-          label: '下書き',
+          label: l10n.managementStatusDraft,
           icon: Icons.edit,
           color: AppColors.warning,
         );
       case GameEventStatus.published:
         return (
-          label: '公開済み',
+          label: l10n.managementStatusPublished,
           icon: Icons.public,
           color: AppColors.success,
         );
       case GameEventStatus.upcoming:
         // 開催予定だが公開されている
         return (
-          label: '公開中',
+          label: l10n.managementStatusPublishing,
           icon: Icons.public,
           color: AppColors.success,
         );
       case GameEventStatus.active:
         // 開催中
         return (
-          label: '開催中',
+          label: l10n.managementStatusActive,
           icon: Icons.play_circle_filled,
           color: AppColors.success,
         );
@@ -182,14 +184,14 @@ class ManagementEventCardWrapper extends StatelessWidget {
       case GameEventStatus.expired:
         // 終了済み
         return (
-          label: '終了',
+          label: l10n.managementStatusEnded,
           icon: Icons.event_busy,
           color: AppColors.textSecondary,
         );
       case GameEventStatus.cancelled:
         // 中止
         return (
-          label: '中止',
+          label: l10n.managementStatusCancelled,
           icon: Icons.cancel_outlined,
           color: AppColors.error,
         );

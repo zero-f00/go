@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../data/models/event_model.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/app_gradient_background.dart';
@@ -78,7 +79,7 @@ class _ParticipantManagementScreenState
           child: Column(
             children: [
               AppHeader(
-                title: '参加者管理',
+                title: L10n.of(context).participantManagementTitle,
                 showBackButton: true,
                 onBackPressed: () => _handleBackPressed(),
               ),
@@ -109,9 +110,9 @@ class _ParticipantManagementScreenState
                               size: AppDimensions.iconM,
                             ),
                             const SizedBox(width: AppDimensions.spacingS),
-                            const Text(
-                              '参加者管理',
-                              style: TextStyle(
+                            Text(
+                              L10n.of(context).participantManagementTitle,
+                              style: const TextStyle(
                                 fontSize: AppDimensions.fontSizeL,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.textDark,
@@ -160,11 +161,11 @@ class _ParticipantManagementScreenState
           fontWeight: FontWeight.w600,
           fontSize: AppDimensions.fontSizeM,
         ),
-        tabs: const [
-          Tab(text: '申請中'),
-          Tab(text: 'キャンセル待ち'),
-          Tab(text: '承認済み'),
-          Tab(text: '拒否済み'),
+        tabs: [
+          Tab(text: L10n.of(context).tabPending),
+          Tab(text: L10n.of(context).tabWaitlisted),
+          Tab(text: L10n.of(context).tabApproved),
+          Tab(text: L10n.of(context).tabRejected),
         ],
       ),
     );
@@ -260,7 +261,7 @@ class _ParticipantManagementScreenState
                   ),
                   const SizedBox(height: AppDimensions.spacingM),
                   Text(
-                    'データの読み込みに失敗しました',
+                    L10n.of(context).dataLoadFailed,
                     style: const TextStyle(
                       fontSize: AppDimensions.fontSizeM,
                       color: AppColors.textDark,
@@ -306,28 +307,29 @@ class _ParticipantManagementScreenState
   }
 
   Widget _buildEmptyState(String status) {
+    final l10n = L10n.of(context);
     String message;
     IconData icon;
 
     switch (status) {
       case 'pending':
-        message = '申請中の参加者はいません';
+        message = l10n.noPendingParticipants;
         icon = Icons.pending_actions;
         break;
       case 'waitlisted':
-        message = 'キャンセル待ちの参加者はいません';
+        message = l10n.noWaitlistedParticipants;
         icon = Icons.hourglass_empty;
         break;
       case 'approved':
-        message = '承認済みの参加者はいません';
+        message = l10n.noApprovedParticipants;
         icon = Icons.check_circle;
         break;
       case 'rejected':
-        message = '拒否済みの参加者はいません';
+        message = l10n.noRejectedParticipants;
         icon = Icons.cancel;
         break;
       default:
-        message = '参加者はいません';
+        message = l10n.noParticipants;
         icon = Icons.people;
     }
 
@@ -399,7 +401,7 @@ class _ParticipantManagementScreenState
                             : null,
                         child: WithdrawnUserHelper.getDisplayAvatarUrl(userData) == null
                             ? Text(
-                                WithdrawnUserHelper.getDisplayUsername(userData)
+                                WithdrawnUserHelper.getDisplayUsername(context, userData)
                                           .substring(0, 1)
                                           .toUpperCase(),
                                 style: TextStyle(
@@ -417,7 +419,7 @@ class _ParticipantManagementScreenState
                           children: [
                             // ゲーム内ユーザー名を主表示
                             Text(
-                              application.gameUsername ?? WithdrawnUserHelper.getDisplayUsername(userData),
+                              application.gameUsername ?? WithdrawnUserHelper.getDisplayUsername(context, userData),
                               style: const TextStyle(
                                 fontSize: AppDimensions.fontSizeL,
                                 fontWeight: FontWeight.w600,
@@ -442,7 +444,7 @@ class _ParticipantManagementScreenState
                                   ),
                                 ),
                                 child: Text(
-                                  WithdrawnUserHelper.getDisplayUsername(userData),
+                                  WithdrawnUserHelper.getDisplayUsername(context, userData),
                                   style: TextStyle(
                                     fontSize: AppDimensions.fontSizeS,
                                     fontWeight: FontWeight.w500,
@@ -581,8 +583,8 @@ class _ParticipantManagementScreenState
         // 退会ユーザーの場合はプロフィール表示を制限
         if (!userData.isActive) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('退会したユーザーのプロフィールは表示できません'),
+            SnackBar(
+              content: Text(L10n.of(context).withdrawnUserProfileNotAvailable),
               backgroundColor: AppColors.warning,
             ),
           );
@@ -595,8 +597,8 @@ class _ParticipantManagementScreenState
         );
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('ユーザー情報が見つかりません'),
+          SnackBar(
+            content: Text(L10n.of(context).userInfoNotFound),
             backgroundColor: AppColors.warning,
           ),
         );
@@ -604,8 +606,8 @@ class _ParticipantManagementScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('ユーザープロフィールの表示に失敗しました'),
+          SnackBar(
+            content: Text(L10n.of(context).userProfileLoadFailed),
             backgroundColor: AppColors.error,
           ),
         );
@@ -614,6 +616,7 @@ class _ParticipantManagementScreenState
   }
 
   Widget _buildStatusBadge(String status) {
+    final l10n = L10n.of(context);
     Color backgroundColor;
     Color textColor;
     String text;
@@ -622,22 +625,22 @@ class _ParticipantManagementScreenState
       case 'pending':
         backgroundColor = AppColors.warning.withValues(alpha: 0.2);
         textColor = AppColors.warning;
-        text = '申請中';
+        text = l10n.statusPending;
         break;
       case 'approved':
         backgroundColor = AppColors.success.withValues(alpha: 0.2);
         textColor = AppColors.success;
-        text = '承認済み';
+        text = l10n.statusApproved;
         break;
       case 'rejected':
         backgroundColor = AppColors.error.withValues(alpha: 0.2);
         textColor = AppColors.error;
-        text = '拒否済み';
+        text = l10n.statusRejected;
         break;
       default:
         backgroundColor = AppColors.textLight.withValues(alpha: 0.2);
         textColor = AppColors.textSecondary;
-        text = '不明';
+        text = l10n.statusUnknown;
     }
 
     return Container(
@@ -666,7 +669,7 @@ class _ParticipantManagementScreenState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '申請日時: ${_formatDateTime(application.appliedAt)}',
+          L10n.of(context).applicationDateTime(_formatDateTime(application.appliedAt)),
           style: const TextStyle(
             fontSize: AppDimensions.fontSizeS,
             color: AppColors.textSecondary,
@@ -684,9 +687,9 @@ class _ParticipantManagementScreenState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '申込メッセージ:',
-                  style: TextStyle(
+                Text(
+                  L10n.of(context).applicationMessageLabel,
+                  style: const TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textDark,
@@ -722,8 +725,8 @@ class _ParticipantManagementScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '承認メッセージ:',
-                  style: TextStyle(
+                  L10n.of(context).approvalMessageLabel,
+                  style: const TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     fontWeight: FontWeight.w600,
                     color: AppColors.success,
@@ -757,8 +760,8 @@ class _ParticipantManagementScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '拒否理由:',
-                  style: TextStyle(
+                  L10n.of(context).rejectionReasonTitle,
+                  style: const TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     fontWeight: FontWeight.w600,
                     color: AppColors.error,
@@ -788,7 +791,7 @@ class _ParticipantManagementScreenState
       children: [
         Expanded(
           child: AppButton.primary(
-            text: '承認',
+            text: L10n.of(context).approve,
             onPressed: isProcessing ? null : () => _approveRequest(application),
             isFullWidth: true,
             padding: const EdgeInsets.all(AppDimensions.spacingM),
@@ -797,7 +800,7 @@ class _ParticipantManagementScreenState
         const SizedBox(width: AppDimensions.spacingM),
         Expanded(
           child: AppButton.secondary(
-            text: '拒否',
+            text: L10n.of(context).reject,
             onPressed: isProcessing ? null : () => _rejectRequest(application),
             isFullWidth: true,
             padding: const EdgeInsets.all(AppDimensions.spacingM),
@@ -856,9 +859,9 @@ class _ParticipantManagementScreenState
                       size: AppDimensions.iconM,
                     ),
                     const SizedBox(width: AppDimensions.spacingS),
-                    const Text(
-                      '満員のため承認できません',
-                      style: TextStyle(
+                    Text(
+                      L10n.of(context).cannotApproveFullCapacity,
+                      style: const TextStyle(
                         fontSize: AppDimensions.fontSizeL,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textDark,
@@ -867,7 +870,7 @@ class _ParticipantManagementScreenState
                   ],
                 ),
                 content: Text(
-                  'このイベントは既に定員に達しています。\n\n現在の参加者数: $currentApprovedCount/${event.maxParticipants}人\n\n承認するには、承認済みの他の参加者を申請中に戻すか、イベントの定員を変更してください。',
+                  '${L10n.of(context).fullCapacityApprovalMessage}\n\n${L10n.of(context).currentParticipantCount(currentApprovedCount, event.maxParticipants)}',
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     color: AppColors.textSecondary,
@@ -877,9 +880,9 @@ class _ParticipantManagementScreenState
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text(
-                      '確認',
-                      style: TextStyle(
+                    child: Text(
+                      L10n.of(context).confirmButtonLabel,
+                      style: const TextStyle(
                         fontSize: AppDimensions.fontSizeM,
                         fontWeight: FontWeight.w600,
                         color: AppColors.accent,
@@ -911,9 +914,9 @@ class _ParticipantManagementScreenState
                     size: AppDimensions.iconM,
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
-                  const Text(
-                    '定員間近です',
-                    style: TextStyle(
+                  Text(
+                    L10n.of(context).nearCapacityWarning,
+                    style: const TextStyle(
                       fontSize: AppDimensions.fontSizeL,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textDark,
@@ -922,7 +925,7 @@ class _ParticipantManagementScreenState
                 ],
               ),
               content: Text(
-                '承認すると定員に達します。\n\n現在の参加者数: $currentApprovedCount/${event.maxParticipants}人\n\n承認を続けますか？',
+                '${L10n.of(context).approvalWillReachCapacity}\n\n${L10n.of(context).currentParticipantCount(currentApprovedCount, event.maxParticipants)}\n\n${L10n.of(context).continueApproval}',
                 style: const TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   color: AppColors.textSecondary,
@@ -932,9 +935,9 @@ class _ParticipantManagementScreenState
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text(
-                    'キャンセル',
-                    style: TextStyle(
+                  child: Text(
+                    L10n.of(context).cancel,
+                    style: const TextStyle(
                       fontSize: AppDimensions.fontSizeM,
                       color: AppColors.textSecondary,
                     ),
@@ -949,9 +952,9 @@ class _ParticipantManagementScreenState
                       borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                     ),
                   ),
-                  child: const Text(
-                    '承認する',
-                    style: TextStyle(
+                  child: Text(
+                    L10n.of(context).approveButtonLabel,
+                    style: const TextStyle(
                       fontSize: AppDimensions.fontSizeM,
                       fontWeight: FontWeight.w600,
                     ),
@@ -970,7 +973,7 @@ class _ParticipantManagementScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('参加者数の確認に失敗しました: $e'),
+            content: Text(L10n.of(context).participantCountCheckFailed(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -983,8 +986,8 @@ class _ParticipantManagementScreenState
     final result = await showDialog<String?>(
       context: context,
       builder: (context) => _ApprovalDialog(
-        title: '参加申請を承認しますか？',
-        message: '承認メッセージを入力できます（任意）',
+        title: L10n.of(context).approveApplicationDialogTitle,
+        message: L10n.of(context).enterApprovalMessageOptional,
         isRejection: false,
       ),
     );
@@ -1008,18 +1011,18 @@ class _ParticipantManagementScreenState
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('参加申請を承認しました'),
+            SnackBar(
+              content: Text(L10n.of(context).approvalSuccessMessage),
               backgroundColor: AppColors.success,
             ),
           );
         }
       } catch (e) {
         if (mounted) {
-          String errorMessage = '承認に失敗しました';
+          String errorMessage = L10n.of(context).approvalFailedMessage;
 
           // 定員超過エラーの場合は詳細なメッセージを表示
-          if (e.toString().contains('定員を超過する')) {
+          if (e.toString().contains('定員を超過する') || e.toString().contains('capacity')) {
             errorMessage = e.toString().replaceFirst('Exception: ', '');
           }
 
@@ -1052,8 +1055,8 @@ class _ParticipantManagementScreenState
     final result = await showDialog<String?>(
       context: context,
       builder: (context) => _ApprovalDialog(
-        title: '参加申請を拒否しますか？',
-        message: '拒否理由を入力してください（任意）',
+        title: L10n.of(context).rejectApplicationDialogTitle,
+        message: L10n.of(context).enterRejectionReasonOptional,
         isRejection: true,
       ),
     );
@@ -1077,15 +1080,15 @@ class _ParticipantManagementScreenState
 
         if (success && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('参加申請を拒否しました'),
+            SnackBar(
+              content: Text(L10n.of(context).rejectionSuccessMessage),
               backgroundColor: AppColors.warning,
             ),
           );
         }
       } catch (e) {
         if (mounted) {
-          ErrorHandlerService.showErrorDialog(context, '拒否に失敗しました');
+          ErrorHandlerService.showErrorDialog(context, L10n.of(context).rejectionFailed);
         }
       } finally {
         // 処理中状態から削除
@@ -1110,7 +1113,7 @@ class _ParticipantManagementScreenState
       context: context,
       eventId: widget.eventId,
       userId: application.userId,
-      userName: WithdrawnUserHelper.getDisplayUsername(userData),
+      userName: WithdrawnUserHelper.getDisplayUsername(context, userData),
       gameUsername: application.gameUsername,
       userData: userData,
       onGameProfileTap: () => _viewGameProfile(application),
@@ -1120,8 +1123,9 @@ class _ParticipantManagementScreenState
 
   /// 申請中に戻すボタン
   Widget _buildReturnToPendingButton(ParticipationApplication application, String status) {
+    final l10n = L10n.of(context);
     final isFromApproval = status == 'approved';
-    final buttonText = isFromApproval ? '承認を取り消して申請中に戻す' : '拒否を取り消して申請中に戻す';
+    final buttonText = isFromApproval ? l10n.revokeApprovalAndReturnToPending : l10n.revokeRejectionAndReturnToPending;
 
     return SizedBox(
       width: double.infinity,
@@ -1150,10 +1154,11 @@ class _ParticipantManagementScreenState
       return;
     }
 
-    final title = isFromApproval ? '承認を取り消しますか？' : '拒否を取り消しますか？';
+    final l10n = L10n.of(context);
+    final title = isFromApproval ? l10n.revokeApprovalTitle : l10n.revokeRejectionTitle;
     final confirmMessage = isFromApproval
-        ? 'この参加者の承認を取り消して申請中に戻します。理由を入力してください（任意）。'
-        : 'この参加者の拒否を取り消して申請中に戻します。理由を入力してください（任意）。';
+        ? l10n.revokeApprovalConfirmMessage
+        : l10n.revokeRejectionConfirmMessage;
 
     final message = await showDialog<String?>(
       context: context,
@@ -1178,15 +1183,15 @@ class _ParticipantManagementScreenState
         application.id,
         ParticipationStatus.pending,
         adminMessage: message.isEmpty
-            ? (isFromApproval ? '承認が取り消されました' : '拒否が取り消されました')
+            ? (isFromApproval ? l10n.approvalRevokedMessage : l10n.rejectionRevoked)
             : message,
         adminUserId: currentUserId,
       );
 
       if (success && mounted) {
         final successMessage = isFromApproval
-            ? '承認を取り消して申請中に戻しました'
-            : '拒否を取り消して申請中に戻しました';
+            ? l10n.revokeApprovalSuccess
+            : l10n.revokeRejectionSuccess;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(successMessage),
@@ -1195,8 +1200,8 @@ class _ParticipantManagementScreenState
         );
       } else if (mounted) {
         final errorMessage = isFromApproval
-            ? '承認取り消しに失敗しました'
-            : '拒否取り消しに失敗しました';
+            ? l10n.revokeApprovalFailed
+            : l10n.revokeRejectionFailed;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
@@ -1207,8 +1212,8 @@ class _ParticipantManagementScreenState
     } catch (e) {
       if (mounted) {
         final errorMessage = isFromApproval
-            ? '承認取り消しに失敗しました'
-            : '拒否取り消しに失敗しました';
+            ? l10n.revokeApprovalFailed
+            : l10n.revokeRejectionFailed;
         ErrorHandlerService.showErrorDialog(context, errorMessage);
       }
     } finally {
@@ -1276,9 +1281,9 @@ class _ApprovalDialogState extends State<_ApprovalDialog> {
           const SizedBox(height: AppDimensions.spacingL),
           AppTextFieldMultiline(
             controller: _controller,
-            hintText: widget.isRejection ? '拒否理由を入力...' : '承認メッセージを入力...',
+            hintText: widget.isRejection ? L10n.of(context).enterRejectionReasonPlaceholder : L10n.of(context).enterApprovalMessagePlaceholder,
             maxLines: 3,
-            doneButtonText: '完了',
+            doneButtonText: L10n.of(context).doneButtonLabel,
           ),
         ],
       ),
@@ -1286,8 +1291,8 @@ class _ApprovalDialogState extends State<_ApprovalDialog> {
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(
-            'キャンセル',
-            style: TextStyle(
+            L10n.of(context).cancel,
+            style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: AppDimensions.fontSizeM,
             ),
@@ -1305,7 +1310,7 @@ class _ApprovalDialogState extends State<_ApprovalDialog> {
             ),
           ),
           child: Text(
-            widget.isRejection ? '拒否' : '承認',
+            widget.isRejection ? L10n.of(context).reject : L10n.of(context).approve,
             style: const TextStyle(
               fontSize: AppDimensions.fontSizeM,
               fontWeight: FontWeight.w600,
@@ -1369,9 +1374,9 @@ class _ReturnToPendingDialogState extends State<_ReturnToPendingDialog> {
           const SizedBox(height: AppDimensions.spacingL),
           AppTextFieldMultiline(
             controller: _controller,
-            hintText: '理由を入力（任意）...',
+            hintText: L10n.of(context).revokeApprovalReasonHint,
             maxLines: 3,
-            doneButtonText: '完了',
+            doneButtonText: L10n.of(context).doneButtonLabel,
           ),
         ],
       ),
@@ -1379,8 +1384,8 @@ class _ReturnToPendingDialogState extends State<_ReturnToPendingDialog> {
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(
-            'キャンセル',
-            style: TextStyle(
+            L10n.of(context).cancel,
+            style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: AppDimensions.fontSizeM,
             ),
@@ -1395,9 +1400,9 @@ class _ReturnToPendingDialogState extends State<_ReturnToPendingDialog> {
               borderRadius: BorderRadius.circular(AppDimensions.radiusS),
             ),
           ),
-          child: const Text(
-            '申請中に戻す',
-            style: TextStyle(
+          child: Text(
+            L10n.of(context).returnToPendingButton,
+            style: const TextStyle(
               fontSize: AppDimensions.fontSizeM,
               fontWeight: FontWeight.w600,
             ),

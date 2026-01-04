@@ -14,6 +14,7 @@ import '../../../data/models/user_model.dart';
 import '../../../data/models/violation_record_model.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../shared/widgets/event_info_card.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// ユーザー詳細管理画面
 class UserDetailManagementScreen extends ConsumerStatefulWidget {
@@ -207,9 +208,10 @@ class _UserDetailManagementScreenState
 
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         setState(() {
           _isLoading = false;
-          _errorMessage = '参加者情報の読み込みに失敗しました: $e';
+          _errorMessage = l10n.participantInfoLoadError(e.toString());
         });
       }
     }
@@ -231,13 +233,14 @@ class _UserDetailManagementScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Scaffold(
       body: AppGradientBackground(
         child: SafeArea(
           child: Column(
             children: [
               AppHeader(
-                title: 'ユーザー詳細',
+                title: l10n.userDetailsTitle,
                 showBackButton: true,
                 onBackPressed: () => Navigator.of(context).pop(),
               ),
@@ -256,7 +259,7 @@ class _UserDetailManagementScreenState
                     borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                   ),
                   child: Text(
-                    '${_participants.length}名',
+                    l10n.personCount(_participants.length),
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeS,
                       fontWeight: FontWeight.w600,
@@ -291,9 +294,9 @@ class _UserDetailManagementScreenState
                               size: AppDimensions.iconM,
                             ),
                             const SizedBox(width: AppDimensions.spacingS),
-                            const Text(
-                              'ユーザー一覧',
-                              style: TextStyle(
+                            Text(
+                              l10n.userListTitle,
+                              style: const TextStyle(
                                 fontSize: AppDimensions.fontSizeL,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.textDark,
@@ -320,13 +323,14 @@ class _UserDetailManagementScreenState
 
   /// 検索バー
   Widget _buildSearchBar() {
+    final l10n = L10n.of(context);
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
       child: TextField(
         controller: _searchController,
         onChanged: _filterParticipants,
         decoration: InputDecoration(
-          hintText: 'ユーザー名やゲームIDで検索...',
+          hintText: l10n.searchByUsernameOrGameIdHint,
           prefixIcon: Icon(Icons.search, color: AppColors.textDark),
           suffixIcon: _searchController.text.isNotEmpty
             ? IconButton(
@@ -351,6 +355,7 @@ class _UserDetailManagementScreenState
 
   /// 参加者一覧タブ
   Widget _buildParticipantListTab() {
+    final l10n = L10n.of(context);
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -377,7 +382,7 @@ class _UserDetailManagementScreenState
             const SizedBox(height: AppDimensions.spacingM),
             ElevatedButton(
               onPressed: _loadParticipantDetails,
-              child: const Text('再試行'),
+              child: Text(l10n.retryButton),
             ),
           ],
         ),
@@ -396,7 +401,7 @@ class _UserDetailManagementScreenState
             ),
             const SizedBox(height: AppDimensions.spacingM),
             Text(
-              'まだ参加者はいません',
+              l10n.noParticipantsYet,
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 color: AppColors.textDark,

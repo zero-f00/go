@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/app_button.dart';
@@ -112,11 +113,12 @@ class _MatchRegistrationDialogState
 
   /// ダイアログヘッダー
   Widget _buildDialogHeader() {
+    final l10n = L10n.of(context);
     return Row(
       children: [
         Expanded(
           child: Text(
-            '試合を追加',
+            l10n.matchAddTitle,
             style: TextStyle(
               fontSize: AppDimensions.fontSizeL,
               fontWeight: FontWeight.w600,
@@ -135,11 +137,12 @@ class _MatchRegistrationDialogState
 
   /// 試合名入力フィールド
   Widget _buildMatchNameField() {
+    final l10n = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '試合名',
+          l10n.matchNameLabel,
           style: TextStyle(
             fontSize: AppDimensions.fontSizeM,
             fontWeight: FontWeight.w600,
@@ -150,14 +153,14 @@ class _MatchRegistrationDialogState
         TextFormField(
           controller: _matchNameController,
           decoration: InputDecoration(
-            hintText: '試合名を入力',
+            hintText: l10n.matchNameInputHint,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppDimensions.radiusS),
             ),
           ),
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
-              return '試合名を入力してください';
+              return l10n.matchNameValidation;
             }
             return null;
           },
@@ -168,6 +171,7 @@ class _MatchRegistrationDialogState
 
   /// 参加者選択
   Widget _buildParticipantSelector() {
+    final l10n = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -175,7 +179,7 @@ class _MatchRegistrationDialogState
           children: [
             Expanded(
               child: Text(
-                widget.isTeamEvent ? '参加チーム（グループ）' : '参加者',
+                widget.isTeamEvent ? l10n.participantTeamsLabel : l10n.participantsLabel,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   fontWeight: FontWeight.w600,
@@ -197,8 +201,8 @@ class _MatchRegistrationDialogState
               },
               child: Text(
                 _selectedParticipants.length == widget.participants.length
-                    ? '解除'
-                    : '選択',
+                    ? l10n.deselectButton
+                    : l10n.selectButton,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeS,
                   color: AppColors.accent,
@@ -251,7 +255,7 @@ class _MatchRegistrationDialogState
         if (_selectedParticipants.length < 2) ...[
           const SizedBox(height: AppDimensions.spacingXS),
           Text(
-            '少なくとも2つの${widget.isTeamEvent ? 'チーム（グループ）' : '参加者'}を選択してください',
+            widget.isTeamEvent ? l10n.selectAtLeastTwoTeams : l10n.selectAtLeastTwoParticipants,
             style: TextStyle(
               fontSize: AppDimensions.fontSizeS,
               color: AppColors.error,
@@ -265,18 +269,19 @@ class _MatchRegistrationDialogState
 
   /// アクションボタン
   Widget _buildActionButtons() {
+    final l10n = L10n.of(context);
     return Row(
       children: [
         Expanded(
           child: AppButton.secondary(
-            text: 'キャンセル',
+            text: l10n.cancel,
             onPressed: () => Navigator.of(context).pop(),
           ),
         ),
         const SizedBox(width: AppDimensions.spacingM),
         Expanded(
           child: AppButton.primary(
-            text: _isLoading ? '登録中...' : '試合を登録',
+            text: _isLoading ? l10n.registeringMatch : l10n.registerMatchButton,
             onPressed: _isLoading || _selectedParticipants.length < 2
                 ? null
                 : _registerMatch,
@@ -290,6 +295,8 @@ class _MatchRegistrationDialogState
   Future<void> _registerMatch() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedParticipants.length < 2) return;
+
+    final l10n = L10n.of(context);
 
     setState(() {
       _isLoading = true;
@@ -313,7 +320,7 @@ class _MatchRegistrationDialogState
         widget.onMatchRegistered(match);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('試合「${_matchNameController.text.trim()}」を登録しました'),
+            content: Text(l10n.matchRegistered(_matchNameController.text.trim())),
             backgroundColor: AppColors.success,
           ),
         );
@@ -322,7 +329,7 @@ class _MatchRegistrationDialogState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('試合の登録に失敗しました: $e'),
+            content: Text(l10n.matchRegistrationFailed(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );

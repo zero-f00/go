@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
+import '../../l10n/app_localizations.dart';
 import 'app_button.dart';
 import 'app_text_field.dart';
 
@@ -39,25 +40,27 @@ class ReasonInputDialog extends StatefulWidget {
   });
 
   /// 除名用のファクトリコンストラクタ
-  factory ReasonInputDialog.removal() {
-    return const ReasonInputDialog(
-      title: '参加者の除名',
-      description: 'この参加者をイベントから除名しますか？\n除名理由を入力してください。',
-      confirmButtonText: '除名',
+  static ReasonInputDialog removal(BuildContext context) {
+    final l10n = L10n.of(context);
+    return ReasonInputDialog(
+      title: l10n.removalDialogTitle,
+      description: l10n.removalDialogDescription,
+      confirmButtonText: l10n.removalButtonText,
       confirmButtonType: AppButtonType.danger,
-      hintText: '除名理由を入力（任意）',
+      hintText: l10n.removalReasonHint,
       isRequired: false,
     );
   }
 
   /// 拒否用のファクトリコンストラクタ
-  factory ReasonInputDialog.rejection() {
-    return const ReasonInputDialog(
-      title: '参加申請の拒否',
-      description: 'この申請を拒否しますか？\n拒否理由を入力してください。',
-      confirmButtonText: '拒否',
+  static ReasonInputDialog rejection(BuildContext context) {
+    final l10n = L10n.of(context);
+    return ReasonInputDialog(
+      title: l10n.rejectionDialogTitle,
+      description: l10n.rejectionDialogDescription,
+      confirmButtonText: l10n.rejectionButtonText,
       confirmButtonType: AppButtonType.danger,
-      hintText: '拒否理由を入力（任意）',
+      hintText: l10n.rejectionReasonHint,
       isRequired: false,
     );
   }
@@ -95,6 +98,7 @@ class _ReasonInputDialogState extends State<ReasonInputDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return AlertDialog(
       backgroundColor: AppColors.cardBackground,
       shape: RoundedRectangleBorder(
@@ -129,12 +133,12 @@ class _ReasonInputDialogState extends State<ReasonInputDialog> {
               maxLines: 4,
               maxLength: widget.maxLength,
               onChanged: (_) => _validateInput(),
-              doneButtonText: '完了',
+              doneButtonText: l10n.doneButtonText,
             ),
             if (!_isValid && widget.isRequired) ...[
               const SizedBox(height: AppDimensions.spacingS),
               Text(
-                '理由の入力は必須です',
+                l10n.reasonRequiredError,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeS,
                   color: AppColors.error,
@@ -149,7 +153,7 @@ class _ReasonInputDialogState extends State<ReasonInputDialog> {
           children: [
             Expanded(
               child: AppButton(
-                text: 'キャンセル',
+                text: l10n.cancelButtonText,
                 onPressed: () => Navigator.of(context).pop(),
                 type: AppButtonType.secondary,
               ),

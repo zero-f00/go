@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../services/participation_service.dart';
@@ -141,7 +142,7 @@ class _UserSelectionViolationModalState
       // 参加者データ取得エラー
       if (mounted) {
         setState(() {
-          _errorMessage = '参加者データの取得に失敗しました: $e';
+          _errorMessage = e.toString();
           _isLoading = false;
         });
       }
@@ -178,6 +179,7 @@ class _UserSelectionViolationModalState
   }
 
   Widget _buildHeader() {
+    final l10n = L10n.of(context);
     return Row(
       children: [
         Icon(Icons.report, color: AppColors.error, size: AppDimensions.iconM),
@@ -186,16 +188,16 @@ class _UserSelectionViolationModalState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                '違反者選択',
-                style: TextStyle(
+              Text(
+                l10n.violatorSelectionTitle,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
                 ),
               ),
               Text(
-                '違反を報告する参加者を選択してください',
+                l10n.violatorSelectionDescription,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   color: AppColors.textSecondary,
@@ -213,11 +215,12 @@ class _UserSelectionViolationModalState
   }
 
   Widget _buildSearchField() {
+    final l10n = L10n.of(context);
     return TextField(
       controller: _searchController,
       decoration: InputDecoration(
-        labelText: '参加者を検索',
-        hintText: '名前、ユーザーIDで検索',
+        labelText: l10n.searchParticipant,
+        hintText: l10n.searchByNameOrId,
         prefixIcon: const Icon(Icons.search),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusM),
@@ -234,6 +237,7 @@ class _UserSelectionViolationModalState
   }
 
   Widget _buildContent() {
+    final l10n = L10n.of(context);
     if (_isLoading) {
       return const SizedBox(
         height: 300,
@@ -255,7 +259,7 @@ class _UserSelectionViolationModalState
               ),
               const SizedBox(height: AppDimensions.spacingM),
               Text(
-                _errorMessage!,
+                l10n.participantDataFetchFailed(_errorMessage!),
                 style: const TextStyle(
                   color: AppColors.error,
                   fontSize: AppDimensions.fontSizeM,
@@ -265,7 +269,7 @@ class _UserSelectionViolationModalState
               const SizedBox(height: AppDimensions.spacingM),
               ElevatedButton(
                 onPressed: _loadParticipants,
-                child: const Text('再試行'),
+                child: Text(l10n.retryButton),
               ),
             ],
           ),
@@ -289,7 +293,7 @@ class _UserSelectionViolationModalState
               ),
               const SizedBox(height: AppDimensions.spacingM),
               Text(
-                _searchQuery.isEmpty ? '承認済み参加者がいません' : '検索結果がありません',
+                _searchQuery.isEmpty ? l10n.noApprovedParticipantsShort : l10n.noSearchResultsShort,
                 style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: AppDimensions.fontSizeL,
@@ -379,7 +383,7 @@ class _UserSelectionViolationModalState
             borderRadius: BorderRadius.circular(AppDimensions.radiusS),
           ),
           child: Text(
-            '報告',
+            L10n.of(context).reportButton,
             style: TextStyle(
               color: AppColors.error,
               fontSize: AppDimensions.fontSizeS,

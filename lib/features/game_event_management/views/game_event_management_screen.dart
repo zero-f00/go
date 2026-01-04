@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../l10n/app_localizations.dart';
 import '../models/game_event.dart';
 import '../../../data/models/user_model.dart';
 import '../../../shared/widgets/enhanced_activity_detail_dialog.dart';
@@ -285,15 +286,16 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
 
   // クイックアクション
   Widget _buildQuickActions() {
+    final l10n = L10n.of(context);
     return _buildSectionContainer(
-      title: 'クイックアクション',
+      title: l10n.quickActions,
       icon: Icons.flash_on,
       children: [
         Row(
           children: [
             Expanded(
               child: QuickActionButton(
-                label: 'イベント作成',
+                label: l10n.homeCreateEvent,
                 icon: Icons.add_circle_outline,
                 onTap: () => _handleEventCreation(),
                 backgroundColor: AppColors.accent.withValues(alpha: 0.1),
@@ -304,7 +306,7 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
             const SizedBox(width: AppDimensions.spacingM),
             Expanded(
               child: QuickActionButton(
-                label: 'イベント検索',
+                label: l10n.homeSearchEvent,
                 icon: Icons.search,
                 onTap: () {
                   widget.onNavigateToSearch?.call();
@@ -370,6 +372,7 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
 
   // 参加予定イベント（キャッシュされたデータを使用）
   Widget _buildUpcomingEvents() {
+    final l10n = L10n.of(context);
     final currentUserAsync = ref.watch(currentUserDataProvider);
     final authState = ref.watch(authStateProvider);
 
@@ -377,14 +380,14 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
       data: (user) {
         if (user == null || !authState.hasValue || authState.value == null) {
           return _buildSectionContainer(
-            title: '参加予定イベント',
+            title: l10n.homeUpcomingEvents,
             icon: Icons.schedule,
             children: [
-              const Padding(
-                padding: EdgeInsets.all(AppDimensions.spacingL),
+              Padding(
+                padding: const EdgeInsets.all(AppDimensions.spacingL),
                 child: Text(
-                  'ログインしてください',
-                  style: TextStyle(
+                  l10n.homeLoginRequired,
+                  style: const TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     color: AppColors.textSecondary,
                   ),
@@ -403,13 +406,13 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
         // エラー発生時
         if (_upcomingError != null) {
           return _buildSectionContainer(
-            title: '参加予定イベント',
+            title: l10n.homeUpcomingEvents,
             icon: Icons.schedule,
             children: [
               EmptyStateView(
                 icon: Icons.error_outline,
-                title: 'エラーが発生しました',
-                message: '参加予定イベントの取得に失敗しました\nしばらくしてから再試行してください',
+                title: l10n.errorOccurred,
+                message: l10n.homeUpcomingEventsFetchError,
               ),
             ],
           );
@@ -446,8 +449,9 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
 
   /// 参加予定イベントのローディング状態
   Widget _buildUpcomingEventsLoading() {
+    final l10n = L10n.of(context);
     return _buildSectionContainer(
-      title: '参加予定イベント',
+      title: l10n.homeUpcomingEvents,
       icon: Icons.schedule,
       children: [
         const SizedBox(
@@ -462,14 +466,15 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
 
   /// 参加予定イベントのエラー状態
   Widget _buildUpcomingEventsError() {
+    final l10n = L10n.of(context);
     return _buildSectionContainer(
-      title: '参加予定イベント',
+      title: l10n.homeUpcomingEvents,
       icon: Icons.schedule,
       children: [
         EmptyStateView(
           icon: Icons.error_outline,
-          title: 'エラーが発生しました',
-          message: 'ユーザー情報の取得に失敗しました\nしばらくしてから再試行してください',
+          title: l10n.errorOccurred,
+          message: l10n.homeUserInfoFetchError,
         ),
       ],
     );
@@ -477,8 +482,9 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
 
   /// 参加予定イベントのコンテンツ
   Widget _buildUpcomingEventsContent(List<GameEvent> upcomingEvents, List<ParticipationApplication> approvedApplications) {
+    final l10n = L10n.of(context);
     return _buildSectionContainer(
-      title: '参加予定イベント',
+      title: l10n.homeUpcomingEvents,
       icon: Icons.schedule,
       children: [
         Row(
@@ -488,9 +494,9 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
             if (approvedApplications.isNotEmpty)
               TextButton(
                 onPressed: () => _navigateToParticipatingEvents(approvedApplications),
-                child: const Text(
-                  'もっと見る',
-                  style: TextStyle(
+                child: Text(
+                  l10n.homeSeeMore,
+                  style: const TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     color: AppColors.accent,
                   ),
@@ -502,10 +508,10 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
         if (upcomingEvents.isEmpty)
           EmptyStateView(
             icon: Icons.event_available,
-            title: '参加予定のイベントはありません',
-            message: 'イベントに申し込んで承認されると\nこちらに表示されます',
+            title: l10n.homeNoUpcomingEvents,
+            message: l10n.homeNoUpcomingEventsHint,
             onAction: () => widget.onNavigateToSearch?.call(),
-            actionLabel: 'イベントを探す',
+            actionLabel: l10n.homeExploreEvents,
           )
         else
           SizedBox(
@@ -632,6 +638,7 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
 
   // アクティビティ状況（キャッシュされたデータを使用）
   Widget _buildActivitySummary() {
+    final l10n = L10n.of(context);
     final currentUserAsync = ref.watch(currentUserDataProvider);
     final authState = ref.watch(authStateProvider);
 
@@ -639,14 +646,14 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
       data: (user) {
         if (user == null || !authState.hasValue || authState.value == null) {
           return _buildSectionContainer(
-            title: 'あなたのアクティビティ',
+            title: l10n.homeYourActivity,
             icon: Icons.analytics,
             children: [
-              const Padding(
-                padding: EdgeInsets.all(AppDimensions.spacingL),
+              Padding(
+                padding: const EdgeInsets.all(AppDimensions.spacingL),
                 child: Text(
-                  'ログインしてください',
-                  style: TextStyle(
+                  l10n.homeLoginRequired,
+                  style: const TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     color: AppColors.textSecondary,
                   ),
@@ -663,7 +670,7 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
         // ローディング中
         if (_isActivityLoading) {
           return _buildSectionContainer(
-            title: 'あなたのアクティビティ',
+            title: l10n.homeYourActivity,
             icon: Icons.analytics,
             children: [
               const SizedBox(
@@ -679,14 +686,14 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
         // エラー発生時
         if (_activityError != null) {
           return _buildSectionContainer(
-            title: 'あなたのアクティビティ',
+            title: l10n.homeYourActivity,
             icon: Icons.analytics,
             children: [
-              const Padding(
-                padding: EdgeInsets.all(AppDimensions.spacingL),
+              Padding(
+                padding: const EdgeInsets.all(AppDimensions.spacingL),
                 child: Text(
-                  'データの取得に失敗しました',
-                  style: TextStyle(
+                  l10n.homeDataFetchFailed,
+                  style: const TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     color: AppColors.textSecondary,
                   ),
@@ -703,7 +710,7 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
           // まだ初回読み込みが完了していない場合はローディング表示
           if (!_hasInitialDataLoaded) {
             return _buildSectionContainer(
-              title: 'あなたのアクティビティ',
+              title: l10n.homeYourActivity,
               icon: Icons.analytics,
               children: [
                 const SizedBox(
@@ -717,14 +724,14 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
           }
           // 初回読み込み完了後にデータがnullの場合は取得失敗
           return _buildSectionContainer(
-            title: 'あなたのアクティビティ',
+            title: l10n.homeYourActivity,
             icon: Icons.analytics,
             children: [
-              const Padding(
-                padding: EdgeInsets.all(AppDimensions.spacingL),
+              Padding(
+                padding: const EdgeInsets.all(AppDimensions.spacingL),
                 child: Text(
-                  'データを取得できませんでした',
-                  style: TextStyle(
+                  l10n.homeDataFetchFailedAlt,
+                  style: const TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     color: AppColors.textSecondary,
                   ),
@@ -740,7 +747,7 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
         final participationStats = _participationStats!;
 
         return _buildSectionContainer(
-          title: 'あなたのアクティビティ',
+          title: l10n.homeYourActivity,
           icon: Icons.analytics,
           children: [
             // 統計カードのグリッド表示
@@ -757,16 +764,16 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
                     showDialog(
                       context: context,
                       builder: (context) => EnhancedActivityDetailDialog(
-                        title: '今月の参加イベント',
+                        title: l10n.homeThisMonthEvents,
                         activityType: 'participating',
                         userId: userIdToUse,
                       ),
                     );
                   },
                   child: ActivityStatsCard(
-                    title: '今月の参加',
+                    title: l10n.homeThisMonthParticipation,
                     value: '${participationStats['thisMonthApprovedApplications'] ?? 0}',
-                    subtitle: '承認済みイベント',
+                    subtitle: l10n.homeApprovedEvents,
                     icon: Icons.event_available,
                     iconColor: AppColors.success,
                   ),
@@ -776,16 +783,16 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
                     showDialog(
                       context: context,
                       builder: (context) => EnhancedActivityDetailDialog(
-                        title: '申し込み中のイベント',
+                        title: l10n.homePendingApplications,
                         activityType: 'pending',
                         userId: userIdToUse,
                       ),
                     );
                   },
                   child: ActivityStatsCard(
-                    title: '申し込み中',
+                    title: l10n.homePendingLabel,
                     value: '${participationStats['pendingApplications'] ?? 0}',
-                    subtitle: '承認待ち',
+                    subtitle: l10n.homeAwaitingApproval,
                     icon: Icons.schedule,
                     iconColor: AppColors.warning,
                   ),
@@ -795,16 +802,16 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
                     showDialog(
                       context: context,
                       builder: (context) => EnhancedActivityDetailDialog(
-                        title: '参加履歴',
+                        title: l10n.homeParticipationHistory,
                         activityType: 'total',
                         userId: userIdToUse,
                       ),
                     );
                   },
                   child: ActivityStatsCard(
-                    title: '総参加数',
+                    title: l10n.homeTotalParticipation,
                     value: '${participationStats['approvedApplications'] ?? 0}',
-                    subtitle: 'これまでに参加',
+                    subtitle: l10n.homeParticipatedSoFar,
                     icon: Icons.emoji_events,
                     iconColor: AppColors.accent,
                   ),
@@ -814,16 +821,16 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
                     showDialog(
                       context: context,
                       builder: (context) => EnhancedActivityDetailDialog(
-                        title: '運営イベント',
+                        title: l10n.homeHostedEvents,
                         activityType: 'hosting',
                         userId: userIdToUse,
                       ),
                     );
                   },
                   child: ActivityStatsCard(
-                    title: '運営数',
+                    title: l10n.homeHostingCount,
                     value: '${hostingStats['totalManagedEvents'] ?? hostingStats['totalHostedEvents'] ?? 0}',
-                    subtitle: '運営に携わったイベント',
+                    subtitle: l10n.homeHostedEventsSubtitle,
                     icon: Icons.admin_panel_settings,
                     iconColor: AppColors.info,
                   ),
@@ -834,7 +841,7 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
         );
       },
       loading: () => _buildSectionContainer(
-        title: 'あなたのアクティビティ',
+        title: L10n.of(context).homeYourActivity,
         icon: Icons.analytics,
         children: [
           const SizedBox(
@@ -846,14 +853,14 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
         ],
       ),
       error: (error, stack) => _buildSectionContainer(
-        title: 'あなたのアクティビティ',
+        title: L10n.of(context).homeYourActivity,
         icon: Icons.analytics,
         children: [
-          const Padding(
-            padding: EdgeInsets.all(AppDimensions.spacingL),
+          Padding(
+            padding: const EdgeInsets.all(AppDimensions.spacingL),
             child: Text(
-              'エラーが発生しました',
-              style: TextStyle(
+              L10n.of(context).errorOccurred,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textSecondary,
               ),
@@ -869,6 +876,7 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
 
   // おすすめイベント
   Widget _buildRecommendedEvents() {
+    final l10n = L10n.of(context);
     final currentUserAsync = ref.watch(currentUserDataProvider);
     final authState = ref.watch(authStateProvider);
 
@@ -876,14 +884,14 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
       data: (user) {
         if (user == null || !authState.hasValue || authState.value == null) {
           return _buildSectionContainer(
-            title: 'おすすめイベント',
+            title: l10n.homeRecommendedEvents,
             icon: Icons.recommend,
             children: [
-              const Padding(
-                padding: EdgeInsets.all(AppDimensions.spacingL),
+              Padding(
+                padding: const EdgeInsets.all(AppDimensions.spacingL),
                 child: Text(
-                  'ログインしてください',
-                  style: TextStyle(
+                  l10n.homeLoginRequired,
+                  style: const TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     color: AppColors.textSecondary,
                   ),
@@ -903,7 +911,7 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
             final hasFavoriteGames = user.favoriteGameIds.isNotEmpty;
 
             return _buildSectionContainer(
-              title: 'おすすめイベント',
+              title: l10n.homeRecommendedEvents,
               icon: Icons.recommend,
               children: [
                 Row(
@@ -913,9 +921,9 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
                     if (events.isNotEmpty)
                       TextButton(
                         onPressed: () => _navigateToRecommendedEvents(events, firebaseUid),
-                        child: const Text(
-                          'もっと見る',
-                          style: TextStyle(
+                        child: Text(
+                          l10n.homeSeeMore,
+                          style: const TextStyle(
                             fontSize: AppDimensions.fontSizeS,
                             color: AppColors.accent,
                           ),
@@ -929,17 +937,17 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
                   EmptyStateView(
                     icon: hasFavoriteGames ? Icons.event_busy : Icons.videogame_asset,
                     title: hasFavoriteGames
-                      ? '該当するイベントが見つかりません'
-                      : 'お気に入りのゲームを登録してください',
+                      ? l10n.homeNoRecommendedEvents
+                      : l10n.homeRegisterFavoriteGames,
                     message: hasFavoriteGames
-                      ? 'お気に入りゲームのイベントが\n現在開催されていません'
-                      : 'お気に入りのゲームを登録すると\n関連するイベントをおすすめします',
+                      ? l10n.homeNoRecommendedEventsHint
+                      : l10n.homeRegisterFavoriteGamesHint,
                     onAction: () => hasFavoriteGames
                       ? widget.onNavigateToSearch?.call()
                       : _navigateToFavoriteGames(),
                     actionLabel: hasFavoriteGames
-                      ? 'イベントを探す'
-                      : 'お気に入りゲームを登録',
+                      ? l10n.homeExploreEvents
+                      : l10n.homeRegisterFavoriteGamesButton,
                   )
                 else
                   SizedBox(
@@ -965,7 +973,7 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
           },
           loading: () {
             return _buildSectionContainer(
-              title: 'おすすめイベント',
+              title: l10n.homeRecommendedEvents,
               icon: Icons.recommend,
               children: [
                 const SizedBox(
@@ -979,13 +987,13 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
           },
           error: (error, stack) {
             return _buildSectionContainer(
-              title: 'おすすめイベント',
+              title: l10n.homeRecommendedEvents,
               icon: Icons.recommend,
               children: [
                 EmptyStateView(
                   icon: Icons.error_outline,
-                  title: 'エラーが発生しました',
-                  message: 'おすすめイベントの取得に失敗しました\nしばらくしてから再試行してください\n\nエラー詳細: $error',
+                  title: l10n.errorOccurred,
+                  message: l10n.homeRecommendedEventsFetchError,
                 ),
               ],
             );
@@ -994,7 +1002,7 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
       },
       loading: () {
         return _buildSectionContainer(
-          title: 'おすすめイベント',
+          title: L10n.of(context).homeRecommendedEvents,
           icon: Icons.recommend,
           children: [
             const SizedBox(
@@ -1008,13 +1016,13 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
       },
       error: (error, stack) {
         return _buildSectionContainer(
-          title: 'おすすめイベント',
+          title: L10n.of(context).homeRecommendedEvents,
           icon: Icons.recommend,
           children: [
             EmptyStateView(
               icon: Icons.error_outline,
-              title: 'エラーが発生しました',
-              message: 'ユーザー情報の取得に失敗しました\nしばらくしてから再試行してください\n\nエラー詳細: $error',
+              title: L10n.of(context).errorOccurred,
+              message: L10n.of(context).homeUserInfoFetchError,
             ),
           ],
         );
@@ -1094,8 +1102,9 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
               return const SizedBox.shrink(); // 運営イベントがない場合は非表示
             }
 
+            final l10n = L10n.of(context);
             return _buildSectionContainer(
-              title: '運営中のイベント',
+              title: l10n.homeManagedEvents,
               icon: Icons.admin_panel_settings,
               children: [
                 Row(
@@ -1104,9 +1113,9 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
                     const SizedBox(),
                     TextButton(
                       onPressed: () => _navigateToManagedEvents(events),
-                      child: const Text(
-                        'もっと見る',
-                        style: TextStyle(
+                      child: Text(
+                        l10n.homeSeeMore,
+                        style: const TextStyle(
                           fontSize: AppDimensions.fontSizeS,
                           color: AppColors.accent,
                         ),
@@ -1155,8 +1164,9 @@ class _GameEventManagementScreenState extends ConsumerState<GameEventManagementS
 
   /// 運営者イベントのローディング状態
   Widget _buildManagedEventsLoading() {
+    final l10n = L10n.of(context);
     return _buildSectionContainer(
-      title: '運営中のイベント',
+      title: l10n.homeManagedEvents,
       icon: Icons.admin_panel_settings,
       children: [
         const SizedBox(
@@ -1192,18 +1202,19 @@ class ManagedEventsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
     final authState = ref.watch(authStateProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('運営中のイベント'),
+        title: Text(l10n.homeManagedEvents),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
       ),
       body: authState.when(
         data: (user) {
           if (user == null) {
-            return const Center(child: Text('ログインが必要です'));
+            return Center(child: Text(l10n.homeLoginRequiredShort));
           }
 
           final allManagedEventsAsync = ref.watch(allManagedEventsProvider(user.uid));
@@ -1211,17 +1222,17 @@ class ManagedEventsScreen extends ConsumerWidget {
           return allManagedEventsAsync.when(
             data: (allEvents) {
               return GenericEventListScreen(
-                title: '運営中のイベント',
+                title: l10n.homeManagedEvents,
                 events: allEvents,
                 onEventTap: (event) => Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => EventDetailScreen(event: event),
                   ),
                 ),
-                emptyTitle: '運営中のイベントはありません',
-                emptyMessage: 'イベントを作成すると\nこちらに表示されます。',
+                emptyTitle: l10n.homeNoManagedEvents,
+                emptyMessage: l10n.homeNoManagedEventsHint,
                 emptyIcon: Icons.admin_panel_settings,
-                searchHint: 'イベント名やゲーム名で検索...',
+                searchHint: l10n.homeEventSearchHint,
                 showCreateButton: true,
                 onCreatePressed: () {
                   Navigator.of(context).pushNamed('/management');
@@ -1236,7 +1247,7 @@ class ManagedEventsScreen extends ConsumerWidget {
                   const Icon(Icons.error_outline, size: 48, color: AppColors.error),
                   const SizedBox(height: 16),
                   Text(
-                    'エラーが発生しました\n$error',
+                    l10n.homeErrorOccurred(error.toString()),
                     style: const TextStyle(color: AppColors.error),
                     textAlign: TextAlign.center,
                   ),
@@ -1246,7 +1257,7 @@ class ManagedEventsScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => const Center(child: Text('認証エラーが発生しました')),
+        error: (error, stack) => Center(child: Text(l10n.homeAuthError)),
       ),
     );
   }

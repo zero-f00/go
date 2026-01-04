@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/constants/app_colors.dart';
-import '../../../shared/constants/app_strings.dart';
 import '../../../shared/constants/app_dimensions.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
 import '../../../shared/widgets/app_drawer.dart';
@@ -21,6 +21,26 @@ import '../../../shared/providers/auth_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+/// 検索タイプを管理するenum
+enum SearchType {
+  event,
+  user,
+  game;
+
+  /// ローカライズされた名前を取得
+  String getLocalizedName(BuildContext context) {
+    final l10n = L10n.of(context);
+    switch (this) {
+      case SearchType.event:
+        return l10n.searchTypeEvent;
+      case SearchType.user:
+        return l10n.searchTypeUser;
+      case SearchType.game:
+        return l10n.searchTypeGame;
+    }
+  }
+}
+
 class SearchScreen extends ConsumerStatefulWidget {
   final bool shouldFocusSearchField;
 
@@ -35,7 +55,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   final _userRepository = UserRepository();
-  String _selectedSearchType = 'イベント';
+  SearchType _selectedSearchType = SearchType.event;
 
   // ユーザー検索関連の状態
   List<UserData> _userSearchResults = [];
@@ -62,12 +82,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   // UI状態
   bool _isSearchFieldFocused = false;
-
-  final List<String> _searchTypes = [
-    'イベント',
-    'ユーザー',
-    'ゲーム名',
-  ];
 
   // 前回のお気に入りゲームIDリスト（変更検出用）
   List<String> _lastFavoriteGameIds = [];
@@ -207,7 +221,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     } catch (e) {
       setState(() {
         _isSearching = false;
-        _searchErrorMessage = 'ユーザー検索中にエラーが発生しました: ${e.toString()}';
+        _searchErrorMessage = e.toString();
         _userSearchResults = [];
       });
     }
@@ -245,7 +259,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     } catch (e) {
       setState(() {
         _isSearchingGames = false;
-        _gameSearchErrorMessage = 'ゲーム検索中にエラーが発生しました: ${e.toString()}';
+        _gameSearchErrorMessage = e.toString();
         _gameSearchResults = [];
       });
     }
@@ -348,7 +362,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     } catch (e) {
       setState(() {
         _isSearchingEvents = false;
-        _eventSearchErrorMessage = 'イベント検索でエラーが発生しました: ${e.toString()}';
+        _eventSearchErrorMessage = e.toString();
         _eventSearchResults = [];
       });
     }
@@ -360,16 +374,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     FirebaseFirestore.instance.settings.persistenceEnabled;
 
     switch (_selectedSearchType) {
-      case 'ユーザー':
+      case SearchType.user:
         _performUserSearch();
         break;
-      case 'ゲーム名':
+      case SearchType.game:
         _performGameSearch();
         break;
-      case 'イベント':
+      case SearchType.event:
         _performEventSearch();
-        break;
-      default:
         break;
     }
   }
@@ -423,7 +435,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           child: Column(
             children: [
               AppHeader(
-                title: AppStrings.searchTab,
+                title: L10n.of(context).searchTab,
                 showBackButton: false,
                 showUserIcon: true,
                 onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
@@ -484,9 +496,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                '検索',
-                style: TextStyle(
+              Text(
+                L10n.of(context).searchSectionTitle,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -504,9 +516,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 size: AppDimensions.iconS,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                '検索対象:',
-                style: TextStyle(
+              Text(
+                L10n.of(context).searchTarget,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textSecondary,
@@ -517,12 +529,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
-                    children: _searchTypes.map((type) {
+                    children: SearchType.values.map((type) {
                       final isSelected = _selectedSearchType == type;
                       return Container(
                         margin: const EdgeInsets.only(right: AppDimensions.spacingS),
                         child: FilterChip(
-                          label: Text(type),
+                          label: Text(type.getLocalizedName(context)),
                           selected: isSelected,
                           onSelected: (selected) {
                             setState(() {
@@ -572,7 +584,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             controller: _searchController,
             focusNode: _searchFocusNode,
             decoration: InputDecoration(
-              hintText: '$_selectedSearchTypeを検索...',
+              hintText: L10n.of(context).searchHint(_selectedSearchType.getLocalizedName(context)),
               hintStyle: const TextStyle(
                 color: AppColors.textLight,
                 fontSize: AppDimensions.fontSizeM,
@@ -628,7 +640,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             },
           ),
           // お気に入りゲームフィルター（イベント検索時のみ表示）
-          if (_selectedSearchType == 'イベント') ...[
+          if (_selectedSearchType == SearchType.event) ...[
             const SizedBox(height: AppDimensions.spacingM),
             _buildFavoriteGamesFilter(),
           ],
@@ -650,9 +662,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               size: AppDimensions.iconS,
             ),
             const SizedBox(width: AppDimensions.spacingS),
-            const Text(
-              'お気に入りゲームで絞り込み',
-              style: TextStyle(
+            Text(
+              L10n.of(context).filterByFavoriteGames,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textSecondary,
@@ -691,10 +703,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   size: AppDimensions.iconS,
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'お気に入りゲームを登録するとここに表示されます',
-                    style: TextStyle(
+                    L10n.of(context).favoriteGamesEmptyHint,
+                    style: const TextStyle(
                       fontSize: AppDimensions.fontSizeS,
                       color: AppColors.textLight,
                     ),
@@ -820,19 +832,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   Widget _buildSearchResults() {
     // お気に入りゲームが選択されている場合は関連イベントを表示
-    if (_selectedSearchType == 'イベント' && _selectedFavoriteGame != null) {
+    if (_selectedSearchType == SearchType.event && _selectedFavoriteGame != null) {
       return _buildFavoriteGameEventsView();
     }
 
     switch (_selectedSearchType) {
-      case 'ユーザー':
+      case SearchType.user:
         return _buildUserSearchResults();
-      case 'ゲーム名':
+      case SearchType.game:
         return _buildGameSearchResults();
-      case 'イベント':
+      case SearchType.event:
         return _buildEventSearchResults();
-      default:
-        return _buildDefaultSearchResults();
     }
   }
 
@@ -937,7 +947,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      'お気に入り',
+                      L10n.of(context).favoriteLabel,
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeXS,
                         fontWeight: FontWeight.w600,
@@ -1050,7 +1060,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               ),
               const SizedBox(height: AppDimensions.spacingL),
               Text(
-                'イベントを読み込み中...',
+                L10n.of(context).loadingEvents,
                 style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   color: AppColors.textSecondary,
@@ -1077,7 +1087,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               ),
               const SizedBox(height: AppDimensions.spacingL),
               Text(
-                '関連イベントはありません',
+                L10n.of(context).noRelatedEvents,
                 style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   color: AppColors.textSecondary,
@@ -1086,7 +1096,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               ),
               const SizedBox(height: AppDimensions.spacingS),
               Text(
-                'このゲームに関連する公開イベント\nが見つかりませんでした',
+                L10n.of(context).noRelatedEventsHint,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: AppDimensions.fontSizeM,
@@ -1153,7 +1163,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
-                  'ユーザー検索結果',
+                  L10n.of(context).userSearchResults,
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeL,
                     fontWeight: FontWeight.w700,
@@ -1218,7 +1228,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Text(
-              'ユーザー名またはIDで検索',
+              L10n.of(context).searchByUsernameOrId,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 color: AppColors.textSecondary,
@@ -1227,7 +1237,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              'ユーザー名またはユーザーIDで他のユーザーを検索できます',
+              L10n.of(context).searchByUsernameOrIdHint,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
@@ -1254,7 +1264,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Text(
-              'ユーザーを検索中...',
+              L10n.of(context).searchingUsers,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 color: AppColors.textSecondary,
@@ -1282,7 +1292,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Text(
-              'エラーが発生しました',
+              L10n.of(context).errorOccurred,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 color: AppColors.error,
@@ -1291,7 +1301,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              _searchErrorMessage!,
+              L10n.of(context).userSearchErrorPrefix(_searchErrorMessage!),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
@@ -1306,7 +1316,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   /// 検索結果がない状態
   Widget _buildNoResultsState() {
-    return EmptySearchResult.user(_searchController.text);
+    return EmptySearchResult.user(context, _searchController.text);
   }
 
   /// ユーザー一覧を表示
@@ -1440,7 +1450,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
-                  'ゲーム検索結果',
+                  L10n.of(context).gameSearchResults,
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeL,
                     fontWeight: FontWeight.w700,
@@ -1629,7 +1639,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Text(
-              'ゲーム名で検索',
+              L10n.of(context).searchByGameName,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 color: AppColors.textSecondary,
@@ -1638,7 +1648,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              'ゲーム名を入力してゲームを検索し、\n関連するイベントを確認できます',
+              L10n.of(context).searchByGameNameHint,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
@@ -1665,7 +1675,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Text(
-              'ゲームを検索中...',
+              L10n.of(context).searchingGames,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 color: AppColors.textSecondary,
@@ -1693,7 +1703,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Text(
-              'エラーが発生しました',
+              L10n.of(context).errorOccurred,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 color: AppColors.error,
@@ -1702,7 +1712,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              _gameSearchErrorMessage!,
+              L10n.of(context).gameSearchErrorPrefix(_gameSearchErrorMessage!),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
@@ -1717,7 +1727,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   /// ゲーム検索結果がない状態
   Widget _buildNoGameResultsState() {
-    return EmptySearchResult.game(_searchController.text);
+    return EmptySearchResult.game(context, _searchController.text);
   }
 
   /// ゲーム一覧を表示
@@ -1917,7 +1927,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               ),
               const SizedBox(height: AppDimensions.spacingL),
               Text(
-                'イベントを読み込み中...',
+                L10n.of(context).loadingEvents,
                 style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   color: AppColors.textSecondary,
@@ -1944,7 +1954,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               ),
               const SizedBox(height: AppDimensions.spacingL),
               Text(
-                '関連イベントはありません',
+                L10n.of(context).noRelatedEvents,
                 style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   color: AppColors.textSecondary,
@@ -1953,7 +1963,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               ),
               const SizedBox(height: AppDimensions.spacingS),
               Text(
-                'このゲームに関連する公開イベント\nが見つかりませんでした',
+                L10n.of(context).noRelatedEventsHint,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: AppDimensions.fontSizeM,
@@ -2020,7 +2030,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
-                  'イベント検索結果',
+                  L10n.of(context).eventSearchResults,
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeL,
                     fontWeight: FontWeight.w700,
@@ -2085,7 +2095,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Text(
-              'イベント名で検索',
+              L10n.of(context).searchByEventName,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 color: AppColors.textSecondary,
@@ -2094,7 +2104,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              'イベント名やキーワードを入力して\nパブリックイベントを検索できます',
+              L10n.of(context).searchByEventNameHint,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
@@ -2121,7 +2131,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Text(
-              'イベントを検索中...',
+              L10n.of(context).searchingEvents,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 color: AppColors.textSecondary,
@@ -2149,7 +2159,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Text(
-              'エラーが発生しました',
+              L10n.of(context).errorOccurred,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 color: AppColors.error,
@@ -2158,7 +2168,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              _eventSearchErrorMessage!,
+              L10n.of(context).eventSearchErrorPrefix(_eventSearchErrorMessage!),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
@@ -2173,7 +2183,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   /// イベント検索結果がない状態
   Widget _buildNoEventResultsState() {
-    return EmptySearchResult.event(_searchController.text);
+    return EmptySearchResult.event(context, _searchController.text);
   }
 
   /// イベント一覧を表示
@@ -2233,8 +2243,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           const SizedBox(height: AppDimensions.spacingL),
           Text(
             _searchController.text.isEmpty
-                ? '検索ワードを入力してください'
-                : '検索結果',
+                ? L10n.of(context).enterSearchKeyword
+                : L10n.of(context).searchResults,
             style: const TextStyle(
               fontSize: AppDimensions.fontSizeL,
               color: AppColors.textSecondary,
@@ -2243,9 +2253,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           ),
           const SizedBox(height: AppDimensions.spacingS),
           Text(
-            _searchController.text.isEmpty
-                ? '$_selectedSearchType名で検索できます'
-                : '「${_searchController.text}」で$_selectedSearchTypeを検索しています\n\n実装時にはここに検索結果が表示されます',
+            L10n.of(context).searchByTypeHint(_selectedSearchType.getLocalizedName(context)),
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: AppDimensions.fontSizeM,
@@ -2276,7 +2284,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           ),
           const SizedBox(height: AppDimensions.spacingM),
           Text(
-            'キーワードを入力して検索',
+            L10n.of(context).keyboardSearchHint,
             style: const TextStyle(
               fontSize: AppDimensions.fontSizeM,
               fontWeight: FontWeight.w600,
@@ -2285,7 +2293,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           ),
           const SizedBox(height: AppDimensions.spacingS),
           Text(
-            'Enterキーを押すか、検索ボタンをタップして検索してください',
+            L10n.of(context).keyboardSearchDescription,
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: AppDimensions.fontSizeS,

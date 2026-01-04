@@ -5,6 +5,7 @@ import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../constants/app_strings.dart';
 import '../constants/app_constants.dart';
+import '../../l10n/app_localizations.dart';
 
 class EventDetailDialog extends StatelessWidget {
   final GameEvent event;
@@ -20,6 +21,33 @@ class EventDetailDialog extends StatelessWidget {
       barrierDismissible: true,
       builder: (context) => EventDetailDialog(event: event),
     );
+  }
+
+  /// 現在のロケールに基づいたロケール文字列を取得
+  String _getLocalizedLocale(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+    switch (locale.languageCode) {
+      case 'ja':
+        return 'ja_JP';
+      case 'en':
+        return 'en_US';
+      case 'ko':
+        return 'ko_KR';
+      case 'zh':
+        return locale.countryCode == 'TW' ? 'zh_TW' : 'zh_CN';
+      default:
+        return 'en_US';
+    }
+  }
+
+  /// 現在のロケールに基づいた日時フォーマットを取得
+  DateFormat _getLocalizedDateTimeFormat(BuildContext context) {
+    final localeString = _getLocalizedLocale(context);
+    try {
+      return DateFormat('yyyy/MM/dd HH:mm', localeString);
+    } catch (e) {
+      return DateFormat('yyyy/MM/dd HH:mm');
+    }
   }
 
   Color _getStatusColor(GameEventStatus status) {
@@ -98,12 +126,12 @@ class EventDetailDialog extends StatelessWidget {
                   children: [
                     _buildEventInfo(),
                     const SizedBox(height: AppDimensions.spacingL),
-                    _buildPeriodInfo(),
+                    _buildPeriodInfo(context),
                     const SizedBox(height: AppDimensions.spacingL),
-                    _buildStatisticsInfo(),
+                    _buildStatisticsInfo(context),
                     if (event.rewards.isNotEmpty) ...[
                       const SizedBox(height: AppDimensions.spacingL),
-                      _buildRewardsInfo(),
+                      _buildRewardsInfo(context),
                     ],
                   ],
                 ),
@@ -117,6 +145,7 @@ class EventDetailDialog extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -132,7 +161,7 @@ class EventDetailDialog extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  'イベント詳細',
+                  l10n.eventDetailTitle,
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeL,
                     fontWeight: FontWeight.w700,
@@ -151,14 +180,15 @@ class EventDetailDialog extends StatelessWidget {
           ),
           if (event.gameName != null) ...[
             const SizedBox(height: AppDimensions.spacingM),
-            _buildGameHeader(),
+            _buildGameHeader(context),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildGameHeader() {
+  Widget _buildGameHeader(BuildContext context) {
+    final l10n = L10n.of(context);
     return Row(
       children: [
         if (event.gameIconUrl != null)
@@ -193,7 +223,7 @@ class EventDetailDialog extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                event.gameName ?? '未設定',
+                event.gameName ?? l10n.notSetText,
                 style: const TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   fontWeight: FontWeight.w600,
@@ -201,7 +231,7 @@ class EventDetailDialog extends StatelessWidget {
                 ),
               ),
               Text(
-                'ゲーム',
+                l10n.gameLabel,
                 style: const TextStyle(
                   fontSize: AppDimensions.fontSizeS,
                   color: AppColors.textSecondary,
@@ -330,15 +360,9 @@ class EventDetailDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildPeriodInfo() {
-    // ロケール対応のDateFormat作成
-    DateFormat dateFormat;
-    try {
-      dateFormat = DateFormat('yyyy年M月d日 H:mm', 'ja_JP');
-    } catch (e) {
-      // フォールバック: デフォルトロケール使用
-      dateFormat = DateFormat('yyyy/MM/dd HH:mm');
-    }
+  Widget _buildPeriodInfo(BuildContext context) {
+    final l10n = L10n.of(context);
+    final dateFormat = _getLocalizedDateTimeFormat(context);
     final now = DateTime.now();
     final daysRemaining = event.status == GameEventStatus.active
         ? event.endDate.difference(now).inDays
@@ -365,9 +389,9 @@ class EventDetailDialog extends StatelessWidget {
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                'イベント期間',
-                style: TextStyle(
+              Text(
+                l10n.eventPeriod,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textDark,
@@ -382,9 +406,9 @@ class EventDetailDialog extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      '開始',
-                      style: TextStyle(
+                    Text(
+                      l10n.startLabel,
+                      style: const TextStyle(
                         fontSize: AppDimensions.fontSizeS,
                         color: AppColors.textSecondary,
                       ),
@@ -406,9 +430,9 @@ class EventDetailDialog extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      '終了',
-                      style: TextStyle(
+                    Text(
+                      l10n.endLabel,
+                      style: const TextStyle(
                         fontSize: AppDimensions.fontSizeS,
                         color: AppColors.textSecondary,
                       ),
@@ -448,11 +472,11 @@ class EventDetailDialog extends StatelessWidget {
                   Text(
                     daysRemaining != null
                         ? daysRemaining > 0
-                            ? '残り$daysRemaining日'
-                            : '本日終了'
+                            ? l10n.daysRemainingText(daysRemaining)
+                            : l10n.endsTodayText
                         : daysUntilStart! > 0
-                            ? '開始まで$daysUntilStart日'
-                            : '間もなく開始',
+                            ? l10n.daysUntilStartText(daysUntilStart)
+                            : l10n.startingSoonText,
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeS,
                       color: _getStatusColor(event.status),
@@ -468,7 +492,8 @@ class EventDetailDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildStatisticsInfo() {
+  Widget _buildStatisticsInfo(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -487,9 +512,9 @@ class EventDetailDialog extends StatelessWidget {
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                '統計情報',
-                style: TextStyle(
+              Text(
+                l10n.statisticsLabel,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textDark,
@@ -561,7 +586,8 @@ class EventDetailDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildRewardsInfo() {
+  Widget _buildRewardsInfo(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -580,9 +606,9 @@ class EventDetailDialog extends StatelessWidget {
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                '賞品',
-                style: TextStyle(
+              Text(
+                l10n.prizesLabel,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textDark,
@@ -637,6 +663,7 @@ class EventDetailDialog extends StatelessWidget {
   }
 
   Widget _buildActions(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -655,9 +682,9 @@ class EventDetailDialog extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingM),
                 side: const BorderSide(color: AppColors.border),
               ),
-              child: const Text(
-                '閉じる',
-                style: TextStyle(
+              child: Text(
+                l10n.closeText,
+                style: const TextStyle(
                   color: AppColors.textDark,
                   fontWeight: FontWeight.w600,
                 ),
@@ -675,7 +702,7 @@ class EventDetailDialog extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingM),
               ),
               child: Text(
-                _getActionButtonText(),
+                _getActionButtonText(context),
                 style: const TextStyle(
                   color: AppColors.textOnPrimary,
                   fontWeight: FontWeight.w600,
@@ -688,22 +715,23 @@ class EventDetailDialog extends StatelessWidget {
     );
   }
 
-  String _getActionButtonText() {
+  String _getActionButtonText(BuildContext context) {
+    final l10n = L10n.of(context);
     switch (event.status) {
       case GameEventStatus.draft:
-        return '編集';
+        return l10n.editText;
       case GameEventStatus.published:
-        return '参加';
+        return l10n.joinText;
       case GameEventStatus.upcoming:
-        return '編集';
+        return l10n.editText;
       case GameEventStatus.active:
-        return '参加';
+        return l10n.joinText;
       case GameEventStatus.completed:
-        return '結果確認';
+        return l10n.resultCheckText;
       case GameEventStatus.expired:
-        return '複製';
+        return l10n.duplicateText;
       case GameEventStatus.cancelled:
-        return '詳細確認';
+        return l10n.detailCheckText;
     }
   }
 }

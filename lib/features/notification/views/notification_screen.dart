@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
-import '../../../shared/constants/app_strings.dart';
 import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
 import '../../../shared/widgets/app_drawer.dart';
@@ -19,6 +19,7 @@ import '../../../shared/services/violation_service.dart';
 import '../../event_management/views/violation_management_screen.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../shared/services/push_notification_service.dart';
+import '../../../shared/helpers/notification_localization_helper.dart';
 
 /// 通知画面
 class NotificationScreen extends ConsumerStatefulWidget {
@@ -81,6 +82,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     final notificationsAsync = ref.watch(userNotificationsProvider);
 
     return Scaffold(
@@ -92,7 +94,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
             children: [
               notificationsAsync.when(
                 data: (notifications) => AppHeader(
-                  title: AppStrings.notificationTab,
+                  title: l10n.notificationTab,
                   showBackButton: false,
                   showUserIcon: true,
                   onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
@@ -134,9 +136,9 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                                     color: AppColors.primary,
                                   ),
                                   const SizedBox(width: AppDimensions.spacingXS),
-                                  const Text(
-                                    '全て既読',
-                                    style: TextStyle(
+                                  Text(
+                                    l10n.markAllAsRead,
+                                    style: const TextStyle(
                                       color: AppColors.primary,
                                       fontSize: AppDimensions.fontSizeS,
                                       fontWeight: FontWeight.w600,
@@ -151,13 +153,13 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                   ],
                 ),
                 loading: () => AppHeader(
-                  title: AppStrings.notificationTab,
+                  title: l10n.notificationTab,
                   showBackButton: false,
                   showUserIcon: true,
                   onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
                 ),
                 error: (_, __) => AppHeader(
-                  title: AppStrings.notificationTab,
+                  title: l10n.notificationTab,
                   showBackButton: false,
                   showUserIcon: true,
                   onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
@@ -195,17 +197,18 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
   /// ローディング状態を構築
   Widget _buildLoadingState() {
-    return const Center(
+    final l10n = L10n.of(context);
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
+          const CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
           ),
-          SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.spacingM),
           Text(
-            '通知を取得中...',
-            style: TextStyle(
+            l10n.loadingNotifications,
+            style: const TextStyle(
               fontSize: AppDimensions.fontSizeM,
               color: AppColors.textSecondary,
             ),
@@ -217,6 +220,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
   /// エラー状態を構築
   Widget _buildErrorState(String errorMessage) {
+    final l10n = L10n.of(context);
     return Center(
       child: Container(
         margin: const EdgeInsets.all(AppDimensions.spacingL),
@@ -248,7 +252,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingL),
             AppButton(
-              text: '再試行',
+              text: l10n.retry,
               onPressed: () {
                 ref.invalidate(userNotificationsProvider);
               },
@@ -308,6 +312,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
   /// 空の状態を構築
   Widget _buildEmptyState() {
+    final l10n = L10n.of(context);
     return Center(
       child: Container(
         padding: const EdgeInsets.all(AppDimensions.spacingXL),
@@ -332,18 +337,18 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
               ),
             ),
             const SizedBox(height: AppDimensions.spacingL),
-            const Text(
-              '通知はありません',
-              style: TextStyle(
+            Text(
+              l10n.noNotifications,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 color: AppColors.textSecondary,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingS),
-            const Text(
-              '新しい通知が届くとここに表示されます',
-              style: TextStyle(
+            Text(
+              l10n.notificationsWillAppearHere,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textLight,
                 height: 1.4,
@@ -392,7 +397,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                             children: [
                               Expanded(
                                 child: Text(
-                                  notification.title,
+                                  NotificationLocalizationHelper.getLocalizedTitle(context, notification),
                                   style: TextStyle(
                                     fontSize: AppDimensions.fontSizeL,
                                     fontWeight: notification.isRead
@@ -426,7 +431,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                           ),
                           const SizedBox(height: AppDimensions.spacingXS),
                           Text(
-                            notification.message,
+                            NotificationLocalizationHelper.getLocalizedMessage(context, notification),
                             style: TextStyle(
                               fontSize: AppDimensions.fontSizeM,
                               color: AppColors.textSecondary,
@@ -463,7 +468,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                         ),
                       ),
                       child: Text(
-                        notification.categoryDisplayName,
+                        _getCategoryDisplayName(notification),
                         style: const TextStyle(
                           fontSize: AppDimensions.fontSizeXS,
                           color: AppColors.primary,
@@ -753,9 +758,10 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
   /// イベント招待通知の処理
   Future<void> _handleEventInvitation(NotificationData notification) async {
+    final l10n = L10n.of(context);
     final eventData = notification.data;
     if (eventData == null || eventData['eventId'] == null) {
-      _showErrorMessage('イベント情報が見つかりません');
+      _showErrorMessage(l10n.eventInfoNotFound);
       return;
     }
 
@@ -765,7 +771,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       // イベント情報を取得
       final event = await EventService.getEventById(eventId);
       if (event == null) {
-        _showErrorMessage('イベントが見つかりません。削除された可能性があります。');
+        _showErrorMessage(l10n.eventNotFoundMayBeDeleted);
         return;
       }
 
@@ -782,28 +788,30 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         );
       }
     } catch (e) {
-      _showErrorMessage('イベント情報の取得中にエラーが発生しました');
+      _showErrorMessage(l10n.errorFetchingEventInfo);
     }
   }
 
   /// 通知時間をフォーマット
   String _formatNotificationTime(DateTime timestamp) {
+    final l10n = L10n.of(context);
     final now = DateTime.now();
     final difference = now.difference(timestamp);
 
     if (difference.inDays > 0) {
-      return '${difference.inDays}日前';
+      return l10n.daysAgo(difference.inDays);
     } else if (difference.inHours > 0) {
-      return '${difference.inHours}時間前';
+      return l10n.hoursAgo(difference.inHours);
     } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}分前';
+      return l10n.minutesAgo(difference.inMinutes);
     } else {
-      return 'たった今';
+      return l10n.justNow;
     }
   }
 
   /// イベント招待通知の申請状態バッジを構築
   Widget _buildApplicationStatusBadge(NotificationData notification) {
+    final l10n = L10n.of(context);
     if (notification.data == null) return const SizedBox.shrink();
 
     final applicationStatus = notification.data!['applicationStatus'] as String?;
@@ -815,17 +823,17 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
     switch (applicationStatus) {
       case 'submitted':
-        text = '申請済み';
+        text = l10n.applicationStatusSubmitted;
         backgroundColor = AppColors.warning.withValues(alpha: 0.2);
         textColor = AppColors.warning;
         break;
       case 'approved':
-        text = '承認済み';
+        text = l10n.applicationStatusApproved;
         backgroundColor = AppColors.success.withValues(alpha: 0.2);
         textColor = AppColors.success;
         break;
       case 'rejected':
-        text = '拒否済み';
+        text = l10n.applicationStatusRejected;
         backgroundColor = AppColors.error.withValues(alpha: 0.2);
         textColor = AppColors.error;
         break;
@@ -856,9 +864,10 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
   /// フレンド申請通知の処理（廃止済み - 既存データ互換性のため残存）
   Future<void> _handleFriendRequest(NotificationData notification) async {
+    final l10n = L10n.of(context);
     final fromUserId = notification.fromUserId;
     if (fromUserId == null) {
-      _showErrorMessage('申請者の情報が見つかりません');
+      _showErrorMessage(l10n.applicantInfoNotFound);
       return;
     }
 
@@ -875,19 +884,22 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       }
 
       // この機能は廃止されました。相互フォローに移行済みです。
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('この機能は廃止されました'),
-          backgroundColor: AppColors.info,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.featureDeprecated),
+            backgroundColor: AppColors.info,
+          ),
+        );
+      }
     } catch (e) {
-      _showErrorMessage('申請者の情報確認中にエラーが発生しました');
+      _showErrorMessage(l10n.errorCheckingApplicantInfo);
     }
   }
 
   /// 退会したユーザーからの通知に対するメッセージを表示
   void _showWithdrawnUserMessage() {
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -910,10 +922,10 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
               ),
             ),
             const SizedBox(width: AppDimensions.spacingM),
-            const Expanded(
+            Expanded(
               child: Text(
-                '利用できません',
-                style: TextStyle(
+                l10n.unavailable,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -922,9 +934,9 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
             ),
           ],
         ),
-        content: const Text(
-          'この通知の送信者は退会済みのため、この通知を処理できません。',
-          style: TextStyle(
+        content: Text(
+          l10n.notificationSenderWithdrawn,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeM,
             color: AppColors.textSecondary,
             height: 1.4,
@@ -940,7 +952,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            child: const Text('確認'),
+            child: Text(l10n.confirm),
           ),
         ],
       ),
@@ -949,11 +961,11 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
   /// フレンド申請承認通知の処理（廃止済み - 既存データ互換性のため残存）
   Future<void> _handleFriendAccepted(NotificationData notification) async {
-
+    final l10n = L10n.of(context);
     // この機能は廃止されました。相互フォローに移行済みです。
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('相互フォローになりました！'),
+      SnackBar(
+        content: Text(l10n.becameMutualFollow),
         backgroundColor: AppColors.success,
       ),
     );
@@ -961,9 +973,10 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
   /// イベント申込み通知の処理（運営者への通知）
   Future<void> _handleEventApplication(NotificationData notification) async {
+    final l10n = L10n.of(context);
     final data = notification.data;
     if (data == null || data['eventId'] == null) {
-      _showErrorMessage('申込み情報が見つかりません');
+      _showErrorMessage(l10n.applicationInfoNotFound);
       return;
     }
 
@@ -973,7 +986,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       // イベント情報を取得
       final event = await EventService.getEventById(eventId);
       if (event == null) {
-        _showErrorMessage('イベント情報が見つかりません');
+        _showErrorMessage(l10n.eventInfoNotFound);
         return;
       }
 
@@ -989,15 +1002,16 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         );
       }
     } catch (e) {
-      _showErrorMessage('エラーが発生しました');
+      _showErrorMessage(l10n.errorOccurred);
     }
   }
 
   /// 参加キャンセル通知の処理（運営者への通知）
   Future<void> _handleParticipantCancelled(NotificationData notification) async {
+    final l10n = L10n.of(context);
     final data = notification.data;
     if (data == null || data['eventId'] == null) {
-      _showErrorMessage('イベント情報が見つかりません');
+      _showErrorMessage(l10n.eventInfoNotFound);
       return;
     }
 
@@ -1007,7 +1021,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       // イベント情報を取得
       final event = await EventService.getEventById(eventId);
       if (event == null) {
-        _showErrorMessage('イベント情報が見つかりません');
+        _showErrorMessage(l10n.eventInfoNotFound);
         return;
       }
 
@@ -1027,15 +1041,16 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         );
       }
     } catch (e) {
-      _showErrorMessage('エラーが発生しました');
+      _showErrorMessage(l10n.errorOccurred);
     }
   }
 
   /// イベント承認/拒否通知の処理（参加者への通知）
   Future<void> _handleEventDecisionNotification(NotificationData notification) async {
+    final l10n = L10n.of(context);
     final data = notification.data;
     if (data == null || data['eventId'] == null) {
-      _showErrorMessage('イベント情報が見つかりません');
+      _showErrorMessage(l10n.eventInfoNotFound);
       return;
     }
 
@@ -1045,7 +1060,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       // イベント情報を取得
       final event = await EventService.getEventById(eventId);
       if (event == null) {
-        _showErrorMessage('イベント情報が見つかりません');
+        _showErrorMessage(l10n.eventInfoNotFound);
         return;
       }
 
@@ -1062,15 +1077,16 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         );
       }
     } catch (e) {
-      _showErrorMessage('エラーが発生しました');
+      _showErrorMessage(l10n.errorOccurred);
     }
   }
 
   /// 違反報告通知の処理
   Future<void> _handleViolationReported(NotificationData notification) async {
+    final l10n = L10n.of(context);
     final data = notification.data;
     if (data == null || data['violationId'] == null) {
-      _showErrorMessage('違反報告情報が見つかりません');
+      _showErrorMessage(l10n.violationInfoNotFound);
       return;
     }
 
@@ -1090,41 +1106,45 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
   /// 異議申立ダイアログを表示
   Future<void> _showAppealDialog(String violationId, String eventName) async {
+    final l10n = L10n.of(context);
     try {
       // 違反記録を取得
       final violationService = ref.read(violationServiceProvider);
       final violation = await violationService.getViolation(violationId);
 
       if (violation == null) {
-        _showErrorMessage('違反記録が見つかりません');
+        _showErrorMessage(l10n.violationRecordNotFound);
         return;
       }
 
       // 既に異議申立済みの場合
       if (violation.appealText != null && violation.appealText!.isNotEmpty) {
-        _showErrorMessage('この違反記録には既に異議申立が提出されています');
+        _showErrorMessage(l10n.appealAlreadySubmitted);
         return;
       }
 
       // 異議申立ダイアログを表示
-      await showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => AppealDialog(
-          violation: violation,
-          eventName: eventName,
-        ),
-      );
+      if (mounted) {
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AppealDialog(
+            violation: violation,
+            eventName: eventName,
+          ),
+        );
+      }
     } catch (e) {
-      _showErrorMessage('エラーが発生しました: $e');
+      _showErrorMessage(l10n.errorWithDetails(e.toString()));
     }
   }
 
   /// 異議申立通知の処理
   Future<void> _handleAppealSubmitted(NotificationData notification) async {
+    final l10n = L10n.of(context);
     final data = notification.data;
     if (data == null || data['eventId'] == null) {
-      _showErrorMessage('イベント情報が見つかりません');
+      _showErrorMessage(l10n.eventInfoNotFound);
       return;
     }
 
@@ -1137,9 +1157,10 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
   /// 異議申立処理完了通知の処理
   Future<void> _handleAppealProcessed(NotificationData notification) async {
+    final l10n = L10n.of(context);
     final data = notification.data;
     if (data == null) {
-      _showErrorMessage('通知データが見つかりません');
+      _showErrorMessage(l10n.notificationDataNotFound);
       return;
     }
 
@@ -1149,22 +1170,19 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
     // 処理結果の詳細を表示
     String title = '';
     String message = '';
-    Color backgroundColor = AppColors.info;
 
     if (appealStatus == 'approved') {
-      title = '異議申立が承認されました';
-      message = '違反記録が取り消されました。';
-      backgroundColor = AppColors.success;
+      title = l10n.appealApproved;
+      message = l10n.violationRecordCancelled;
     } else if (appealStatus == 'rejected') {
-      title = '異議申立が却下されました';
-      message = '違反記録が維持されます。';
-      backgroundColor = AppColors.warning;
+      title = l10n.appealRejected;
+      message = l10n.violationRecordMaintained;
     } else {
-      message = '異議申立の処理が完了しました。';
+      message = l10n.appealProcessed;
     }
 
     if (appealResponse != null && appealResponse.isNotEmpty) {
-      message += '\n\n運営からの回答:\n$appealResponse';
+      message += l10n.responseFromOrganizer(appealResponse);
     }
 
     // 詳細ダイアログを表示
@@ -1178,7 +1196,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('確認'),
+            child: Text(l10n.confirm),
           ),
         ],
       ),
@@ -1200,9 +1218,10 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
   /// イベント中止通知の処理
   Future<void> _handleEventCancelNotification(NotificationData notification) async {
+    final l10n = L10n.of(context);
     final data = notification.data;
     if (data == null || data['eventId'] == null) {
-      _showErrorMessage('イベント情報が見つかりません');
+      _showErrorMessage(l10n.eventInfoNotFound);
       return;
     }
 
@@ -1212,7 +1231,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       // イベント情報を取得
       final event = await EventService.getEventById(eventId);
       if (event == null) {
-        _showErrorMessage('イベント情報が見つかりません');
+        _showErrorMessage(l10n.eventInfoNotFound);
         return;
       }
 
@@ -1229,15 +1248,16 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         );
       }
     } catch (e) {
-      _showErrorMessage('エラーが発生しました');
+      _showErrorMessage(l10n.errorOccurred);
     }
   }
 
   /// イベント更新通知の処理
   Future<void> _handleEventUpdatedNotification(NotificationData notification) async {
+    final l10n = L10n.of(context);
     final data = notification.data;
     if (data == null || data['eventId'] == null) {
-      _showErrorMessage('イベント情報が見つかりません');
+      _showErrorMessage(l10n.eventInfoNotFound);
       return;
     }
 
@@ -1247,7 +1267,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       // イベント情報を取得
       final event = await EventService.getEventById(eventId);
       if (event == null) {
-        _showErrorMessage('イベント情報が見つかりません');
+        _showErrorMessage(l10n.eventInfoNotFound);
         return;
       }
 
@@ -1264,15 +1284,16 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         );
       }
     } catch (e) {
-      _showErrorMessage('エラーが発生しました');
+      _showErrorMessage(l10n.errorOccurred);
     }
   }
 
   /// イベントリマインダー通知の処理
   Future<void> _handleEventReminderNotification(NotificationData notification) async {
+    final l10n = L10n.of(context);
     final data = notification.data;
     if (data == null || data['eventId'] == null) {
-      _showErrorMessage('イベント情報が見つかりません');
+      _showErrorMessage(l10n.eventInfoNotFound);
       return;
     }
 
@@ -1282,7 +1303,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       // イベント情報を取得
       final event = await EventService.getEventById(eventId);
       if (event == null) {
-        _showErrorMessage('イベント情報が見つかりません');
+        _showErrorMessage(l10n.eventInfoNotFound);
         return;
       }
 
@@ -1299,15 +1320,16 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         );
       }
     } catch (e) {
-      _showErrorMessage('エラーが発生しました');
+      _showErrorMessage(l10n.errorOccurred);
     }
   }
 
   /// イベント下書き化通知の処理
   Future<void> _handleEventDraftRevertedNotification(NotificationData notification) async {
+    final l10n = L10n.of(context);
     final data = notification.data;
     if (data == null || data['eventId'] == null) {
-      _showErrorMessage('イベント情報が見つかりません');
+      _showErrorMessage(l10n.eventInfoNotFound);
       return;
     }
 
@@ -1318,7 +1340,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       final event = await EventService.getEventById(eventId);
       if (event == null) {
         // 下書き化されたイベントは取得できない可能性があるため、メッセージを表示
-        _showErrorMessage('このイベントは下書き状態のため詳細を表示できません');
+        _showErrorMessage(l10n.eventInDraftCannotView);
         return;
       }
 
@@ -1335,24 +1357,24 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         );
       }
     } catch (e) {
-      _showErrorMessage('このイベントは下書き状態のため詳細を表示できません');
+      _showErrorMessage(l10n.eventInDraftCannotView);
     }
   }
 
   /// 試合報告通知の処理（運営者向け）
   Future<void> _handleMatchReportNotification(NotificationData notification) async {
+    final l10n = L10n.of(context);
     final data = notification.data;
     if (data == null) {
-      _showErrorMessage('報告情報が見つかりません');
+      _showErrorMessage(l10n.reportInfoNotFound);
       return;
     }
 
     final eventId = data['eventId'] as String?;
     final matchId = data['matchId'] as String?;
-    final matchName = data['matchName'] as String?;
 
     if (eventId == null || matchId == null) {
-      _showErrorMessage('試合情報が見つかりません');
+      _showErrorMessage(l10n.matchInfoNotFound);
       return;
     }
 
@@ -1368,15 +1390,16 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         },
       );
     } catch (e) {
-      _showErrorMessage('画面遷移でエラーが発生しました');
+      _showErrorMessage(l10n.navigationError);
     }
   }
 
   /// 試合報告回答通知の処理（報告者向け）
   Future<void> _handleMatchReportResponseNotification(NotificationData notification) async {
+    final l10n = L10n.of(context);
     final data = notification.data;
     if (data == null) {
-      _showErrorMessage('報告情報が見つかりません');
+      _showErrorMessage(l10n.reportInfoNotFound);
       return;
     }
 
@@ -1385,7 +1408,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
     final status = data['status'] as String?;
 
     if (eventId == null || matchId == null) {
-      _showErrorMessage('試合情報が見つかりません');
+      _showErrorMessage(l10n.matchInfoNotFound);
       return;
     }
 
@@ -1393,16 +1416,16 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       String statusMessage = '';
       switch (status) {
         case 'reviewing':
-          statusMessage = '運営が報告内容を確認中です';
+          statusMessage = l10n.matchReportStatusReviewing;
           break;
         case 'resolved':
-          statusMessage = '報告が解決されました';
+          statusMessage = l10n.matchReportStatusResolved;
           break;
         case 'rejected':
-          statusMessage = '報告が却下されました';
+          statusMessage = l10n.matchReportStatusRejected;
           break;
         default:
-          statusMessage = '報告の状況が更新されました';
+          statusMessage = l10n.matchReportStatusUpdated;
       }
 
       // ステータスメッセージを表示
@@ -1425,15 +1448,16 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         },
       );
     } catch (e) {
-      _showErrorMessage('画面遷移でエラーが発生しました');
+      _showErrorMessage(l10n.navigationError);
     }
   }
 
   /// フォロー通知の処理
   Future<void> _handleFollowNotification(NotificationData notification) async {
+    final l10n = L10n.of(context);
     final fromUserId = notification.fromUserId;
     if (fromUserId == null) {
-      _showErrorMessage('ユーザー情報が見つかりません');
+      _showErrorMessage(l10n.userInfoNotFound);
       return;
     }
 
@@ -1460,12 +1484,13 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         );
       }
     } catch (e) {
-      _showErrorMessage('ユーザー情報の取得中にエラーが発生しました');
+      _showErrorMessage(l10n.errorFetchingUserInfo);
     }
   }
 
   /// 違反ステータス通知の処理（violationProcessed, violationDismissed, violationDeleted）
   Future<void> _handleViolationStatusNotification(NotificationData notification) async {
+    final l10n = L10n.of(context);
     final data = notification.data;
 
     String title = '';
@@ -1475,20 +1500,20 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
     switch (notification.type) {
       case NotificationType.violationProcessed:
-        title = '違反報告が処理されました';
-        message = data?['processedMessage'] as String? ?? '違反報告が運営によって処理されました。';
+        title = l10n.violationReportProcessed;
+        message = data?['processedMessage'] as String? ?? l10n.violationReportProcessedDefault;
         icon = Icons.gavel;
         iconColor = AppColors.warning;
         break;
       case NotificationType.violationDismissed:
-        title = '違反報告が棄却されました';
-        message = data?['dismissReason'] as String? ?? '違反報告の内容が確認できなかったため棄却されました。';
+        title = l10n.violationReportDismissed;
+        message = data?['dismissReason'] as String? ?? l10n.violationReportDismissedDefault;
         icon = Icons.cancel;
         iconColor = AppColors.warning;
         break;
       case NotificationType.violationDeleted:
-        title = '違反記録が削除されました';
-        message = data?['deleteReason'] as String? ?? '違反記録が削除されました。';
+        title = l10n.violationRecordDeleted;
+        message = data?['deleteReason'] as String? ?? l10n.violationRecordDeletedDefault;
         icon = Icons.delete;
         iconColor = AppColors.error;
         break;
@@ -1545,7 +1570,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            child: const Text('確認'),
+            child: Text(l10n.confirm),
           ),
         ],
       ),
@@ -1554,9 +1579,10 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
   /// イベント定員関連通知の処理（eventFull, eventCapacityWarning）
   Future<void> _handleEventCapacityNotification(NotificationData notification) async {
+    final l10n = L10n.of(context);
     final data = notification.data;
     if (data == null || data['eventId'] == null) {
-      _showErrorMessage('イベント情報が見つかりません');
+      _showErrorMessage(l10n.eventInfoNotFound);
       return;
     }
 
@@ -1566,7 +1592,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       // イベント情報を取得
       final event = await EventService.getEventById(eventId);
       if (event == null) {
-        _showErrorMessage('イベント情報が見つかりません');
+        _showErrorMessage(l10n.eventInfoNotFound);
         return;
       }
 
@@ -1583,7 +1609,48 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         );
       }
     } catch (e) {
-      _showErrorMessage('エラーが発生しました');
+      _showErrorMessage(l10n.errorOccurred);
+    }
+  }
+
+  /// 通知カテゴリの表示名を取得（L10n対応）
+  String _getCategoryDisplayName(NotificationData notification) {
+    final l10n = L10n.of(context);
+    switch (notification.type) {
+      // ignore: deprecated_member_use_from_same_package
+      case NotificationType.friendRequest:
+      // ignore: deprecated_member_use_from_same_package
+      case NotificationType.friendAccepted:
+      // ignore: deprecated_member_use_from_same_package
+      case NotificationType.friendRejected:
+      case NotificationType.follow:
+        return l10n.notificationCategoryFollow;
+      case NotificationType.eventInvite:
+      case NotificationType.eventReminder:
+      case NotificationType.eventApproved:
+      case NotificationType.eventRejected:
+      case NotificationType.eventApplication:
+      case NotificationType.eventUpdated:
+      case NotificationType.eventDraftReverted:
+      case NotificationType.eventCancelled:
+      case NotificationType.eventCancelProcessed:
+      case NotificationType.eventFull:
+      case NotificationType.eventCapacityWarning:
+      case NotificationType.eventWaitlist:
+      case NotificationType.participantCancelled:
+        return l10n.notificationCategoryEvent;
+      case NotificationType.violationReported:
+      case NotificationType.violationProcessed:
+      case NotificationType.violationDismissed:
+      case NotificationType.violationDeleted:
+      case NotificationType.appealSubmitted:
+      case NotificationType.appealProcessed:
+        return l10n.notificationCategoryViolation;
+      case NotificationType.matchReport:
+      case NotificationType.matchReportResponse:
+        return l10n.notificationCategoryMatch;
+      case NotificationType.system:
+        return l10n.notificationCategorySystem;
     }
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
+import '../../l10n/app_localizations.dart';
 
 /// 検索結果が見つからなかった場合の統一コンポーネント
 class EmptySearchResult extends StatelessWidget {
@@ -25,31 +26,34 @@ class EmptySearchResult extends StatelessWidget {
   });
 
   /// ユーザー検索結果なし用のファクトリコンストラクタ
-  factory EmptySearchResult.user(String searchQuery) {
+  static EmptySearchResult user(BuildContext context, String searchQuery) {
+    final l10n = L10n.of(context);
     return EmptySearchResult(
       icon: Icons.search_off,
-      title: 'ユーザーが見つかりません',
-      message: '「$searchQuery」に一致する\nユーザーが見つかりませんでした',
+      title: l10n.userNotFound,
+      message: l10n.userNotFoundWithQuery(searchQuery),
       searchQuery: searchQuery,
     );
   }
 
   /// ゲーム検索結果なし用のファクトリコンストラクタ
-  factory EmptySearchResult.game(String searchQuery) {
+  static EmptySearchResult game(BuildContext context, String searchQuery) {
+    final l10n = L10n.of(context);
     return EmptySearchResult(
       icon: Icons.search_off,
-      title: 'ゲームが見つかりません',
-      message: '「$searchQuery」に一致する\nゲームが見つかりませんでした',
+      title: l10n.gameNotFound,
+      message: l10n.gameNotFoundWithQuery(searchQuery),
       searchQuery: searchQuery,
     );
   }
 
   /// イベント検索結果なし用のファクトリコンストラクタ
-  factory EmptySearchResult.event(String searchQuery) {
+  static EmptySearchResult event(BuildContext context, String searchQuery) {
+    final l10n = L10n.of(context);
     return EmptySearchResult(
       icon: Icons.search_off,
-      title: 'イベントが見つかりません',
-      message: '「$searchQuery」に一致する\nパブリックイベントが見つかりませんでした',
+      title: l10n.eventNotFound,
+      message: l10n.eventNotFoundWithQuery(searchQuery),
       searchQuery: searchQuery,
     );
   }

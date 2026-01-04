@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import 'keyboard_overlay_widget.dart';
@@ -159,7 +160,7 @@ class _AppTextFieldState extends State<AppTextField> {
 
     if (shouldShowToolbar) {
       return KeyboardOverlayWidget(
-        doneText: widget.doneButtonText ?? '完了',
+        doneText: widget.doneButtonText ?? L10n.of(context).doneButtonLabel,
         focusNode: _focusNode, // FocusNodeを渡して正確にフォーカス状態を監視
         child: textField,
       );
@@ -240,15 +241,20 @@ class _AppTextFieldState extends State<AppTextField> {
   }
 
   String? Function(String?)? _buildValidator() {
-    return widget.validator ?? (widget.isRequired
-        ? (value) {
-            if (value == null || value.trim().isEmpty) {
-              final fieldName = widget.label ?? 'この項目';
-              return '${fieldName}は必須項目です';
-            }
-            return null;
-          }
-        : null);
+    if (widget.validator != null) {
+      return widget.validator;
+    }
+    if (widget.isRequired) {
+      final l10n = L10n.of(context);
+      return (value) {
+        if (value == null || value.trim().isEmpty) {
+          final fieldName = widget.label ?? l10n.validationFieldRequiredDefault;
+          return l10n.validationFieldRequired(fieldName);
+        }
+        return null;
+      };
+    }
+    return null;
   }
 }
 
@@ -428,7 +434,7 @@ class AppTextFieldNumber extends StatelessWidget {
           ? TextInputType.numberWithOptions(decimal: true, signed: allowNegative)
           : TextInputType.number,
       inputFormatters: _getInputFormatters(),
-      validator: validator ?? _buildDefaultValidator(),
+      validator: validator ?? _buildDefaultValidator(context),
       enabled: enabled,
       suffixIcon: suffixIcon,
       prefixIcon: prefixIcon,
@@ -457,28 +463,31 @@ class AppTextFieldNumber extends StatelessWidget {
     }
   }
 
-  String? Function(String?)? _buildDefaultValidator() {
-    return isRequired
-        ? (value) {
-            if (value == null || value.trim().isEmpty) {
-              final fieldName = label ?? 'この項目';
-              return '${fieldName}は必須項目です';
-            }
+  String? Function(String?)? _buildDefaultValidator(BuildContext context) {
+    if (!isRequired) return null;
 
-            final numValue = allowDecimal
-                ? double.tryParse(value.trim())
-                : int.tryParse(value.trim());
+    final l10n = L10n.of(context);
+    return (value) {
+      if (value == null || value.trim().isEmpty) {
+        final fieldName = label ?? l10n.validationFieldRequiredDefault;
+        return l10n.validationFieldRequired(fieldName);
+      }
 
-            if (numValue == null) {
-              return '正しい${allowDecimal ? '数値' : '整数'}を入力してください';
-            }
+      final numValue = allowDecimal
+          ? double.tryParse(value.trim())
+          : int.tryParse(value.trim());
 
-            if (!allowNegative && numValue < 0) {
-              return '0以上の数値を入力してください';
-            }
+      if (numValue == null) {
+        return allowDecimal
+            ? l10n.validationEnterValidNumber
+            : l10n.validationEnterValidInteger;
+      }
 
-            return null;
-          }
-        : null;
+      if (!allowNegative && numValue < 0) {
+        return l10n.validationPositiveNumberRequired;
+      }
+
+      return null;
+    };
   }
 }

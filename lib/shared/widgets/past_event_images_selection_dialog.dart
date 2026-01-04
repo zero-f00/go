@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../../data/models/event_model.dart';
+import '../../l10n/app_localizations.dart';
 
 class EventImageData {
   final String imageUrl;
@@ -30,16 +32,17 @@ class PastEventImagesSelectionDialog extends StatefulWidget {
   static Future<String?> show(
     BuildContext context, {
     required List<Event> pastEvents,
-    String title = '過去のイベント画像から選択',
-    String emptyMessage = '利用可能な画像がありません',
+    String? title,
+    String? emptyMessage,
   }) async {
+    final l10n = L10n.of(context);
     return await showDialog<String?>(
       context: context,
       barrierDismissible: true,
       builder: (context) => PastEventImagesSelectionDialog(
         pastEvents: pastEvents,
-        title: title,
-        emptyMessage: emptyMessage,
+        title: title ?? l10n.selectFromPastEventImages,
+        emptyMessage: emptyMessage ?? l10n.noAvailableImages,
       ),
     );
   }
@@ -90,6 +93,7 @@ class _PastEventImagesSelectionDialogState extends State<PastEventImagesSelectio
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Dialog(
       backgroundColor: AppColors.backgroundLight,
       shape: RoundedRectangleBorder(
@@ -131,7 +135,7 @@ class _PastEventImagesSelectionDialogState extends State<PastEventImagesSelectio
             TextField(
               onChanged: _filterImages,
               decoration: InputDecoration(
-                hintText: 'イベント名で検索...',
+                hintText: l10n.searchByEventName,
                 prefixIcon: const Icon(Icons.search, color: AppColors.textLight),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppDimensions.radiusM),
@@ -165,7 +169,7 @@ class _PastEventImagesSelectionDialogState extends State<PastEventImagesSelectio
                   const SizedBox(width: AppDimensions.spacingS),
                   Expanded(
                     child: Text(
-                      '${_filteredImages.length}個の画像が利用可能です',
+                      l10n.imagesAvailableCount(_filteredImages.length),
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeS,
                         color: AppColors.info,
@@ -181,7 +185,7 @@ class _PastEventImagesSelectionDialogState extends State<PastEventImagesSelectio
             // 画像グリッド
             Expanded(
               child: _filteredImages.isEmpty
-                  ? _buildEmptyState()
+                  ? _buildEmptyState(l10n)
                   : GridView.builder(
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
@@ -201,7 +205,7 @@ class _PastEventImagesSelectionDialogState extends State<PastEventImagesSelectio
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(L10n l10n) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -213,7 +217,7 @@ class _PastEventImagesSelectionDialogState extends State<PastEventImagesSelectio
           ),
           const SizedBox(height: AppDimensions.spacingL),
           Text(
-            _searchQuery.isNotEmpty ? '検索結果が見つかりません' : widget.emptyMessage,
+            _searchQuery.isNotEmpty ? l10n.noSearchResults : widget.emptyMessage,
             style: const TextStyle(
               fontSize: AppDimensions.fontSizeL,
               color: AppColors.textLight,
@@ -224,7 +228,7 @@ class _PastEventImagesSelectionDialogState extends State<PastEventImagesSelectio
           if (_searchQuery.isNotEmpty) ...[
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              '別のキーワードで検索してください',
+              l10n.tryDifferentKeyword,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textSecondary,
@@ -314,7 +318,7 @@ class _PastEventImagesSelectionDialogState extends State<PastEventImagesSelectio
                     ),
                     const SizedBox(height: AppDimensions.spacingXS),
                     Text(
-                      _formatDate(imageData.eventDate),
+                      _formatDate(context, imageData.eventDate),
                       style: const TextStyle(
                         fontSize: AppDimensions.fontSizeXS,
                         color: AppColors.textSecondary,
@@ -330,7 +334,8 @@ class _PastEventImagesSelectionDialogState extends State<PastEventImagesSelectio
     );
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.year}年${date.month}月${date.day}日';
+  String _formatDate(BuildContext context, DateTime date) {
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat.yMMMd(locale).format(date);
   }
 }

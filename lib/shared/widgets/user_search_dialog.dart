@@ -3,6 +3,7 @@ import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../../data/models/user_model.dart';
 import '../../data/repositories/user_repository.dart';
+import '../../l10n/app_localizations.dart';
 import 'user_avatar.dart';
 
 class UserSearchDialog extends StatefulWidget {
@@ -13,22 +14,23 @@ class UserSearchDialog extends StatefulWidget {
   const UserSearchDialog({
     super.key,
     required this.onUserSelected,
-    this.title = 'ユーザーを検索',
+    required this.title,
     this.description,
   });
 
   static Future<UserData?> show(
     BuildContext context, {
     required Function(UserData) onUserSelected,
-    String title = 'ユーザーを検索',
+    String? title,
     String? description,
   }) async {
+    final l10n = L10n.of(context);
     return showDialog<UserData>(
       context: context,
       barrierDismissible: true,
       builder: (context) => UserSearchDialog(
         onUserSelected: onUserSelected,
-        title: title,
+        title: title ?? l10n.userSearchTitle,
         description: description,
       ),
     );
@@ -52,6 +54,7 @@ class _UserSearchDialogState extends State<UserSearchDialog> {
   }
 
   void _performSearch() async {
+    final l10n = L10n.of(context);
     final query = _searchController.text.trim();
     if (query.isEmpty) {
       setState(() {
@@ -73,14 +76,14 @@ class _UserSearchDialogState extends State<UserSearchDialog> {
         _searchResults = results;
         _isLoading = false;
         if (results.isEmpty) {
-          _errorMessage = 'ユーザーが見つかりませんでした';
+          _errorMessage = l10n.userNotFoundError;
         }
       });
 
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'ユーザー検索中にエラーが発生しました';
+        _errorMessage = l10n.userSearchError;
         _searchResults = [];
       });
     }
@@ -175,13 +178,14 @@ class _UserSearchDialogState extends State<UserSearchDialog> {
   }
 
   Widget _buildSearchField() {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       child: TextField(
         controller: _searchController,
         onChanged: (_) => _performSearch(),
         decoration: InputDecoration(
-          hintText: 'ユーザー名またはユーザーIDで検索',
+          hintText: l10n.userSearchHint,
           hintStyle: const TextStyle(
             color: AppColors.textSecondary,
             fontSize: AppDimensions.fontSizeM,
@@ -231,20 +235,21 @@ class _UserSearchDialogState extends State<UserSearchDialog> {
   }
 
   Widget _buildSearchResults() {
+    final l10n = L10n.of(context);
     if (_searchController.text.trim().isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.search,
               size: AppDimensions.iconXXL,
               color: AppColors.textLight,
             ),
-            SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.spacingM),
             Text(
-              'ユーザー名またはユーザーIDを入力してください',
-              style: TextStyle(
+              l10n.enterUsernameOrId,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textSecondary,
               ),
@@ -256,17 +261,17 @@ class _UserSearchDialogState extends State<UserSearchDialog> {
     }
 
     if (_isLoading) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
+            const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
             ),
-            SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.spacingM),
             Text(
-              '検索中...',
-              style: TextStyle(
+              l10n.searchingText,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textSecondary,
               ),
@@ -301,19 +306,19 @@ class _UserSearchDialogState extends State<UserSearchDialog> {
     }
 
     if (_searchResults.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.person_off,
               size: AppDimensions.iconXXL,
               color: AppColors.textLight,
             ),
-            SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.spacingM),
             Text(
-              'ユーザーが見つかりませんでした',
-              style: TextStyle(
+              l10n.userNotFoundError,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textSecondary,
               ),

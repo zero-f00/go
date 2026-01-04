@@ -9,6 +9,7 @@ import '../widgets/management_event_card_wrapper.dart';
 import '../widgets/unified_calendar_widget.dart';
 import '../../features/game_event_management/models/game_event.dart';
 import '../../features/event_detail/views/event_detail_screen.dart';
+import '../../l10n/app_localizations.dart';
 
 /// イベント一覧画面の種類
 enum EventListType {
@@ -189,7 +190,7 @@ class _EventListScreenState extends ConsumerState<EventListScreen> {
       if (event.gameId != null && !gameMap.containsKey(event.gameId)) {
         gameMap[event.gameId!] = _GameFilterItem(
           gameId: event.gameId!,
-          gameName: event.gameName ?? '不明なゲーム',
+          gameName: event.gameName ?? L10n.of(context).unknownGame,
           gameIconUrl: event.gameIconUrl,
           eventCount: 0,
         );
@@ -237,7 +238,7 @@ class _EventListScreenState extends ConsumerState<EventListScreen> {
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
               icon: const Icon(Icons.add),
-              label: const Text('作成'),
+              label: Text(L10n.of(context).createButton),
             )
           : null,
     );
@@ -258,13 +259,13 @@ class _EventListScreenState extends ConsumerState<EventListScreen> {
             icon: Icons.list,
             isSelected: _isListView,
             onTap: () => setState(() => _isListView = true),
-            tooltip: 'リスト表示',
+            tooltip: L10n.of(context).listView,
           ),
           _buildToggleItem(
             icon: Icons.calendar_month,
             isSelected: !_isListView,
             onTap: () => setState(() => _isListView = false),
-            tooltip: 'カレンダー表示',
+            tooltip: L10n.of(context).calendarView,
           ),
         ],
       ),
@@ -367,7 +368,7 @@ class _EventListScreenState extends ConsumerState<EventListScreen> {
               ),
               const SizedBox(width: AppDimensions.spacingXS),
               Text(
-                '${_filteredEvents.length}件のイベント',
+                L10n.of(context).eventCountLabel(_filteredEvents.length),
                 style: const TextStyle(
                   fontSize: AppDimensions.fontSizeS,
                   color: AppColors.accent,
@@ -393,7 +394,7 @@ class _EventListScreenState extends ConsumerState<EventListScreen> {
             padding: const EdgeInsets.only(right: AppDimensions.spacingS),
             child: FilterChip(
               label: Text(
-                'すべて (${_allEvents.length})',
+                L10n.of(context).allGamesFilter(_allEvents.length),
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeS,
                   color: _selectedGameId == null
@@ -473,7 +474,7 @@ class _EventListScreenState extends ConsumerState<EventListScreen> {
       child: TextField(
         controller: _searchController,
         decoration: InputDecoration(
-          hintText: 'イベント名やゲーム名で検索...',
+          hintText: L10n.of(context).eventSearchHint,
           hintStyle: const TextStyle(
             color: AppColors.textLight,
             fontSize: AppDimensions.fontSizeM,
@@ -573,7 +574,7 @@ class _EventListScreenState extends ConsumerState<EventListScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Text(
-              hasFilter ? '条件に一致するイベントがありません' : widget.emptyMessage,
+              hasFilter ? L10n.of(context).noMatchingEvents : widget.emptyMessage,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 color: AppColors.textDark,
@@ -582,7 +583,7 @@ class _EventListScreenState extends ConsumerState<EventListScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              hasFilter ? 'フィルターを変更してみてください' : widget.emptySubMessage,
+              hasFilter ? L10n.of(context).changeFilterSuggestion : widget.emptySubMessage,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textSecondary,
@@ -597,7 +598,7 @@ class _EventListScreenState extends ConsumerState<EventListScreen> {
                   _setGameFilter(null);
                 },
                 icon: const Icon(Icons.clear_all),
-                label: const Text('フィルターをクリア'),
+                label: Text(L10n.of(context).clearFilter),
               ),
             ],
           ],
@@ -612,7 +613,7 @@ class _EventListScreenState extends ConsumerState<EventListScreen> {
       title: widget.title,
       onLoadEvents: _loadEventsForCalendar,
       onEventTap: _navigateToEventDetail,
-      emptyMessage: 'この日はイベントがありません',
+      emptyMessage: L10n.of(context).noEventsOnDate,
       emptyIcon: widget.emptyIcon,
       getEventStatusColor: widget.getEventStatusColor ?? _getDefaultStatusColor,
     );

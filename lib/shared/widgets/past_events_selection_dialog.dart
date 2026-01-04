@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../../data/models/event_model.dart';
+import '../../l10n/app_localizations.dart';
 
 class PastEventsSelectionDialog extends StatefulWidget {
   final List<Event> pastEvents;
@@ -18,16 +20,17 @@ class PastEventsSelectionDialog extends StatefulWidget {
   static Future<Event?> show(
     BuildContext context, {
     required List<Event> pastEvents,
-    String title = '過去のイベントから選択',
-    String emptyMessage = 'コピー可能なイベントがありません',
+    String? title,
+    String? emptyMessage,
   }) async {
+    final l10n = L10n.of(context);
     return await showDialog<Event?>(
       context: context,
       barrierDismissible: true,
       builder: (context) => PastEventsSelectionDialog(
         pastEvents: pastEvents,
-        title: title,
-        emptyMessage: emptyMessage,
+        title: title ?? l10n.selectFromPastEvents,
+        emptyMessage: emptyMessage ?? l10n.noCopyableEventsMessage,
       ),
     );
   }
@@ -69,6 +72,7 @@ class _PastEventsSelectionDialogState extends State<PastEventsSelectionDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Dialog(
       backgroundColor: AppColors.backgroundLight,
       shape: RoundedRectangleBorder(
@@ -107,7 +111,7 @@ class _PastEventsSelectionDialogState extends State<PastEventsSelectionDialog> {
             TextField(
               onChanged: _filterEvents,
               decoration: InputDecoration(
-                hintText: 'イベント名やゲーム名で検索...',
+                hintText: l10n.searchEventsPlaceholder,
                 prefixIcon: const Icon(
                   Icons.search,
                   color: AppColors.textLight,
@@ -129,11 +133,11 @@ class _PastEventsSelectionDialogState extends State<PastEventsSelectionDialog> {
             // イベント一覧
             Expanded(
               child: _filteredEvents.isEmpty
-                  ? _buildEmptyState()
+                  ? _buildEmptyState(context)
                   : ListView.builder(
                       itemCount: _filteredEvents.length,
                       itemBuilder: (context, index) {
-                        return _buildEventItem(_filteredEvents[index]);
+                        return _buildEventItem(context, _filteredEvents[index]);
                       },
                     ),
             ),
@@ -143,7 +147,8 @@ class _PastEventsSelectionDialogState extends State<PastEventsSelectionDialog> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
+    final l10n = L10n.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -155,7 +160,7 @@ class _PastEventsSelectionDialogState extends State<PastEventsSelectionDialog> {
           ),
           const SizedBox(height: AppDimensions.spacingL),
           Text(
-            _searchQuery.isNotEmpty ? '検索結果が見つかりません' : widget.emptyMessage,
+            _searchQuery.isNotEmpty ? l10n.noSearchResults : widget.emptyMessage,
             style: const TextStyle(
               fontSize: AppDimensions.fontSizeL,
               color: AppColors.textLight,
@@ -166,7 +171,7 @@ class _PastEventsSelectionDialogState extends State<PastEventsSelectionDialog> {
           if (_searchQuery.isNotEmpty) ...[
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              '別のキーワードで検索してください',
+              l10n.tryDifferentKeyword,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textSecondary,
@@ -179,7 +184,8 @@ class _PastEventsSelectionDialogState extends State<PastEventsSelectionDialog> {
     );
   }
 
-  Widget _buildEventItem(Event event) {
+  Widget _buildEventItem(BuildContext context, Event event) {
+    final l10n = L10n.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
       child: Material(
@@ -268,7 +274,7 @@ class _PastEventsSelectionDialogState extends State<PastEventsSelectionDialog> {
                           const SizedBox(width: AppDimensions.spacingXS),
                           Expanded(
                             child: Text(
-                              _formatDate(event.eventDate),
+                              _formatDate(context, event.eventDate),
                               style: const TextStyle(
                                 fontSize: AppDimensions.fontSizeS,
                                 color: AppColors.textSecondary,
@@ -285,7 +291,7 @@ class _PastEventsSelectionDialogState extends State<PastEventsSelectionDialog> {
                           const SizedBox(width: AppDimensions.spacingXS),
                           Flexible(
                             child: Text(
-                              '${event.participantIds.length}/${event.maxParticipants}人',
+                              l10n.participantCountFormat(event.participantIds.length, event.maxParticipants),
                               style: const TextStyle(
                                 fontSize: AppDimensions.fontSizeS,
                                 color: AppColors.textSecondary,
@@ -313,7 +319,8 @@ class _PastEventsSelectionDialogState extends State<PastEventsSelectionDialog> {
     );
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.year}年${date.month}月${date.day}日';
+  String _formatDate(BuildContext context, DateTime date) {
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat.yMMMd(locale).format(date);
   }
 }

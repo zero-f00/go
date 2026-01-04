@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../../data/models/violation_record_model.dart';
@@ -35,6 +36,7 @@ class _AppealDialogState extends ConsumerState<AppealDialog> {
   }
 
   Future<void> _submitAppeal() async {
+    final l10n = L10n.of(context);
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -44,7 +46,7 @@ class _AppealDialogState extends ConsumerState<AppealDialog> {
     try {
       final currentUser = ref.read(currentFirebaseUserProvider);
       if (currentUser == null) {
-        throw Exception('ユーザー情報が取得できません');
+        throw Exception(l10n.cannotGetUserInfo);
       }
 
       final violationService = ref.read(violationServiceProvider);
@@ -68,8 +70,8 @@ class _AppealDialogState extends ConsumerState<AppealDialog> {
 
       if (mounted && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('異議申立を提出しました。運営からの回答をお待ちください。'),
+          SnackBar(
+            content: Text(l10n.appealSubmittedSuccess),
             backgroundColor: AppColors.success,
           ),
         );
@@ -79,7 +81,7 @@ class _AppealDialogState extends ConsumerState<AppealDialog> {
       if (mounted && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('エラー: $e'),
+            content: Text(l10n.errorWithDetails(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -95,6 +97,7 @@ class _AppealDialogState extends ConsumerState<AppealDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     final screenHeight = MediaQuery.of(context).size.height;
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     final maxDialogHeight = screenHeight - keyboardHeight - 100;
@@ -126,9 +129,9 @@ class _AppealDialogState extends ConsumerState<AppealDialog> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    '異議申立',
-                    style: TextStyle(
+                  Text(
+                    l10n.appealDialogTitle,
+                    style: const TextStyle(
                       fontSize: AppDimensions.fontSizeL,
                       fontWeight: FontWeight.bold,
                     ),
@@ -170,9 +173,9 @@ class _AppealDialogState extends ConsumerState<AppealDialog> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
-                                        '違反記録',
-                                        style: TextStyle(
+                                      Text(
+                                        l10n.violationRecordLabel,
+                                        style: const TextStyle(
                                           fontSize: AppDimensions.fontSizeXS,
                                           color: AppColors.textSecondary,
                                         ),
@@ -213,7 +216,7 @@ class _AppealDialogState extends ConsumerState<AppealDialog> {
 
                       // 異議申立理由
                       Text(
-                        '異議申立の理由 *',
+                        l10n.appealReasonLabel,
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeS,
                           fontWeight: FontWeight.bold,
@@ -223,20 +226,20 @@ class _AppealDialogState extends ConsumerState<AppealDialog> {
                       const SizedBox(height: AppDimensions.spacingS),
                       AppTextFieldMultiline(
                         controller: _appealTextController,
-                        label: '異議申立の理由',
-                        hintText: '違反報告に対する異議の理由を詳しく記載してください\n\n例：\n・状況についての説明\n・誤解があった場合の詳細\n・証拠となる情報\n・その他関連する事実',
+                        label: l10n.appealReasonLabel,
+                        hintText: l10n.appealReasonHint,
                         isRequired: true,
                         maxLines: 6,
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return '異議申立の理由を入力してください';
+                            return l10n.appealReasonRequired;
                           }
                           if (value.trim().length < 20) {
-                            return '20文字以上で詳細な理由を記載してください';
+                            return l10n.appealReasonMinLength;
                           }
                           return null;
                         },
-                        doneButtonText: '完了',
+                        doneButtonText: l10n.done,
                       ),
                       const SizedBox(height: AppDimensions.spacingL),
 
@@ -261,9 +264,9 @@ class _AppealDialogState extends ConsumerState<AppealDialog> {
                                   size: AppDimensions.iconS,
                                 ),
                                 const SizedBox(width: AppDimensions.spacingS),
-                                const Text(
-                                  '異議申立について',
-                                  style: TextStyle(
+                                Text(
+                                  l10n.aboutAppeal,
+                                  style: const TextStyle(
                                     fontSize: AppDimensions.fontSizeS,
                                     fontWeight: FontWeight.bold,
                                     color: AppColors.info,
@@ -273,10 +276,10 @@ class _AppealDialogState extends ConsumerState<AppealDialog> {
                             ),
                             const SizedBox(height: AppDimensions.spacingS),
                             Text(
-                              '• 運営チームが内容を審査し、回答いたします\n'
-                              '• 審査には数日かかる場合があります\n'
-                              '• 虚偽の申立は新たな違反行為とみなされます\n'
-                              '• 一度提出した異議申立は取り消しできません',
+                              '• ${l10n.appealNote1}\n'
+                              '• ${l10n.appealNote2}\n'
+                              '• ${l10n.appealNote3}\n'
+                              '• ${l10n.appealNote4}',
                               style: TextStyle(
                                 fontSize: AppDimensions.fontSizeS,
                                 color: AppColors.info,
@@ -310,7 +313,7 @@ class _AppealDialogState extends ConsumerState<AppealDialog> {
                     onPressed: _isSubmitting
                         ? null
                         : () => Navigator.of(context).pop(),
-                    child: const Text('キャンセル'),
+                    child: Text(l10n.cancel),
                   ),
                   const SizedBox(width: AppDimensions.spacingM),
                   ElevatedButton(
@@ -333,9 +336,9 @@ class _AppealDialogState extends ConsumerState<AppealDialog> {
                               ),
                             ),
                           )
-                        : const Text(
-                            '異議申立を提出',
-                            style: TextStyle(color: Colors.white),
+                        : Text(
+                            l10n.submitAppeal,
+                            style: const TextStyle(color: Colors.white),
                           ),
                   ),
                 ],

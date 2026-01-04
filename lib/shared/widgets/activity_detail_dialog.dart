@@ -4,6 +4,7 @@ import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../services/participation_service.dart';
 import '../../features/game_event_management/models/game_event.dart';
+import '../../l10n/app_localizations.dart';
 
 // ApplicationStatusをParticipationStatusのエイリアスとして定義
 typedef ApplicationStatus = ParticipationStatus;
@@ -117,6 +118,7 @@ class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
   }
 
   Widget _buildActivityContent(String type) {
+    final l10n = L10n.of(context);
     switch (type) {
       case 'pending':
         return _buildPendingApplications();
@@ -127,13 +129,14 @@ class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
       case 'total':
         return _buildTotalParticipation();
       default:
-        return const Center(
-          child: Text('データがありません'),
+        return Center(
+          child: Text(l10n.noDataAvailable),
         );
     }
   }
 
   Widget _buildPendingApplications() {
+    final l10n = L10n.of(context);
     return FutureBuilder<List<ParticipationApplication>>(
       future: ParticipationService.getUserApplications(widget.userId),
       builder: (context, snapshot) {
@@ -142,10 +145,10 @@ class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
         }
 
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(
+          return Center(
             child: Text(
-              '申し込み中のイベントはありません',
-              style: TextStyle(
+              l10n.noPendingApplications,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textSecondary,
               ),
@@ -158,10 +161,10 @@ class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
             .toList();
 
         if (pendingApps.isEmpty) {
-          return const Center(
+          return Center(
             child: Text(
-              '承認待ちの申し込みはありません',
-              style: TextStyle(
+              l10n.noPendingApproval,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textSecondary,
               ),
@@ -182,6 +185,7 @@ class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
   }
 
   Widget _buildParticipatingEvents() {
+    final l10n = L10n.of(context);
     return FutureBuilder<List<ParticipationApplication>>(
       future: ParticipationService.getUserApplications(widget.userId),
       builder: (context, snapshot) {
@@ -190,10 +194,10 @@ class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
         }
 
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(
+          return Center(
             child: Text(
-              '参加中のイベントはありません',
-              style: TextStyle(
+              l10n.noParticipatingEvents,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textSecondary,
               ),
@@ -210,10 +214,10 @@ class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
             .toList();
 
         if (thisMonth.isEmpty) {
-          return const Center(
+          return Center(
             child: Text(
-              '今月参加するイベントはありません',
-              style: TextStyle(
+              l10n.noEventsToParticipateThisMonth,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textSecondary,
               ),
@@ -234,6 +238,7 @@ class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
   }
 
   Widget _buildHostingEvents() {
+    final l10n = L10n.of(context);
     return FutureBuilder<List<GameEvent>>(
       future: _managedEventsFuture ??= _getManagedEvents(),
       builder: (context, snapshot) {
@@ -249,7 +254,7 @@ class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
                 const Icon(Icons.error_outline, color: AppColors.error, size: 48),
                 const SizedBox(height: 16),
                 Text(
-                  'エラーが発生しました: ${snapshot.error}',
+                  l10n.errorOccurredWithDetails(snapshot.error.toString()),
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     color: AppColors.error,
@@ -262,10 +267,10 @@ class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
         }
 
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(
+          return Center(
             child: Text(
-              '運営中のイベントはありません',
-              style: TextStyle(
+              l10n.noHostingEvents,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textSecondary,
               ),
@@ -391,6 +396,7 @@ class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
   }
 
   Widget _buildTotalParticipation() {
+    final l10n = L10n.of(context);
     return FutureBuilder<List<ParticipationApplication>>(
       future: ParticipationService.getUserApplications(widget.userId),
       builder: (context, snapshot) {
@@ -399,10 +405,10 @@ class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
         }
 
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(
+          return Center(
             child: Text(
-              '参加履歴がありません',
-              style: TextStyle(
+              l10n.noParticipationHistory,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textSecondary,
               ),
@@ -428,6 +434,7 @@ class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
   }
 
   Widget _buildApplicationTile(BuildContext context, ParticipationApplication app) {
+    final l10n = L10n.of(context);
     return ListTile(
       leading: CircleAvatar(
         backgroundColor: _getStatusColor(app.status),
@@ -441,7 +448,7 @@ class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
         future: _getEventName(app.eventId),
         builder: (context, snapshot) {
           return Text(
-            snapshot.data ?? 'イベント名を取得中...',
+            snapshot.data ?? l10n.eventNameLoading,
             style: const TextStyle(
               fontSize: AppDimensions.fontSizeM,
               fontWeight: FontWeight.w500,
@@ -453,14 +460,14 @@ class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'ステータス: ${_getStatusText(app.status)}',
+            l10n.statusWithValue(_getStatusText(app.status, l10n)),
             style: TextStyle(
               fontSize: AppDimensions.fontSizeS,
               color: _getStatusColor(app.status),
             ),
           ),
           Text(
-            '申込日: ${_formatDate(app.appliedAt)}',
+            l10n.applicationDateFormatted(_formatDate(app.appliedAt)),
             style: const TextStyle(
               fontSize: AppDimensions.fontSizeS,
               color: AppColors.textSecondary,
@@ -482,6 +489,7 @@ class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
   }
 
   Widget _buildEventTile(BuildContext context, GameEvent event) {
+    final l10n = L10n.of(context);
     return ListTile(
       leading: CircleAvatar(
         backgroundColor: AppColors.accent,
@@ -502,14 +510,14 @@ class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '開催日: ${_formatDate(event.startDate)}',
+            l10n.eventDateFormatted(_formatDate(event.startDate)),
             style: const TextStyle(
               fontSize: AppDimensions.fontSizeS,
               color: AppColors.textSecondary,
             ),
           ),
           Text(
-            '最大参加者: ${event.maxParticipants}名',
+            l10n.maxParticipantsFormatted(event.maxParticipants),
             style: const TextStyle(
               fontSize: AppDimensions.fontSizeS,
               color: AppColors.textSecondary,
@@ -560,18 +568,18 @@ class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
     }
   }
 
-  String _getStatusText(ApplicationStatus status) {
+  String _getStatusText(ApplicationStatus status, L10n l10n) {
     switch (status) {
       case ApplicationStatus.pending:
-        return '承認待ち';
+        return l10n.statusPending;
       case ApplicationStatus.waitlisted:
-        return 'キャンセル待ち';
+        return l10n.statusWaitlisted;
       case ApplicationStatus.approved:
-        return '承認済み';
+        return l10n.statusApproved;
       case ApplicationStatus.rejected:
-        return '拒否';
+        return l10n.statusRejected;
       case ApplicationStatus.cancelled:
-        return 'キャンセル済み';
+        return l10n.statusCancelled;
     }
   }
 
@@ -612,6 +620,7 @@ class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
   }
 
   Future<String> _getEventName(String eventId) async {
+    final l10n = L10n.of(context);
     try {
       final doc = await FirebaseFirestore.instance
           .collection('events')
@@ -620,11 +629,11 @@ class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
 
       if (doc.exists) {
         final data = doc.data() as Map<String, dynamic>;
-        return data['name'] ?? 'イベント';
+        return data['name'] ?? l10n.defaultEventName;
       }
-      return 'イベント';
+      return l10n.defaultEventName;
     } catch (e) {
-      return 'イベント';
+      return l10n.defaultEventName;
     }
   }
 }

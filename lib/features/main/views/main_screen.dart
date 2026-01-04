@@ -10,6 +10,7 @@ import '../../../shared/providers/notification_provider.dart';
 import '../../../shared/services/push_notification_service.dart';
 import '../../../shared/services/navigation_service.dart';
 import '../../../data/models/notification_model.dart';
+import '../../../shared/helpers/notification_localization_helper.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -24,6 +25,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   // 前回の通知リストを保持（新着通知検出用）
   List<String> _previousNotificationIds = [];
   bool _isFirstLoad = true;
+
+  // バナー表示済みの通知IDを追跡（重複表示防止用）
+  final Set<String> _shownBannerNotificationIds = {};
 
   // フラグはフィールドとして先に定義
   bool _shouldNavigateToEventCreation = false;
@@ -131,22 +135,28 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
     final currentIds = notifications.map((n) => n.id).whereType<String>().toList();
 
-    // 初回ロード時は通知リストを初期化するだけ
+    // 初回ロード時は通知リストを初期化するだけ（バナー表示済みとしてマーク）
     if (_isFirstLoad) {
       _previousNotificationIds = currentIds;
+      _shownBannerNotificationIds.addAll(currentIds);
       _isFirstLoad = false;
       return;
     }
 
     // 新しい通知を検出（現在のリストにあるが、前回のリストにないもの）
+    // かつ、まだバナー表示していないもの
     final newNotifications = notifications.where((n) {
       final id = n.id;
-      return id != null && !_previousNotificationIds.contains(id);
+      return id != null &&
+             !_previousNotificationIds.contains(id) &&
+             !_shownBannerNotificationIds.contains(id);
     }).toList();
 
     // 未読の新しい通知のみバナーで表示
     for (final notification in newNotifications) {
-      if (!notification.isRead) {
+      if (!notification.isRead && notification.id != null) {
+        // 先にバナー表示済みとしてマーク（重複防止）
+        _shownBannerNotificationIds.add(notification.id!);
         _showLocalNotificationBanner(notification);
       }
     }
@@ -161,8 +171,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       final pushService = PushNotificationService.instance;
       if (pushService.isInitialized) {
         await pushService.showTestLocalNotification(
-          title: notification.title,
-          body: notification.message,
+          title: NotificationLocalizationHelper.getLocalizedTitle(context, notification),
+          body: NotificationLocalizationHelper.getLocalizedMessage(context, notification),
           data: {
             'type': notification.type.name,
             'notificationId': notification.id,

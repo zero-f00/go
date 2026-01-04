@@ -11,6 +11,7 @@ import '../../data/models/game_profile_model.dart';
 import '../../data/repositories/user_repository.dart';
 import '../models/game.dart' as SharedGame;
 import '../../data/models/game_model.dart' as DataGame;
+import '../../l10n/app_localizations.dart';
 import 'app_button.dart';
 import 'auth_dialog.dart';
 import 'app_text_field.dart';
@@ -204,15 +205,15 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
           ),
         );
       },
-      loading: () => const Dialog(
+      loading: () => Dialog(
         child: Padding(
-          padding: EdgeInsets.all(AppDimensions.spacingL),
+          padding: const EdgeInsets.all(AppDimensions.spacingL),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CircularProgressIndicator(),
-              SizedBox(height: AppDimensions.spacingM),
-              Text('読み込み中...'),
+              const CircularProgressIndicator(),
+              const SizedBox(height: AppDimensions.spacingM),
+              Text(L10n.of(context).loadingText),
             ],
           ),
         ),
@@ -222,6 +223,7 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
   }
 
   Widget _buildLoginRequiredDialog() {
+    final l10n = L10n.of(context);
     return AlertDialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.radiusM),
@@ -230,18 +232,18 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
         children: [
           Icon(Icons.login, color: AppColors.warning),
           const SizedBox(width: AppDimensions.spacingS),
-          const Text('ログインが必要'),
+          Text(l10n.loginRequiredTitle),
         ],
       ),
-      content: const Text('参加申し込みにはログインが必要です。'),
+      content: Text(l10n.loginRequiredForParticipation),
       actions: [
         AppButton.outline(
-          text: '閉じる',
+          text: l10n.closeButtonText,
           onPressed: () => Navigator.of(context).pop(),
         ),
         const SizedBox(width: AppDimensions.spacingS),
         AppButton(
-          text: 'ログイン',
+          text: l10n.loginButtonText,
           onPressed: () async {
             Navigator.of(context).pop(); // ダイアログを閉じる
             await AuthDialog.show(context);
@@ -253,6 +255,7 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
   }
 
   Widget _buildErrorDialog(String error) {
+    final l10n = L10n.of(context);
     return AlertDialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.radiusM),
@@ -261,13 +264,13 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
         children: [
           Icon(Icons.error, color: AppColors.error),
           const SizedBox(width: AppDimensions.spacingS),
-          const Text('エラー'),
+          Text(l10n.errorTitle),
         ],
       ),
-      content: Text('ユーザー情報の取得に失敗しました: $error'),
+      content: Text(l10n.userInfoFetchFailed(error)),
       actions: [
         AppButton.outline(
-          text: '閉じる',
+          text: l10n.closeButtonText,
           onPressed: () => Navigator.of(context).pop(),
         ),
       ],
@@ -352,6 +355,7 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
   Widget _buildGameInfo() {
     if (_eventGame == null) return const SizedBox.shrink();
 
+    final l10n = L10n.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingL),
       padding: const EdgeInsets.all(AppDimensions.spacingM),
@@ -396,7 +400,7 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'イベント対象ゲーム',
+                  l10n.eventTargetGameLabel,
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     color: AppColors.textSecondary,
@@ -420,6 +424,7 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
   }
 
   Widget _buildProfileStatusSection() {
+    final l10n = L10n.of(context);
     switch (_profileStatus) {
       case ProfileRequirementStatus.checking:
         return _buildStatusCard(
@@ -427,7 +432,7 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
           iconColor: AppColors.info,
           backgroundColor: AppColors.info.withValues(alpha: 0.1),
           borderColor: AppColors.info.withValues(alpha: 0.3),
-          title: 'プロフィールを確認中',
+          title: l10n.checkingProfileTitle,
           content: Column(
             children: [
               const SizedBox(
@@ -436,7 +441,7 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
               const SizedBox(height: AppDimensions.spacingS),
-              const Text('ゲームプロフィールを確認しています...'),
+              Text(l10n.checkingGameProfileText),
             ],
           ),
         );
@@ -447,11 +452,11 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
           iconColor: AppColors.success,
           backgroundColor: AppColors.success.withValues(alpha: 0.1),
           borderColor: AppColors.success.withValues(alpha: 0.3),
-          title: 'プロフィール設定完了',
+          title: l10n.profileReadyTitle,
           content: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('ゲーム内ユーザー名が設定されています。'),
+              Text(l10n.gameUsernameSetText),
               const SizedBox(height: AppDimensions.spacingM),
               _buildProfileInfo(),
             ],
@@ -464,20 +469,20 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
           iconColor: AppColors.warning,
           backgroundColor: AppColors.warning.withValues(alpha: 0.1),
           borderColor: AppColors.warning.withValues(alpha: 0.3),
-          title: 'プロフィール設定が必要',
+          title: l10n.profileSetupRequiredTitle,
           content: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 _needsFavoriteRegistration
-                    ? 'このゲームをお気に入り登録してプロフィールを作成してください。'
-                    : 'このゲームのプロフィールを作成してください。',
+                    ? l10n.registerFavoriteAndCreateProfileText
+                    : l10n.createProfileForGameText,
               ),
               const SizedBox(height: AppDimensions.spacingM),
               AppButton.primary(
                 text: _needsFavoriteRegistration
-                    ? 'お気に入り登録してプロフィール作成'
-                    : 'プロフィール作成',
+                    ? l10n.registerFavoriteAndCreateProfileButtonText
+                    : l10n.createProfileButtonText,
                 onPressed: _handleCreateProfile,
                 isFullWidth: true,
               ),
@@ -491,14 +496,14 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
           iconColor: AppColors.error,
           backgroundColor: AppColors.error.withValues(alpha: 0.1),
           borderColor: AppColors.error.withValues(alpha: 0.3),
-          title: 'ユーザー名設定が必要',
+          title: l10n.usernameSetupRequiredTitle,
           content: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('プロフィールにゲーム内ユーザー名を設定してください。'),
+              Text(l10n.setGameUsernameInProfileText),
               const SizedBox(height: AppDimensions.spacingM),
               AppButton.primary(
-                text: 'プロフィールを編集',
+                text: l10n.editProfileButtonText,
                 onPressed: _navigateToProfileEdit,
                 isFullWidth: true,
               ),
@@ -552,6 +557,7 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
   Widget _buildProfileInfo() {
     if (_existingGameProfile == null) return const SizedBox.shrink();
 
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
@@ -569,9 +575,9 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                'ゲーム内ユーザー名',
-                style: TextStyle(
+              Text(
+                l10n.gameUsernameLabel,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeS,
                   fontWeight: FontWeight.w500,
                 ),
@@ -596,9 +602,9 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
                   size: AppDimensions.iconM,
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
-                const Text(
-                  'ユーザーID',
-                  style: TextStyle(
+                Text(
+                  l10n.userIdLabelText,
+                  style: const TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     fontWeight: FontWeight.w500,
                   ),
@@ -615,7 +621,7 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
           ],
           const SizedBox(height: AppDimensions.spacingM),
           AppButton.outline(
-            text: 'プロフィールを編集',
+            text: l10n.editProfileButtonText,
             onPressed: _navigateToProfileEdit,
             isFullWidth: true,
           ),
@@ -625,6 +631,7 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
   }
 
   Widget _buildParticipationFeeSection() {
+    final l10n = L10n.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingL),
       padding: const EdgeInsets.all(AppDimensions.spacingM),
@@ -641,16 +648,16 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '参加費',
-                  style: TextStyle(
+                Text(
+                  l10n.participationFeeLabel,
+                  style: const TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: AppDimensions.spacingXS),
                 Text(
-                  widget.event.participationFeeText ?? '詳細は主催者にお問い合わせください',
+                  widget.event.participationFeeText ?? l10n.contactOrganizerForDetailsText,
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                   ),
@@ -664,13 +671,14 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
   }
 
   Widget _buildPasswordSection() {
+    final l10n = L10n.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingL),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'イベントパスワード',
+            l10n.eventPasswordLabel,
             style: const TextStyle(
               fontSize: AppDimensions.fontSizeM,
               fontWeight: FontWeight.w600,
@@ -682,7 +690,7 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
             controller: _passwordController,
             obscureText: true,
             decoration: InputDecoration(
-              hintText: 'パスワードを入力してください',
+              hintText: l10n.enterPasswordHintText,
               prefixIcon: const Icon(Icons.lock),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppDimensions.radiusM),
@@ -706,11 +714,12 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
   }
 
   Widget _buildMessageSection() {
+    final l10n = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '主催者へのメッセージ（任意）',
+          l10n.messageToOrganizerLabel,
           style: const TextStyle(
             fontSize: AppDimensions.fontSizeM,
             fontWeight: FontWeight.w600,
@@ -720,7 +729,7 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
         const SizedBox(height: AppDimensions.spacingS),
         AppTextField(
           controller: _messageController,
-          hintText: '主催者へのメッセージを入力（任意）',
+          hintText: l10n.messageToOrganizerHintText,
           maxLines: 3,
         ),
       ],
@@ -766,7 +775,7 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
             ),
           const SizedBox(height: AppDimensions.spacingM),
           AppButton.outline(
-            text: 'キャンセル',
+            text: L10n.of(context).cancelButtonText,
             onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
             isFullWidth: true,
           ),
@@ -779,7 +788,7 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
       children: [
         Expanded(
           child: AppButton.outline(
-            text: 'キャンセル',
+            text: L10n.of(context).cancelButtonText,
             onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
           ),
         ),
@@ -803,31 +812,33 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
   }
 
   String _getDialogTitle() {
+    final l10n = L10n.of(context);
     switch (widget.event.visibility) {
       case EventVisibility.public:
-        return '参加申し込み';
+        return l10n.participationApplicationTitle;
       case EventVisibility.private:
-        return 'プライベートイベント';
+        return l10n.privateEventTitle;
       case EventVisibility.inviteOnly:
-        return '招待制イベント';
+        return l10n.inviteOnlyEventTitle;
     }
   }
 
   String _getButtonText() {
+    final l10n = L10n.of(context);
     switch (_profileStatus) {
       case ProfileRequirementStatus.checking:
-        return '確認中...';
+        return l10n.checkingStatusText;
       case ProfileRequirementStatus.needsSetup:
-        return 'プロフィールを設定する';
+        return l10n.setupProfileButtonText;
       case ProfileRequirementStatus.needsUsername:
-        return 'ユーザー名を設定する';
+        return l10n.setupUsernameButtonText;
       case ProfileRequirementStatus.ready:
         if (widget.event.visibility == EventVisibility.private) {
-          return '申し込めません';
+          return l10n.cannotApplyButtonText;
         }
         return widget.event.visibility == EventVisibility.inviteOnly
-            ? '申し込む'
-            : '参加する';
+            ? l10n.applyButtonText
+            : l10n.joinButtonText;
     }
   }
 
@@ -914,7 +925,9 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
         }
       }
     } catch (e) {
-      _showErrorDialog('予期しないエラーが発生しました。しばらく経ってからお試しください。');
+      if (mounted) {
+        _showErrorDialog(L10n.of(context).unexpectedErrorText);
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -957,7 +970,9 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
         await _checkRequirements();
       }
     } catch (e) {
-      _showErrorDialog('プロフィール作成中にエラーが発生しました。');
+      if (mounted) {
+        _showErrorDialog(L10n.of(context).profileCreationErrorText);
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -970,7 +985,7 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
   Future<void> _navigateToProfileEdit() async {
     final gameId = widget.event.gameId;
     if (gameId == null || gameId.isEmpty) {
-      _showErrorDialog('ゲーム情報が取得できませんでした。');
+      _showErrorDialog(L10n.of(context).gameInfoNotFoundText);
       return;
     }
 
@@ -978,7 +993,7 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
       '/game_profile_edit',
       arguments: {
         'gameId': gameId,
-        'gameName': _eventGame?.name ?? 'ゲーム',
+        'gameName': _eventGame?.name ?? L10n.of(context).gameFallbackText,
         'gameIconUrl': _eventGame?.iconUrl,
         'existingProfile': _existingGameProfile,
         'returnToEventDetail': true,
@@ -991,9 +1006,10 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
   }
 
   void _showSuccessDialog() {
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusM),
         ),
@@ -1001,18 +1017,18 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
           children: [
             Icon(Icons.check_circle, color: AppColors.success),
             const SizedBox(width: AppDimensions.spacingS),
-            const Text('申し込み完了'),
+            Text(l10n.applicationCompleteTitle),
           ],
         ),
         content: Text(
           widget.event.visibility == EventVisibility.public
-              ? 'イベントへの参加が確定しました！'
-              : '申し込みを受け付けました。主催者による承認をお待ちください。',
+              ? l10n.participationConfirmedText
+              : l10n.applicationReceivedText,
         ),
         actions: [
           AppButton.primary(
-            text: 'OK',
-            onPressed: () => Navigator.of(context).pop(),
+            text: l10n.okButtonText,
+            onPressed: () => Navigator.of(dialogContext).pop(),
           ),
         ],
       ),
@@ -1020,9 +1036,10 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
   }
 
   void _showErrorDialog(String message) {
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusM),
         ),
@@ -1030,14 +1047,14 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
           children: [
             Icon(Icons.error, color: AppColors.error),
             const SizedBox(width: AppDimensions.spacingS),
-            const Text('エラー'),
+            Text(l10n.errorTitle),
           ],
         ),
         content: Text(message),
         actions: [
           AppButton.outline(
-            text: 'OK',
-            onPressed: () => Navigator.of(context).pop(),
+            text: l10n.okButtonText,
+            onPressed: () => Navigator.of(dialogContext).pop(),
           ),
         ],
       ),
@@ -1089,15 +1106,15 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
           const SizedBox(width: AppDimensions.spacingS),
           Expanded(
             child: _isLoadingParticipantCount
-                ? const Row(
+                ? Row(
                     children: [
-                      SizedBox(
+                      const SizedBox(
                         height: 16,
                         width: 16,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       ),
-                      SizedBox(width: AppDimensions.spacingS),
-                      Text('参加者数を取得中...'),
+                      const SizedBox(width: AppDimensions.spacingS),
+                      Text(L10n.of(context).participantCountLoadingText),
                     ],
                   )
                 : Column(
@@ -1106,11 +1123,11 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
                       Row(
                         children: [
                           Text(
-                            '参加者数: ',
+                            L10n.of(context).participantCountLabel,
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                           Text(
-                            '$_currentParticipantCount/${widget.event.maxParticipants}人',
+                            L10n.of(context).participantCountValueText(_currentParticipantCount, widget.event.maxParticipants),
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: _currentParticipantCount >= widget.event.maxParticipants
@@ -1121,9 +1138,9 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
                         ],
                       ),
                       if (_currentParticipantCount >= widget.event.maxParticipants)
-                        const Text(
-                          '※ このイベントは満員です',
-                          style: TextStyle(
+                        Text(
+                          L10n.of(context).eventFullNoteText,
+                          style: const TextStyle(
                             color: AppColors.error,
                             fontSize: 12,
                           ),
@@ -1137,25 +1154,26 @@ class _ParticipationDialogState extends ConsumerState<ParticipationDialog> {
   }
 
   String _getErrorMessage(ParticipationResult result) {
+    final l10n = L10n.of(context);
     switch (result) {
       case ParticipationResult.eventNotFound:
-        return 'イベントが見つかりませんでした。';
+        return l10n.eventNotFoundErrorText;
       case ParticipationResult.cannotApply:
-        return 'このイベントには参加申し込みができません。';
+        return l10n.cannotApplyToEventErrorText;
       case ParticipationResult.alreadyApplied:
-        return '既にこのイベントに申し込み済みです。';
+        return l10n.alreadyAppliedErrorText;
       case ParticipationResult.incorrectPassword:
-        return 'パスワードが間違っています。';
+        return l10n.incorrectPasswordErrorText;
       case ParticipationResult.eventFull:
-        return 'このイベントは満員のため申し込みができません。';
+        return l10n.eventFullErrorText;
       case ParticipationResult.permissionDenied:
-        return 'アクセス権限がありません。';
+        return l10n.permissionDeniedErrorText;
       case ParticipationResult.networkError:
-        return 'ネットワークエラーが発生しました。';
+        return l10n.networkErrorText;
       case ParticipationResult.unknownError:
-        return '予期しないエラーが発生しました。';
+        return l10n.unknownErrorText;
       case ParticipationResult.success:
-        return '申し込みが完了しました。';
+        return l10n.applicationCompleteText;
     }
   }
 }

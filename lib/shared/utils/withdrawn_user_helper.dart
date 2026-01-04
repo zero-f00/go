@@ -1,10 +1,11 @@
+import 'package:flutter/material.dart';
 import '../../data/models/user_model.dart';
+import '../../l10n/app_localizations.dart';
 
 /// 退会ユーザー表示用のヘルパークラス
 /// UI上で退会したユーザーを適切に表示するためのユーティリティ
 class WithdrawnUserHelper {
-  /// 退会ユーザー表示用の定数
-  static const String withdrawnUserDisplayName = '退会したユーザー';
+  /// 退会ユーザー表示用のデフォルト表示ID
   static const String withdrawnUserDisplayId = 'withdrawn_user';
 
   /// ユーザーが退会済み（非アクティブ）かどうかを判定
@@ -12,11 +13,16 @@ class WithdrawnUserHelper {
     return userData != null && !userData.isActive;
   }
 
-  /// 表示用ユーザー名を取得
-  /// 退会ユーザーの場合は「退会したユーザー」を返す
-  static String getDisplayUsername(UserData? userData) {
-    if (userData == null) return withdrawnUserDisplayName;
-    return isUserWithdrawn(userData) ? withdrawnUserDisplayName : userData.username;
+  /// 退会ユーザーの表示名を取得（L10n対応版）
+  static String getWithdrawnDisplayName(BuildContext context) {
+    return L10n.of(context).withdrawnUserDisplayName;
+  }
+
+  /// 表示用ユーザー名を取得（L10n対応版）
+  /// 退会ユーザーの場合はローカライズされた「退会したユーザー」を返す
+  static String getDisplayUsername(BuildContext context, UserData? userData) {
+    if (userData == null) return getWithdrawnDisplayName(context);
+    return isUserWithdrawn(userData) ? getWithdrawnDisplayName(context) : userData.username;
   }
 
   /// 表示用ユーザーIDを取得
@@ -33,11 +39,13 @@ class WithdrawnUserHelper {
     return userData.photoUrl;
   }
 
-  /// ユーザー情報を退会ユーザー用にマスクした表示用データを作成
-  static UserDisplayInfo getMaskedUserInfo(UserData? userData) {
+  /// ユーザー情報を退会ユーザー用にマスクした表示用データを作成（L10n対応版）
+  static UserDisplayInfo getMaskedUserInfo(BuildContext context, UserData? userData) {
+    final withdrawnDisplayName = getWithdrawnDisplayName(context);
+
     if (userData == null) {
       return UserDisplayInfo(
-        username: withdrawnUserDisplayName,
+        username: withdrawnDisplayName,
         userId: withdrawnUserDisplayId,
         photoUrl: null,
         isWithdrawn: true,
@@ -46,7 +54,7 @@ class WithdrawnUserHelper {
 
     if (isUserWithdrawn(userData)) {
       return UserDisplayInfo(
-        username: withdrawnUserDisplayName,
+        username: withdrawnDisplayName,
         userId: withdrawnUserDisplayId,
         photoUrl: null,
         isWithdrawn: true,

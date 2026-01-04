@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../data/models/notification_model.dart';
 import 'push_notification_service.dart';
 
@@ -49,22 +48,21 @@ class NotificationService {
         },
       );
 
-      // 受信者が現在ログインしている場合のみローカル通知を表示
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser != null && currentUser.uid == notification.toUserId) {
-        final pushService = PushNotificationService.instance;
-        if (pushService.isInitialized) {
-          await pushService.showTestLocalNotification(
-            title: notification.title,
-            body: notification.message,
-            data: {
-              'type': notification.type.name,
-              'notificationId': notification.id,
-              ...?notification.data,
-            },
-          );
-        }
-      }
+      // 注意: ローカル通知バナーはmain_screen.dartのFirestoreリアルタイムリスナーで
+      // ローカライズ済みで表示されるため、ここでは表示しない（重複防止）
+      // 以前は以下のコードで即座にバナー表示していたが、ローカライズ未対応で
+      // 日本語のまま表示される問題があったため無効化
+      // final currentUser = FirebaseAuth.instance.currentUser;
+      // if (currentUser != null && currentUser.uid == notification.toUserId) {
+      //   final pushService = PushNotificationService.instance;
+      //   if (pushService.isInitialized) {
+      //     await pushService.showTestLocalNotification(
+      //       title: notification.title,
+      //       body: notification.message,
+      //       data: {...},
+      //     );
+      //   }
+      // }
     } catch (e) {
       // プッシュ通知送信エラーは無視
     }
@@ -288,10 +286,12 @@ class NotificationService {
         // eventIdが一致する通知のみ更新
         if (notificationData != null && notificationData['eventId'] == eventId) {
           // 通知タイプを一般的なイベント更新に変更し、無効化フラグを設定
+          // タイトルとメッセージはNotificationLocalizationHelperでローカライズされるため、
+          // ここでは識別用のプレースホルダーを設定
           batch.update(doc.reference, {
             'type': 'eventUpdated',
-            'title': 'イベント公開設定変更',
-            'message': '「$eventName」の公開設定がパブリックに変更されました。パスワードなしで参加申請できます。',
+            'title': 'Event Visibility Changed',
+            'message': 'Event "$eventName" visibility has been changed to public.',
             'data': {
               ...notificationData,
               'inviteInvalidated': true,
@@ -358,16 +358,16 @@ class NotificationService {
     String? adminMessage,
   }) async {
     try {
-      String message = 'イベント「$eventName」への参加申請が承認されました。';
-      if (adminMessage != null && adminMessage.isNotEmpty) {
-        message += '\n\n運営からのメッセージ:\n$adminMessage';
-      }
+      // タイトルとメッセージはNotificationLocalizationHelperでローカライズされるため、
+      // ここでは識別用のプレースホルダーを設定
+      const String title = 'Event Application Approved';
+      const String message = 'Your application has been approved.';
 
       final notification = NotificationData(
         toUserId: toUserId,
         fromUserId: null, // システム通知
         type: NotificationType.eventApproved,
-        title: 'イベント参加申請が承認されました',
+        title: title,
         message: message,
         isRead: false,
         createdAt: DateTime.now(),
@@ -392,16 +392,16 @@ class NotificationService {
     String? adminMessage,
   }) async {
     try {
-      String message = 'イベント「$eventName」への参加申請が拒否されました。';
-      if (adminMessage != null && adminMessage.isNotEmpty) {
-        message += '\n\n運営からのメッセージ:\n$adminMessage';
-      }
+      // タイトルとメッセージはNotificationLocalizationHelperでローカライズされるため、
+      // ここでは識別用のプレースホルダーを設定
+      const String title = 'Event Application Rejected';
+      const String message = 'Your application has been rejected.';
 
       final notification = NotificationData(
         toUserId: toUserId,
         fromUserId: null, // システム通知
         type: NotificationType.eventRejected,
-        title: 'イベント参加申請が拒否されました',
+        title: title,
         message: message,
         isRead: false,
         createdAt: DateTime.now(),
@@ -430,13 +430,15 @@ class NotificationService {
     try {
 
       // 各運営者に通知を送信
+      // タイトルとメッセージはNotificationLocalizationHelperでローカライズされるため、
+      // ここでは識別用のプレースホルダーを設定
       for (final managerId in managerIds) {
         final notification = NotificationData(
           toUserId: managerId,
           fromUserId: applicantUserId,
           type: NotificationType.eventApplication,
-          title: 'イベント申込みがありました',
-          message: '$applicantUsernameさんが「$eventTitle」に申込みをしました',
+          title: 'New Event Application',
+          message: 'New application received for event.',
           isRead: false,
           createdAt: DateTime.now(),
           data: {
@@ -559,12 +561,14 @@ class NotificationService {
     try {
 
       // 違反者への匿名通知
+      // タイトルとメッセージはNotificationLocalizationHelperでローカライズされるため、
+      // ここでは識別用のプレースホルダーを設定
       final violatedNotification = NotificationData(
         toUserId: violatedUserId,
         fromUserId: null, // システム通知として匿名化
         type: NotificationType.violationReported,
-        title: 'イベントでの違反報告',
-        message: 'イベント「$eventName」で違反の報告がありました。内容を確認し、必要に応じて異議申立を行うことができます。タップして詳細を確認してください。',
+        title: 'Violation Report',
+        message: 'A violation has been reported for this event.',
         isRead: false,
         createdAt: DateTime.now(),
         data: {
@@ -626,13 +630,15 @@ class NotificationService {
 
 
         // 各運営者に通知を送信
+        // タイトルとメッセージはNotificationLocalizationHelperでローカライズされるため、
+        // ここでは識別用のプレースホルダーを設定
         for (final orgId in allOrganizerIds) {
           final organizerNotification = NotificationData(
             toUserId: orgId,
             fromUserId: reportedByUserId,
             type: NotificationType.violationReported,
-            title: '違反報告の受信',
-            message: 'イベント「$eventName」で新しい違反報告がありました。管理画面で確認してください。',
+            title: 'Violation Report Received',
+            message: 'A new violation report has been received for the event.',
             isRead: false,
             createdAt: DateTime.now(),
             data: {
@@ -666,20 +672,19 @@ class NotificationService {
     String? processorUserId,
   }) async {
     try {
+      // タイトルとメッセージはNotificationLocalizationHelperでローカライズされるため、
+      // ここでは識別用のプレースホルダーを設定
       String title = '';
       String message = '';
 
       switch (status) {
         case 'resolved':
-          title = '違反報告の処理完了';
-          message = 'イベント「$eventName」での違反報告が処理されました。';
-          if (penalty != null && penalty.isNotEmpty) {
-            message += '\nペナルティ: $penalty';
-          }
+          title = 'Violation Report Processed';
+          message = 'The violation report has been processed.';
           break;
         case 'dismissed':
-          title = '違反報告の却下';
-          message = 'イベント「$eventName」での違反報告が調査の結果、却下されました。';
+          title = 'Violation Report Dismissed';
+          message = 'The violation report has been dismissed.';
           break;
         default:
           return false; // その他のステータスは通知しない
@@ -739,13 +744,15 @@ class NotificationService {
         bool allSuccess = true;
 
         // 各運営者に通知を送信
+        // タイトルとメッセージはNotificationLocalizationHelperでローカライズされるため、
+        // ここでは識別用のプレースホルダーを設定
         for (final orgId in allOrganizerIds) {
           final notification = NotificationData(
             toUserId: orgId,
             fromUserId: appellantUserId,
             type: NotificationType.appealSubmitted,
-            title: '異議申立の受信',
-            message: 'イベント「$eventName」の違反報告に対する異議申立がありました。管理画面で確認してください。',
+            title: 'Appeal Received',
+            message: 'An appeal has been submitted for a violation report.',
             isRead: false,
             createdAt: DateTime.now(),
             data: {
@@ -784,24 +791,22 @@ class NotificationService {
     String? processorUserId,
   }) async {
     try {
+      // タイトルとメッセージはNotificationLocalizationHelperでローカライズされるため、
+      // ここでは識別用のプレースホルダーを設定
       String title = '';
       String message = '';
 
       switch (appealStatus) {
         case 'approved':
-          title = '異議申立が承認されました';
-          message = 'イベント「$eventName」での異議申立が承認され、違反記録が取り消されました。';
+          title = 'Appeal Approved';
+          message = 'Your appeal has been approved.';
           break;
         case 'rejected':
-          title = '異議申立が却下されました';
-          message = 'イベント「$eventName」での異議申立が却下され、違反記録が維持されます。';
+          title = 'Appeal Rejected';
+          message = 'Your appeal has been rejected.';
           break;
         default:
           return false; // その他のステータスは通知しない
-      }
-
-      if (appealResponse != null && appealResponse.isNotEmpty) {
-        message += '\n\n運営からの回答:\n$appealResponse';
       }
 
       final notification = NotificationData(
@@ -839,14 +844,16 @@ class NotificationService {
     String? reason,
   }) async {
     try {
+      // タイトルとメッセージはNotificationLocalizationHelperでローカライズされるため、
+      // ここでは識別用のプレースホルダーを設定
 
       // 1. 違反報告されたユーザーへの通知
       final violatedNotification = NotificationData(
         toUserId: violatedUserId,
         fromUserId: null, // システム通知
         type: NotificationType.violationDeleted,
-        title: '違反記録が削除されました',
-        message: 'イベント「$eventName」での違反記録が運営により削除されました。${reason != null ? '\n理由: $reason' : ''}',
+        title: 'Violation Record Deleted',
+        message: 'A violation record has been deleted.',
         isRead: false,
         createdAt: DateTime.now(),
         data: {
@@ -854,6 +861,8 @@ class NotificationService {
           'eventName': eventName,
           'violationId': violationId,
           'deletedByUserId': deletedByUserId,
+          'reason': reason,
+          'isViolated': true,
         },
       );
       await createNotification(violatedNotification);
@@ -863,8 +872,8 @@ class NotificationService {
         toUserId: reportedByUserId,
         fromUserId: null, // システム通知
         type: NotificationType.violationDeleted,
-        title: '報告した違反記録が削除されました',
-        message: 'イベント「$eventName」で報告された違反記録が運営により削除されました。',
+        title: 'Your Reported Violation Deleted',
+        message: 'A violation you reported has been deleted.',
         isRead: false,
         createdAt: DateTime.now(),
         data: {
@@ -872,6 +881,7 @@ class NotificationService {
           'eventName': eventName,
           'violationId': violationId,
           'deletedByUserId': deletedByUserId,
+          'isReporter': true,
         },
       );
       await createNotification(reporterNotification);
@@ -883,8 +893,8 @@ class NotificationService {
             toUserId: organizerId,
             fromUserId: deletedByUserId,
             type: NotificationType.violationDeleted,
-            title: '違反記録が削除されました',
-            message: 'イベント「$eventName」の違反記録が削除されました。${reason != null ? '\n理由: $reason' : ''}',
+            title: 'Violation Record Deleted',
+            message: 'A violation record has been deleted.',
             isRead: false,
             createdAt: DateTime.now(),
             data: {
@@ -892,6 +902,8 @@ class NotificationService {
               'eventName': eventName,
               'violationId': violationId,
               'deletedByUserId': deletedByUserId,
+              'reason': reason,
+              'isOrganizer': true,
             },
           );
           await createNotification(organizerNotification);
@@ -916,14 +928,16 @@ class NotificationService {
     String? reason,
   }) async {
     try {
+      // タイトルとメッセージはNotificationLocalizationHelperでローカライズされるため、
+      // ここでは識別用のプレースホルダーを設定
 
       // 1. 違反報告されたユーザーへの通知
       final violatedNotification = NotificationData(
         toUserId: violatedUserId,
         fromUserId: null, // システム通知
         type: NotificationType.violationDismissed,
-        title: '違反記録が却下されました',
-        message: 'イベント「$eventName」での違反記録が運営により却下されました。今後、この記録は違反として扱われません。${reason != null ? '\n理由: $reason' : ''}',
+        title: 'Violation Record Dismissed',
+        message: 'A violation record has been dismissed.',
         isRead: false,
         createdAt: DateTime.now(),
         data: {
@@ -931,6 +945,8 @@ class NotificationService {
           'eventName': eventName,
           'violationId': violationId,
           'dismissedByUserId': dismissedByUserId,
+          'reason': reason,
+          'isViolated': true,
         },
       );
       await createNotification(violatedNotification);
@@ -940,8 +956,8 @@ class NotificationService {
         toUserId: reportedByUserId,
         fromUserId: null, // システム通知
         type: NotificationType.violationDismissed,
-        title: '報告した違反記録が却下されました',
-        message: 'イベント「$eventName」で報告された違反記録が運営により却下されました。調査の結果、違反に該当しないと判断されました。',
+        title: 'Your Reported Violation Dismissed',
+        message: 'A violation you reported has been dismissed.',
         isRead: false,
         createdAt: DateTime.now(),
         data: {
@@ -949,6 +965,7 @@ class NotificationService {
           'eventName': eventName,
           'violationId': violationId,
           'dismissedByUserId': dismissedByUserId,
+          'isReporter': true,
         },
       );
       await createNotification(reporterNotification);
@@ -960,8 +977,8 @@ class NotificationService {
             toUserId: organizerId,
             fromUserId: dismissedByUserId,
             type: NotificationType.violationDismissed,
-            title: '違反記録が却下されました',
-            message: 'イベント「$eventName」の違反記録が却下されました。${reason != null ? '\n理由: $reason' : ''}',
+            title: 'Violation Record Dismissed',
+            message: 'A violation record has been dismissed.',
             isRead: false,
             createdAt: DateTime.now(),
             data: {
@@ -969,6 +986,8 @@ class NotificationService {
               'eventName': eventName,
               'violationId': violationId,
               'dismissedByUserId': dismissedByUserId,
+              'reason': reason,
+              'isOrganizer': true,
             },
           );
           await createNotification(organizerNotification);
@@ -990,19 +1009,15 @@ class NotificationService {
     required bool isApproved,
   }) async {
     try {
-      final String title = 'イベント中止のお知らせ';
-      String message;
-
-      if (isApproved) {
-        message = '参加が確定していたイベント「$eventName」が主催者の都合により中止となりました。\n\n中止理由:\n$reason';
-      } else {
-        message = '参加申込みをされていたイベント「$eventName」が主催者の都合により中止となりました。\n\n中止理由:\n$reason';
-      }
+      // タイトルとメッセージはNotificationLocalizationHelperでローカライズされるため、
+      // ここでは識別用のプレースホルダーを設定
+      final String title = 'Event Cancellation Notice';
+      final String message = 'Event "$eventName" has been cancelled.';
 
       final notification = NotificationData(
         toUserId: userId,
         fromUserId: null, // システム通知
-        type: NotificationType.system,
+        type: NotificationType.eventCancelled,
         title: title,
         message: message,
         isRead: false,
@@ -1032,17 +1047,15 @@ class NotificationService {
     required int pendingCount,
   }) async {
     try {
-      final String title = 'イベント中止処理完了';
-      final String message = 'イベント「$eventName」の中止処理が完了しました。\n\n'
-          '参加確定者: ${participantCount}人\n'
-          '申込み待ち: ${pendingCount}人\n\n'
-          '全ての関係者に通知を送信しました。\n\n'
-          '中止理由:\n$reason';
+      // タイトルとメッセージはNotificationLocalizationHelperでローカライズされるため、
+      // ここでは識別用のプレースホルダーを設定
+      final String title = 'Event Cancellation Complete';
+      final String message = 'Event "$eventName" cancellation has been completed.';
 
       final notification = NotificationData(
         toUserId: managerId,
         fromUserId: null, // システム通知
-        type: NotificationType.system,
+        type: NotificationType.eventCancelProcessed,
         title: title,
         message: message,
         isRead: false,
@@ -1089,16 +1102,15 @@ class NotificationService {
     int? hoursUntilEvent,
   }) async {
     try {
-      final String timeText = hoursUntilEvent != null
-          ? '${hoursUntilEvent}時間後'
-          : 'まもなく';
+      // タイトルとメッセージはNotificationLocalizationHelperでローカライズされるため、
+      // ここでは識別用のプレースホルダーを設定
 
       final notification = NotificationData(
         toUserId: toUserId,
         fromUserId: null, // システム通知
         type: NotificationType.eventReminder,
-        title: 'イベントリマインダー',
-        message: 'イベント「$eventName」が$timeText に開始されます。',
+        title: 'Event Reminder',
+        message: 'Event "$eventName" is starting soon.',
         isRead: false,
         createdAt: DateTime.now(),
         data: {
@@ -1128,13 +1140,13 @@ class NotificationService {
     Map<String, dynamic>? additionalData,
   }) async {
     try {
+      // タイトルとメッセージはNotificationLocalizationHelperでローカライズされるため、
+      // ここでは識別用のプレースホルダーを設定
       final String title = hasCriticalChanges
-          ? 'イベント内容の重要な変更'
-          : 'イベント内容が更新されました';
+          ? 'Important Event Update'
+          : 'Event Updated';
 
-      final String message = 'イベント「$eventName」が$updatedByUserName により更新されました。\n\n'
-          '変更内容：$changesSummary\n\n'
-          'タップして詳細を確認してください。';
+      final String message = 'Event "$eventName" has been updated.';
 
       final notification = NotificationData(
         toUserId: toUserId,
@@ -1174,6 +1186,11 @@ class NotificationService {
     required String changesSummary,
     required String changesDetail,
     required bool hasCriticalChanges,
+    bool hasModerateChanges = false,
+    bool hasMinorChanges = false,
+    int criticalChangeCount = 0,
+    int moderateChangeCount = 0,
+    int minorChangeCount = 0,
   }) async {
     try {
       // 通知対象者リストを作成（重複を除去）
@@ -1204,6 +1221,11 @@ class NotificationService {
             additionalData: {
               'isParticipant': participantIds.contains(recipientId),
               'isManager': managerIds.contains(recipientId),
+              'hasModerateChanges': hasModerateChanges,
+              'hasMinorChanges': hasMinorChanges,
+              'criticalChangeCount': criticalChangeCount,
+              'moderateChangeCount': moderateChangeCount,
+              'minorChangeCount': minorChangeCount,
             },
           );
 

@@ -10,6 +10,7 @@ import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/services/social_stats_service.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/repositories/user_repository.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// ソーシャルリストタイプ
 enum _SocialListType {
@@ -19,25 +20,27 @@ enum _SocialListType {
 }
 
 extension _SocialListTypeExtension on _SocialListType {
-  String get emptyMessage {
+  String emptyMessage(BuildContext context) {
+    final l10n = L10n.of(context);
     switch (this) {
       case _SocialListType.friends:
-        return '相互フォローがいません';
+        return l10n.noMutualFollows;
       case _SocialListType.following:
-        return 'フォロー中のユーザーがいません';
+        return l10n.noFollowing;
       case _SocialListType.followers:
-        return 'フォロワーがいません';
+        return l10n.noFollowers;
     }
   }
 
-  String get emptySubMessage {
+  String emptySubMessage(BuildContext context) {
+    final l10n = L10n.of(context);
     switch (this) {
       case _SocialListType.friends:
-        return '気になるユーザーをフォローして\n相互フォローになりましょう';
+        return l10n.noMutualFollowsHint;
       case _SocialListType.following:
-        return '気になるユーザーをフォローして\nイベント情報を受け取りましょう';
+        return l10n.noFollowingHint;
       case _SocialListType.followers:
-        return 'あなたをフォローしてくれる\nユーザーを待っています';
+        return l10n.noFollowersHint;
     }
   }
 
@@ -108,27 +111,42 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
         });
       } else {
         setState(() {
-          _errorMessage = 'ユーザー情報が取得できませんでした';
+          _errorMessage = 'userInfoFetchFailed';
           _isLoading = false;
         });
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'データの取得に失敗しました: $e';
+        _errorMessage = 'dataFetchFailedWithError:$e';
         _isLoading = false;
       });
     }
   }
 
+  /// エラーメッセージを取得（多言語対応）
+  String _getLocalizedErrorMessage(BuildContext context) {
+    final l10n = L10n.of(context);
+    if (_errorMessage == null) return '';
+    if (_errorMessage == 'userInfoFetchFailed') {
+      return l10n.userInfoFetchFailed('');
+    }
+    if (_errorMessage!.startsWith('dataFetchFailedWithError:')) {
+      final error = _errorMessage!.substring('dataFetchFailedWithError:'.length);
+      return l10n.dataFetchFailedWithError(error);
+    }
+    return _errorMessage!;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Scaffold(
       body: AppGradientBackground(
         child: SafeArea(
           child: Column(
             children: [
               AppHeader(
-                title: 'フォロー',
+                title: l10n.followScreenTitle,
                 showBackButton: true,
                 onBackPressed: () => Navigator.of(context).pop(),
                 actions: [
@@ -189,6 +207,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
 
   /// 統一ヘッダーを構築
   Widget _buildUnifiedHeader() {
+    final l10n = L10n.of(context);
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       child: Column(
@@ -202,9 +221,9 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                'フォロー',
-                style: TextStyle(
+              Text(
+                l10n.followScreenTitle,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -231,13 +250,13 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
               labelPadding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingM),
               tabs: [
                 Tab(
-                  text: '相互フォロー (${_friends.length})',
+                  text: l10n.mutualFollowTabCount(_friends.length),
                 ),
                 Tab(
-                  text: 'フォロー中 (${_following.length})',
+                  text: l10n.followingTabCount(_following.length),
                 ),
                 Tab(
-                  text: 'フォロワー (${_followers.length})',
+                  text: l10n.followersTabCount(_followers.length),
                 ),
               ],
             ),
@@ -249,19 +268,20 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
 
   /// ローディング状態を構築
   Widget _buildLoadingState() {
-    return const Padding(
-      padding: EdgeInsets.all(AppDimensions.spacingXL),
+    final l10n = L10n.of(context);
+    return Padding(
+      padding: const EdgeInsets.all(AppDimensions.spacingXL),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
+            const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
             ),
-            SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.spacingM),
             Text(
-              'データを取得中...',
-              style: TextStyle(
+              l10n.fetchingData,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textSecondary,
               ),
@@ -274,6 +294,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
 
   /// エラー状態を構築
   Widget _buildErrorState() {
+    final l10n = L10n.of(context);
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.spacingXL),
       child: Center(
@@ -297,7 +318,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
               ),
               const SizedBox(height: AppDimensions.spacingM),
               Text(
-                _errorMessage!,
+                _getLocalizedErrorMessage(context),
                 style: const TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   color: AppColors.textDark,
@@ -307,7 +328,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
               const SizedBox(height: AppDimensions.spacingL),
               ElevatedButton(
                 onPressed: _loadData,
-                child: const Text('再試行'),
+                child: Text(l10n.retry),
               ),
             ],
           ),
@@ -376,7 +397,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Text(
-              type.emptyMessage,
+              type.emptyMessage(context),
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 color: AppColors.textSecondary,
@@ -385,7 +406,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              type.emptySubMessage,
+              type.emptySubMessage(context),
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textLight,
@@ -549,14 +570,25 @@ class _UserSearchModalState extends State<_UserSearchModal> {
     } catch (e) {
       setState(() {
         _isSearching = false;
-        _errorMessage = 'ユーザー検索中にエラーが発生しました';
+        _errorMessage = 'userSearchError';
         _searchResults = [];
       });
     }
   }
 
+  /// エラーメッセージを取得（多言語対応）
+  String _getLocalizedErrorMessage(BuildContext context) {
+    final l10n = L10n.of(context);
+    if (_errorMessage == null) return '';
+    if (_errorMessage == 'userSearchError') {
+      return l10n.userSearchError;
+    }
+    return _errorMessage!;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
@@ -590,10 +622,10 @@ class _UserSearchModalState extends State<_UserSearchModal> {
                   size: AppDimensions.iconM,
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'ユーザーを検索',
-                    style: TextStyle(
+                    l10n.searchUser,
+                    style: const TextStyle(
                       fontSize: AppDimensions.fontSizeL,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textDark,
@@ -625,7 +657,7 @@ class _UserSearchModalState extends State<_UserSearchModal> {
               controller: _searchController,
               focusNode: _searchFocusNode,
               decoration: InputDecoration(
-                hintText: 'ユーザー名またはIDで検索...',
+                hintText: l10n.searchUserPlaceholder,
                 hintStyle: const TextStyle(
                   color: AppColors.textLight,
                   fontSize: AppDimensions.fontSizeM,
@@ -699,13 +731,14 @@ class _UserSearchModalState extends State<_UserSearchModal> {
     }
 
     if (_searchResults.isEmpty) {
-      return EmptySearchResult.user(_searchController.text);
+      return EmptySearchResult.user(context, _searchController.text);
     }
 
     return _buildResultsList();
   }
 
   Widget _buildEmptyState() {
+    final l10n = L10n.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.spacingXL),
@@ -718,19 +751,19 @@ class _UserSearchModalState extends State<_UserSearchModal> {
               color: AppColors.overlayMedium,
             ),
             const SizedBox(height: AppDimensions.spacingL),
-            const Text(
-              'ユーザー名またはIDで検索',
-              style: TextStyle(
+            Text(
+              l10n.searchUserHint,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 color: AppColors.textSecondary,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingS),
-            const Text(
-              'フォローしたいユーザーを\n検索して見つけましょう',
+            Text(
+              l10n.searchUserDescription,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textLight,
                 height: 1.4,
@@ -743,6 +776,7 @@ class _UserSearchModalState extends State<_UserSearchModal> {
   }
 
   Widget _buildLoadingState() {
+    final l10n = L10n.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.spacingXL),
@@ -753,9 +787,9 @@ class _UserSearchModalState extends State<_UserSearchModal> {
               valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
             ),
             const SizedBox(height: AppDimensions.spacingL),
-            const Text(
-              'ユーザーを検索中...',
-              style: TextStyle(
+            Text(
+              l10n.searchingUser,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 color: AppColors.textSecondary,
                 fontWeight: FontWeight.w600,
@@ -768,6 +802,7 @@ class _UserSearchModalState extends State<_UserSearchModal> {
   }
 
   Widget _buildErrorState() {
+    final l10n = L10n.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.spacingXL),
@@ -780,9 +815,9 @@ class _UserSearchModalState extends State<_UserSearchModal> {
               color: AppColors.error,
             ),
             const SizedBox(height: AppDimensions.spacingL),
-            const Text(
-              'エラーが発生しました',
-              style: TextStyle(
+            Text(
+              l10n.errorOccurred,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 color: AppColors.error,
                 fontWeight: FontWeight.w600,
@@ -790,7 +825,7 @@ class _UserSearchModalState extends State<_UserSearchModal> {
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              _errorMessage!,
+              _getLocalizedErrorMessage(context),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,

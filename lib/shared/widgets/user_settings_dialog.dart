@@ -13,6 +13,7 @@ import 'user_avatar.dart';
 import '../../data/models/user_model.dart';
 import 'game_selection_dialog.dart';
 import 'app_text_field.dart';
+import '../../l10n/app_localizations.dart';
 
 class UserSettingsDialog extends ConsumerStatefulWidget {
   final bool isInitialSetup;
@@ -169,7 +170,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
     } else if (!widget.isInitialSetup) {
       // ゲストユーザーのデフォルト値
       setState(() {
-        _userNameController.text = 'ゲストユーザー';
+        _userNameController.text = L10n.of(context).guestUserDefault;
         _userIdController.text = 'guest_001';
       });
     }
@@ -250,6 +251,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
   }
 
   Widget _buildHeader() {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -269,7 +271,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
           const SizedBox(width: AppDimensions.spacingM),
           Expanded(
             child: Text(
-              widget.isInitialSetup ? 'ようこそ！初回設定' : 'ユーザー設定',
+              widget.isInitialSetup ? l10n.welcomeInitialSetup : l10n.userSettingsTitle,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 fontWeight: FontWeight.w700,
@@ -377,6 +379,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
   }
 
   Widget _buildUserInfoSection() {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -395,9 +398,9 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                'ユーザー情報',
-                style: TextStyle(
+              Text(
+                l10n.userInfoSection,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -407,7 +410,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
           ),
           const SizedBox(height: AppDimensions.spacingL),
           _buildTextField(
-            label: 'ユーザー名',
+            label: l10n.usernameLabel,
             controller: _userNameController,
             icon: Icons.person_outline,
           ),
@@ -435,7 +438,8 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
           controller: controller,
           enabled: enabled,
           onChanged: (value) {
-            if (validator != null && label == 'ユーザーID') {
+            final l10n = L10n.of(context);
+            if (validator != null && label == l10n.userIdLabel) {
               setState(() {
                 _userIdError = validator(value);
               });
@@ -444,7 +448,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
           decoration: InputDecoration(
             labelText: label,
             helperText: helperText,
-            errorText: label == 'ユーザーID' ? _userIdError : null,
+            errorText: label == L10n.of(context).userIdLabel ? _userIdError : null,
             helperStyle: const TextStyle(
               fontSize: AppDimensions.fontSizeS,
               color: AppColors.textSecondary,
@@ -497,6 +501,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
   }
 
   Widget _buildUserIdField() {
+    final l10n = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -509,7 +514,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
             });
           },
           decoration: InputDecoration(
-            labelText: 'ユーザーID',
+            labelText: l10n.userIdLabel,
             errorText: _userIdError,
             errorStyle: const TextStyle(
               fontSize: AppDimensions.fontSizeS,
@@ -554,7 +559,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
   }
 
   Widget _buildMarqueeHelperText() {
-    const String helperText = '3-20文字、英字・数字・アンダーバー(_)で入力してください。例: my_game_id123';
+    final String helperText = L10n.of(context).userIdHelperText;
 
     return SizedBox(
       height: 20,
@@ -659,17 +664,19 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
   }
 
   Widget _buildBioField() {
+    final l10n = L10n.of(context);
     return AppTextFieldMultiline(
       controller: _userBioController,
-      label: '自己紹介',
-      hintText: '自分について簡単に紹介してください...',
+      label: l10n.bioLabel,
+      hintText: l10n.bioHint,
       maxLines: 3,
       maxLength: 150,
-      doneButtonText: '完了',
+      doneButtonText: l10n.doneButton,
     );
   }
 
   Widget _buildFavoriteGamesSection() {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -688,10 +695,10 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'お気に入りゲーム',
-                  style: TextStyle(
+                  l10n.favoriteGamesSection,
+                  style: const TextStyle(
                     fontSize: AppDimensions.fontSizeL,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textDark,
@@ -701,7 +708,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
             OutlinedButton.icon(
               onPressed: _addFavoriteGame,
               icon: const Icon(Icons.add, size: AppDimensions.iconS),
-              label: const Text('追加'),
+              label: Text(l10n.addButton),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.accent,
                 side: const BorderSide(color: AppColors.accent),
@@ -722,17 +729,17 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
               borderRadius: BorderRadius.circular(AppDimensions.radiusM),
               border: Border.all(color: AppColors.border),
             ),
-            child: const Column(
+            child: Column(
               children: [
-                Icon(
+                const Icon(
                   Icons.videogame_asset_off,
                   color: AppColors.textSecondary,
                   size: AppDimensions.iconL,
                 ),
-                SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.spacingS),
                 Text(
-                  'お気に入りゲームが登録されていません',
-                  style: TextStyle(
+                  l10n.noFavoriteGamesRegistered,
+                  style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: AppDimensions.fontSizeM,
                   ),
@@ -823,6 +830,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
   }
 
   Widget _buildContactSection() {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -841,9 +849,9 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                'コミュニティ・その他の情報',
-                style: TextStyle(
+              Text(
+                l10n.communityOtherInfoSection,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -859,19 +867,20 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
   }
 
   Widget _buildContactTextArea() {
+    final l10n = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AppTextFieldMultiline(
           controller: _contactController,
-          label: 'コミュニティ・その他',
-          hintText: '所属コミュニティ、Steam ID、その他の情報\n例：○○クラン所属、Steam: username123、Epic: epicname',
+          label: l10n.communityOtherLabel,
+          hintText: l10n.communityOtherHint,
           maxLines: 4,
-          doneButtonText: '完了',
+          doneButtonText: l10n.doneButton,
         ),
         const SizedBox(height: AppDimensions.spacingS),
         Text(
-          '所属クラン・ギルド、Steam・Epic等のゲームアカウント、プライベート連絡先などを自由に入力してください。',
+          l10n.communityOtherHelperText,
           style: TextStyle(
             fontSize: AppDimensions.fontSizeS,
             color: AppColors.textSecondary,
@@ -883,9 +892,10 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
   }
 
   void _addFavoriteGame() {
+    final l10n = L10n.of(context);
     GameSelectionDialog.show(
       context,
-      title: 'お気に入りゲームを追加',
+      title: l10n.addFavoriteGameTitle,
       onGameSelected: (game) async {
         if (game != null && !_favoriteGames.any((g) => g.id == game.id)) {
           // ゲームを共有キャッシュに保存してIDを取得
@@ -927,6 +937,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
   }
 
   Widget _buildActions() {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.fromLTRB(
         AppDimensions.spacingL,
@@ -960,9 +971,9 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
                       ),
                     ),
                   ),
-                  child: const Text(
-                    'キャンセル',
-                    style: TextStyle(
+                  child: Text(
+                    l10n.cancelButton,
+                    style: const TextStyle(
                       color: AppColors.textDark,
                       fontWeight: FontWeight.w600,
                       fontSize: AppDimensions.fontSizeM,
@@ -997,7 +1008,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
                         ),
                       )
                     : Text(
-                        widget.isInitialSetup ? '設定を完了' : '保存',
+                        widget.isInitialSetup ? l10n.completeSetupButton : l10n.saveButton,
                         style: const TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: AppDimensions.fontSizeM,
@@ -1012,6 +1023,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
   }
 
   void _onChangeAvatar() async {
+    final l10n = L10n.of(context);
     try {
       final File? croppedImage = await AvatarService.instance.pickAndCropAvatar(context);
 
@@ -1025,21 +1037,22 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
       }
     } catch (e) {
       if (mounted) {
-        _showErrorDialog('画像の選択に失敗しました: $e');
+        _showErrorDialog(l10n.imageSelectionFailed(e.toString()));
       }
     }
   }
 
   void _onRemoveAvatar() {
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('アバターを削除'),
-        content: const Text('アバター画像を削除しますか？'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.deleteAvatarTitle),
+        content: Text(l10n.deleteAvatarMessage),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('キャンセル'),
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.cancelButton),
           ),
           TextButton(
             onPressed: () async {
@@ -1048,10 +1061,10 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
                 _avatarUrl = null;
                 _hasAvatarChanged = true;
               });
-              Navigator.of(context).pop();
+              Navigator.of(dialogContext).pop();
             },
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('削除'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -1059,15 +1072,16 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
   }
 
   void _showErrorDialog(String message) {
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('エラー'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.error),
         content: Text(message),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.ok),
           ),
         ],
       ),
@@ -1075,11 +1089,12 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
   }
 
   Widget _buildWelcomeMessage() {
+    final l10n = L10n.of(context);
     final currentUser = ref.watch(currentFirebaseUserProvider);
     final userData = ref.watch(currentUserDataProvider);
 
     // アプリ側のユーザー名を優先、なければAuthのdisplayName
-    String userName = currentUser?.displayName ?? 'ユーザー';
+    String userName = currentUser?.displayName ?? l10n.userDefault;
     userData.when(
       data: (data) {
         if (data?.username.isNotEmpty == true) {
@@ -1093,7 +1108,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
     return Column(
       children: [
         Text(
-          '$userName さん',
+          l10n.welcomeUserName(userName),
           style: const TextStyle(
             fontSize: AppDimensions.fontSizeL,
             fontWeight: FontWeight.w600,
@@ -1101,9 +1116,9 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
           ),
         ),
         const SizedBox(height: AppDimensions.spacingS),
-        const Text(
-          'ゲームイベントをより楽しむために、プロフィール情報を設定しましょう。',
-          style: TextStyle(
+        Text(
+          l10n.welcomeDescription,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeM,
             color: AppColors.textSecondary,
             height: 1.5,
@@ -1125,16 +1140,17 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
   }
 
   Future<void> _completeInitialSetup() async {
+    final l10n = L10n.of(context);
     final nickname = _userNameController.text.trim();
     final userId = _userIdController.text.trim();
 
     if (nickname.isEmpty) {
-      _showErrorDialog('ユーザー名を入力してください');
+      _showErrorDialog(l10n.enterUsernameError);
       return;
     }
 
     if (nickname.length < 2) {
-      _showErrorDialog('ユーザー名は2文字以上で入力してください');
+      _showErrorDialog(l10n.usernameMinLengthError);
       return;
     }
 
@@ -1153,7 +1169,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
       // Firebase Authからユーザー情報を取得
       final currentUser = ref.read(currentFirebaseUserProvider);
       if (currentUser == null) {
-        throw Exception('認証されたユーザーが見つかりません');
+        throw Exception(l10n.noAuthenticatedUser);
       }
 
       final userRepository = ref.read(userRepositoryProvider);
@@ -1162,9 +1178,9 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
       final isDuplicate = !(await userRepository.isUserIdAvailable(userId));
       if (isDuplicate) {
         setState(() {
-          _userIdError = 'このユーザーIDは既に使用されています';
+          _userIdError = l10n.userIdDuplicateError;
         });
-        _showErrorDialog('このユーザーIDは既に使用されています');
+        _showErrorDialog(l10n.userIdDuplicateError);
         return;
       }
 
@@ -1205,7 +1221,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
           setState(() {
             _isUploading = false;
           });
-          throw Exception('画像のアップロードに失敗しました: $uploadError');
+          throw Exception(l10n.imageUploadFailed(uploadError.toString()));
         }
       }
 
@@ -1245,7 +1261,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
         Navigator.of(context).pop(true); // 設定完了を通知
       }
     } catch (e) {
-      _showErrorDialog('初期設定の保存に失敗しました\n\n$e');
+      _showErrorDialog(l10n.initialSetupSaveFailed(e.toString()));
     } finally {
       if (mounted) {
         setState(() {
@@ -1257,16 +1273,17 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
 
 
   Future<void> _saveUserSettings() async {
+    final l10n = L10n.of(context);
     final nickname = _userNameController.text.trim();
     final userId = _userIdController.text.trim();
 
     if (nickname.isEmpty) {
-      _showErrorDialog('ユーザー名を入力してください');
+      _showErrorDialog(l10n.enterUsernameError);
       return;
     }
 
     if (nickname.length < 2) {
-      _showErrorDialog('ユーザー名は2文字以上で入力してください');
+      _showErrorDialog(l10n.usernameMinLengthError);
       return;
     }
 
@@ -1287,7 +1304,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
       // Firebase Authからユーザー情報を取得
       final currentUser = ref.read(currentFirebaseUserProvider);
       if (currentUser == null) {
-        throw Exception('認証されたユーザーが見つかりません');
+        throw Exception(l10n.noAuthenticatedUser);
       }
 
       final userRepository = ref.read(userRepositoryProvider);
@@ -1300,9 +1317,9 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
         ));
         if (isDuplicate) {
           setState(() {
-            _userIdError = 'このユーザーIDは既に使用されています';
+            _userIdError = l10n.userIdDuplicateError;
           });
-          _showErrorDialog('このユーザーIDは既に使用されています');
+          _showErrorDialog(l10n.userIdDuplicateError);
           return;
         }
       }
@@ -1345,7 +1362,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
           setState(() {
             _isUploading = false;
           });
-          throw Exception('画像のアップロードに失敗しました: $uploadError');
+          throw Exception(l10n.imageUploadFailed(uploadError.toString()));
         }
       }
 
@@ -1376,22 +1393,22 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('設定保存'),
-            content: const Text('設定が保存されました。'),
+            title: Text(l10n.settingsSavedTitle),
+            content: Text(l10n.settingsSavedMessage),
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.pop(context); // AlertDialogを閉じる
                   Navigator.pop(context); // UserSettingsDialogを閉じる
                 },
-                child: const Text('OK'),
+                child: Text(l10n.ok),
               ),
             ],
           ),
         );
       }
     } catch (e) {
-      _showErrorDialog('設定の保存に失敗しました\n\n$e');
+      _showErrorDialog(l10n.settingsSaveFailedWithError(e.toString()));
     } finally {
       if (mounted) {
         setState(() {
@@ -1402,24 +1419,25 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
   }
 
   String? _validateUserId(String? value) {
+    final l10n = L10n.of(context);
     if (value == null || value.isEmpty) {
-      return 'ユーザーIDを入力してください';
+      return l10n.enterUserIdError;
     }
 
     // 長さチェック
     if (value.length < 3 || value.length > 20) {
-      return 'ユーザーIDは3文字以上20文字以下で入力してください';
+      return l10n.userIdLengthError;
     }
 
     // 文字種チェック（英数字とアンダースコアのみ）
     final RegExp userIdRegex = RegExp(r'^[a-zA-Z0-9_]+$');
     if (!userIdRegex.hasMatch(value)) {
-      return '英字・数字・アンダーバー(_)のみ入力できます';
+      return l10n.userIdFormatError;
     }
 
     // 最初の文字が数字でないかチェック
     if (RegExp(r'^[0-9]').hasMatch(value)) {
-      return '英字から始めてください（例: game123）';
+      return l10n.userIdStartError;
     }
 
     // 予約語チェック
@@ -1428,7 +1446,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
       'test', 'demo', 'api', 'www', 'ftp', 'mail', 'email', 'support'
     ];
     if (reservedWords.contains(value.toLowerCase())) {
-      return '別のユーザーIDをお選びください';
+      return l10n.userIdReservedError;
     }
 
     return null;
@@ -1436,6 +1454,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
 
 
   Widget _buildInitialSetupMessage() {
+    final l10n = L10n.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingM),
@@ -1453,7 +1472,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
           ),
           const SizedBox(height: AppDimensions.spacingS),
           Text(
-            'プロフィール設定を完了してゲームイベントを楽しみましょう',
+            l10n.initialSetupMessage,
             style: TextStyle(
               fontSize: AppDimensions.fontSizeM,
               color: AppColors.accent,
@@ -1468,6 +1487,7 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
 
   /// SNSアカウント設定セクション
   Widget _buildSnsAccountSection() {
+    final l10n = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1479,9 +1499,9 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
               size: AppDimensions.iconM,
             ),
             const SizedBox(width: AppDimensions.spacingS),
-            const Text(
-              'SNSアカウント',
-              style: TextStyle(
+            Text(
+              l10n.snsAccountSection,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textDark,
@@ -1490,9 +1510,9 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
           ],
         ),
         const SizedBox(height: AppDimensions.spacingS),
-        const Text(
-          'これらのアカウントは新しいゲームプロフィールのデフォルト値として使用されます。\n各ゲームで個別に設定することも可能です。',
-          style: TextStyle(
+        Text(
+          l10n.snsAccountDescription,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeS,
             color: AppColors.textSecondary,
           ),
@@ -1502,42 +1522,42 @@ class _UserSettingsDialogState extends ConsumerState<UserSettingsDialog> with Ti
           icon: Icons.close,
           label: 'X (Twitter)',
           controller: _snsControllers['twitter']!,
-          placeholder: 'ユーザー名（@なし）',
+          placeholder: l10n.snsUsernameHint,
         ),
         const SizedBox(height: AppDimensions.spacingM),
         _buildSnsInput(
           icon: Icons.music_note,
           label: 'TikTok',
           controller: _snsControllers['tiktok']!,
-          placeholder: 'ユーザー名（@なし）',
+          placeholder: l10n.snsUsernameHint,
         ),
         const SizedBox(height: AppDimensions.spacingM),
         _buildSnsInput(
           icon: Icons.play_circle_fill,
           label: 'YouTube',
           controller: _snsControllers['youtube']!,
-          placeholder: 'チャンネル名（@なし）',
+          placeholder: l10n.youtubeChannelHint,
         ),
         const SizedBox(height: AppDimensions.spacingM),
         _buildSnsInput(
           icon: Icons.camera_alt,
           label: 'Instagram',
           controller: _snsControllers['instagram']!,
-          placeholder: 'ユーザー名（@なし）',
+          placeholder: l10n.snsUsernameHint,
         ),
         const SizedBox(height: AppDimensions.spacingM),
         _buildSnsInput(
           icon: Icons.videogame_asset,
           label: 'Twitch',
           controller: _snsControllers['twitch']!,
-          placeholder: 'ユーザー名（@なし）',
+          placeholder: l10n.snsUsernameHint,
         ),
         const SizedBox(height: AppDimensions.spacingM),
         _buildSnsInput(
           icon: Icons.chat,
           label: 'Discord',
           controller: _snsControllers['discord']!,
-          placeholder: 'ユーザー名#1234（#タグ込み）',
+          placeholder: l10n.discordUsernameHint,
         ),
       ],
     );

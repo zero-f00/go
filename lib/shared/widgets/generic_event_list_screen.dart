@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import 'app_gradient_background.dart';
@@ -161,7 +162,7 @@ class _GenericEventListScreenState extends State<GenericEventListScreen> {
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
               icon: const Icon(Icons.add),
-              label: const Text('作成'),
+              label: Text(L10n.of(context).createButtonLabel),
             )
           : null,
     );
@@ -201,7 +202,7 @@ class _GenericEventListScreenState extends State<GenericEventListScreen> {
               ),
               const SizedBox(width: AppDimensions.spacingXS),
               Text(
-                '${_filteredEvents.length}件のイベント',
+                L10n.of(context).eventCountFormat(_filteredEvents.length),
                 style: const TextStyle(
                   fontSize: AppDimensions.fontSizeS,
                   color: AppColors.accent,
@@ -217,17 +218,17 @@ class _GenericEventListScreenState extends State<GenericEventListScreen> {
 
   IconData _getHeaderIcon() {
     // タイトルに基づいて適切なアイコンを返す
-    switch (widget.title) {
-      case '共同編集者のイベント':
-        return Icons.group;
-      case '作成したイベント':
-        return Icons.event;
-      case '下書き保存されたイベント':
-        return Icons.drafts;
-      case '過去のイベント履歴':
-        return Icons.history;
-      default:
-        return Icons.event_note;
+    final l10n = L10n.of(context);
+    if (widget.title == l10n.collaboratorEventsTitle) {
+      return Icons.group;
+    } else if (widget.title == l10n.createdEventsTitle) {
+      return Icons.event;
+    } else if (widget.title == l10n.draftEventsTitle) {
+      return Icons.drafts;
+    } else if (widget.title == l10n.pastEventsHistoryTitle) {
+      return Icons.history;
+    } else {
+      return Icons.event_note;
     }
   }
 

@@ -11,6 +11,7 @@ import '../../../data/models/match_result_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/widgets/event_info_card.dart';
+import '../../../l10n/app_localizations.dart';
 import '../widgets/match_report_detail_dialog.dart';
 import '../widgets/match_report_status_dialog.dart';
 
@@ -116,7 +117,7 @@ class _MatchReportManagementScreenState
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = '報告データの読み込みに失敗しました: $e';
+          _errorMessage = e.toString();
           _isLoading = false;
         });
       }
@@ -175,7 +176,7 @@ class _MatchReportManagementScreenState
           child: Column(
             children: [
               AppHeader(
-                title: '試合報告管理',
+                title: L10n.of(context).matchReportManagementTitle,
                 showBackButton: true,
               ),
               Expanded(
@@ -194,6 +195,7 @@ class _MatchReportManagementScreenState
 
   /// エラー表示
   Widget _buildErrorView() {
+    final l10n = L10n.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.spacingXL),
@@ -207,7 +209,9 @@ class _MatchReportManagementScreenState
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Text(
-              _errorMessage ?? 'エラーが発生しました',
+              _errorMessage != null
+                  ? l10n.matchReportLoadFailed(_errorMessage!)
+                  : l10n.errorOccurred,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 color: AppColors.textDark,
@@ -218,7 +222,7 @@ class _MatchReportManagementScreenState
             ElevatedButton.icon(
               onPressed: _loadReportData,
               icon: const Icon(Icons.refresh),
-              label: const Text('再読み込み'),
+              label: Text(l10n.reloadButton),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 padding: const EdgeInsets.symmetric(
@@ -269,6 +273,7 @@ class _MatchReportManagementScreenState
 
   /// フィルタータブ
   Widget _buildFilterTabs() {
+    final l10n = L10n.of(context);
     return Container(
       height: 50,
       margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
@@ -276,15 +281,15 @@ class _MatchReportManagementScreenState
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
-            _buildFilterChip('all', 'すべて'),
+            _buildFilterChip('all', l10n.filterAll),
             const SizedBox(width: AppDimensions.spacingS),
-            _buildFilterChip('submitted', '新規'),
+            _buildFilterChip('submitted', l10n.filterNew),
             const SizedBox(width: AppDimensions.spacingS),
-            _buildFilterChip('reviewing', '確認中'),
+            _buildFilterChip('reviewing', l10n.filterReviewing),
             const SizedBox(width: AppDimensions.spacingS),
-            _buildFilterChip('resolved', '解決済み'),
+            _buildFilterChip('resolved', l10n.filterResolved),
             const SizedBox(width: AppDimensions.spacingS),
-            _buildFilterChip('rejected', '却下'),
+            _buildFilterChip('rejected', l10n.filterRejected),
           ],
         ),
       ),
@@ -338,6 +343,7 @@ class _MatchReportManagementScreenState
 
   /// 空状態表示
   Widget _buildEmptyState() {
+    final l10n = L10n.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -350,8 +356,8 @@ class _MatchReportManagementScreenState
           const SizedBox(height: AppDimensions.spacingL),
           Text(
             _filterStatus == 'all'
-                ? '報告がありません'
-                : '該当する報告がありません',
+                ? l10n.noReportsAll
+                : l10n.noReportsFiltered,
             style: const TextStyle(
               fontSize: AppDimensions.fontSizeL,
               color: AppColors.textSecondary,
@@ -364,6 +370,7 @@ class _MatchReportManagementScreenState
 
   /// 報告カード
   Widget _buildReportCard(MatchReport report) {
+    final l10n = L10n.of(context);
     final matchResult = _matchResultCache[report.matchId];
     final reporter = _userDataCache[report.reporterId];
     final gameUsername = _gameUsernameCache[report.reporterId];
@@ -401,7 +408,7 @@ class _MatchReportManagementScreenState
                         ),
                         const SizedBox(width: AppDimensions.spacingXS),
                         Text(
-                          report.status.displayName,
+                          report.status.getDisplayName(context),
                           style: TextStyle(
                             fontSize: AppDimensions.fontSizeS,
                             fontWeight: FontWeight.bold,
@@ -433,7 +440,7 @@ class _MatchReportManagementScreenState
                   const SizedBox(width: AppDimensions.spacingS),
                   Expanded(
                     child: Text(
-                      matchResult?.matchName ?? '試合情報なし',
+                      matchResult?.matchName ?? l10n.matchInfoNotAvailable,
                       style: const TextStyle(
                         fontSize: AppDimensions.fontSizeM,
                         fontWeight: FontWeight.w600,
@@ -476,7 +483,7 @@ class _MatchReportManagementScreenState
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
                   Text(
-                    '報告者: ${gameUsername ?? reporter?.displayName ?? '不明'}',
+                    l10n.reporterLabelWithName(gameUsername ?? reporter?.displayName ?? l10n.unknownUser),
                     style: const TextStyle(
                       fontSize: AppDimensions.fontSizeS,
                       color: AppColors.textSecondary,
@@ -521,7 +528,7 @@ class _MatchReportManagementScreenState
                       const SizedBox(width: AppDimensions.spacingS),
                       Expanded(
                         child: Text(
-                          '運営対応: ${report.adminResponse}',
+                          l10n.adminResponseWithContent(report.adminResponse!),
                           style: const TextStyle(
                             fontSize: AppDimensions.fontSizeS,
                             color: AppColors.textDark,
@@ -576,7 +583,7 @@ class _MatchReportManagementScreenState
     );
 
     // 更新があった場合はリロード
-    if (result == true) {
+    if (result == true && mounted) {
       Navigator.of(context).pop(true); // 詳細ダイアログも閉じる
       await _loadReportData();
     }
@@ -584,17 +591,18 @@ class _MatchReportManagementScreenState
 
   /// 日時フォーマット
   String _formatDateTime(DateTime dateTime) {
+    final l10n = L10n.of(context);
     final now = DateTime.now();
     final difference = now.difference(dateTime);
 
     if (difference.inMinutes < 1) {
-      return 'たった今';
+      return l10n.justNow;
     } else if (difference.inHours < 1) {
-      return '${difference.inMinutes}分前';
+      return l10n.timeMinutesAgo(difference.inMinutes);
     } else if (difference.inDays < 1) {
-      return '${difference.inHours}時間前';
+      return l10n.timeHoursAgo(difference.inHours);
     } else if (difference.inDays < 7) {
-      return '${difference.inDays}日前';
+      return l10n.timeDaysAgo(difference.inDays);
     } else {
       return '${dateTime.month}/${dateTime.day}';
     }

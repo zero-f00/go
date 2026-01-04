@@ -6,6 +6,7 @@ import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
 import '../../../shared/widgets/event_info_card.dart';
 import '../../../shared/providers/auth_provider.dart';
+import '../../../l10n/app_localizations.dart';
 import 'participant_group_view_screen.dart';
 import 'participant_list_view_screen.dart';
 import 'violation_report_screen.dart';
@@ -39,14 +40,14 @@ class _ParticipantMenuScreenState extends ConsumerState<ParticipantMenuScreen> {
             child: Column(
               children: [
                 AppHeader(
-                  title: '参加者メニュー',
+                  title: L10n.of(context).participantMenuTitle,
                   showBackButton: true,
                   onBackPressed: () => Navigator.of(context).pop(),
                 ),
-                const Expanded(
+                Expanded(
                   child: Center(
                     child: Text(
-                      'ログインが必要です',
+                      L10n.of(context).loginRequired,
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeL,
                         color: AppColors.textSecondary,
@@ -67,7 +68,7 @@ class _ParticipantMenuScreenState extends ConsumerState<ParticipantMenuScreen> {
           child: Column(
             children: [
               AppHeader(
-                title: '参加者メニュー',
+                title: L10n.of(context).participantMenuTitle,
                 showBackButton: true,
                 onBackPressed: () => Navigator.of(context).pop(),
               ),
@@ -120,7 +121,7 @@ class _ParticipantMenuScreenState extends ConsumerState<ParticipantMenuScreen> {
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                '参加者モード',
+                L10n.of(context).participantMode,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   fontWeight: FontWeight.w600,
@@ -159,9 +160,9 @@ class _ParticipantMenuScreenState extends ConsumerState<ParticipantMenuScreen> {
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                '参加者機能',
-                style: TextStyle(
+              Text(
+                L10n.of(context).participantFeatures,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -172,24 +173,24 @@ class _ParticipantMenuScreenState extends ConsumerState<ParticipantMenuScreen> {
           const SizedBox(height: AppDimensions.spacingL),
           _buildFeatureCard(
             icon: Icons.group,
-            title: 'グループ情報',
-            subtitle: '自分の所属グループとメンバーを確認',
+            title: L10n.of(context).groupInfoTitle,
+            subtitle: L10n.of(context).groupInfoDescription,
             color: AppColors.info,
             onTap: () => _navigateToGroupView(),
           ),
           const SizedBox(height: AppDimensions.spacingM),
           _buildFeatureCard(
             icon: Icons.people_alt,
-            title: '参加者一覧',
-            subtitle: 'イベントの参加者一覧を確認',
+            title: L10n.of(context).participantListTitle,
+            subtitle: L10n.of(context).participantListDescription,
             color: AppColors.accent,
             onTap: () => _navigateToParticipantsList(),
           ),
           const SizedBox(height: AppDimensions.spacingM),
           _buildFeatureCard(
             icon: Icons.report_problem,
-            title: '違反報告',
-            subtitle: '迷惑行為や違反行為を報告',
+            title: L10n.of(context).violationReportMenuTitle,
+            subtitle: L10n.of(context).violationReportDescription,
             color: AppColors.warning,
             onTap: () => _navigateToViolationReport(),
           ),

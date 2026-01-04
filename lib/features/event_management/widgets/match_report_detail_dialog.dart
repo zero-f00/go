@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/services/match_report_service.dart';
 import '../../../data/models/match_result_model.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 試合報告詳細ダイアログ
 class MatchReportDetailDialog extends StatelessWidget {
@@ -23,6 +25,7 @@ class MatchReportDetailDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.radiusL),
@@ -43,9 +46,9 @@ class MatchReportDetailDialog extends StatelessWidget {
                     size: AppDimensions.iconL,
                   ),
                   const SizedBox(width: AppDimensions.spacingM),
-                  const Text(
-                    '報告詳細',
-                    style: TextStyle(
+                  Text(
+                    l10n.reportDetailTitle,
+                    style: const TextStyle(
                       fontSize: AppDimensions.fontSizeXL,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textDark,
@@ -64,7 +67,7 @@ class MatchReportDetailDialog extends StatelessWidget {
               // ステータス
               _buildInfoSection(
                 icon: _getStatusIcon(report.status),
-                label: 'ステータス',
+                label: l10n.statusLabel,
                 content: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppDimensions.spacingM,
@@ -75,7 +78,7 @@ class MatchReportDetailDialog extends StatelessWidget {
                     borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                   ),
                   child: Text(
-                    report.status.displayName,
+                    report.status.getDisplayName(context),
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeM,
                       fontWeight: FontWeight.bold,
@@ -89,7 +92,7 @@ class MatchReportDetailDialog extends StatelessWidget {
               if (matchResult != null) ...[
                 _buildInfoSection(
                   icon: Icons.sports_esports,
-                  label: '試合名',
+                  label: l10n.matchNameLabel,
                   content: Text(
                     matchResult!.matchName,
                     style: const TextStyle(
@@ -103,7 +106,7 @@ class MatchReportDetailDialog extends StatelessWidget {
               // 問題の種類
               _buildInfoSection(
                 icon: Icons.warning_amber,
-                label: '問題の種類',
+                label: l10n.problemTypeLabel,
                 content: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppDimensions.spacingM,
@@ -127,9 +130,9 @@ class MatchReportDetailDialog extends StatelessWidget {
               // 報告日時
               _buildInfoSection(
                 icon: Icons.access_time,
-                label: '報告日時',
+                label: l10n.reportDateLabel,
                 content: Text(
-                  _formatFullDateTime(report.createdAt),
+                  _formatFullDateTime(report.createdAt, l10n.localeName),
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     color: AppColors.textDark,
@@ -140,7 +143,7 @@ class MatchReportDetailDialog extends StatelessWidget {
               // 詳細説明
               _buildInfoSection(
                 icon: Icons.description,
-                label: '詳細説明',
+                label: l10n.detailDescriptionLabel,
                 content: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(AppDimensions.spacingM),
@@ -164,7 +167,7 @@ class MatchReportDetailDialog extends StatelessWidget {
               if (report.adminResponse != null) ...[
                 _buildInfoSection(
                   icon: Icons.admin_panel_settings,
-                  label: '運営からの回答',
+                  label: l10n.adminResponseLabel,
                   content: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(AppDimensions.spacingM),
@@ -187,7 +190,7 @@ class MatchReportDetailDialog extends StatelessWidget {
                         if (report.updatedAt.isAfter(report.createdAt)) ...[
                           const SizedBox(height: AppDimensions.spacingS),
                           Text(
-                            '対応日時: ${_formatFullDateTime(report.updatedAt)}',
+                            l10n.responseDate(_formatFullDateTime(report.updatedAt, l10n.localeName)),
                             style: const TextStyle(
                               fontSize: AppDimensions.fontSizeS,
                               color: AppColors.textSecondary,
@@ -214,9 +217,9 @@ class MatchReportDetailDialog extends StatelessWidget {
                           vertical: AppDimensions.spacingM,
                         ),
                       ),
-                      child: const Text(
-                        '閉じる',
-                        style: TextStyle(
+                      child: Text(
+                        l10n.closeButton,
+                        style: const TextStyle(
                           fontSize: AppDimensions.fontSizeM,
                           color: AppColors.textSecondary,
                         ),
@@ -239,9 +242,9 @@ class MatchReportDetailDialog extends StatelessWidget {
                             borderRadius: BorderRadius.circular(AppDimensions.radiusM),
                           ),
                         ),
-                        child: const Text(
-                          '対応する',
-                          style: TextStyle(
+                        child: Text(
+                          l10n.respondButton,
+                          style: const TextStyle(
                             fontSize: AppDimensions.fontSizeM,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -323,10 +326,9 @@ class MatchReportDetailDialog extends StatelessWidget {
     }
   }
 
-  /// 完全な日時フォーマット
-  String _formatFullDateTime(DateTime dateTime) {
-    return '${dateTime.year}年${dateTime.month}月${dateTime.day}日 '
-        '${dateTime.hour.toString().padLeft(2, '0')}:'
-        '${dateTime.minute.toString().padLeft(2, '0')}';
+  /// 完全な日時フォーマット（ロケール対応）
+  String _formatFullDateTime(DateTime dateTime, String locale) {
+    final dateFormat = DateFormat.yMMMd(locale).add_Hm();
+    return dateFormat.format(dateTime);
   }
 }

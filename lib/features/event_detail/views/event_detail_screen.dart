@@ -3,9 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import '../../../l10n/app_localizations.dart' show L10n;
 import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
-import '../../../shared/constants/app_strings.dart';
 import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
 import '../../../shared/widgets/app_button.dart';
@@ -92,11 +92,12 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
   Future<void> _copyEventName() async {
     await Clipboard.setData(ClipboardData(text: _currentEvent.name));
     if (mounted) {
+      final l10n = L10n.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('イベント名をコピーしました'),
+        SnackBar(
+          content: Text(l10n.eventNameCopied),
           backgroundColor: AppColors.success,
-          duration: Duration(seconds: 2),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
@@ -114,13 +115,15 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
       await EventShareService.shareEvent(
         _currentEvent,
+        context: buttonContext,
         sharePositionOrigin: sharePositionOrigin,
       );
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('共有に失敗しました: $e'),
+            content: Text(l10n.shareFailed(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -144,6 +147,133 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         return AppColors.statusExpired;
       case GameEventStatus.cancelled:
         return AppColors.error;
+    }
+  }
+
+  /// イベントステータスのローカライズ名を取得
+  String _getLocalizedStatusName(GameEventStatus status) {
+    final l10n = L10n.of(context);
+    switch (status) {
+      case GameEventStatus.draft:
+        return l10n.eventStatusDraft;
+      case GameEventStatus.published:
+        return l10n.eventStatusPublished;
+      case GameEventStatus.upcoming:
+        return l10n.eventStatusUpcoming;
+      case GameEventStatus.active:
+        return l10n.eventStatusActive;
+      case GameEventStatus.completed:
+        return l10n.eventStatusCompleted;
+      case GameEventStatus.expired:
+        return l10n.eventStatusExpired;
+      case GameEventStatus.cancelled:
+        return l10n.eventStatusCancelled;
+    }
+  }
+
+  /// イベントタイプのローカライズ名を取得
+  String _getLocalizedTypeName(GameEventType type) {
+    final l10n = L10n.of(context);
+    switch (type) {
+      case GameEventType.daily:
+        return l10n.eventTypeDaily;
+      case GameEventType.weekly:
+        return l10n.eventTypeWeekly;
+      case GameEventType.special:
+        return l10n.eventTypeSpecial;
+      case GameEventType.seasonal:
+        return l10n.eventTypeSeasonal;
+    }
+  }
+
+  /// 公開範囲のローカライズ名を取得
+  String _getLocalizedVisibility(String visibility) {
+    final l10n = L10n.of(context);
+    switch (visibility) {
+      case 'パブリック':
+      case 'public':
+        return l10n.visibilityPublic;
+      case '招待制':
+      case 'inviteOnly':
+        return l10n.visibilityInviteOnly;
+      case 'プライベート':
+      case 'private':
+        return l10n.visibilityPrivate;
+      default:
+        return visibility;
+    }
+  }
+
+  /// 言語のローカライズ名を取得
+  String _getLocalizedLanguage(String language) {
+    final l10n = L10n.of(context);
+    switch (language) {
+      case '日本語':
+      case 'Japanese':
+      case 'ja':
+        return l10n.languageJapanese;
+      case 'English':
+      case 'en':
+        return l10n.languageEnglish;
+      case '韓国語':
+      case 'Korean':
+      case 'ko':
+        return l10n.languageKorean;
+      case '中国語（簡体字）':
+      case 'Chinese (Simplified)':
+      case 'zh':
+        return l10n.languageChineseSimplified;
+      case '中国語（繁体字）':
+      case 'Chinese (Traditional)':
+      case 'zh_TW':
+        return l10n.languageChineseTraditional;
+      case 'その他':
+      case 'Other':
+      case 'other':
+        return l10n.languageOther;
+      default:
+        return language;
+    }
+  }
+
+  /// 現在のロケールに基づいた日付フォーマットを取得
+  String _getLocalizedLocale() {
+    final locale = Localizations.localeOf(context);
+    switch (locale.languageCode) {
+      case 'ja':
+        return 'ja_JP';
+      case 'en':
+        return 'en_US';
+      case 'ko':
+        return 'ko_KR';
+      case 'zh':
+        return locale.countryCode == 'TW' ? 'zh_TW' : 'zh_CN';
+      default:
+        return 'en_US';
+    }
+  }
+
+  /// 現在のロケールに基づいた日時フォーマットを取得
+  DateFormat _getLocalizedDateTimeFormat({bool includeWeekday = false}) {
+    final localeString = _getLocalizedLocale();
+    try {
+      if (includeWeekday) {
+        return DateFormat('yyyy/MM/dd (E) HH:mm', localeString);
+      }
+      return DateFormat('yyyy/MM/dd HH:mm', localeString);
+    } catch (e) {
+      // フォールバック: デフォルトフォーマット
+      return DateFormat('yyyy/MM/dd HH:mm');
+    }
+  }
+
+  /// 現在のロケールに基づいた日付のみのフォーマットを取得
+  DateFormat _getLocalizedDateFormat() {
+    final localeString = _getLocalizedLocale();
+    try {
+      return DateFormat('yyyy/MM/dd', localeString);
+    } catch (e) {
+      return DateFormat('yyyy/MM/dd');
     }
   }
 
@@ -210,7 +340,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                           color: AppColors.textOnPrimary,
                         ),
                         onPressed: () => _shareEvent(buttonContext),
-                        tooltip: 'イベントを共有',
+                        tooltip: L10n.of(context).shareEvent,
                       ),
                     ),
                 ],
@@ -363,8 +493,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
   }
 
   Widget _buildBasicInfoSection() {
+    final l10n = L10n.of(context);
     return _buildSectionContainer(
-      title: 'イベント概要',
+      title: l10n.eventOverview,
       icon: Icons.info,
       children: [
         // イベント名（コピー機能付き）
@@ -389,7 +520,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                 color: AppColors.textSecondary,
               ),
               onPressed: () => _copyEventName(),
-              tooltip: 'イベント名をコピー',
+              tooltip: l10n.copyEventName,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(
                 minWidth: 32,
@@ -435,22 +566,20 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
           runSpacing: AppDimensions.spacingS,
           children: [
             // スペシャルタイプ以外のみ表示
-            if (_currentEvent.type.displayName != 'スペシャル' &&
-                _currentEvent.type.displayName != 'special' &&
-                _currentEvent.type != GameEventType.special) ...[
+            if (_currentEvent.type != GameEventType.special) ...[
               _buildInfoChip(
-                _currentEvent.type.displayName,
+                _getLocalizedTypeName(_currentEvent.type),
                 Icons.category,
                 AppColors.primary,
               ),
             ],
             _buildInfoChip(
-              _currentEvent.status.displayName,
+              _getLocalizedStatusName(_currentEvent.status),
               Icons.radio_button_checked,
               _getStatusColor(_currentEvent.status),
             ),
-            _buildInfoChip(_currentEvent.visibility, Icons.visibility, AppColors.info),
-            _buildInfoChip(_currentEvent.language, Icons.language, AppColors.accent),
+            _buildInfoChip(_getLocalizedVisibility(_currentEvent.visibility), Icons.visibility, AppColors.info),
+            _buildInfoChip(_getLocalizedLanguage(_currentEvent.language), Icons.language, AppColors.accent),
           ],
         ),
       ],
@@ -499,9 +628,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'イベント中止のお知らせ',
-                      style: TextStyle(
+                    Text(
+                      L10n.of(context).eventCancellationNotice,
+                      style: const TextStyle(
                         fontSize: AppDimensions.fontSizeL,
                         fontWeight: FontWeight.w700,
                         color: AppColors.error,
@@ -509,7 +638,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                     ),
                     const SizedBox(height: AppDimensions.spacingXS),
                     Text(
-                      'このイベントは中止されました',
+                      L10n.of(context).eventHasBeenCancelled,
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeM,
                         color: AppColors.error.withValues(alpha: 0.8),
@@ -536,7 +665,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                 ),
                 const SizedBox(width: AppDimensions.spacingXS),
                 Text(
-                  '中止日時: ${_currentEvent.cancelledAt!.month}/${_currentEvent.cancelledAt!.day} ${_currentEvent.cancelledAt!.hour.toString().padLeft(2, '0')}:${_currentEvent.cancelledAt!.minute.toString().padLeft(2, '0')}',
+                  L10n.of(context).cancelledDateTime('${_currentEvent.cancelledAt!.month}/${_currentEvent.cancelledAt!.day} ${_currentEvent.cancelledAt!.hour.toString().padLeft(2, '0')}:${_currentEvent.cancelledAt!.minute.toString().padLeft(2, '0')}'),
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     color: AppColors.textSecondary,
@@ -588,9 +717,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                 color: AppColors.textSecondary,
               ),
               const SizedBox(width: AppDimensions.spacingXS),
-              const Text(
-                '中止理由',
-                style: TextStyle(
+              Text(
+                L10n.of(context).cancellationReason,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeS,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textSecondary,
@@ -632,9 +761,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                         color: AppColors.textSecondary,
                       ),
                       const SizedBox(width: AppDimensions.spacingXS),
-                      const Text(
-                        '詳細・補足説明',
-                        style: TextStyle(
+                      Text(
+                        L10n.of(context).detailsAndNotes,
+                        style: const TextStyle(
                           fontSize: AppDimensions.fontSizeS,
                           fontWeight: FontWeight.w600,
                           color: AppColors.textSecondary,
@@ -690,7 +819,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
   Widget _buildEventTagsSection() {
     return _buildSectionContainer(
-      title: AppStrings.eventTagsLabel,
+      title: L10n.of(context).eventTagsLabel,
       icon: Icons.local_offer,
       children: [
         Wrap(
@@ -725,24 +854,18 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
   }
 
   Widget _buildScheduleSection() {
-    // ロケール初期化に失敗した場合はデフォルトロケールを使用
-    DateFormat dateFormat;
-    try {
-      dateFormat = DateFormat('yyyy/MM/dd (E) HH:mm', 'ja_JP');
-    } catch (e) {
-      // フォールバック: デフォルトロケール使用
-      dateFormat = DateFormat('yyyy/MM/dd HH:mm');
-    }
+    final l10n = L10n.of(context);
+    final dateFormat = _getLocalizedDateTimeFormat(includeWeekday: true);
 
     return _buildSectionContainer(
-      title: 'スケジュール',
+      title: l10n.schedule,
       icon: Icons.schedule,
       children: [
-        _buildInfoRow('開催日時', dateFormat.format(_currentEvent.startDate), Icons.event),
+        _buildInfoRow(l10n.eventDateTimeLabel, dateFormat.format(_currentEvent.startDate), Icons.event),
         if (_currentEvent.registrationDeadline != null) ...[
           const SizedBox(height: AppDimensions.spacingM),
           _buildInfoRow(
-            '申込期限',
+            l10n.registrationDeadline,
             dateFormat.format(_currentEvent.registrationDeadline!),
             Icons.event_busy,
           ),
@@ -752,8 +875,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         if (_currentEvent.isRegistrationExpired) ...[
           const SizedBox(height: AppDimensions.spacingM),
           _buildStatusAlert(
-            '申込期限切れ',
-            '申込期限が過ぎています',
+            l10n.registrationExpired,
+            l10n.registrationExpiredMessage,
             Icons.schedule_send,
             AppColors.warning,
           ),
@@ -763,8 +886,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
   }
 
   Widget _buildGameInfoSection() {
+    final l10n = L10n.of(context);
     return _buildSectionContainer(
-      title: 'ゲーム情報',
+      title: l10n.gameInfo,
       icon: Icons.videogame_asset,
       children: [
         if (_currentEvent.gameName != null) ...[
@@ -848,22 +972,22 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                 child: _buildGameIconFallback(),
               ),
               const SizedBox(width: AppDimensions.spacingM),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'ゲーム情報未設定',
-                      style: TextStyle(
+                      l10n.gameInfoNotSet,
+                      style: const TextStyle(
                         fontSize: AppDimensions.fontSizeL,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textSecondary,
                       ),
                     ),
-                    SizedBox(height: AppDimensions.spacingXS),
+                    const SizedBox(height: AppDimensions.spacingXS),
                     Text(
-                      'このイベントではゲーム情報が指定されていません',
-                      style: TextStyle(
+                      l10n.gameInfoNotSetDescription,
+                      style: const TextStyle(
                         fontSize: AppDimensions.fontSizeS,
                         color: AppColors.textLight,
                       ),
@@ -879,8 +1003,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
   }
 
   Widget _buildPrizeSection() {
+    final l10n = L10n.of(context);
     return _buildSectionContainer(
-      title: '賞品内容',
+      title: l10n.prizeContent,
       icon: Icons.emoji_events,
       children: [
         Text(
@@ -913,7 +1038,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
               const SizedBox(width: AppDimensions.spacingS),
               Expanded(
                 child: Text(
-                  '賞品の受け渡しは主催者と参加者間で直接行われます。受け渡し方法や詳細については主催者にお問い合わせください。',
+                  l10n.prizeDeliveryNote,
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeXS,
                     color: AppColors.textSecondary,
@@ -934,22 +1059,23 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
   /// 参加費用セクションを構築
   Widget _buildParticipationFeeSection() {
+    final l10n = L10n.of(context);
     return _buildSectionContainer(
-      title: '参加費用',
+      title: l10n.participationFee,
       icon: Icons.payments,
       children: [
         // 参加費金額表示：feeText（文字列）を優先し、なければfeeAmount（数値）を使用
         if (_currentEvent.feeText != null && _currentEvent.feeText!.isNotEmpty) ...[
-          _buildInfoRow('参加金額', _currentEvent.feeText!, Icons.payments),
+          _buildInfoRow(l10n.participationAmount, _currentEvent.feeText!, Icons.payments),
           const SizedBox(height: AppDimensions.spacingM),
         ] else if (_currentEvent.feeAmount != null) ...[
-          _buildInfoRow('参加金額', '${_currentEvent.feeAmount!.round()}円', Icons.payments),
+          _buildInfoRow(l10n.participationAmount, l10n.feeAmountYen(_currentEvent.feeAmount!.round()), Icons.payments),
           const SizedBox(height: AppDimensions.spacingM),
         ],
         // 参加費補足情報表示
         if (_currentEvent.feeSupplement != null && _currentEvent.feeSupplement!.isNotEmpty) ...[
           Text(
-            '参加費用補足',
+            l10n.feeNote,
             style: const TextStyle(
               fontSize: AppDimensions.fontSizeM,
               fontWeight: FontWeight.w600,
@@ -972,6 +1098,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
   /// スポンサー情報を構築
   Widget _buildSponsorInfo() {
+    final l10n = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -980,7 +1107,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
             Icon(Icons.business, size: AppDimensions.iconM, color: AppColors.textLight),
             const SizedBox(width: AppDimensions.spacingS),
             Text(
-              'スポンサー',
+              l10n.sponsor,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeS,
                 color: AppColors.textLight,
@@ -996,14 +1123,15 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
   }
 
   Widget _buildParticipationSection() {
+    final l10n = L10n.of(context);
     return _buildSectionContainer(
-      title: '参加情報',
+      title: l10n.participationInfo,
       icon: Icons.group,
       children: [
         // 参加者数表示（統合形式）
         _buildInfoRow(
-          '参加者数',
-          '${_currentEvent.participantCount}/${_currentEvent.maxParticipants}人',
+          l10n.participantCount,
+          '${_currentEvent.participantCount}/${_currentEvent.maxParticipants}',
           Icons.group,
         ),
 
@@ -1011,8 +1139,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         if (_currentEvent.isFull) ...[
           const SizedBox(height: AppDimensions.spacingM),
           _buildStatusAlert(
-            '満員',
-            'このイベントは定員に達しています',
+            l10n.eventFull,
+            l10n.eventFullMessage,
             Icons.group_off,
             AppColors.error,
           ),
@@ -1020,15 +1148,16 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
         if (_currentEvent.hasAgeRestriction && _currentEvent.minAge != null) ...[
           const SizedBox(height: AppDimensions.spacingM),
-          _buildInfoRow('年齢制限', '${_currentEvent.minAge}歳以上', Icons.child_care),
+          _buildInfoRow(l10n.participationInfo, l10n.ageRestriction(_currentEvent.minAge!), Icons.child_care),
         ],
       ],
     );
   }
 
   Widget _buildRulesSection() {
+    final l10n = L10n.of(context);
     return _buildSectionContainer(
-      title: 'ルール・規約',
+      title: l10n.rulesAndTerms,
       icon: Icons.gavel,
       children: [
         Text(
@@ -1044,8 +1173,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
   }
 
   Widget _buildStreamingPlayerSection() {
+    final l10n = L10n.of(context);
     return _buildSectionContainer(
-      title: '配信視聴',
+      title: l10n.streamingViewing,
       icon: Icons.live_tv,
       children: [
         StreamingPlayerWidget(
@@ -1059,8 +1189,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
 
   Widget _buildPolicySection() {
+    final l10n = L10n.of(context);
     return _buildSectionContainer(
-      title: 'キャンセル・変更ポリシー',
+      title: l10n.cancellationPolicy,
       icon: Icons.policy,
       children: [
         Text(
@@ -1076,8 +1207,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
   }
 
   Widget _buildAdditionalInfoSection() {
+    final l10n = L10n.of(context);
     return _buildSectionContainer(
-      title: '追加情報・注意事項',
+      title: l10n.additionalNotes,
       icon: Icons.info_outline,
       children: [
         Text(
@@ -1093,6 +1225,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
   }
 
   Widget _buildManagementInfoSection() {
+    final l10n = L10n.of(context);
     // 運営者リストを構築（managers + createdBy）
     final allManagers = <String>[];
     if (_currentEvent.managers.isNotEmpty) {
@@ -1105,14 +1238,14 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     }
 
     return _buildSectionContainer(
-      title: '運営情報',
+      title: l10n.organizerInfo,
       icon: Icons.admin_panel_settings,
       children: [
         // 運営者情報
         if (allManagers.isNotEmpty) ...[
-          const Text(
-            '運営者',
-            style: TextStyle(
+          Text(
+            l10n.organizer,
+            style: const TextStyle(
               fontSize: AppDimensions.fontSizeM,
               fontWeight: FontWeight.w600,
               color: AppColors.textDark,
@@ -1124,9 +1257,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         // スポンサー情報
         if (_currentEvent.sponsors.isNotEmpty) ...[
           if (allManagers.isNotEmpty) const SizedBox(height: AppDimensions.spacingM),
-          const Text(
-            'スポンサー',
-            style: TextStyle(
+          Text(
+            l10n.sponsor,
+            style: const TextStyle(
               fontSize: AppDimensions.fontSizeM,
               fontWeight: FontWeight.w600,
               color: AppColors.textDark,
@@ -1141,16 +1274,11 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
   /// 管理者専用情報セクション
   Widget _buildAdminOnlySection() {
-    // 日付フォーマッター
-    DateFormat dateFormat;
-    try {
-      dateFormat = DateFormat('yyyy/MM/dd HH:mm', 'ja_JP');
-    } catch (e) {
-      dateFormat = DateFormat('yyyy/MM/dd HH:mm');
-    }
+    final l10n = L10n.of(context);
+    final dateFormat = _getLocalizedDateTimeFormat();
 
     return _buildSectionContainer(
-      title: '管理者専用情報',
+      title: l10n.adminOnlyInfo,
       icon: Icons.security,
       children: [
         // イベント管理情報セクション
@@ -1159,27 +1287,27 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
         // 公開範囲表示
         _buildInfoRow(
-          '公開範囲',
+          l10n.visibilityScope,
           _getVisibilityDisplayName(),
           Icons.visibility,
         ),
 
         // イベントパスワード設定状況（招待制の場合）
-        if (_currentEvent.visibility == '招待制') ...[
+        if (_currentEvent.visibility == '招待制' || _currentEvent.visibility == 'inviteOnly') ...[
           const SizedBox(height: AppDimensions.spacingM),
           _buildInfoRow(
-            'パスワード設定',
-            '設定済み', // 招待制イベントの場合は設定済みと表示
+            l10n.passwordSetting,
+            l10n.configured, // 招待制イベントの場合は設定済みと表示
             Icons.lock,
           ),
         ],
 
         // 招待ユーザー一覧（TODO: 実際のデータが必要）
-        if (_currentEvent.visibility == '招待制') ...[
+        if (_currentEvent.visibility == '招待制' || _currentEvent.visibility == 'inviteOnly') ...[
           const SizedBox(height: AppDimensions.spacingM),
-          const Text(
-            '招待ユーザー',
-            style: TextStyle(
+          Text(
+            l10n.invitedUsers,
+            style: const TextStyle(
               fontSize: AppDimensions.fontSizeM,
               fontWeight: FontWeight.w600,
               color: AppColors.textDark,
@@ -1201,10 +1329,10 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                   color: AppColors.accent,
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    '招待制イベントではパスワード認証により参加を制御しています',
-                    style: TextStyle(
+                    l10n.inviteOnlyPasswordNote,
+                    style: const TextStyle(
                       fontSize: AppDimensions.fontSizeS,
                       color: AppColors.textDark,
                     ),
@@ -1217,9 +1345,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
         // NGユーザー一覧
         const SizedBox(height: AppDimensions.spacingM),
-        const Text(
-          'NGユーザー',
-          style: TextStyle(
+        Text(
+          l10n.blockedUsers,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeM,
             fontWeight: FontWeight.w600,
             color: AppColors.textDark,
@@ -1233,14 +1361,15 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
   /// イベント管理情報セクション（作成者・作成日時・最終更新者・最終更新日時）
   Widget _buildEventManagementInfoSection(DateFormat dateFormat) {
+    final l10n = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // 作成者
         if (_currentEvent.createdBy != null) ...[
-          const Text(
-            '作成者',
-            style: TextStyle(
+          Text(
+            l10n.creator,
+            style: const TextStyle(
               fontSize: AppDimensions.fontSizeM,
               fontWeight: FontWeight.w600,
               color: AppColors.textDark,
@@ -1253,9 +1382,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         // 作成日時
         if (_currentEvent.createdAt != null) ...[
           const SizedBox(height: AppDimensions.spacingM),
-          const Text(
-            '作成日時',
-            style: TextStyle(
+          Text(
+            l10n.createdAt,
+            style: const TextStyle(
               fontSize: AppDimensions.fontSizeM,
               fontWeight: FontWeight.w600,
               color: AppColors.textDark,
@@ -1274,9 +1403,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         // 最終更新者（更新されている場合のみ表示）
         if (_currentEvent.lastUpdatedBy != null) ...[
           const SizedBox(height: AppDimensions.spacingM),
-          const Text(
-            '最終更新者',
-            style: TextStyle(
+          Text(
+            l10n.lastUpdatedBy,
+            style: const TextStyle(
               fontSize: AppDimensions.fontSizeM,
               fontWeight: FontWeight.w600,
               color: AppColors.textDark,
@@ -1289,9 +1418,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         // 最終更新日時
         if (_currentEvent.updatedAt != null) ...[
           const SizedBox(height: AppDimensions.spacingM),
-          const Text(
-            '最終更新日時',
-            style: TextStyle(
+          Text(
+            l10n.lastUpdatedAt,
+            style: const TextStyle(
               fontSize: AppDimensions.fontSizeM,
               fontWeight: FontWeight.w600,
               color: AppColors.textDark,
@@ -1438,6 +1567,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
   /// 管理者向けボタンを構築
   Widget _buildManagerButtons(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -1474,7 +1604,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'イベント管理',
+                      l10n.eventManagement,
                       style: const TextStyle(
                         fontSize: AppDimensions.fontSizeL,
                         fontWeight: FontWeight.w700,
@@ -1483,7 +1613,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                     ),
                     const SizedBox(height: AppDimensions.spacingXS),
                     Text(
-                      'このイベントの管理者権限があります',
+                      l10n.hasManagementPermission,
                       style: const TextStyle(
                         fontSize: AppDimensions.fontSizeS,
                         color: AppColors.textLight,
@@ -1509,7 +1639,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
             child: Column(
               children: [
                 Text(
-                  '管理機能',
+                  l10n.managementFeatures,
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     fontWeight: FontWeight.w600,
@@ -1554,7 +1684,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'イベント編集',
+                                  l10n.eventEdit,
                                   style: TextStyle(
                                     fontSize: AppDimensions.fontSizeM,
                                     fontWeight: FontWeight.w600,
@@ -1563,7 +1693,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                                 ),
                                 const SizedBox(height: AppDimensions.spacingXS),
                                 Text(
-                                  'イベント情報の編集・更新',
+                                  l10n.eventEditDescription,
                                   style: TextStyle(
                                     fontSize: AppDimensions.fontSizeS,
                                     color: AppColors.textSecondary,
@@ -1620,7 +1750,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  '運営管理',
+                                  l10n.operationManagement,
                                   style: TextStyle(
                                     fontSize: AppDimensions.fontSizeM,
                                     fontWeight: FontWeight.w600,
@@ -1629,7 +1759,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                                 ),
                                 const SizedBox(height: AppDimensions.spacingXS),
                                 Text(
-                                  '参加者・グループ・結果管理',
+                                  l10n.operationManagementDescription,
                                   style: TextStyle(
                                     fontSize: AppDimensions.fontSizeS,
                                     color: AppColors.textSecondary,
@@ -1691,6 +1821,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
   /// 参加者メニューボタンを構築
   Widget _buildParticipantMenuButton(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -1727,7 +1858,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '参加者メニュー',
+                      l10n.participantMenu,
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeL,
                         fontWeight: FontWeight.w700,
@@ -1736,7 +1867,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                     ),
                     const SizedBox(height: AppDimensions.spacingXS),
                     Text(
-                      '承認済み参加者向け機能',
+                      l10n.approvedParticipantFeatures,
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeS,
                         color: AppColors.textLight,
@@ -1762,7 +1893,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
             child: Column(
               children: [
                 Text(
-                  '参加者機能',
+                  l10n.participantFeatures,
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     fontWeight: FontWeight.w600,
@@ -1773,8 +1904,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                 // グループ情報ボタン
                 _buildParticipantFeatureButton(
                   icon: Icons.group,
-                  title: 'グループ情報',
-                  subtitle: '所属グループの確認',
+                  title: l10n.groupInfo,
+                  subtitle: l10n.groupInfoSubtitle,
                   color: AppColors.info,
                   onTap: () => _navigateToParticipantGroupView(context),
                 ),
@@ -1782,8 +1913,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                 // 参加者一覧ボタン
                 _buildParticipantFeatureButton(
                   icon: Icons.people,
-                  title: '参加者一覧',
-                  subtitle: 'イベント参加者の確認',
+                  title: l10n.participantList,
+                  subtitle: l10n.participantListSubtitle,
                   color: AppColors.accent,
                   onTap: () => _navigateToParticipantListView(context),
                 ),
@@ -1791,8 +1922,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                 // 戦績・結果確認ボタン
                 _buildParticipantFeatureButton(
                   icon: Icons.analytics,
-                  title: '戦績・結果確認',
-                  subtitle: '試合結果とランキングの確認',
+                  title: l10n.matchResults,
+                  subtitle: l10n.matchResultsSubtitle,
                   color: AppColors.secondary,
                   onTap: () => _navigateToMatchResults(context),
                 ),
@@ -1800,8 +1931,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                 // 違反報告ボタン
                 _buildParticipantFeatureButton(
                   icon: Icons.report_problem,
-                  title: '違反報告',
-                  subtitle: '迷惑行為の報告',
+                  title: l10n.violationReport,
+                  subtitle: l10n.violationReportSubtitle,
                   color: AppColors.warning,
                   onTap: () => _navigateToViolationReport(context),
                 ),
@@ -1971,6 +2102,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
   /// 参加申し込みダイアログを表示
   Future<void> _showParticipationDialog() async {
+    final l10n = L10n.of(context);
     try {
       // GameEventをEventに変換
       final eventData = await EventConverter.gameEventToEvent(_currentEvent);
@@ -1984,8 +2116,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         if (result == true && mounted) {
           // 参加申し込み成功時の処理（必要に応じて画面を更新）
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('参加申し込みが完了しました'),
+            SnackBar(
+              content: Text(l10n.applicationCompleted),
               backgroundColor: AppColors.success,
             ),
           );
@@ -1995,7 +2127,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('エラーが発生しました: $e'),
+            content: Text('${l10n.errorOccurred}: $e'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -2005,13 +2137,14 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
   /// 動的参加申し込みボタンを構築
   Widget _buildParticipationButton() {
+    final l10n = L10n.of(context);
     final currentUser = ref.watch(currentUserDataProvider);
 
     return currentUser.when(
       data: (user) {
         if (user == null) {
           return AppButton(
-            text: 'ログインして参加申し込み',
+            text: l10n.loginToApply,
             onPressed: () async {
               final result = await AuthDialog.show(context);
               if (result == true) {
@@ -2033,7 +2166,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
             if (application == null) {
               // 未申し込み：通常の申し込みボタン
               return AppButton(
-                text: '参加申し込み',
+                text: l10n.applyToParticipate,
                 onPressed: () => _showParticipationDialog(),
                 type: AppButtonType.primary,
               );
@@ -2044,7 +2177,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
               case ParticipationStatus.pending:
                 // 満員状態かどうかを確認
                 final isEventFull = _currentEvent.isFull;
-                final statusText = isEventFull ? '申し込み済み（キャンセル待ち）' : '申し込み済み（承認待ち）';
+                final statusText = isEventFull ? l10n.appliedWaitlist : l10n.appliedPending;
                 final statusIcon = isEventFull ? Icons.hourglass_empty : Icons.pending_actions;
 
                 return Container(
@@ -2095,7 +2228,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                                 ),
                                 const SizedBox(height: AppDimensions.spacingXS),
                                 Text(
-                                  '申し込み日: ${DateFormat('yyyy/MM/dd').format(application.appliedAt)}',
+                                  l10n.applicationDate(_getLocalizedDateFormat().format(application.appliedAt)),
                                   style: const TextStyle(
                                     fontSize: AppDimensions.fontSizeS,
                                     color: AppColors.textSecondary,
@@ -2104,7 +2237,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                                 if (isEventFull) ...[
                                   const SizedBox(height: AppDimensions.spacingXS),
                                   Text(
-                                    'このイベントは満員ですが、あなたの申請はキャンセル待ちとして受付中です。',
+                                    l10n.waitlistNote,
                                     style: TextStyle(
                                       fontSize: AppDimensions.fontSizeS,
                                       color: AppColors.warning.withValues(alpha: 0.8),
@@ -2125,7 +2258,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                           child: OutlinedButton.icon(
                             onPressed: () => _showCancellationDialog(application.id),
                             icon: const Icon(Icons.cancel_outlined, size: 18),
-                            label: const Text('申し込みをキャンセル'),
+                            label: Text(l10n.cancelApplication),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppColors.error,
                               side: const BorderSide(color: AppColors.error),
@@ -2176,18 +2309,18 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  '参加確定',
-                                  style: TextStyle(
+                                Text(
+                                  l10n.participationConfirmed,
+                                  style: const TextStyle(
                                     fontSize: AppDimensions.fontSizeL,
                                     fontWeight: FontWeight.w700,
                                     color: AppColors.success,
                                   ),
                                 ),
                                 const SizedBox(height: AppDimensions.spacingXS),
-                                const Text(
-                                  '参加が承認されました',
-                                  style: TextStyle(
+                                Text(
+                                  l10n.participationApproved,
+                                  style: const TextStyle(
                                     fontSize: AppDimensions.fontSizeS,
                                     color: AppColors.textSecondary,
                                   ),
@@ -2205,7 +2338,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                           child: OutlinedButton.icon(
                             onPressed: () => _showCancellationDialog(application.id),
                             icon: const Icon(Icons.cancel_outlined, size: 18),
-                            label: const Text('参加をキャンセル'),
+                            label: Text(l10n.cancelParticipation),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppColors.error,
                               side: const BorderSide(color: AppColors.error),
@@ -2259,7 +2392,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'キャンセル待ち $waitlistPosition番目',
+                                  l10n.waitlistPosition(waitlistPosition),
                                   style: const TextStyle(
                                     fontSize: AppDimensions.fontSizeL,
                                     fontWeight: FontWeight.w700,
@@ -2268,7 +2401,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                                 ),
                                 const SizedBox(height: AppDimensions.spacingXS),
                                 Text(
-                                  '申し込み日: ${DateFormat('yyyy/MM/dd').format(application.appliedAt)}',
+                                  l10n.applicationDate(_getLocalizedDateFormat().format(application.appliedAt)),
                                   style: const TextStyle(
                                     fontSize: AppDimensions.fontSizeS,
                                     color: AppColors.textSecondary,
@@ -2276,7 +2409,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                                 ),
                                 const SizedBox(height: AppDimensions.spacingXS),
                                 Text(
-                                  '参加者が辞退した場合、順番に承認いたします。',
+                                  l10n.waitlistPromotionNote,
                                   style: TextStyle(
                                     fontSize: AppDimensions.fontSizeS,
                                     color: AppColors.warning.withValues(alpha: 0.8),
@@ -2295,7 +2428,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                         child: OutlinedButton.icon(
                           onPressed: () => _cancelWaitlist(application.id),
                           icon: const Icon(Icons.cancel_outlined, size: 18),
-                          label: const Text('キャンセル待ちを取り消す'),
+                          label: Text(l10n.cancelWaitlist),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.error,
                             side: BorderSide(color: AppColors.error),
@@ -2348,9 +2481,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  '参加申し込みが拒否されました',
-                                  style: TextStyle(
+                                Text(
+                                  l10n.applicationRejected,
+                                  style: const TextStyle(
                                     fontSize: AppDimensions.fontSizeL,
                                     fontWeight: FontWeight.w700,
                                     color: AppColors.error,
@@ -2359,7 +2492,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                                 const SizedBox(height: AppDimensions.spacingXS),
                                 if (application.rejectionReason != null)
                                   Text(
-                                    '理由: ${application.rejectionReason}',
+                                    l10n.rejectionReason(application.rejectionReason!),
                                     style: const TextStyle(
                                       fontSize: AppDimensions.fontSizeS,
                                       color: AppColors.textSecondary,
@@ -2410,9 +2543,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'キャンセル済み',
-                              style: TextStyle(
+                            Text(
+                              l10n.cancelled,
+                              style: const TextStyle(
                                 fontSize: AppDimensions.fontSizeL,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.textSecondary,
@@ -2421,8 +2554,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                             const SizedBox(height: AppDimensions.spacingXS),
                             Text(
                               application.cancelledAt != null
-                                  ? 'キャンセル日時: ${DateFormat('yyyy/MM/dd HH:mm').format(application.cancelledAt!)}'
-                                  : 'キャンセル済み',
+                                  ? l10n.cancelledAt(_getLocalizedDateTimeFormat().format(application.cancelledAt!))
+                                  : l10n.cancelled,
                               style: const TextStyle(
                                 fontSize: AppDimensions.fontSizeS,
                                 color: AppColors.textSecondary,
@@ -2432,7 +2565,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                                 application.cancellationReason!.isNotEmpty) ...[
                               const SizedBox(height: AppDimensions.spacingXS),
                               Text(
-                                'キャンセル理由: ${application.cancellationReason}',
+                                l10n.cancellationReasonLabel(application.cancellationReason!),
                                 style: const TextStyle(
                                   fontSize: AppDimensions.fontSizeS,
                                   color: AppColors.textSecondary,
@@ -2449,7 +2582,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
             }
           },
           loading: () => AppButton(
-            text: '読み込み中...',
+            text: l10n.loading,
             onPressed: null,
             type: AppButtonType.secondary,
             isEnabled: false,
@@ -2474,10 +2607,10 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                       size: AppDimensions.iconM,
                     ),
                     const SizedBox(width: AppDimensions.spacingS),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        '参加状況の取得に失敗しました',
-                        style: TextStyle(
+                        l10n.participationStatusFetchFailed,
+                        style: const TextStyle(
                           fontSize: AppDimensions.fontSizeM,
                           fontWeight: FontWeight.w600,
                           color: AppColors.error,
@@ -2491,7 +2624,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                   children: [
                     Expanded(
                       child: AppButton(
-                        text: '再試行',
+                        text: l10n.retry,
                         onPressed: () {
                           // プロバイダーを無効化して再読み込み
                           ref.invalidate(userParticipationStatusProvider((
@@ -2506,7 +2639,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                     const SizedBox(width: AppDimensions.spacingS),
                     Expanded(
                       child: AppButton(
-                        text: '申し込み',
+                        text: l10n.apply,
                         onPressed: () => _showParticipationDialog(),
                         type: AppButtonType.primary,
                       ),
@@ -2519,13 +2652,13 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         );
       },
       loading: () => AppButton(
-        text: '読み込み中...',
+        text: l10n.loading,
         onPressed: null,
         type: AppButtonType.secondary,
         isEnabled: false,
       ),
       error: (error, stack) => AppButton(
-        text: 'ログインエラー',
+        text: l10n.loginError,
         onPressed: null,
         type: AppButtonType.danger,
         isEnabled: false,
@@ -2537,7 +2670,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
   /// 公開設定の表示名を取得
   String _getVisibilityDisplayName() {
-    return _currentEvent.visibility;
+    return _getLocalizedVisibility(_currentEvent.visibility);
   }
 
 
@@ -2562,6 +2695,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
   /// NGユーザー（ブロック済みユーザー）一覧を構築
   Widget _buildBlockedUsersSection() {
+    final l10n = L10n.of(context);
     if (_currentEvent.blockedUsers.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(AppDimensions.spacingM),
@@ -2578,10 +2712,10 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
               color: AppColors.success,
             ),
             const SizedBox(width: AppDimensions.spacingS),
-            const Expanded(
+            Expanded(
               child: Text(
-                'NGユーザーは設定されていません',
-                style: TextStyle(
+                l10n.noBlockedUsersSet,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeS,
                   color: AppColors.textDark,
                 ),
@@ -2597,6 +2731,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
   /// クリック可能なユーザータグリストを構築（UserTagデザイン + プロフィール遷移）
   Widget _buildClickableUserTagsList(List<String> userIds, {bool isBlockedUsers = false}) {
+    final l10n = L10n.of(context);
     return FutureBuilder<List<UserData>>(
       future: _fetchUsersFromIds(userIds),
       builder: (context, snapshot) {
@@ -2617,7 +2752,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
           return Container(
             padding: const EdgeInsets.all(AppDimensions.spacingM),
             child: Text(
-              'ユーザー情報の読み込みに失敗しました',
+              l10n.userInfoLoadFailed,
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeS,
                 color: AppColors.error,
@@ -2632,7 +2767,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
           return Container(
             padding: const EdgeInsets.all(AppDimensions.spacingM),
             child: Text(
-              'ユーザーが見つかりません',
+              l10n.userNotFoundShort,
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeS,
                 color: AppColors.textSecondary,
@@ -2770,6 +2905,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
   /// キャンセル待ち取り消し
   Future<void> _cancelWaitlist(String applicationId) async {
+    final l10n = L10n.of(context);
     final shouldCancel = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -2777,17 +2913,17 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusM),
         ),
-        title: const Text(
-          'キャンセル待ちを取り消しますか？',
-          style: TextStyle(
+        title: Text(
+          l10n.cancelWaitlistConfirmTitle,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeL,
             fontWeight: FontWeight.w600,
             color: AppColors.textDark,
           ),
         ),
-        content: const Text(
-          'キャンセル待ちを取り消すと、このイベントへの参加申請が完全に撤回されます。\n\n再度参加を希望される場合は、新規で申請が必要となります。',
-          style: TextStyle(
+        content: Text(
+          l10n.cancelWaitlistConfirmMessage,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeM,
             color: AppColors.textSecondary,
             height: 1.5,
@@ -2796,9 +2932,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text(
-              'キャンセル',
-              style: TextStyle(
+            child: Text(
+              l10n.cancel,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textSecondary,
               ),
@@ -2813,9 +2949,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                 borderRadius: BorderRadius.circular(AppDimensions.radiusS),
               ),
             ),
-            child: const Text(
-              '取り消す',
-              style: TextStyle(
+            child: Text(
+              l10n.withdraw,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 fontWeight: FontWeight.w600,
               ),
@@ -2830,14 +2966,14 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         final success = await ParticipationService.updateApplicationStatus(
           applicationId,
           ParticipationStatus.rejected,
-          adminMessage: 'ユーザーによるキャンセル待ち取り消し',
+          adminMessage: l10n.cancelWaitlistByUser,
           adminUserId: 'user_self',
         );
 
         if (success && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('キャンセル待ちを取り消しました'),
+            SnackBar(
+              content: Text(l10n.waitlistCancelledSuccess),
               backgroundColor: AppColors.success,
             ),
           );
@@ -2846,7 +2982,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('キャンセル待ちの取り消しに失敗しました: $e'),
+              content: Text(l10n.waitlistCancelFailed(e.toString())),
               backgroundColor: AppColors.error,
             ),
           );
@@ -2888,6 +3024,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
   /// キャンセル処理を実行
   Future<void> _executeCancellation(String applicationId, String reason) async {
+    final l10n = L10n.of(context);
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) return;
@@ -2901,15 +3038,15 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       if (mounted) {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('参加をキャンセルしました'),
+            SnackBar(
+              content: Text(l10n.participationCancelledSuccess),
               backgroundColor: AppColors.success,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('キャンセルに失敗しました'),
+            SnackBar(
+              content: Text(l10n.participationCancelFailed),
               backgroundColor: AppColors.error,
             ),
           );
@@ -2919,7 +3056,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('キャンセル中にエラーが発生しました: $e'),
+            content: Text(l10n.cancellationErrorWithMessage(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -3009,9 +3146,9 @@ class _CancellationDialogState extends State<_CancellationDialog> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          '参加キャンセル',
-                          style: TextStyle(
+                        Text(
+                          L10n.of(context).participationCancelTitle,
+                          style: const TextStyle(
                             color: AppColors.textWhite,
                             fontSize: AppDimensions.fontSizeXL,
                             fontWeight: FontWeight.bold,
@@ -3071,7 +3208,7 @@ class _CancellationDialogState extends State<_CancellationDialog> {
                           const SizedBox(width: AppDimensions.spacingM),
                           Expanded(
                             child: Text(
-                              '参加をキャンセルすると、再度参加するには主催者の承認が必要になる場合があります。',
+                              L10n.of(context).participationCancelWarning,
                               style: TextStyle(
                                 fontSize: AppDimensions.fontSizeM,
                                 color: AppColors.textDark,
@@ -3083,9 +3220,9 @@ class _CancellationDialogState extends State<_CancellationDialog> {
                     ),
                     const SizedBox(height: AppDimensions.spacingL),
                     // キャンセル理由入力
-                    const Text(
-                      'キャンセル理由（必須）',
-                      style: TextStyle(
+                    Text(
+                      L10n.of(context).cancellationReasonRequired,
+                      style: const TextStyle(
                         fontSize: AppDimensions.fontSizeM,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textDark,
@@ -3094,7 +3231,7 @@ class _CancellationDialogState extends State<_CancellationDialog> {
                     const SizedBox(height: AppDimensions.spacingS),
                     AppTextField(
                       controller: _reasonController,
-                      hintText: '主催者へキャンセル理由をお知らせください',
+                      hintText: L10n.of(context).cancellationReasonHint,
                       maxLines: 4,
                       maxLength: 200,
                     ),
@@ -3119,14 +3256,14 @@ class _CancellationDialogState extends State<_CancellationDialog> {
                 children: [
                   Expanded(
                     child: AppButton.outline(
-                      text: '戻る',
+                      text: L10n.of(context).back,
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ),
                   const SizedBox(width: AppDimensions.spacingM),
                   Expanded(
                     child: AppButton(
-                      text: 'キャンセルする',
+                      text: L10n.of(context).confirmCancel,
                       type: AppButtonType.danger,
                       onPressed: () {
                         if (_reasonController.text.trim().isNotEmpty) {
@@ -3136,8 +3273,8 @@ class _CancellationDialogState extends State<_CancellationDialog> {
                           });
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('キャンセル理由を入力してください'),
+                            SnackBar(
+                              content: Text(L10n.of(context).pleaseEnterCancellationReason),
                               backgroundColor: AppColors.warning,
                             ),
                           );

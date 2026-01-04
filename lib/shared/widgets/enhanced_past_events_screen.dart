@@ -7,6 +7,7 @@ import 'app_header.dart';
 import 'event_card.dart';
 import 'management_event_card_wrapper.dart';
 import '../../features/game_event_management/models/game_event.dart';
+import '../../l10n/app_localizations.dart';
 
 /// 過去イベント履歴の表示フィルタ
 enum PastEventFilter {
@@ -39,14 +40,15 @@ enum ViewMode {
 }
 
 extension PastEventFilterExtension on PastEventFilter {
-  String get displayName {
+  String getLocalizedName(BuildContext context) {
+    final l10n = L10n.of(context);
     switch (this) {
       case PastEventFilter.all:
-        return '全て';
+        return l10n.filterAll;
       case PastEventFilter.completed:
-        return '完了済み';
+        return l10n.filterCompleted;
       case PastEventFilter.cancelled:
-        return 'キャンセル';
+        return l10n.filterCancelled;
     }
   }
 
@@ -63,33 +65,35 @@ extension PastEventFilterExtension on PastEventFilter {
 }
 
 extension PastEventSortExtension on PastEventSort {
-  String get displayName {
+  String getLocalizedName(BuildContext context) {
+    final l10n = L10n.of(context);
     switch (this) {
       case PastEventSort.dateNewest:
-        return '開催日（新しい順）';
+        return l10n.sortDateNewest;
       case PastEventSort.dateOldest:
-        return '開催日（古い順）';
+        return l10n.sortDateOldest;
       case PastEventSort.participantsDesc:
-        return '参加者数（多い順）';
+        return l10n.sortParticipantsDesc;
       case PastEventSort.participantsAsc:
-        return '参加者数（少ない順）';
+        return l10n.sortParticipantsAsc;
     }
   }
 }
 
 extension PastEventPeriodExtension on PastEventPeriod {
-  String get displayName {
+  String getLocalizedName(BuildContext context) {
+    final l10n = L10n.of(context);
     switch (this) {
       case PastEventPeriod.month:
-        return '最近1ヶ月';
+        return l10n.periodMonth;
       case PastEventPeriod.threeMonth:
-        return '最近3ヶ月';
+        return l10n.periodThreeMonth;
       case PastEventPeriod.sixMonth:
-        return '最近6ヶ月';
+        return l10n.periodSixMonth;
       case PastEventPeriod.year:
-        return '最近1年';
+        return l10n.periodYear;
       case PastEventPeriod.all:
-        return '全期間';
+        return l10n.periodAll;
     }
   }
 
@@ -333,7 +337,7 @@ class _EnhancedPastEventsScreenState extends ConsumerState<EnhancedPastEventsScr
           child: Column(
             children: [
               AppHeader(
-                title: '過去のイベント履歴',
+                title: L10n.of(context).pastEventsHistoryTitle,
                 showBackButton: true,
                 onBackPressed: () => Navigator.of(context).pop(),
               ),
@@ -384,9 +388,9 @@ class _EnhancedPastEventsScreenState extends ConsumerState<EnhancedPastEventsScr
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                '過去のイベント履歴',
-                style: TextStyle(
+              Text(
+                L10n.of(context).pastEventsHistoryTitle,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -406,7 +410,7 @@ class _EnhancedPastEventsScreenState extends ConsumerState<EnhancedPastEventsScr
               ),
               const SizedBox(width: AppDimensions.spacingXS),
               Text(
-                '${_filteredEvents.length}件のイベント（全${widget.events.length}件中）',
+                L10n.of(context).filteredEventCount(_filteredEvents.length, widget.events.length),
                 style: const TextStyle(
                   fontSize: AppDimensions.fontSizeS,
                   color: AppColors.accent,
@@ -474,7 +478,7 @@ class _EnhancedPastEventsScreenState extends ConsumerState<EnhancedPastEventsScr
           Row(
             children: [
               Expanded(child: _buildFilterDropdown<PastEventFilter>(
-                label: 'ステータス',
+                label: L10n.of(context).statusFilterLabel,
                 value: _selectedFilter,
                 items: PastEventFilter.values,
                 onChanged: (value) {
@@ -487,13 +491,13 @@ class _EnhancedPastEventsScreenState extends ConsumerState<EnhancedPastEventsScr
                   children: [
                     Icon(filter.icon, size: AppDimensions.iconS),
                     const SizedBox(width: AppDimensions.spacingS),
-                    Text(filter.displayName),
+                    Text(filter.getLocalizedName(context)),
                   ],
                 ),
               )),
               const SizedBox(width: AppDimensions.spacingM),
               Expanded(child: _buildFilterDropdown<PastEventPeriod>(
-                label: '期間',
+                label: L10n.of(context).periodFilterLabel,
                 value: _selectedPeriod,
                 items: PastEventPeriod.values,
                 onChanged: (value) {
@@ -502,7 +506,7 @@ class _EnhancedPastEventsScreenState extends ConsumerState<EnhancedPastEventsScr
                   });
                   _applyFilters();
                 },
-                itemBuilder: (period) => Text(period.displayName),
+                itemBuilder: (period) => Text(period.getLocalizedName(context)),
               )),
             ],
           ),
@@ -564,9 +568,9 @@ class _EnhancedPastEventsScreenState extends ConsumerState<EnhancedPastEventsScr
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'ゲーム',
-          style: TextStyle(
+        Text(
+          L10n.of(context).gameFilterLabel,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeS,
             color: AppColors.textSecondary,
             fontWeight: FontWeight.w600,
@@ -584,7 +588,7 @@ class _EnhancedPastEventsScreenState extends ConsumerState<EnhancedPastEventsScr
             value: _selectedGame,
             isExpanded: true,
             underline: const SizedBox(),
-            hint: const Text('全てのゲーム'),
+            hint: Text(L10n.of(context).allGames),
             onChanged: (value) {
               setState(() {
                 _selectedGame = value;
@@ -592,9 +596,9 @@ class _EnhancedPastEventsScreenState extends ConsumerState<EnhancedPastEventsScr
               _applyFilters();
             },
             items: [
-              const DropdownMenuItem<String?>(
+              DropdownMenuItem<String?>(
                 value: null,
-                child: Text('全てのゲーム'),
+                child: Text(L10n.of(context).allGames),
               ),
               ..._availableGames.map((game) => DropdownMenuItem<String?>(
                 value: game,
@@ -611,9 +615,9 @@ class _EnhancedPastEventsScreenState extends ConsumerState<EnhancedPastEventsScr
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'ソート',
-          style: TextStyle(
+        Text(
+          L10n.of(context).sortLabel,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeS,
             color: AppColors.textSecondary,
             fontWeight: FontWeight.w600,
@@ -639,7 +643,7 @@ class _EnhancedPastEventsScreenState extends ConsumerState<EnhancedPastEventsScr
             },
             items: PastEventSort.values.map((sort) => DropdownMenuItem<PastEventSort>(
               value: sort,
-              child: Text(sort.displayName),
+              child: Text(sort.getLocalizedName(context)),
             )).toList(),
           ),
         ),
@@ -653,7 +657,7 @@ class _EnhancedPastEventsScreenState extends ConsumerState<EnhancedPastEventsScr
       child: TextField(
         controller: _searchController,
         decoration: InputDecoration(
-          hintText: 'イベント名、説明、ゲーム名で検索...',
+          hintText: L10n.of(context).pastEventSearchHint,
           hintStyle: const TextStyle(
             color: AppColors.textLight,
             fontSize: AppDimensions.fontSizeM,
@@ -763,8 +767,8 @@ class _EnhancedPastEventsScreenState extends ConsumerState<EnhancedPastEventsScr
         ? AppColors.success
         : AppColors.warning;
     final statusText = event.status == GameEventStatus.completed
-        ? '完了'
-        : 'キャンセル';
+        ? L10n.of(context).statusCompleted
+        : L10n.of(context).filterCancelled;
 
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
@@ -851,7 +855,7 @@ class _EnhancedPastEventsScreenState extends ConsumerState<EnhancedPastEventsScr
                       ),
                       const SizedBox(width: AppDimensions.spacingXS),
                       Text(
-                        '${event.participantCount}人',
+                        L10n.of(context).participantsCount(event.participantCount),
                         style: const TextStyle(
                           fontSize: AppDimensions.fontSizeXS,
                           color: AppColors.textSecondary,
@@ -888,12 +892,12 @@ class _EnhancedPastEventsScreenState extends ConsumerState<EnhancedPastEventsScr
     IconData icon;
 
     if (_searchController.text.isNotEmpty) {
-      title = '検索結果がありません';
-      message = '条件を変更して再度検索してください';
+      title = L10n.of(context).noSearchResults;
+      message = L10n.of(context).changeSearchCondition;
       icon = Icons.search_off;
     } else {
-      title = '過去のイベントがありません';
-      message = 'まだ完了したイベントがありません';
+      title = L10n.of(context).noPastEvents;
+      message = L10n.of(context).noCompletedEventsYet;
       icon = Icons.history;
     }
 

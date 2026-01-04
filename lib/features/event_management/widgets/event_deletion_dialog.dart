@@ -3,6 +3,7 @@ import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/services/event_deletion_service.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// イベント削除確認ダイアログ
 class EventDeletionDialog extends StatefulWidget {
@@ -27,6 +28,7 @@ class _EventDeletionDialogState extends State<EventDeletionDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
@@ -48,13 +50,13 @@ class _EventDeletionDialogState extends State<EventDeletionDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(),
+              _buildHeader(l10n),
               const SizedBox(height: AppDimensions.spacingL),
-              _buildWarningMessage(),
+              _buildWarningMessage(l10n),
               const SizedBox(height: AppDimensions.spacingL),
-              _buildConfirmationCheckbox(),
+              _buildConfirmationCheckbox(l10n),
               const SizedBox(height: AppDimensions.spacingXL),
-              _buildActionButtons(),
+              _buildActionButtons(l10n),
             ],
           ),
         ),
@@ -63,7 +65,7 @@ class _EventDeletionDialogState extends State<EventDeletionDialog> {
   }
 
   /// ヘッダー部分
-  Widget _buildHeader() {
+  Widget _buildHeader(L10n l10n) {
     return Row(
       children: [
         Container(
@@ -83,9 +85,9 @@ class _EventDeletionDialogState extends State<EventDeletionDialog> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'イベント削除確認',
-                style: TextStyle(
+              Text(
+                l10n.eventDeletionConfirmTitle,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeXL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -109,7 +111,7 @@ class _EventDeletionDialogState extends State<EventDeletionDialog> {
   }
 
   /// 警告メッセージ
-  Widget _buildWarningMessage() {
+  Widget _buildWarningMessage(L10n l10n) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -132,9 +134,9 @@ class _EventDeletionDialogState extends State<EventDeletionDialog> {
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                '注意',
-                style: TextStyle(
+              Text(
+                l10n.warningLabel,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w600,
                   color: AppColors.error,
@@ -145,8 +147,8 @@ class _EventDeletionDialogState extends State<EventDeletionDialog> {
           const SizedBox(height: AppDimensions.spacingM),
           Text(
             widget.isDraft
-                ? 'この下書きイベントを完全に削除します。'
-                : 'このイベントを完全に削除します。',
+                ? l10n.deleteDraftEventMessage
+                : l10n.deleteEventMessage,
             style: const TextStyle(
               fontSize: AppDimensions.fontSizeM,
               fontWeight: FontWeight.w500,
@@ -154,15 +156,9 @@ class _EventDeletionDialogState extends State<EventDeletionDialog> {
             ),
           ),
           const SizedBox(height: AppDimensions.spacingS),
-          const Text(
-            '削除されるデータ:\n'
-            '・イベント情報\n'
-            '・グループ分け設定\n'
-            '・試合結果\n'
-            '・リマインダー設定\n'
-            '・関連する画像\n\n'
-            'この操作は取り消しできません。',
-            style: TextStyle(
+          Text(
+            l10n.deletedDataList,
+            style: const TextStyle(
               fontSize: AppDimensions.fontSizeS,
               color: AppColors.textSecondary,
               height: 1.4,
@@ -174,7 +170,7 @@ class _EventDeletionDialogState extends State<EventDeletionDialog> {
   }
 
   /// 確認チェックボックス
-  Widget _buildConfirmationCheckbox() {
+  Widget _buildConfirmationCheckbox(L10n l10n) {
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -201,10 +197,10 @@ class _EventDeletionDialogState extends State<EventDeletionDialog> {
               },
               activeColor: AppColors.error,
             ),
-            const Expanded(
+            Expanded(
               child: Text(
-                'このイベントを削除することを確認しました',
-                style: TextStyle(
+                l10n.confirmDeletionCheckbox,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   color: AppColors.textDark,
                 ),
@@ -217,13 +213,13 @@ class _EventDeletionDialogState extends State<EventDeletionDialog> {
   }
 
   /// アクションボタン
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(L10n l10n) {
     return Column(
       children: [
         SizedBox(
           width: double.infinity,
           child: AppButton(
-            text: _isLoading ? '削除中...' : 'イベントを削除する',
+            text: _isLoading ? l10n.deletingText : l10n.deleteEventButton,
             onPressed: _canDelete() ? _confirmDeletion : null,
             type: AppButtonType.danger,
             isEnabled: _canDelete() && !_isLoading,
@@ -233,7 +229,7 @@ class _EventDeletionDialogState extends State<EventDeletionDialog> {
         SizedBox(
           width: double.infinity,
           child: AppButton(
-            text: 'キャンセル',
+            text: l10n.cancel,
             onPressed: _isLoading ? null : () => Navigator.of(context).pop(false),
             type: AppButtonType.secondary,
             isEnabled: !_isLoading,
@@ -252,6 +248,8 @@ class _EventDeletionDialogState extends State<EventDeletionDialog> {
   Future<void> _confirmDeletion() async {
     if (!_canDelete() || _isLoading) return;
 
+    final l10n = L10n.of(context);
+
     setState(() {
       _isLoading = true;
     });
@@ -263,18 +261,18 @@ class _EventDeletionDialogState extends State<EventDeletionDialog> {
         if (success) {
           Navigator.of(context).pop(true);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('イベントを削除しました'),
+            SnackBar(
+              content: Text(l10n.eventDeletedSuccess),
               backgroundColor: AppColors.success,
-              duration: Duration(seconds: 3),
+              duration: const Duration(seconds: 3),
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('イベント削除に失敗しました。再度お試しください。'),
+            SnackBar(
+              content: Text(l10n.eventDeleteFailed),
               backgroundColor: AppColors.error,
-              duration: Duration(seconds: 3),
+              duration: const Duration(seconds: 3),
             ),
           );
         }
@@ -283,7 +281,7 @@ class _EventDeletionDialogState extends State<EventDeletionDialog> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('エラーが発生しました: $e'),
+            content: Text(l10n.eventDeleteError(e.toString())),
             backgroundColor: AppColors.error,
             duration: const Duration(seconds: 3),
           ),

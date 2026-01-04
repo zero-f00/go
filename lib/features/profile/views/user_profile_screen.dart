@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
-import '../../../shared/constants/app_strings.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
 import '../../../shared/widgets/user_avatar.dart';
@@ -102,16 +102,22 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           _isLoading = false;
         });
       } else {
+        if (mounted) {
+          final l10n = L10n.of(context);
+          setState(() {
+            _errorMessage = l10n.profileUserNotFound;
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        final l10n = L10n.of(context);
         setState(() {
-          _errorMessage = 'ユーザーが見つかりません';
+          _errorMessage = l10n.profileFetchError(e.toString());
           _isLoading = false;
         });
       }
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'ユーザー情報の取得に失敗しました: $e';
-        _isLoading = false;
-      });
     }
   }
 
@@ -184,13 +190,15 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
 
       await UserProfileShareService.shareUserProfile(
         _userData!,
+        context: context,
         sharePositionOrigin: sharePositionOrigin,
       );
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('共有に失敗しました'),
+          SnackBar(
+            content: Text(l10n.profileShareFailed),
             backgroundColor: AppColors.error,
           ),
         );
@@ -206,7 +214,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           child: Column(
             children: [
               AppHeader(
-                title: AppStrings.userProfile,
+                title: L10n.of(context).userProfileTitle,
                 showBackButton: true,
                 onBackPressed: () => Navigator.pop(context),
                 actions: _buildHeaderActions(),
@@ -242,16 +250,16 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
             ),
           ],
         ),
-        child: const Column(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(
+            const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
             ),
-            SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.spacingM),
             Text(
-              'ユーザー情報を取得中...',
-              style: TextStyle(
+              L10n.of(context).profileFetchingUserInfo,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textSecondary,
               ),
@@ -296,7 +304,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('再試行'),
+              child: Text(L10n.of(context).profileRetry),
             ),
           ],
         ),
@@ -413,7 +421,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     if (currentUser == null) {
       return _buildFollowActionButton(
         icon: Icons.person_add_alt_1,
-        label: 'フォロー',
+        label: L10n.of(context).profileFollow,
         isActive: false,
         onTap: () async {
           final result = await AuthDialog.show(context);
@@ -465,7 +473,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     if (_isFollowing) {
       return _buildFollowActionButton(
         icon: Icons.check,
-        label: 'フォロー中',
+        label: L10n.of(context).profileFollowing,
         isActive: true,
         onTap: _unfollow,
       );
@@ -474,7 +482,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     // 未フォロー
     return _buildFollowActionButton(
       icon: Icons.person_add_alt_1,
-      label: 'フォロー',
+      label: L10n.of(context).profileFollow,
       isActive: false,
       onTap: _follow,
     );
@@ -537,7 +545,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       child: Align(
         alignment: Alignment.centerLeft,
         child: GestureDetector(
-          onTap: () => _onStatItemTap('相互フォロー'),
+          onTap: () => _onStatItemTap(L10n.of(context).profileMutualFollow),
           child: Container(
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingM,
@@ -565,7 +573,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      '相互フォロー',
+                      L10n.of(context).profileMutualFollow,
                       style: const TextStyle(
                         fontSize: AppDimensions.fontSizeXS,
                         fontWeight: FontWeight.w500,
@@ -638,9 +646,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                'SNSアカウント',
-                style: TextStyle(
+              Text(
+                L10n.of(context).profileSnsAccounts,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -776,9 +784,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
         if (mounted) {
+          final l10n = L10n.of(context);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('リンクを開けませんでした'),
+            SnackBar(
+              content: Text(l10n.profileLinkOpenFailed),
               backgroundColor: AppColors.error,
             ),
           );
@@ -786,9 +795,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('エラーが発生しました: $e'),
+            content: Text(l10n.profileErrorOccurred(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -801,9 +811,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     try {
       await Clipboard.setData(ClipboardData(text: discordId));
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Discord ID "$discordId" をコピーしました'),
+            content: Text(l10n.profileDiscordCopied),
             backgroundColor: AppColors.success,
             duration: const Duration(seconds: 2),
           ),
@@ -811,9 +822,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('コピーに失敗しました'),
+          SnackBar(
+            content: Text(l10n.profileCopyFailed),
             backgroundColor: AppColors.error,
           ),
         );
@@ -854,9 +866,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                   size: AppDimensions.iconM,
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
-                const Text(
-                  '自己紹介',
-                  style: TextStyle(
+                Text(
+                  L10n.of(context).profileBio,
+                  style: const TextStyle(
                     fontSize: AppDimensions.fontSizeL,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textDark,
@@ -885,9 +897,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                   size: AppDimensions.iconS,
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
-                const Text(
-                  'その他の情報',
-                  style: TextStyle(
+                Text(
+                  L10n.of(context).profileOtherInfo,
+                  style: const TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textDark,
@@ -937,9 +949,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                'お気に入りゲーム',
-                style: TextStyle(
+              Text(
+                L10n.of(context).profileFavoriteGames,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -986,9 +998,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                     color: AppColors.textLight,
                   ),
                   const SizedBox(height: AppDimensions.spacingS),
-                  const Text(
-                    'お気に入りゲームが設定されていません',
-                    style: TextStyle(
+                  Text(
+                    L10n.of(context).profileNoFavoriteGames,
+                    style: const TextStyle(
                       fontSize: AppDimensions.fontSizeM,
                       color: AppColors.textLight,
                     ),
@@ -1067,20 +1079,21 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       );
 
       if (mounted) {
+        final l10n = L10n.of(context);
         if (success) {
           setState(() {
             _isFollowing = true;
           });
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${_userData!.username}さんをフォローしました'),
+              content: Text(l10n.profileFollowedUser),
               backgroundColor: AppColors.primary,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('フォローに失敗しました'),
+            SnackBar(
+              content: Text(l10n.profileFollowFailed),
               backgroundColor: AppColors.error,
             ),
           );
@@ -1088,9 +1101,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('エラーが発生しました: $e'),
+            content: Text(l10n.profileErrorOccurred(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -1120,20 +1134,21 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       );
 
       if (mounted) {
+        final l10n = L10n.of(context);
         if (success) {
           setState(() {
             _isFollowing = false;
           });
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${_userData!.username}さんのフォローを解除しました'),
+              content: Text(l10n.profileUnfollowedUser),
               backgroundColor: AppColors.textSecondary,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('フォロー解除に失敗しました'),
+            SnackBar(
+              content: Text(l10n.profileUnfollowFailed),
               backgroundColor: AppColors.error,
             ),
           );
@@ -1141,9 +1156,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('エラーが発生しました: $e'),
+            content: Text(l10n.profileErrorOccurred(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -1205,9 +1221,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                     size: AppDimensions.iconM,
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
-                  const Text(
-                    '運営者としてのイベント',
-                    style: TextStyle(
+                  Text(
+                    L10n.of(context).profileEventsAsOrganizer,
+                    style: const TextStyle(
                       fontSize: AppDimensions.fontSizeL,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textDark,
@@ -1217,9 +1233,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                   if (filteredEvents.isNotEmpty)
                     TextButton(
                       onPressed: () => _navigateToManagedEventsList(filteredEvents),
-                      child: const Text(
-                        'もっと見る',
-                        style: TextStyle(
+                      child: Text(
+                        L10n.of(context).profileSeeMore,
+                        style: const TextStyle(
                           fontSize: AppDimensions.fontSizeS,
                           color: AppColors.accent,
                         ),
@@ -1231,7 +1247,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
               if (filteredEvents.isEmpty)
                 _buildEmptyEventState(
                   icon: Icons.admin_panel_settings,
-                  message: '運営者として関わるイベントはありません',
+                  message: L10n.of(context).profileNoOrganizerEvents,
                 )
               else
                 SizedBox(
@@ -1264,17 +1280,18 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           ),
         );
       },
-      loading: () => _buildEventSectionLoading('運営者としてのイベント', Icons.admin_panel_settings),
+      loading: () => _buildEventSectionLoading(L10n.of(context).profileEventsAsOrganizer, Icons.admin_panel_settings),
       error: (error, _) => const SizedBox.shrink(),
     );
   }
 
   /// 運営者イベント一覧画面への遷移
   void _navigateToManagedEventsList(List<dynamic> events) {
+    final l10n = L10n.of(context);
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => GenericEventListScreen(
-          title: '運営者としてのイベント',
+          title: l10n.profileEventsAsOrganizer,
           events: events.cast(),
           onEventTap: (event) {
             Navigator.pushNamed(
@@ -1283,8 +1300,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
               arguments: event.id,
             );
           },
-          emptyTitle: '運営者として関わるイベントはありません',
-          emptyMessage: 'イベントを作成するか、\n共同編集者として招待されると表示されます',
+          emptyTitle: l10n.profileNoOrganizerEvents,
+          emptyMessage: l10n.profileOrganizerEventsEmptyHint,
           emptyIcon: Icons.admin_panel_settings,
         ),
       ),
@@ -1305,7 +1322,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       ),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return _buildEventSectionLoading('参加予定イベント', Icons.event_available);
+          return _buildEventSectionLoading(L10n.of(context).profileUpcomingEvents, Icons.event_available);
         }
 
         if (snapshot.hasError) {
@@ -1321,7 +1338,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           future: _getUpcomingEventsFromApplications(approvedApplications),
           builder: (context, eventSnapshot) {
             if (eventSnapshot.connectionState == ConnectionState.waiting) {
-              return _buildEventSectionLoading('参加予定イベント', Icons.event_available);
+              return _buildEventSectionLoading(L10n.of(context).profileUpcomingEvents, Icons.event_available);
             }
 
             final events = eventSnapshot.data ?? [];
@@ -1370,9 +1387,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                '参加予定イベント',
-                style: TextStyle(
+              Text(
+                L10n.of(context).profileUpcomingEvents,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -1382,9 +1399,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
               if (approvedApplications.isNotEmpty)
                 TextButton(
                   onPressed: () => _navigateToParticipatingEventsList(approvedApplications),
-                  child: const Text(
-                    'もっと見る',
-                    style: TextStyle(
+                  child: Text(
+                    L10n.of(context).profileSeeMore,
+                    style: const TextStyle(
                       fontSize: AppDimensions.fontSizeS,
                       color: AppColors.accent,
                     ),
@@ -1396,7 +1413,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           if (filteredEvents.isEmpty)
             _buildEmptyEventState(
               icon: Icons.event_available,
-              message: '参加予定のイベントはありません',
+              message: L10n.of(context).profileNoUpcomingEvents,
             )
           else
             SizedBox(
@@ -1552,7 +1569,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       ),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return _buildEventSectionLoading('過去参加済みイベント', Icons.history);
+          return _buildEventSectionLoading(L10n.of(context).profilePastEvents, Icons.history);
         }
 
         if (snapshot.hasError) {
@@ -1568,7 +1585,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           future: _getPastEventsFromApplications(approvedApplications),
           builder: (context, eventSnapshot) {
             if (eventSnapshot.connectionState == ConnectionState.waiting) {
-              return _buildEventSectionLoading('過去参加済みイベント', Icons.history);
+              return _buildEventSectionLoading(L10n.of(context).profilePastEvents, Icons.history);
             }
 
             final events = eventSnapshot.data ?? [];
@@ -1614,9 +1631,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                '過去参加済みイベント',
-                style: TextStyle(
+              Text(
+                L10n.of(context).profilePastEvents,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -1626,9 +1643,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
               if (filteredEvents.isNotEmpty)
                 TextButton(
                   onPressed: () => _navigateToParticipatedEventsList(filteredEvents),
-                  child: const Text(
-                    'もっと見る',
-                    style: TextStyle(
+                  child: Text(
+                    L10n.of(context).profileSeeMore,
+                    style: const TextStyle(
                       fontSize: AppDimensions.fontSizeS,
                       color: AppColors.accent,
                     ),
@@ -1640,7 +1657,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           if (filteredEvents.isEmpty)
             _buildEmptyEventState(
               icon: Icons.history,
-              message: '過去に参加したイベントはありません',
+              message: L10n.of(context).profileNoPastEvents,
             )
           else
             SizedBox(
@@ -1698,10 +1715,11 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
 
   /// 過去参加済みイベント一覧画面への遷移
   void _navigateToParticipatedEventsList(List<dynamic> events) {
+    final l10n = L10n.of(context);
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => GenericEventListScreen(
-          title: '過去参加済みイベント',
+          title: l10n.profilePastEvents,
           events: events.cast(),
           onEventTap: (event) {
             Navigator.pushNamed(
@@ -1710,8 +1728,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
               arguments: event.id,
             );
           },
-          emptyTitle: '過去に参加したイベントはありません',
-          emptyMessage: 'イベントに参加すると\nこちらに履歴が表示されます',
+          emptyTitle: l10n.profileNoPastEvents,
+          emptyMessage: l10n.profilePastEventsEmptyHint,
           emptyIcon: Icons.history,
         ),
       ),
@@ -1740,18 +1758,20 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           },
         );
       } else if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('ゲームプロフィールが見つかりません'),
+          SnackBar(
+            content: Text(l10n.profileGameProfileNotFound),
             backgroundColor: AppColors.error,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('エラーが発生しました: $e'),
+            content: Text(l10n.profileErrorOccurred(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );

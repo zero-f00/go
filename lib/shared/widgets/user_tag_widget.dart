@@ -176,7 +176,7 @@ class _UserTagWidgetState extends ConsumerState<UserTagWidget> {
 
   /// ユーザータグ
   Widget _buildUserTag(UserData userData) {
-    final userDisplayInfo = WithdrawnUserHelper.getMaskedUserInfo(userData);
+    final userDisplayInfo = WithdrawnUserHelper.getMaskedUserInfo(context, userData);
     final displayName = widget.showFullName
         ? userDisplayInfo.username
         : userDisplayInfo.username.split(' ').first;

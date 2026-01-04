@@ -33,8 +33,9 @@ import 'features/event_participant/views/violation_report_screen.dart';
 import 'shared/services/navigation_service.dart';
 import 'shared/services/admob_service.dart';
 import 'shared/services/deep_link_service.dart';
-import 'shared/constants/app_strings.dart';
 import 'shared/constants/app_colors.dart';
+import 'shared/providers/locale_provider.dart';
+import 'l10n/app_localizations.dart';
 
 void main() async {
   final WidgetsBinding widgetsBinding =
@@ -47,9 +48,15 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // 日本語ロケールデータの初期化
+  // 全サポートロケールの日付フォーマットデータを初期化
   try {
-    await initializeDateFormatting('ja_JP', null);
+    await Future.wait([
+      initializeDateFormatting('ja_JP', null),
+      initializeDateFormatting('en_US', null),
+      initializeDateFormatting('ko_KR', null),
+      initializeDateFormatting('zh_CN', null),
+      initializeDateFormatting('zh_TW', null),
+    ]);
   } catch (e) {
     // エラーは無視して続行
   }
@@ -82,26 +89,29 @@ void main() async {
 
 // Google Services設定チェックメソッドを削除
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appLanguage = ref.watch(localeProvider);
+
     return MaterialApp(
-      title: AppStrings.appTitle,
+      title: 'Go.',
       navigatorKey: NavigationService.navigatorKey,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
         useMaterial3: true,
       ),
-      // TODO: 多言語化は見送り、日本語固定で実装
-      locale: const Locale('ja', 'JP'),
+      // 言語設定（システム設定に従う場合はnull）
+      locale: appLanguage.locale,
       localizationsDelegates: const [
+        L10n.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [Locale('ja', 'JP')],
+      supportedLocales: L10n.supportedLocales,
       home: const MainScreen(),
       routes: {
         '/settings': (context) => const SettingsScreen(),

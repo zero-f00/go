@@ -4,12 +4,56 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
+import '../../l10n/app_localizations.dart';
 import 'event_service.dart';
 import 'image_upload_service.dart';
 
 /// アプリケーション全体のエラーハンドリングサービス
 class ErrorHandlerService {
-  /// ユーザーフレンドリーなエラーメッセージを生成
+  /// ユーザーフレンドリーなエラーメッセージを生成（多言語対応版）
+  static String getLocalizedErrorMessage(BuildContext context, dynamic error) {
+    final l10n = L10n.of(context);
+    if (error == null) return l10n.errorUnknown;
+
+    // カスタム例外の処理
+    if (error is EventServiceException) {
+      return error.message;
+    }
+    if (error is ImageUploadException) {
+      return error.message;
+    }
+
+    // Firebase Firestore エラーの処理
+    if (error is FirebaseException) {
+      return _handleFirebaseErrorLocalized(context, error);
+    }
+
+    // Firebase Auth エラーの処理
+    if (error is FirebaseAuthException) {
+      return _handleAuthErrorLocalized(context, error);
+    }
+
+    // 一般的なエラーの処理
+    final errorString = error.toString();
+
+    if (errorString.contains('network') || errorString.contains('internet')) {
+      return l10n.errorNetwork;
+    }
+
+    if (errorString.contains('permission')) {
+      return l10n.errorPermission;
+    }
+
+    if (errorString.contains('timeout')) {
+      return l10n.errorTimeout;
+    }
+
+    // デフォルトメッセージ
+    return l10n.errorUnexpected;
+  }
+
+  /// ユーザーフレンドリーなエラーメッセージを生成（後方互換性のため維持）
+  @Deprecated('Use getLocalizedErrorMessage instead for i18n support')
   static String getErrorMessage(dynamic error) {
     if (error == null) return '不明なエラーが発生しました';
 
@@ -50,7 +94,36 @@ class ErrorHandlerService {
     return '予期しないエラーが発生しました。しばらく時間をおいてから再度お試しください';
   }
 
-  /// Firebase関連エラーのメッセージを生成
+  /// Firebase関連エラーのメッセージを生成（多言語対応版）
+  static String _handleFirebaseErrorLocalized(BuildContext context, FirebaseException error) {
+    final l10n = L10n.of(context);
+    switch (error.code) {
+      case 'permission-denied':
+        return l10n.errorPermission;
+      case 'unavailable':
+        return l10n.errorServiceUnavailable;
+      case 'deadline-exceeded':
+        return l10n.errorTimeout;
+      case 'resource-exhausted':
+        return l10n.errorResourceExhausted;
+      case 'failed-precondition':
+        return l10n.errorDataInconsistency;
+      case 'aborted':
+        return l10n.errorAborted;
+      case 'out-of-range':
+        return l10n.errorOutOfRange;
+      case 'unimplemented':
+        return l10n.errorNotImplemented;
+      case 'internal':
+        return l10n.errorInternal;
+      case 'data-loss':
+        return l10n.errorDataLoss;
+      default:
+        return l10n.errorFirebaseGeneric(error.message ?? l10n.errorUnknown);
+    }
+  }
+
+  /// Firebase関連エラーのメッセージを生成（後方互換性のため維持）
   static String _handleFirebaseError(FirebaseException error) {
     switch (error.code) {
       case 'permission-denied':
@@ -78,7 +151,34 @@ class ErrorHandlerService {
     }
   }
 
-  /// Firebase Auth エラーのメッセージを生成
+  /// Firebase Auth エラーのメッセージを生成（多言語対応版）
+  static String _handleAuthErrorLocalized(BuildContext context, FirebaseAuthException error) {
+    final l10n = L10n.of(context);
+    switch (error.code) {
+      case 'user-not-found':
+        return l10n.errorUserNotFound;
+      case 'wrong-password':
+        return l10n.errorWrongPassword;
+      case 'user-disabled':
+        return l10n.errorUserDisabled;
+      case 'too-many-requests':
+        return l10n.errorTooManyRequests;
+      case 'operation-not-allowed':
+        return l10n.errorOperationNotAllowed;
+      case 'invalid-email':
+        return l10n.errorInvalidEmail;
+      case 'email-already-in-use':
+        return l10n.errorEmailAlreadyInUse;
+      case 'weak-password':
+        return l10n.errorWeakPassword;
+      case 'network-request-failed':
+        return l10n.errorNetwork;
+      default:
+        return l10n.errorAuthGeneric(error.message ?? l10n.errorUnknown);
+    }
+  }
+
+  /// Firebase Auth エラーのメッセージを生成（後方互換性のため維持）
   static String _handleAuthError(FirebaseAuthException error) {
     switch (error.code) {
       case 'user-not-found':
@@ -106,14 +206,15 @@ class ErrorHandlerService {
 
   /// エラーダイアログを表示
   static void showErrorDialog(BuildContext context, dynamic error, {String? title}) {
-    final errorMessage = getErrorMessage(error);
+    final l10n = L10n.of(context);
+    final errorMessage = getLocalizedErrorMessage(context, error);
 
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text(
-          title ?? 'エラー',
+          title ?? l10n.errorDialogTitle,
           style: const TextStyle(
             fontSize: AppDimensions.fontSizeL,
             fontWeight: FontWeight.w700,
@@ -133,9 +234,9 @@ class ErrorHandlerService {
             ),
             if (_shouldShowRetryButton(error)) ...[
               const SizedBox(height: AppDimensions.spacingM),
-              const Text(
-                'しばらく時間をおいてから再度お試しください。',
-                style: TextStyle(
+              Text(
+                l10n.errorRetryHint,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeS,
                   color: AppColors.textMuted,
                 ),
@@ -145,7 +246,7 @@ class ErrorHandlerService {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text(
               'OK',
               style: TextStyle(
@@ -173,7 +274,8 @@ class ErrorHandlerService {
 
   /// エラー付きスナックバーを表示
   static void showErrorSnackBar(BuildContext context, dynamic error) {
-    final errorMessage = getErrorMessage(error);
+    final l10n = L10n.of(context);
+    final errorMessage = getLocalizedErrorMessage(context, error);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -201,7 +303,7 @@ class ErrorHandlerService {
         duration: const Duration(seconds: 4),
         action: _shouldShowRetryButton(error)
             ? SnackBarAction(
-                label: '再試行',
+                label: l10n.retryButtonText,
                 textColor: Colors.white,
                 onPressed: () {
                   // リトライ処理は呼び出し元で実装

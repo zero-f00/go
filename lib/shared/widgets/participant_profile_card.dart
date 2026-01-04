@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../services/participation_service.dart';
@@ -32,6 +33,7 @@ class ParticipantProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Card(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
       elevation: 2.0,
@@ -44,15 +46,15 @@ class ParticipantProfileCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(),
+              _buildHeader(context),
               const SizedBox(height: AppDimensions.spacingM),
-              _buildProfileSummary(),
+              _buildProfileSummary(l10n),
               if (violations != null && violations!.isNotEmpty) ...[
                 const SizedBox(height: AppDimensions.spacingM),
-                _buildViolationInfo(),
+                _buildViolationInfo(l10n),
               ],
               const SizedBox(height: AppDimensions.spacingM),
-              _buildStatusAndActions(),
+              _buildStatusAndActions(l10n),
             ],
           ),
         ),
@@ -61,7 +63,7 @@ class ParticipantProfileCard extends StatelessWidget {
   }
 
   /// ヘッダー部分（アバター、ゲーム内ユーザー名、ランク）
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Row(
       children: [
         // アバター（タップでゲームプロフィール表示）
@@ -110,7 +112,7 @@ class ParticipantProfileCard extends StatelessWidget {
               // ユーザー名（リアル）
               if (userData?.username != null)
                 Text(
-                  WithdrawnUserHelper.getDisplayUsername(userData),
+                  WithdrawnUserHelper.getDisplayUsername(context, userData),
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     color: AppColors.textSecondary,
@@ -151,14 +153,14 @@ class ParticipantProfileCard extends StatelessWidget {
   }
 
   /// プロフィール要約
-  Widget _buildProfileSummary() {
+  Widget _buildProfileSummary(L10n l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // ゲーム歴とプレイスタイル
         if (profile.summary.isNotEmpty) ...[
           Text(
-            'プロフィール',
+            l10n.participantProfileLabel,
             style: TextStyle(
               fontSize: AppDimensions.fontSizeS,
               fontWeight: FontWeight.w600,
@@ -186,7 +188,7 @@ class ParticipantProfileCard extends StatelessWidget {
             ),
             const SizedBox(width: AppDimensions.spacingXS),
             Text(
-              profile.useInGameVC ? 'ボイスチャット対応' : 'ボイスチャット不使用',
+              profile.useInGameVC ? l10n.voiceChatAvailable : l10n.voiceChatNotUsed,
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeS,
                 color: profile.useInGameVC ? AppColors.success : AppColors.textSecondary,
@@ -199,7 +201,7 @@ class ParticipantProfileCard extends StatelessWidget {
   }
 
   /// ステータスとアクション
-  Widget _buildStatusAndActions() {
+  Widget _buildStatusAndActions(L10n l10n) {
     return Row(
       children: [
         // 参加ステータス
@@ -222,7 +224,7 @@ class ParticipantProfileCard extends StatelessWidget {
               ),
               const SizedBox(width: AppDimensions.spacingXS),
               Text(
-                status.displayName,
+                _getStatusDisplayName(l10n, status),
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeS,
                   color: status.color,
@@ -245,6 +247,22 @@ class ParticipantProfileCard extends StatelessWidget {
     );
   }
 
+  /// 参加ステータスの表示名を取得
+  String _getStatusDisplayName(L10n l10n, ParticipationStatus status) {
+    switch (status) {
+      case ParticipationStatus.pending:
+        return l10n.participationStatusPending;
+      case ParticipationStatus.waitlisted:
+        return l10n.participationStatusWaitlisted;
+      case ParticipationStatus.approved:
+        return l10n.participationStatusApproved;
+      case ParticipationStatus.rejected:
+        return l10n.participationStatusRejected;
+      case ParticipationStatus.cancelled:
+        return l10n.participationStatusCancelled;
+    }
+  }
+
   /// ステータスアイコン
   Widget _buildStatusIcon() {
     return Container(
@@ -262,7 +280,7 @@ class ParticipantProfileCard extends StatelessWidget {
   }
 
   /// 違反情報表示
-  Widget _buildViolationInfo() {
+  Widget _buildViolationInfo(L10n l10n) {
     final violationCount = violations?.length ?? 0;
     final resolvedCount = violations?.where((v) => v.status == ViolationStatus.resolved).length ?? 0;
     final pendingCount = violations?.where((v) => v.status == ViolationStatus.pending || v.status == ViolationStatus.underReview).length ?? 0;
@@ -270,29 +288,29 @@ class ParticipantProfileCard extends StatelessWidget {
     // リスクレベルに応じた色を設定
     Color riskColor = AppColors.success;
     IconData riskIcon = Icons.check_circle;
-    String riskText = 'リスクなし';
+    String riskText = l10n.violationRiskNone;
 
     if (riskLevel != null) {
       switch (riskLevel!) {
         case ViolationRiskLevel.none:
           riskColor = AppColors.success;
           riskIcon = Icons.check_circle;
-          riskText = riskLevel!.displayName;
+          riskText = l10n.violationRiskNone;
           break;
         case ViolationRiskLevel.low:
           riskColor = AppColors.info;
           riskIcon = Icons.info;
-          riskText = riskLevel!.displayName;
+          riskText = l10n.violationRiskLow;
           break;
         case ViolationRiskLevel.medium:
           riskColor = AppColors.warning;
           riskIcon = Icons.warning;
-          riskText = riskLevel!.displayName;
+          riskText = l10n.violationRiskMedium;
           break;
         case ViolationRiskLevel.high:
           riskColor = AppColors.error;
           riskIcon = Icons.error;
-          riskText = riskLevel!.displayName;
+          riskText = l10n.violationRiskHigh;
           break;
       }
     }
@@ -315,7 +333,7 @@ class ParticipantProfileCard extends StatelessWidget {
               Icon(riskIcon, color: riskColor, size: AppDimensions.iconS),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                '違反履歴',
+                l10n.violationHistoryLabel,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   fontWeight: FontWeight.w600,
@@ -346,17 +364,17 @@ class ParticipantProfileCard extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingS),
           Row(
             children: [
-              _buildViolationStat('合計', violationCount, AppColors.textDark),
+              _buildViolationStat(l10n.violationStatTotal, violationCount, AppColors.textDark, l10n),
               const SizedBox(width: AppDimensions.spacingL),
-              _buildViolationStat('処理済み', resolvedCount, AppColors.success),
+              _buildViolationStat(l10n.violationStatResolved, resolvedCount, AppColors.success, l10n),
               const SizedBox(width: AppDimensions.spacingL),
-              _buildViolationStat('未処理', pendingCount, AppColors.warning),
+              _buildViolationStat(l10n.violationStatPending, pendingCount, AppColors.warning, l10n),
             ],
           ),
           if (violations != null && violations!.isNotEmpty) ...[
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              '最新: ${violations!.first.violationType.displayName} (${_formatDate(violations!.first.reportedAt)})',
+              l10n.violationLatest(violations!.first.violationType.displayName, _formatDate(violations!.first.reportedAt)),
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeXS,
                 color: AppColors.textSecondary,
@@ -368,7 +386,7 @@ class ParticipantProfileCard extends StatelessWidget {
     );
   }
 
-  Widget _buildViolationStat(String label, int count, Color color) {
+  Widget _buildViolationStat(String label, int count, Color color, L10n l10n) {
     return Row(
       children: [
         Text(
@@ -380,7 +398,7 @@ class ParticipantProfileCard extends StatelessWidget {
         ),
         const SizedBox(width: AppDimensions.spacingXS),
         Text(
-          '$count件',
+          l10n.violationStatCount(count),
           style: TextStyle(
             fontSize: AppDimensions.fontSizeXS,
             fontWeight: FontWeight.w600,
@@ -398,21 +416,6 @@ class ParticipantProfileCard extends StatelessWidget {
 
 /// ParticipationStatus拡張 (participation_service.dartのenumに対する拡張)
 extension ParticipationStatusExtension on ParticipationStatus {
-  String get displayName {
-    switch (this) {
-      case ParticipationStatus.pending:
-        return '承認待ち';
-      case ParticipationStatus.waitlisted:
-        return 'キャンセル待ち';
-      case ParticipationStatus.approved:
-        return '承認済み';
-      case ParticipationStatus.rejected:
-        return '拒否';
-      case ParticipationStatus.cancelled:
-        return 'キャンセル済み';
-    }
-  }
-
   Color get color {
     switch (this) {
       case ParticipationStatus.pending:

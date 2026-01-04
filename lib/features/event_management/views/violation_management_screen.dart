@@ -21,6 +21,7 @@ import '../../../features/game_profile/views/game_profile_view_screen.dart';
 import '../../../features/profile/views/user_profile_screen.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/event_info_card.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 違反管理画面
 class ViolationManagementScreen extends ConsumerStatefulWidget {
@@ -63,30 +64,8 @@ class _ViolationManagementScreenState
         _errorMessage = null;
       });
 
-      // Firestore接続テスト
+      // Firestoreから違反サービスを取得
       final violationService = ref.read(violationServiceProvider);
-
-      // 現在のユーザー情報を取得
-      final currentUser = ref.read(currentFirebaseUserProvider);
-
-      // Firestoreコレクションの存在確認
-      final collectionExists = await violationService.checkCollectionExists();
-
-      // データが存在しない場合はテストデータを作成
-      if (!collectionExists || currentUser == null) {
-        if (currentUser != null) {
-          try {
-            await violationService.createTestViolations(
-              eventId: widget.eventId,
-              eventName: widget.eventName,
-              reporterId: currentUser.uid,
-              count: 3,
-            );
-          } catch (e) {
-            // テストデータ作成エラーを無視（本番環境では実行されない）
-          }
-        }
-      }
 
       // 違反記録データを取得
       List<ViolationRecord> violationsList = [];
@@ -145,13 +124,14 @@ class _ViolationManagementScreenState
     } catch (e) {
 
       if (mounted) {
+        final l10n = L10n.of(context);
         setState(() {
           // より詳細なエラーメッセージを表示
           _errorMessage = e.toString().contains('permission-denied')
-              ? 'Firestoreへのアクセス権限がありません。セキュリティルールを確認してください。'
+              ? l10n.firestorePermissionDeniedError
               : e.toString().contains('Failed to get document')
-              ? 'Firestoreへの接続に失敗しました。ネットワーク接続を確認してください。'
-              : 'データの取得に失敗しました: $e';
+              ? l10n.firestoreConnectionError
+              : l10n.dataFetchError(e.toString());
           _isLoading = false;
           // エラーの場合でも空のデータで初期化
           _violations = [];
@@ -162,13 +142,14 @@ class _ViolationManagementScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Scaffold(
       body: AppGradientBackground(
         child: SafeArea(
           child: Column(
             children: [
               AppHeader(
-                title: '違反',
+                title: l10n.violationTitle,
                 showBackButton: true,
                 onBackPressed: () => Navigator.of(context).pop(),
               ),
@@ -210,9 +191,9 @@ class _ViolationManagementScreenState
                               size: AppDimensions.iconM,
                             ),
                             const SizedBox(width: AppDimensions.spacingS),
-                            const Text(
-                              '違反記録',
-                              style: TextStyle(
+                            Text(
+                              l10n.violationRecords,
+                              style: const TextStyle(
                                 fontSize: AppDimensions.fontSizeL,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.textDark,
@@ -226,7 +207,7 @@ class _ViolationManagementScreenState
                                 color: AppColors.info,
                                 size: AppDimensions.iconM,
                               ),
-                              tooltip: '操作説明',
+                              tooltip: l10n.operationGuideTooltip,
                             ),
                           ],
                         ),
@@ -253,9 +234,9 @@ class _ViolationManagementScreenState
           onPressed: _reportViolation,
           backgroundColor: AppColors.error,
           icon: const Icon(Icons.report, color: Colors.white),
-          label: const Text(
-            '違反報告',
-            style: TextStyle(color: Colors.white),
+          label: Text(
+            l10n.violationReport,
+            style: const TextStyle(color: Colors.white),
           ),
         ),
       ),
@@ -289,6 +270,7 @@ class _ViolationManagementScreenState
     }
 
     if (_violations.isEmpty) {
+      final l10n = L10n.of(context);
       return Center(
         child: Container(
           padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -301,18 +283,18 @@ class _ViolationManagementScreenState
                 color: AppColors.textLight,
               ),
               const SizedBox(height: AppDimensions.spacingM),
-              const Text(
-                '違反記録はありません',
-                style: TextStyle(
+              Text(
+                l10n.noViolationRecords,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textSecondary,
                 ),
               ),
               const SizedBox(height: AppDimensions.spacingS),
-              const Text(
-                'このイベントでは違反報告がまだありません',
-                style: TextStyle(
+              Text(
+                l10n.noViolationReportsYet,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   color: AppColors.textLight,
                 ),
@@ -337,6 +319,7 @@ class _ViolationManagementScreenState
 
   /// 違反カード
   Widget _buildViolationCard(ViolationRecord violation) {
+    final l10n = L10n.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
       padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -361,7 +344,7 @@ class _ViolationManagementScreenState
                     Text(
                       _gameUsernameCache[violation.violatedUserId]?.isNotEmpty == true
                           ? _gameUsernameCache[violation.violatedUserId]!
-                          : WithdrawnUserHelper.getDisplayUsername(_userDataCache[violation.violatedUserId]),
+                          : WithdrawnUserHelper.getDisplayUsername(context, _userDataCache[violation.violatedUserId]),
                       style: const TextStyle(
                         fontSize: AppDimensions.fontSizeL,
                         fontWeight: FontWeight.w600,
@@ -385,7 +368,7 @@ class _ViolationManagementScreenState
                           ),
                         ),
                         child: Text(
-                          WithdrawnUserHelper.getDisplayUsername(_userDataCache[violation.violatedUserId]),
+                          WithdrawnUserHelper.getDisplayUsername(context, _userDataCache[violation.violatedUserId]),
                           style: TextStyle(
                             fontSize: AppDimensions.fontSizeS,
                             fontWeight: FontWeight.w500,
@@ -434,7 +417,7 @@ class _ViolationManagementScreenState
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                '報告日時: ${_formatDateTime(violation.reportedAt)}',
+                l10n.reportedAt(_formatDateTime(violation.reportedAt)),
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeS,
                   color: AppColors.textDark,
@@ -458,7 +441,7 @@ class _ViolationManagementScreenState
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
-                  'ペナルティ: ${violation.penalty}',
+                  l10n.penaltyValue(violation.penalty!),
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     fontWeight: FontWeight.w600,
@@ -478,7 +461,7 @@ class _ViolationManagementScreenState
                     child: OutlinedButton.icon(
                       onPressed: () => _viewViolationDetail(violation),
                       icon: const Icon(Icons.visibility),
-                      label: const Text('詳細'),
+                      label: Text(l10n.detailButton),
                     ),
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
@@ -486,7 +469,7 @@ class _ViolationManagementScreenState
                     child: OutlinedButton.icon(
                       onPressed: () => _editViolation(violation),
                       icon: const Icon(Icons.edit),
-                      label: const Text('編集'),
+                      label: Text(l10n.editButton),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.primary,
                       ),
@@ -509,7 +492,7 @@ class _ViolationManagementScreenState
                           foregroundColor: Colors.white,
                         ),
                         icon: Icon(_canProcessViolation(violation) ? Icons.check : Icons.schedule),
-                        label: Text(_canProcessViolation(violation) ? '違反処理' : '異議申立期間中（待機）'),
+                        label: Text(_canProcessViolation(violation) ? l10n.violationProcessButton : l10n.waitingAppealPeriod),
                       ),
                     ),
                   ],
@@ -522,7 +505,7 @@ class _ViolationManagementScreenState
                         child: ElevatedButton.icon(
                           onPressed: () => _processAppeal(violation),
                           icon: const Icon(Icons.help_outline),
-                          label: const Text('異議申立を処理'),
+                          label: Text(l10n.processAppeal),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.info,
                             foregroundColor: Colors.white,
@@ -535,7 +518,7 @@ class _ViolationManagementScreenState
                       child: OutlinedButton.icon(
                         onPressed: () => _dismissViolation(violation),
                         icon: const Icon(Icons.cancel),
-                        label: const Text('却下'),
+                        label: Text(l10n.rejectButton),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.warning,
                         ),
@@ -551,7 +534,7 @@ class _ViolationManagementScreenState
                       child: OutlinedButton.icon(
                         onPressed: () => _revertViolation(violation),
                         icon: const Icon(Icons.undo),
-                        label: const Text('未処理に戻す'),
+                        label: Text(l10n.revertToPending),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.info,
                           side: const BorderSide(color: AppColors.info),
@@ -570,7 +553,7 @@ class _ViolationManagementScreenState
                     child: OutlinedButton.icon(
                       onPressed: () => _deleteViolation(violation),
                       icon: const Icon(Icons.delete_outline),
-                      label: const Text('削除'),
+                      label: Text(l10n.deleteButton),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.error,
                         side: const BorderSide(color: AppColors.error),
@@ -614,25 +597,26 @@ class _ViolationManagementScreenState
 
   /// ステータスバッジ
   Widget _buildStatusBadge(ViolationStatus status) {
+    final l10n = L10n.of(context);
     Color color;
     String text;
 
     switch (status) {
       case ViolationStatus.pending:
         color = AppColors.warning;
-        text = '未処理';
+        text = l10n.statusPending;
         break;
       case ViolationStatus.underReview:
         color = AppColors.info;
-        text = '調査中';
+        text = l10n.statusInvestigating;
         break;
       case ViolationStatus.resolved:
         color = AppColors.success;
-        text = '処理済み';
+        text = l10n.statusResolved;
         break;
       case ViolationStatus.dismissed:
         color = AppColors.textSecondary;
-        text = '却下';
+        text = l10n.statusRejected;
         break;
     }
 
@@ -658,6 +642,7 @@ class _ViolationManagementScreenState
 
   /// エラー状態表示
   Widget _buildErrorState() {
+    final l10n = L10n.of(context);
     return Center(
       child: Container(
         margin: const EdgeInsets.all(AppDimensions.spacingL),
@@ -694,7 +679,7 @@ class _ViolationManagementScreenState
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('再試行'),
+              child: Text(l10n.retryButton),
             ),
           ],
         ),
@@ -716,13 +701,14 @@ class _ViolationManagementScreenState
   }
 
   String _getSeverityText(ViolationSeverity severity) {
+    final l10n = L10n.of(context);
     switch (severity) {
       case ViolationSeverity.minor:
-        return '軽微';
+        return l10n.severityMinor;
       case ViolationSeverity.moderate:
-        return '中程度';
+        return l10n.severityModerate;
       case ViolationSeverity.severe:
-        return '重大';
+        return l10n.severitySevere;
     }
   }
 
@@ -789,9 +775,10 @@ class _ViolationManagementScreenState
 
   /// 違反詳細表示ダイアログ
   void _showViolationDetailDialog(ViolationRecord violation) {
+    final l10n = L10n.of(context);
     // ゲーム内ユーザー名または実名を取得
     final gameUsername = _gameUsernameCache[violation.violatedUserId];
-    final displayName = WithdrawnUserHelper.getDisplayUsername(_userDataCache[violation.violatedUserId]);
+    final displayName = WithdrawnUserHelper.getDisplayUsername(context, _userDataCache[violation.violatedUserId]);
     final userDisplayName = gameUsername?.isNotEmpty == true ? gameUsername! : displayName;
 
     showDialog(
@@ -801,7 +788,7 @@ class _ViolationManagementScreenState
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('違反詳細 - ${violation.violationType.displayName}'),
+            Text(l10n.violationDetailTitle(violation.violationType.displayName)),
             const SizedBox(height: AppDimensions.spacingS),
             Container(
               padding: const EdgeInsets.symmetric(
@@ -828,7 +815,7 @@ class _ViolationManagementScreenState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '違反者: $userDisplayName',
+                          l10n.violatorLabel(userDisplayName),
                           style: TextStyle(
                             fontSize: AppDimensions.fontSizeM,
                             fontWeight: FontWeight.w600,
@@ -837,7 +824,7 @@ class _ViolationManagementScreenState
                         ),
                         if (gameUsername?.isNotEmpty == true && displayName != null && displayName.isNotEmpty)
                           Text(
-                            '実名: $displayName',
+                            l10n.realNameLabel(displayName),
                             style: TextStyle(
                               fontSize: AppDimensions.fontSizeS,
                               color: AppColors.textSecondary,
@@ -856,19 +843,19 @@ class _ViolationManagementScreenState
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildDetailRow('違反タイプ', violation.violationType.displayName),
-              _buildDetailRow('重要度', violation.severity.displayName),
-              _buildDetailRow('報告日時', _formatDateTime(violation.reportedAt)),
+              _buildDetailRow(l10n.violationTypeLabel, violation.violationType.displayName),
+              _buildDetailRow(l10n.severityLabel, violation.severity.displayName),
+              _buildDetailRow(l10n.reportedAtLabel, _formatDateTime(violation.reportedAt)),
               _buildReporterRow(context, violation),
-              _buildDetailRow('ステータス', violation.status.displayName),
+              _buildDetailRow(l10n.statusLabel, violation.status.displayName),
               if (violation.penalty != null)
-                _buildDetailRow('ペナルティ', violation.penalty!),
+                _buildDetailRow(l10n.penaltyLabel, violation.penalty!),
               if (violation.notes != null)
-                _buildDetailRow('備考', violation.notes!),
+                _buildDetailRow(l10n.notesLabel, violation.notes!),
               const SizedBox(height: AppDimensions.spacingM),
-              const Text(
-                '詳細内容:',
-                style: TextStyle(
+              Text(
+                l10n.detailContentLabel,
+                style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: AppDimensions.fontSizeM,
                 ),
@@ -892,7 +879,7 @@ class _ViolationManagementScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('閉じる'),
+            child: Text(l10n.closeButton),
           ),
         ],
       ),
@@ -901,33 +888,34 @@ class _ViolationManagementScreenState
 
   /// 違反処理ダイアログ
   void _showResolveViolationDialog(ViolationRecord violation) {
+    final l10n = L10n.of(context);
     final penaltyController = TextEditingController();
     final notesController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('違反処理'),
+        title: Text(l10n.processViolationTitle),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: penaltyController,
-                decoration: const InputDecoration(
-                  labelText: 'ペナルティ内容',
-                  hintText: '例: 警告1回、1週間参加停止',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.penaltyContentLabel,
+                  hintText: l10n.penaltyContentHint,
+                  border: const OutlineInputBorder(),
                 ),
                 maxLines: 2,
               ),
               const SizedBox(height: AppDimensions.spacingM),
               AppTextFieldMultiline(
                 controller: notesController,
-                label: '備考（任意）',
-                hintText: '処理に関するメモ',
+                label: l10n.notesOptionalLabel,
+                hintText: l10n.processingNotesHint,
                 maxLines: 3,
-                doneButtonText: '完了',
+                doneButtonText: l10n.doneButtonText,
               ),
             ],
           ),
@@ -935,14 +923,14 @@ class _ViolationManagementScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル'),
+            child: Text(l10n.cancelButton),
           ),
           ElevatedButton(
             onPressed: () async {
               if (penaltyController.text.trim().isEmpty) {
                 if (mounted && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('ペナルティ内容を入力してください')),
+                    SnackBar(content: Text(l10n.pleaseEnterPenalty)),
                   );
                 }
                 return;
@@ -951,7 +939,7 @@ class _ViolationManagementScreenState
               try {
                 final currentUser = ref.read(currentFirebaseUserProvider);
                 if (currentUser == null) {
-                  throw Exception('ユーザーが認証されていません');
+                  throw Exception(l10n.userNotAuthenticated);
                 }
 
                 final violationService = ref.read(violationServiceProvider);
@@ -966,7 +954,7 @@ class _ViolationManagementScreenState
                   Navigator.pop(context);
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('違反を処理しました')),
+                      SnackBar(content: Text(l10n.violationProcessed)),
                     );
                   }
                 }
@@ -974,7 +962,7 @@ class _ViolationManagementScreenState
               } catch (e) {
                 if (mounted && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('処理に失敗しました: $e')),
+                    SnackBar(content: Text(l10n.failedToProcess(e.toString()))),
                   );
                 }
               }
@@ -983,7 +971,7 @@ class _ViolationManagementScreenState
               backgroundColor: AppColors.success,
               foregroundColor: Colors.white,
             ),
-            child: const Text('処理する'),
+            child: Text(l10n.processButton),
           ),
         ],
       ),
@@ -992,6 +980,7 @@ class _ViolationManagementScreenState
 
   /// 削除確認ダイアログ
   void _showDeleteViolationDialog(ViolationRecord violation) {
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -999,35 +988,33 @@ class _ViolationManagementScreenState
           children: [
             Icon(Icons.warning_amber, color: AppColors.error, size: AppDimensions.iconM),
             const SizedBox(width: AppDimensions.spacingS),
-            const Text('違反記録削除'),
+            Text(l10n.deleteViolationRecordTitle),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '⚠️ 重要：この操作は取り消せません',
-              style: TextStyle(
+            Text(
+              l10n.importantCannotUndo,
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: AppColors.error,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingM),
-            const Text('この違反記録を完全に削除しますか？'),
+            Text(l10n.deleteViolationRecordConfirm),
             const SizedBox(height: AppDimensions.spacingS),
-            const Text(
-              '• データベースから完全に削除されます\n'
-              '• この操作は元に戻せません\n'
-              '• 通常は「却下」の使用を推奨します',
-              style: TextStyle(fontSize: AppDimensions.fontSizeS),
+            Text(
+              l10n.deleteViolationRecordWarning,
+              style: const TextStyle(fontSize: AppDimensions.fontSizeS),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル'),
+            child: Text(l10n.cancelButton),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -1035,7 +1022,7 @@ class _ViolationManagementScreenState
               try {
                 final currentUser = ref.read(currentFirebaseUserProvider);
                 if (currentUser == null) {
-                  throw Exception('ユーザーが認証されていません');
+                  throw Exception(l10n.userNotAuthenticated);
                 }
 
                 // イベント運営者情報を取得
@@ -1059,8 +1046,8 @@ class _ViolationManagementScreenState
 
                 if (mounted && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('違反記録を削除しました。関係者に通知されます。'),
+                    SnackBar(
+                      content: Text(l10n.violationRecordDeleted),
                       backgroundColor: AppColors.success,
                     ),
                   );
@@ -1069,7 +1056,7 @@ class _ViolationManagementScreenState
               } catch (e) {
                 if (mounted && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('削除に失敗しました: $e')),
+                    SnackBar(content: Text(l10n.failedToDelete(e.toString()))),
                   );
                 }
               }
@@ -1078,7 +1065,7 @@ class _ViolationManagementScreenState
               backgroundColor: AppColors.error,
               foregroundColor: Colors.white,
             ),
-            child: const Text('削除'),
+            child: Text(l10n.deleteButton),
           ),
         ],
       ),
@@ -1087,6 +1074,7 @@ class _ViolationManagementScreenState
 
   /// 却下ダイアログ
   void _showDismissViolationDialog(ViolationRecord violation) {
+    final l10n = L10n.of(context);
     final notesController = TextEditingController();
 
     showDialog(
@@ -1096,7 +1084,7 @@ class _ViolationManagementScreenState
           children: [
             Icon(Icons.cancel_outlined, color: AppColors.warning, size: AppDimensions.iconM),
             const SizedBox(width: AppDimensions.spacingS),
-            const Text('違反記録却下'),
+            Text(l10n.rejectViolationRecordTitle),
           ],
         ),
         content: SingleChildScrollView(
@@ -1104,29 +1092,27 @@ class _ViolationManagementScreenState
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'ℹ️ 却下について',
-                style: TextStyle(
+              Text(
+                l10n.aboutRejection,
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: AppColors.info,
                 ),
               ),
               const SizedBox(height: AppDimensions.spacingS),
-              const Text(
-                '• 記録は残りますが却下済みになります\n'
-                '• 後から「復旧」で未処理に戻せます\n'
-                '• 違反として不適切と判断した場合に使用',
-                style: TextStyle(fontSize: AppDimensions.fontSizeS),
+              Text(
+                l10n.rejectionDescription,
+                style: const TextStyle(fontSize: AppDimensions.fontSizeS),
               ),
               const SizedBox(height: AppDimensions.spacingM),
-              const Text('この違反記録を却下しますか？'),
+              Text(l10n.rejectViolationRecordConfirm),
               const SizedBox(height: AppDimensions.spacingM),
               AppTextFieldMultiline(
                 controller: notesController,
-                label: '却下理由（任意）',
-                hintText: '却下する理由を記載してください',
+                label: l10n.rejectReasonOptionalLabel,
+                hintText: l10n.rejectReasonHint,
                 maxLines: 3,
-                doneButtonText: '完了',
+                doneButtonText: l10n.doneButtonText,
               ),
             ],
           ),
@@ -1134,7 +1120,7 @@ class _ViolationManagementScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル'),
+            child: Text(l10n.cancelButton),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -1142,7 +1128,7 @@ class _ViolationManagementScreenState
               try {
                 final currentUser = ref.read(currentFirebaseUserProvider);
                 if (currentUser == null) {
-                  throw Exception('ユーザーが認証されていません');
+                  throw Exception(l10n.userNotAuthenticated);
                 }
 
                 // イベント運営者情報を取得
@@ -1175,8 +1161,8 @@ class _ViolationManagementScreenState
 
                 if (mounted && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('違反記録を却下しました。関係者に通知されます。'),
+                    SnackBar(
+                      content: Text(l10n.violationRecordRejected),
                       backgroundColor: AppColors.warning,
                     ),
                   );
@@ -1185,7 +1171,7 @@ class _ViolationManagementScreenState
               } catch (e) {
                 if (mounted && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('却下に失敗しました: $e')),
+                    SnackBar(content: Text(l10n.failedToReject(e.toString()))),
                   );
                 }
               }
@@ -1194,7 +1180,7 @@ class _ViolationManagementScreenState
               backgroundColor: AppColors.warning,
               foregroundColor: Colors.white,
             ),
-            child: const Text('却下'),
+            child: Text(l10n.rejectButton),
           ),
         ],
       ),
@@ -1203,8 +1189,9 @@ class _ViolationManagementScreenState
 
   /// 報告者行ウィジェット（タップ可能）
   Widget _buildReporterRow(BuildContext context, ViolationRecord violation) {
+    final l10n = L10n.of(context);
     final reporterData = _userDataCache[violation.reportedByUserId];
-    final displayName = WithdrawnUserHelper.getDisplayUsername(reporterData);
+    final displayName = WithdrawnUserHelper.getDisplayUsername(context, reporterData);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
@@ -1214,7 +1201,7 @@ class _ViolationManagementScreenState
           SizedBox(
             width: 80,
             child: Text(
-              '報告者:',
+              l10n.reporterLabel,
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: AppDimensions.fontSizeS,
@@ -1330,6 +1317,7 @@ class _ViolationManagementScreenState
 
   /// ゲームプロフィール画面に遷移
   void _navigateToGameProfile(String userId, UserData? userData) async {
+    final l10n = L10n.of(context);
     try {
       // ユーザーのゲームプロフィールを取得
       final gameProfileService = ref.read(gameProfileServiceProvider);
@@ -1338,8 +1326,8 @@ class _ViolationManagementScreenState
       if (gameProfiles.isEmpty) {
         if (mounted && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('このユーザーのゲームプロフィールが見つかりません'),
+            SnackBar(
+              content: Text(l10n.gameProfileNotFound),
               backgroundColor: AppColors.warning,
             ),
           );
@@ -1361,7 +1349,7 @@ class _ViolationManagementScreenState
       if (mounted && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('ゲームプロフィールの取得に失敗しました: $e'),
+            content: Text(l10n.failedToGetGameProfile(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -1371,10 +1359,11 @@ class _ViolationManagementScreenState
 
   /// ゲーム選択ダイアログを表示
   Future<GameProfile?> _showGameSelectionDialog(List<GameProfile> profiles) async {
+    final l10n = L10n.of(context);
     return await showDialog<GameProfile>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('ゲームを選択'),
+        title: Text(l10n.selectGameTitle),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1390,7 +1379,7 @@ class _ViolationManagementScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル'),
+            child: Text(l10n.cancelButton),
           ),
         ],
       ),
@@ -1414,6 +1403,7 @@ class _ViolationManagementScreenState
 
   /// ヘルプダイアログを表示
   void _showHelpDialog() {
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1425,7 +1415,7 @@ class _ViolationManagementScreenState
               size: AppDimensions.iconM,
             ),
             const SizedBox(width: AppDimensions.spacingS),
-            const Text('違反管理の操作説明'),
+            Text(l10n.violationManagementGuide),
           ],
         ),
         content: SingleChildScrollView(
@@ -1434,56 +1424,56 @@ class _ViolationManagementScreenState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildHelpSection(
-                '📝 基本操作',
-                '違反記録カードにある各ボタンの機能を説明します。',
+                l10n.guideBasicOperations,
+                l10n.guideCardButtonsDesc,
               ),
               const SizedBox(height: AppDimensions.spacingL),
               _buildHelpItem(
                 Icons.visibility,
-                '詳細',
-                '違反記録の詳細情報を表示します。',
+                l10n.guideDetailTitle,
+                l10n.guideDetailDesc,
                 AppColors.textSecondary,
               ),
               _buildHelpItem(
                 Icons.edit,
-                '編集',
-                '違反の種類、重要度、説明などを編集できます。',
+                l10n.guideEditTitle,
+                l10n.guideEditDesc,
                 AppColors.primary,
               ),
               _buildHelpItem(
                 Icons.check,
-                '処理',
-                '違反を確認し、ペナルティを記録して解決済みにします。',
+                l10n.guideProcessTitle,
+                l10n.guideProcessDesc,
                 AppColors.accent,
               ),
               const SizedBox(height: AppDimensions.spacingL),
               _buildHelpSection(
-                '⚠️ 重要な操作',
-                '以下の操作は慎重に実行してください。',
+                l10n.guideImportantOperations,
+                l10n.guideCautionOperations,
               ),
               const SizedBox(height: AppDimensions.spacingM),
               _buildHelpItem(
                 Icons.cancel,
-                '却下',
-                '違反として不適切と判断した場合に使用。記録は残りますが「却下済み」になります。',
+                l10n.guideRejectTitle,
+                l10n.guideRejectDesc,
                 AppColors.warning,
               ),
               _buildHelpItem(
                 Icons.delete,
-                '削除',
-                'データベースから完全に削除します。この操作は取り消せません。通常は「却下」の使用を推奨します。',
+                l10n.guideDeleteTitle,
+                l10n.guideDeleteDesc,
                 AppColors.error,
               ),
               const SizedBox(height: AppDimensions.spacingL),
               _buildHelpSection(
-                '🔄 復旧機能',
-                '誤操作した場合の対処法です。',
+                l10n.guideRestoreFeature,
+                l10n.guideMistakeRecovery,
               ),
               const SizedBox(height: AppDimensions.spacingM),
               _buildHelpItem(
                 Icons.undo,
-                '復旧',
-                '処理済み・却下済みの記録を未処理状態に戻します。削除した記録は復旧できません。',
+                l10n.guideRecoveryTitle,
+                l10n.guideRecoveryDesc,
                 AppColors.info,
               ),
               const SizedBox(height: AppDimensions.spacingL),
@@ -1506,7 +1496,7 @@ class _ViolationManagementScreenState
                     const SizedBox(width: AppDimensions.spacingS),
                     Expanded(
                       child: Text(
-                        'ヒント：誤って処理や却下した場合は「復旧」ボタンで元に戻せます',
+                        l10n.guideRecoveryHint,
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeS,
                           color: AppColors.info,
@@ -1522,7 +1512,7 @@ class _ViolationManagementScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('閉じる'),
+            child: Text(l10n.closeButton),
           ),
         ],
       ),
@@ -1605,28 +1595,28 @@ class _ViolationManagementScreenState
 
   /// 復旧確認ダイアログ
   void _showRevertViolationDialog(ViolationRecord violation) {
+    final l10n = L10n.of(context);
     final notesController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('違反記録復旧'),
+        title: Text(l10n.restoreViolationRecordTitle),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'この違反記録を未処理状態に戻しますか？\n'
-                '現在のステータス: ${violation.status.displayName}',
+                l10n.restoreViolationRecordConfirm(violation.status.displayName),
                 style: const TextStyle(fontSize: AppDimensions.fontSizeM),
               ),
               const SizedBox(height: AppDimensions.spacingM),
               TextField(
                 controller: notesController,
-                decoration: const InputDecoration(
-                  labelText: '復旧理由（任意）',
-                  hintText: '復旧する理由を記載してください',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.restoreReasonOptionalLabel,
+                  hintText: l10n.restoreReasonHint,
+                  border: const OutlineInputBorder(),
                 ),
                 maxLines: 3,
               ),
@@ -1636,7 +1626,7 @@ class _ViolationManagementScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル'),
+            child: Text(l10n.cancelButton),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -1652,8 +1642,8 @@ class _ViolationManagementScreenState
 
                 if (mounted && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('違反記録を復旧しました'),
+                    SnackBar(
+                      content: Text(l10n.violationRecordRestored),
                       backgroundColor: AppColors.success,
                     ),
                   );
@@ -1663,7 +1653,7 @@ class _ViolationManagementScreenState
                 if (mounted && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('復旧に失敗しました: $e'),
+                      content: Text(l10n.failedToRestore(e.toString())),
                       backgroundColor: AppColors.error,
                     ),
                   );
@@ -1674,7 +1664,7 @@ class _ViolationManagementScreenState
               backgroundColor: AppColors.info,
               foregroundColor: Colors.white,
             ),
-            child: const Text('復旧する'),
+            child: Text(l10n.restoreButton),
           ),
         ],
       ),
@@ -1683,6 +1673,7 @@ class _ViolationManagementScreenState
 
   /// 異議申立期間情報表示
   Widget _buildAppealDeadlineInfo(ViolationRecord violation) {
+    final l10n = L10n.of(context);
     final violationService = ref.read(violationServiceProvider);
     final remainingHours = violationService.getRemainingAppealHours(violation);
     final canProcess = violationService.canProcessWithoutAppeal(violation);
@@ -1695,22 +1686,22 @@ class _ViolationManagementScreenState
       // 異議申立が提出済み
       statusColor = AppColors.info;
       statusIcon = Icons.help_outline;
-      statusText = '異議申立済み - 処理待ち';
+      statusText = l10n.appealSubmittedWaiting;
     } else if (canProcess) {
       // 期限切れ or 処理可能
       statusColor = AppColors.success;
       statusIcon = Icons.check_circle_outline;
-      statusText = '処理可能';
+      statusText = l10n.processableStatus;
     } else if (remainingHours != null && remainingHours > 0) {
       // まだ期限内
       statusColor = AppColors.warning;
       statusIcon = Icons.schedule;
-      statusText = '異議申立期間中 - あと$remainingHours時間';
+      statusText = l10n.appealPeriodRemaining(remainingHours);
     } else {
       // 期限切れ
       statusColor = AppColors.success;
       statusIcon = Icons.check_circle_outline;
-      statusText = '異議申立期限切れ - 処理可能';
+      statusText = l10n.appealDeadlineExpired;
     }
 
     return Container(
@@ -1743,7 +1734,7 @@ class _ViolationManagementScreenState
           ),
           if (violation.appealDeadline != null)
             Text(
-              '期限: ${_formatDateTime(violation.appealDeadline!)}',
+              l10n.deadlineLabel(_formatDateTime(violation.appealDeadline!)),
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeXS,
                 color: AppColors.textSecondary,
@@ -1800,7 +1791,7 @@ class _ViolationManagementScreenState
       if (mounted && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('エラーが発生しました: $e'),
+            content: Text(L10n.of(context).errorWithDetails(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );

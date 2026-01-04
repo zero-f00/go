@@ -4,6 +4,7 @@ import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../services/participation_service.dart';
 import '../../features/game_event_management/models/game_event.dart';
+import '../../l10n/app_localizations.dart';
 import 'app_gradient_background.dart';
 import 'app_header.dart';
 
@@ -12,14 +13,26 @@ typedef ApplicationStatus = ParticipationStatus;
 
 /// 参加履歴の期間フィルタ
 enum HistoryPeriod {
-  all('全期間'),
-  thisMonth('今月'),
-  lastThreeMonths('過去3ヶ月'),
-  lastSixMonths('過去6ヶ月'),
-  thisYear('今年');
+  all,
+  thisMonth,
+  lastThreeMonths,
+  lastSixMonths,
+  thisYear;
 
-  final String displayName;
-  const HistoryPeriod(this.displayName);
+  String getDisplayName(L10n l10n) {
+    switch (this) {
+      case HistoryPeriod.all:
+        return l10n.historyPeriodAll;
+      case HistoryPeriod.thisMonth:
+        return l10n.historyPeriodThisMonth;
+      case HistoryPeriod.lastThreeMonths:
+        return l10n.historyPeriodLastThreeMonths;
+      case HistoryPeriod.lastSixMonths:
+        return l10n.historyPeriodLastSixMonths;
+      case HistoryPeriod.thisYear:
+        return l10n.historyPeriodThisYear;
+    }
+  }
 
   DateTime? get startDate {
     final now = DateTime.now();
@@ -195,6 +208,7 @@ class _EnhancedActivityDetailDialogState
       return null;
     }
 
+    final l10n = L10n.of(context);
     List<Widget> children = [];
 
     // 検索バー
@@ -211,7 +225,7 @@ class _EnhancedActivityDetailDialogState
               controller: _searchController,
               autofocus: true,
               decoration: InputDecoration(
-                hintText: 'イベント名で検索...',
+                hintText: l10n.searchByEventNameHint,
                 hintStyle: const TextStyle(
                   color: AppColors.textLight,
                   fontSize: AppDimensions.fontSizeM,
@@ -264,10 +278,10 @@ class _EnhancedActivityDetailDialogState
               fontSize: AppDimensions.fontSizeM,
               fontWeight: FontWeight.normal,
             ),
-            tabs: const [
-              Tab(text: '全て'),
-              Tab(text: '承認済み'),
-              Tab(text: '拒否'),
+            tabs: [
+              Tab(text: l10n.tabAll),
+              Tab(text: l10n.tabApproved),
+              Tab(text: l10n.tabRejected),
             ],
           ),
         ),
@@ -358,6 +372,7 @@ class _EnhancedActivityDetailDialogState
           separatorBuilder: (context, index) =>
               const SizedBox(width: AppDimensions.spacingS),
           itemBuilder: (context, index) {
+            final l10n = L10n.of(context);
             final period = HistoryPeriod.values[index];
             final isSelected = period == _selectedPeriod;
 
@@ -392,7 +407,7 @@ class _EnhancedActivityDetailDialogState
                   ),
                   child: Center(
                     child: Text(
-                      period.displayName,
+                      period.getDisplayName(l10n),
                       style: TextStyle(
                         color: isSelected ? Colors.white : AppColors.textDark,
                         fontSize: AppDimensions.fontSizeS,
@@ -412,6 +427,7 @@ class _EnhancedActivityDetailDialogState
   }
 
   Widget _buildFilteredContent(ParticipationStatus? statusFilter) {
+    final l10n = L10n.of(context);
     return FutureBuilder<List<ParticipationApplication>>(
       future: ParticipationService.getUserApplications(widget.userId),
       builder: (context, snapshot) {
@@ -420,7 +436,7 @@ class _EnhancedActivityDetailDialogState
         }
 
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return _buildEmptyState('参加履歴がありません');
+          return _buildEmptyState(l10n.noParticipationHistory);
         }
 
         // データを初期化（setStateを避けるため、ここで直接処理）
@@ -463,7 +479,7 @@ class _EnhancedActivityDetailDialogState
         final displayApps = filtered.take(_pageSize).toList();
 
         if (displayApps.isEmpty) {
-          return _buildEmptyState('条件に一致する履歴がありません');
+          return _buildEmptyState(l10n.noMatchingHistory);
         }
 
         return _buildGroupedList(displayApps);
@@ -552,6 +568,7 @@ class _EnhancedActivityDetailDialogState
   }
 
   Widget _buildActivityContent(String type) {
+    final l10n = L10n.of(context);
     switch (type) {
       case 'pending':
         return _buildPendingApplications();
@@ -560,11 +577,12 @@ class _EnhancedActivityDetailDialogState
       case 'hosting':
         return _buildHostingEvents();
       default:
-        return _buildEmptyState('データがありません');
+        return _buildEmptyState(l10n.noDataAvailable);
     }
   }
 
   Widget _buildPendingApplications() {
+    final l10n = L10n.of(context);
     return FutureBuilder<List<ParticipationApplication>>(
       future: ParticipationService.getUserApplications(widget.userId),
       builder: (context, snapshot) {
@@ -573,7 +591,7 @@ class _EnhancedActivityDetailDialogState
         }
 
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return _buildEmptyState('申し込み中のイベントはありません');
+          return _buildEmptyState(l10n.noPendingApplications);
         }
 
         final pendingApps = snapshot.data!
@@ -581,7 +599,7 @@ class _EnhancedActivityDetailDialogState
             .toList();
 
         if (pendingApps.isEmpty) {
-          return _buildEmptyState('承認待ちの申し込みはありません');
+          return _buildEmptyState(l10n.noPendingApproval);
         }
 
         return ListView.separated(
@@ -597,6 +615,7 @@ class _EnhancedActivityDetailDialogState
   }
 
   Widget _buildParticipatingEvents() {
+    final l10n = L10n.of(context);
     return FutureBuilder<List<ParticipationApplication>>(
       future: ParticipationService.getUserApplications(widget.userId),
       builder: (context, snapshot) {
@@ -605,7 +624,7 @@ class _EnhancedActivityDetailDialogState
         }
 
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return _buildEmptyState('参加中のイベントはありません');
+          return _buildEmptyState(l10n.noParticipatingEvents);
         }
 
         final now = DateTime.now();
@@ -621,7 +640,7 @@ class _EnhancedActivityDetailDialogState
         }
 
         if (filtered.isEmpty) {
-          return _buildEmptyState('該当期間に参加したイベントはありません');
+          return _buildEmptyState(l10n.noEventsThisPeriod);
         }
 
         return _buildGroupedList(filtered);
@@ -630,6 +649,7 @@ class _EnhancedActivityDetailDialogState
   }
 
   Widget _buildHostingEvents() {
+    final l10n = L10n.of(context);
     return FutureBuilder<String?>(
       future: _getFirebaseUidFromCustomId(widget.userId),
       builder: (context, uidSnapshot) {
@@ -639,7 +659,7 @@ class _EnhancedActivityDetailDialogState
 
         final firebaseUid = uidSnapshot.data;
         if (firebaseUid == null) {
-          return _buildEmptyState('ユーザー情報が取得できませんでした');
+          return _buildEmptyState(l10n.userInfoNotAvailable);
         }
 
         return FutureBuilder<List<DocumentSnapshot>>(
@@ -650,7 +670,7 @@ class _EnhancedActivityDetailDialogState
             }
 
             if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return _buildEmptyState('運営中のイベントはありません');
+              return _buildEmptyState(l10n.noHostingEvents);
             }
 
             final docs = snapshot.data!;
@@ -710,7 +730,7 @@ class _EnhancedActivityDetailDialogState
                               ),
                             ),
                             child: Text(
-                              '${monthDocs.length}件',
+                              l10n.countItems(monthDocs.length),
                               style: TextStyle(
                                 fontSize: AppDimensions.fontSizeXS,
                                 color: AppColors.accent,
@@ -791,6 +811,7 @@ class _EnhancedActivityDetailDialogState
     BuildContext context,
     ParticipationApplication app,
   ) {
+    final l10n = L10n.of(context);
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -836,7 +857,7 @@ class _EnhancedActivityDetailDialogState
                       future: _getEventName(app.eventId),
                       builder: (context, snapshot) {
                         return Text(
-                          snapshot.data ?? 'イベント名を取得中...',
+                          snapshot.data ?? l10n.eventNameLoading,
                           style: const TextStyle(
                             fontSize: AppDimensions.fontSizeM,
                             fontWeight: FontWeight.w600,
@@ -864,7 +885,7 @@ class _EnhancedActivityDetailDialogState
                             ),
                           ),
                           child: Text(
-                            _getStatusText(app.status),
+                            _getStatusText(app.status, l10n),
                             style: TextStyle(
                               fontSize: AppDimensions.fontSizeXS,
                               color: _getStatusColor(app.status),
@@ -1060,18 +1081,18 @@ class _EnhancedActivityDetailDialogState
     }
   }
 
-  String _getStatusText(ApplicationStatus status) {
+  String _getStatusText(ApplicationStatus status, L10n l10n) {
     switch (status) {
       case ApplicationStatus.pending:
-        return '承認待ち';
+        return l10n.statusPending;
       case ApplicationStatus.waitlisted:
-        return 'キャンセル待ち';
+        return l10n.statusWaitlisted;
       case ApplicationStatus.approved:
-        return '承認済み';
+        return l10n.statusApproved;
       case ApplicationStatus.rejected:
-        return '拒否';
+        return l10n.statusRejected;
       case ApplicationStatus.cancelled:
-        return 'キャンセル済み';
+        return l10n.statusCancelled;
     }
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/models/event_model.dart';
+import '../../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 
@@ -27,21 +28,22 @@ class StandardEventCard extends StatelessWidget {
     }
   }
 
-  String _getStatusText(EventStatus status) {
+  String _getStatusText(L10n l10n, EventStatus status) {
     switch (status) {
       case EventStatus.draft:
-        return '下書き';
+        return l10n.eventStatusDraft;
       case EventStatus.published:
-        return '公開中';
+        return l10n.managementStatusPublishing;
       case EventStatus.cancelled:
-        return '中止';
+        return l10n.eventStatusCancelled;
       case EventStatus.completed:
-        return '完了';
+        return l10n.eventStatusCompleted;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
       decoration: BoxDecoration(
@@ -70,17 +72,17 @@ class StandardEventCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildEventHeader(),
+                _buildEventHeader(l10n),
                 if (event.subtitle != null) ...[
                   const SizedBox(height: AppDimensions.spacingXS),
                   _buildSubtitle(),
                 ],
                 const SizedBox(height: AppDimensions.spacingM),
                 if (event.status == EventStatus.cancelled)
-                  _buildCancellationInfo(),
-                _buildEventMeta(),
+                  _buildCancellationInfo(l10n),
+                _buildEventMeta(l10n),
                 const SizedBox(height: AppDimensions.spacingM),
-                _buildEventFooter(),
+                _buildEventFooter(l10n),
               ],
             ),
           ),
@@ -89,7 +91,7 @@ class StandardEventCard extends StatelessWidget {
     );
   }
 
-  Widget _buildEventHeader() {
+  Widget _buildEventHeader(L10n l10n) {
     return Row(
       children: [
         Expanded(
@@ -116,7 +118,7 @@ class StandardEventCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
-                  _buildStatusBadge(),
+                  _buildStatusBadge(l10n),
                 ],
               ),
             ],
@@ -131,7 +133,7 @@ class StandardEventCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusBadge() {
+  Widget _buildStatusBadge(L10n l10n) {
     final color = _getStatusColor(event.status);
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -147,7 +149,7 @@ class StandardEventCard extends StatelessWidget {
         ),
       ),
       child: Text(
-        _getStatusText(event.status),
+        _getStatusText(l10n, event.status),
         style: TextStyle(
           fontSize: AppDimensions.fontSizeXS,
           color: color,
@@ -175,7 +177,7 @@ class StandardEventCard extends StatelessWidget {
     );
   }
 
-  Widget _buildCancellationInfo() {
+  Widget _buildCancellationInfo(L10n l10n) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingM),
@@ -199,10 +201,10 @@ class StandardEventCard extends StatelessWidget {
                 size: AppDimensions.iconS,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'このイベントは中止されました',
-                  style: TextStyle(
+                  l10n.eventCancelled,
+                  style: const TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     color: AppColors.error,
                     fontWeight: FontWeight.w600,
@@ -214,7 +216,7 @@ class StandardEventCard extends StatelessWidget {
           if (event.cancellationReason != null && event.cancellationReason!.isNotEmpty) ...[
             const SizedBox(height: AppDimensions.spacingXS),
             Text(
-              '理由: ${event.cancellationReason}',
+              l10n.eventCancellationReason(event.cancellationReason!),
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeXS,
                 color: AppColors.textSecondary,
@@ -224,7 +226,7 @@ class StandardEventCard extends StatelessWidget {
           if (event.cancelledAt != null) ...[
             const SizedBox(height: AppDimensions.spacingXS),
             Text(
-              '中止日: ${event.cancelledAt!.month}/${event.cancelledAt!.day}',
+              l10n.eventCancellationDate('${event.cancelledAt!.month}/${event.cancelledAt!.day}'),
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeXS,
                 color: AppColors.textSecondary,
@@ -236,19 +238,19 @@ class StandardEventCard extends StatelessWidget {
     );
   }
 
-  Widget _buildEventMeta() {
+  Widget _buildEventMeta(L10n l10n) {
     return Row(
       children: [
         if (event.hasParticipationFee) ...[
           _buildMetaChip(
-            '有料',
+            l10n.eventPaid,
             Icons.paid,
             AppColors.warning,
           ),
           const SizedBox(width: AppDimensions.spacingS),
         ] else ...[
           _buildMetaChip(
-            '無料',
+            l10n.eventFree,
             Icons.free_breakfast,
             AppColors.success,
           ),
@@ -256,14 +258,14 @@ class StandardEventCard extends StatelessWidget {
         ],
         if (event.hasPrize) ...[
           _buildMetaChip(
-            '賞品あり',
+            l10n.eventHasPrize,
             Icons.emoji_events,
             AppColors.accent,
           ),
           const SizedBox(width: AppDimensions.spacingS),
         ],
         const Spacer(),
-        _buildParticipantInfo(),
+        _buildParticipantInfo(l10n),
       ],
     );
   }
@@ -304,7 +306,7 @@ class StandardEventCard extends StatelessWidget {
     );
   }
 
-  Widget _buildParticipantInfo() {
+  Widget _buildParticipantInfo(L10n l10n) {
     final participantColor = event.status == EventStatus.cancelled
         ? AppColors.textLight
         : AppColors.textSecondary;
@@ -318,7 +320,7 @@ class StandardEventCard extends StatelessWidget {
         ),
         const SizedBox(width: AppDimensions.spacingXS),
         Text(
-          '${event.participantIds.length}/${event.maxParticipants}人',
+          l10n.eventParticipants(event.participantIds.length, event.maxParticipants),
           style: TextStyle(
             fontSize: AppDimensions.fontSizeS,
             fontWeight: FontWeight.w600,
@@ -329,18 +331,18 @@ class StandardEventCard extends StatelessWidget {
         // 満員バッジ表示
         if (event.isFull) ...[
           const SizedBox(width: AppDimensions.spacingXS),
-          _buildCustomStatusBadge('満員', AppColors.error),
+          _buildCustomStatusBadge(l10n.eventFull, AppColors.error),
         ]
         // 期限間近バッジ表示
         else if (event.daysUntilRegistrationDeadline <= 2 &&
                 event.daysUntilRegistrationDeadline > 0) ...[
           const SizedBox(width: AppDimensions.spacingXS),
-          _buildCustomStatusBadge('残り${event.daysUntilRegistrationDeadline}日', AppColors.warning),
+          _buildCustomStatusBadge(l10n.eventDaysRemaining(event.daysUntilRegistrationDeadline), AppColors.warning),
         ]
         // 期限切れバッジ表示
         else if (event.isRegistrationExpired) ...[
           const SizedBox(width: AppDimensions.spacingXS),
-          _buildCustomStatusBadge('締切', AppColors.warning),
+          _buildCustomStatusBadge(l10n.eventDeadline, AppColors.warning),
         ],
       ],
     );
@@ -375,7 +377,7 @@ class StandardEventCard extends StatelessWidget {
     );
   }
 
-  Widget _buildEventFooter() {
+  Widget _buildEventFooter(L10n l10n) {
     final date = event.eventDate;
     final dateFormat = '${date.month}/${date.day}';
     final timeFormat = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
@@ -393,7 +395,7 @@ class StandardEventCard extends StatelessWidget {
         ),
         const SizedBox(width: AppDimensions.spacingXS),
         Text(
-          '開催日時: $dateFormat $timeFormat',
+          l10n.eventDateTime(dateFormat, timeFormat),
           style: TextStyle(
             fontSize: AppDimensions.fontSizeS,
             color: footerColor,

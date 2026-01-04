@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../data/models/user_model.dart';
+import '../../l10n/app_localizations.dart';
 import 'deep_link_service.dart';
 
 /// ユーザープロフィール共有サービス
@@ -17,9 +18,11 @@ class UserProfileShareService {
   }
 
   /// ユーザープロフィールを共有する
+  /// [context] はローカライズされたテキストを取得するために必要
   /// [sharePositionOrigin] はiPadでシェアシートの表示位置を指定するために必要
   static Future<void> shareUserProfile(
     UserData user, {
+    required BuildContext context,
     Rect? sharePositionOrigin,
   }) async {
     if (!canShareUserProfile(user)) {
@@ -32,7 +35,8 @@ class UserProfileShareService {
     }
 
     try {
-      final shareText = _buildShareText(user);
+      final l10n = L10n.of(context);
+      final shareText = _buildShareText(user, l10n);
       await Share.share(shareText, sharePositionOrigin: sharePositionOrigin);
     } catch (e) {
       if (kDebugMode) {
@@ -43,7 +47,7 @@ class UserProfileShareService {
   }
 
   /// 共有用テキストを生成
-  static String _buildShareText(UserData user) {
+  static String _buildShareText(UserData user, L10n l10n) {
     final buffer = StringBuffer();
 
     // ユーザー名
@@ -67,12 +71,12 @@ class UserProfileShareService {
 
     // プロフィール詳細URL
     final profileUrl = DeepLinkService.generateUserShareUrl(user.userId);
-    buffer.writeln('▼ プロフィールはこちら');
+    buffer.writeln('▼ ${l10n.shareTextProfileLink}');
     buffer.writeln(profileUrl);
     buffer.writeln();
 
     // ハッシュタグ
-    buffer.write('#Go. #ゲーム仲間募集');
+    buffer.write('#Go. #${l10n.shareHashtagLookingForGamers}');
 
     return buffer.toString();
   }

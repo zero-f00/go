@@ -10,6 +10,7 @@ import '../../../shared/utils/event_converter.dart';
 import '../../../data/models/event_model.dart';
 import '../../event_detail/views/event_detail_screen.dart';
 import '../../game_event_management/models/game_event.dart';
+import '../../../l10n/app_localizations.dart';
 
 class HostEventCalendarScreen extends ConsumerStatefulWidget {
   const HostEventCalendarScreen({super.key});
@@ -19,12 +20,27 @@ class HostEventCalendarScreen extends ConsumerStatefulWidget {
 }
 
 class _HostEventCalendarScreenState extends ConsumerState<HostEventCalendarScreen> {
-  // フィルター設定
+  // フィルター設定（キーは識別子として使用）
   final Map<String, bool> _filters = {
-    '公開済みイベント': true,
-    '下書きイベント': true,
-    '完了済みイベント': true,
+    'publishedEvents': true,
+    'draftEvents': true,
+    'completedEvents': true,
   };
+
+  /// フィルターキーをローカライズした表示名に変換
+  String _getFilterDisplayName(BuildContext context, String key) {
+    final l10n = L10n.of(context);
+    switch (key) {
+      case 'publishedEvents':
+        return l10n.publishedEventsFilter;
+      case 'draftEvents':
+        return l10n.draftEventsFilter;
+      case 'completedEvents':
+        return l10n.completedEventsFilter;
+      default:
+        return key;
+    }
+  }
 
   // フィルター更新フラグ
   int _filterVersion = 0;
@@ -102,12 +118,12 @@ class _HostEventCalendarScreenState extends ConsumerState<HostEventCalendarScree
     // EventStatusの値に基づく判定（eventsコレクションはEventStatusを使用）
     switch (status) {
       case 'published':
-        return _filters['公開済みイベント'] ?? true;
+        return _filters['publishedEvents'] ?? true;
       case 'draft':
-        return _filters['下書きイベント'] ?? true;
+        return _filters['draftEvents'] ?? true;
       case 'completed':
       case 'cancelled':
-        return _filters['完了済みイベント'] ?? true;
+        return _filters['completedEvents'] ?? true;
       default:
         return true; // 不明なステータスは表示
     }
@@ -128,20 +144,21 @@ class _HostEventCalendarScreenState extends ConsumerState<HostEventCalendarScree
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Scaffold(
       body: AppGradientBackground(
         child: SafeArea(
           child: Column(
             children: [
               AppHeader(
-                title: '主催イベントカレンダー',
+                title: l10n.hostEventCalendar,
                 showBackButton: true,
                 onBackPressed: () => Navigator.of(context).pop(),
               ),
               Expanded(
                 child: UnifiedCalendarWidget(
                   key: ValueKey(_filterVersion), // フィルター変更時に再構築
-                  title: '主催イベントカレンダー',
+                  title: l10n.hostEventCalendar,
                   onLoadEvents: _loadHostEvents,
                   onEventTap: _navigateToEventDetail,
                   showFilters: true,
@@ -149,7 +166,8 @@ class _HostEventCalendarScreenState extends ConsumerState<HostEventCalendarScree
                   onFiltersChanged: _onFiltersChanged,
                   getEventStatusColor: _getEventStatusColor,
                   normalizeDate: _normalizeDate,
-                  emptyMessage: '選択した日にはイベントがありません',
+                  filterDisplayNameBuilder: _getFilterDisplayName,
+                  emptyMessage: l10n.noEventsOnSelectedDate,
                   emptyIcon: Icons.event_busy,
                 ),
               ),

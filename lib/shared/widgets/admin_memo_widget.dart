@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import 'app_button.dart';
@@ -90,8 +91,8 @@ class _AdminMemoWidgetState extends State<AdminMemoWidget> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('メモを保存しました'),
+          SnackBar(
+            content: Text(L10n.of(context).adminMemoSaved),
             backgroundColor: AppColors.success,
           ),
         );
@@ -99,8 +100,8 @@ class _AdminMemoWidgetState extends State<AdminMemoWidget> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('メモの保存に失敗しました'),
+          SnackBar(
+            content: Text(L10n.of(context).adminMemoSaveFailed),
             backgroundColor: AppColors.error,
           ),
         );
@@ -113,17 +114,18 @@ class _AdminMemoWidgetState extends State<AdminMemoWidget> {
   /// メモ編集ダイアログを表示
   void _showMemoEditDialog() {
     final controller = TextEditingController(text: _memo);
+    final l10n = L10n.of(context);
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Row(
           children: [
             const Icon(Icons.edit_note, color: AppColors.primary),
             const SizedBox(width: AppDimensions.spacingS),
             Expanded(
               child: Text(
-                '管理者メモ - ${widget.userName}',
+                l10n.adminMemoTitle(widget.userName),
                 style: const TextStyle(fontSize: AppDimensions.fontSizeL),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -144,18 +146,18 @@ class _AdminMemoWidgetState extends State<AdminMemoWidget> {
                     color: AppColors.warning.withValues(alpha: 0.3),
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.lock,
                       color: AppColors.warning,
                       size: AppDimensions.iconS,
                     ),
-                    SizedBox(width: AppDimensions.spacingXS),
+                    const SizedBox(width: AppDimensions.spacingXS),
                     Expanded(
                       child: Text(
-                        '管理者のみ閲覧・編集可能',
-                        style: TextStyle(
+                        l10n.adminMemoOnlyAdminVisible,
+                        style: const TextStyle(
                           fontSize: AppDimensions.fontSizeXS,
                           color: AppColors.warning,
                           fontWeight: FontWeight.w600,
@@ -168,26 +170,26 @@ class _AdminMemoWidgetState extends State<AdminMemoWidget> {
               const SizedBox(height: AppDimensions.spacingM),
               AppTextFieldMultiline(
                 controller: controller,
-                label: 'メモ内容',
-                hintText: '管理上の注意点やメモを入力してください',
+                label: l10n.adminMemoContentLabel,
+                hintText: l10n.adminMemoHint,
                 maxLines: 5,
                 minLines: 3,
-                doneButtonText: '完了',
+                doneButtonText: l10n.doneButton,
               ),
             ],
           ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル'),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(l10n.cancel),
           ),
           AppButton.primary(
-            text: _isSaving ? '保存中...' : '保存',
+            text: _isSaving ? l10n.saving : l10n.save,
             onPressed: _isSaving
                 ? null
                 : () {
-                    Navigator.pop(context);
+                    Navigator.pop(dialogContext);
                     _saveMemo(controller.text);
                   },
           ),
@@ -244,7 +246,7 @@ class _AdminMemoWidgetState extends State<AdminMemoWidget> {
                           ),
                         )
                       : Text(
-                          _memo.isNotEmpty ? _memo : '管理者メモを追加',
+                          _memo.isNotEmpty ? _memo : L10n.of(context).adminMemoAdd,
                           style: TextStyle(
                             fontSize: AppDimensions.fontSizeXS,
                             color: _memo.isNotEmpty

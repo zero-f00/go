@@ -6,6 +6,7 @@ import '../widgets/user_avatar.dart';
 import '../services/social_stats_service.dart';
 import '../providers/auth_provider.dart';
 import '../../data/models/user_model.dart';
+import '../../l10n/app_localizations.dart';
 
 /// 相互フォロー選択ダイアログ
 class FriendSelectionDialog extends ConsumerStatefulWidget {
@@ -65,6 +66,7 @@ class _FriendSelectionDialogState extends ConsumerState<FriendSelectionDialog> {
         _errorMessage = null;
       });
 
+      final l10n = L10n.of(context);
       final currentUser = await ref.read(currentUserDataProvider.future);
       if (currentUser != null) {
         final socialStatsService = SocialStatsService.instance;
@@ -83,13 +85,13 @@ class _FriendSelectionDialogState extends ConsumerState<FriendSelectionDialog> {
         });
       } else {
         setState(() {
-          _errorMessage = 'ユーザー情報が取得できませんでした';
+          _errorMessage = l10n.mutualFollowLoadingError;
           _isLoading = false;
         });
       }
     } catch (e) {
       setState(() {
-        _errorMessage = '相互フォロー情報の取得に失敗しました: $e';
+        _errorMessage = L10n.of(context).mutualFollowFetchError(e.toString());
         _isLoading = false;
       });
     }
@@ -205,19 +207,20 @@ class _FriendSelectionDialogState extends ConsumerState<FriendSelectionDialog> {
   }
 
   Widget _buildLoadingState() {
-    return const Padding(
-      padding: EdgeInsets.all(AppDimensions.spacingXL),
+    final l10n = L10n.of(context);
+    return Padding(
+      padding: const EdgeInsets.all(AppDimensions.spacingXL),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
+            const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
             ),
-            SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.spacingM),
             Text(
-              '相互フォロー情報を取得中...',
-              style: TextStyle(
+              l10n.mutualFollowLoading,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textSecondary,
               ),
@@ -229,6 +232,7 @@ class _FriendSelectionDialogState extends ConsumerState<FriendSelectionDialog> {
   }
 
   Widget _buildErrorState() {
+    final l10n = L10n.of(context);
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.spacingXL),
       child: Center(
@@ -262,7 +266,7 @@ class _FriendSelectionDialogState extends ConsumerState<FriendSelectionDialog> {
               const SizedBox(height: AppDimensions.spacingL),
               ElevatedButton(
                 onPressed: _loadFriends,
-                child: const Text('再試行'),
+                child: Text(l10n.retryText),
               ),
             ],
           ),
@@ -272,6 +276,7 @@ class _FriendSelectionDialogState extends ConsumerState<FriendSelectionDialog> {
   }
 
   Widget _buildNoFriendsState() {
+    final l10n = L10n.of(context);
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.spacingXL),
       child: Center(
@@ -296,18 +301,18 @@ class _FriendSelectionDialogState extends ConsumerState<FriendSelectionDialog> {
               ),
             ),
             const SizedBox(height: AppDimensions.spacingL),
-            const Text(
-              '相互フォローがいません',
-              style: TextStyle(
+            Text(
+              l10n.noMutualFollows,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 color: AppColors.textSecondary,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingS),
-            const Text(
-              '相互フォローを増やすと\nここから簡単に運営者を選択できます',
-              style: TextStyle(
+            Text(
+              l10n.noMutualFollowsHint,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textLight,
                 height: 1.4,
@@ -321,6 +326,7 @@ class _FriendSelectionDialogState extends ConsumerState<FriendSelectionDialog> {
   }
 
   Widget _buildAllFriendsSelectedState() {
+    final l10n = L10n.of(context);
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.spacingXL),
       child: Center(
@@ -345,18 +351,18 @@ class _FriendSelectionDialogState extends ConsumerState<FriendSelectionDialog> {
               ),
             ),
             const SizedBox(height: AppDimensions.spacingL),
-            const Text(
-              'すべての相互フォローが選択済みです',
-              style: TextStyle(
+            Text(
+              l10n.allMutualFollowsSelected,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 color: AppColors.textSecondary,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingS),
-            const Text(
-              '選択可能な相互フォローがありません',
-              style: TextStyle(
+            Text(
+              l10n.noSelectableMutualFollows,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textLight,
                 height: 1.4,
@@ -380,6 +386,7 @@ class _FriendSelectionDialogState extends ConsumerState<FriendSelectionDialog> {
   }
 
   Widget _buildFriendCard(UserData friend) {
+    final l10n = L10n.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
       decoration: BoxDecoration(
@@ -446,9 +453,9 @@ class _FriendSelectionDialogState extends ConsumerState<FriendSelectionDialog> {
                     color: AppColors.primary,
                     borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                   ),
-                  child: const Text(
-                    '選択',
-                    style: TextStyle(
+                  child: Text(
+                    l10n.selectText,
+                    style: const TextStyle(
                       fontSize: AppDimensions.fontSizeS,
                       fontWeight: FontWeight.w600,
                       color: AppColors.backgroundLight,
@@ -464,6 +471,7 @@ class _FriendSelectionDialogState extends ConsumerState<FriendSelectionDialog> {
   }
 
   Widget _buildFooter() {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -484,7 +492,7 @@ class _FriendSelectionDialogState extends ConsumerState<FriendSelectionDialog> {
           const SizedBox(width: AppDimensions.spacingS),
           Expanded(
             child: Text(
-              '${_availableFriends.length}人の相互フォローから選択できます',
+              l10n.availableMutualFollowsCount(_availableFriends.length),
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeS,
                 color: AppColors.textLight,

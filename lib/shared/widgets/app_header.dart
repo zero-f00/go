@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../providers/auth_provider.dart';
+import '../../l10n/app_localizations.dart';
 import 'user_avatar.dart';
 import 'ad_banner.dart';
 
@@ -185,9 +186,9 @@ class AppHeader extends ConsumerWidget {
               size: AppDimensions.iconM,
             ),
             const SizedBox(width: AppDimensions.spacingS),
-            const Text(
-              'イベントタイトル',
-              style: TextStyle(
+            Text(
+              L10n.of(context).eventTitle,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textDark,
@@ -208,9 +209,9 @@ class AppHeader extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text(
-              '閉じる',
-              style: TextStyle(
+            child: Text(
+              L10n.of(context).closeButton,
+              style: const TextStyle(
                 color: AppColors.accent,
                 fontWeight: FontWeight.w600,
               ),

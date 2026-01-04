@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 enum EventManagementType {
   /// 作成したイベント
@@ -29,7 +30,23 @@ extension EventManagementTypeExtension on EventManagementType {
     }
   }
 
-  /// 画面タイトルを取得
+  /// 画面タイトルを取得（L10n対応）
+  String getTitle(BuildContext context) {
+    final l10n = L10n.of(context);
+    switch (this) {
+      case EventManagementType.createdEvents:
+        return l10n.createdEvents;
+      case EventManagementType.collaborativeEvents:
+        return l10n.collaborativeEvents;
+      case EventManagementType.draftEvents:
+        return l10n.draftEvents;
+      case EventManagementType.pastEvents:
+        return l10n.pastEventHistory;
+    }
+  }
+
+  /// 画面タイトルを取得（後方互換性のため維持）
+  /// @deprecated 代わりに getTitle(context) を使用してください
   String get title {
     switch (this) {
       case EventManagementType.createdEvents:
@@ -43,7 +60,23 @@ extension EventManagementTypeExtension on EventManagementType {
     }
   }
 
-  /// 画面の説明文を取得
+  /// 画面の説明文を取得（L10n対応）
+  String getDescription(BuildContext context) {
+    final l10n = L10n.of(context);
+    switch (this) {
+      case EventManagementType.createdEvents:
+        return l10n.createdEventsFullDescription;
+      case EventManagementType.collaborativeEvents:
+        return l10n.collaborativeEventsFullDescription;
+      case EventManagementType.draftEvents:
+        return l10n.draftEventsFullDescription;
+      case EventManagementType.pastEvents:
+        return l10n.pastEventsFullDescription;
+    }
+  }
+
+  /// 画面の説明文を取得（後方互換性のため維持）
+  /// @deprecated 代わりに getDescription(context) を使用してください
   String get description {
     switch (this) {
       case EventManagementType.createdEvents:
@@ -57,7 +90,23 @@ extension EventManagementTypeExtension on EventManagementType {
     }
   }
 
-  /// 空の状態メッセージを取得
+  /// 空の状態メッセージを取得（L10n対応）
+  String getEmptyMessage(BuildContext context) {
+    final l10n = L10n.of(context);
+    switch (this) {
+      case EventManagementType.createdEvents:
+        return l10n.noCreatedEvents;
+      case EventManagementType.collaborativeEvents:
+        return l10n.noCollaborativeEvents;
+      case EventManagementType.draftEvents:
+        return l10n.noDraftEvents;
+      case EventManagementType.pastEvents:
+        return l10n.noPastEvents;
+    }
+  }
+
+  /// 空の状態メッセージを取得（後方互換性のため維持）
+  /// @deprecated 代わりに getEmptyMessage(context) を使用してください
   String get emptyMessage {
     switch (this) {
       case EventManagementType.createdEvents:
@@ -71,7 +120,23 @@ extension EventManagementTypeExtension on EventManagementType {
     }
   }
 
-  /// 空の状態の詳細メッセージを取得
+  /// 空の状態の詳細メッセージを取得（L10n対応）
+  String getEmptyDetailMessage(BuildContext context) {
+    final l10n = L10n.of(context);
+    switch (this) {
+      case EventManagementType.createdEvents:
+        return l10n.noCreatedEventsDetail;
+      case EventManagementType.collaborativeEvents:
+        return l10n.noCollaborativeEventsDetail;
+      case EventManagementType.draftEvents:
+        return l10n.noDraftEventsDetail;
+      case EventManagementType.pastEvents:
+        return l10n.noPastEventsDetail;
+    }
+  }
+
+  /// 空の状態の詳細メッセージを取得（後方互換性のため維持）
+  /// @deprecated 代わりに getEmptyDetailMessage(context) を使用してください
   String get emptyDetailMessage {
     switch (this) {
       case EventManagementType.createdEvents:

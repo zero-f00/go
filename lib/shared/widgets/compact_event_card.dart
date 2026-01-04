@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../features/game_event_management/models/game_event.dart';
+import '../../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 
@@ -34,8 +35,29 @@ class CompactEventCard extends StatelessWidget {
     }
   }
 
+  /// ステータスの表示名を取得
+  String _getStatusDisplayName(L10n l10n, GameEventStatus status) {
+    switch (status) {
+      case GameEventStatus.draft:
+        return l10n.eventStatusDraft;
+      case GameEventStatus.published:
+        return l10n.eventStatusPublished;
+      case GameEventStatus.upcoming:
+        return l10n.eventStatusUpcoming;
+      case GameEventStatus.active:
+        return l10n.eventStatusActive;
+      case GameEventStatus.completed:
+        return l10n.eventStatusCompleted;
+      case GameEventStatus.expired:
+        return l10n.eventStatusExpired;
+      case GameEventStatus.cancelled:
+        return l10n.eventStatusCancelled;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       height: 200,
       decoration: BoxDecoration(
@@ -60,16 +82,16 @@ class CompactEventCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (event.imageUrl != null) _buildCompactEventImage(),
+                if (event.imageUrl != null) _buildCompactEventImage(l10n),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(AppDimensions.spacingM),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildCompactHeader(),
+                        _buildCompactHeader(l10n),
                         const SizedBox(height: AppDimensions.spacingS),
-                        _buildCompactMeta(),
+                        _buildCompactMeta(l10n),
                         const Spacer(),
                         _buildCompactFooter(),
                       ],
@@ -84,7 +106,7 @@ class CompactEventCard extends StatelessWidget {
     );
   }
 
-  Widget _buildCompactEventImage() {
+  Widget _buildCompactEventImage(L10n l10n) {
     return SizedBox(
       width: double.infinity,
       height: 80,
@@ -144,14 +166,14 @@ class CompactEventCard extends StatelessWidget {
           Positioned(
             top: AppDimensions.spacingS,
             right: AppDimensions.spacingS,
-            child: _buildCompactStatusBadge(),
+            child: _buildCompactStatusBadge(l10n),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCompactStatusBadge() {
+  Widget _buildCompactStatusBadge(L10n l10n) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingXS,
@@ -166,7 +188,7 @@ class CompactEventCard extends StatelessWidget {
         ),
       ),
       child: Text(
-        event.status.displayName,
+        _getStatusDisplayName(l10n, event.status),
         style: const TextStyle(
           fontSize: 10,
           color: Colors.white,
@@ -176,7 +198,7 @@ class CompactEventCard extends StatelessWidget {
     );
   }
 
-  Widget _buildCompactHeader() {
+  Widget _buildCompactHeader(L10n l10n) {
     final hasImage = event.imageUrl != null;
 
     return Row(
@@ -197,7 +219,7 @@ class CompactEventCard extends StatelessWidget {
               ),
               if (!hasImage) ...[
                 const SizedBox(height: AppDimensions.spacingXS),
-                _buildCompactStatusBadgeInline(),
+                _buildCompactStatusBadgeInline(l10n),
               ],
             ],
           ),
@@ -212,7 +234,7 @@ class CompactEventCard extends StatelessWidget {
     );
   }
 
-  Widget _buildCompactStatusBadgeInline() {
+  Widget _buildCompactStatusBadgeInline(L10n l10n) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingXS,
@@ -227,7 +249,7 @@ class CompactEventCard extends StatelessWidget {
         ),
       ),
       child: Text(
-        event.status.displayName,
+        _getStatusDisplayName(l10n, event.status),
         style: TextStyle(
           fontSize: 10,
           color: _getStatusColor(event.status),
@@ -237,7 +259,7 @@ class CompactEventCard extends StatelessWidget {
     );
   }
 
-  Widget _buildCompactMeta() {
+  Widget _buildCompactMeta(L10n l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -327,7 +349,7 @@ class CompactEventCard extends StatelessWidget {
               ),
               const SizedBox(width: AppDimensions.spacingXS / 2),
               Text(
-                '賞品あり',
+                l10n.eventHasPrize,
                 style: const TextStyle(
                   fontSize: AppDimensions.fontSizeXS,
                   color: AppColors.accent,
@@ -344,7 +366,7 @@ class CompactEventCard extends StatelessWidget {
             ),
             const SizedBox(width: AppDimensions.spacingXS / 2),
             Text(
-              '${event.participantCount}/${event.maxParticipants}人',
+              l10n.eventParticipants(event.participantCount, event.maxParticipants),
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeXS,
                 fontWeight: FontWeight.w600,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../../data/models/violation_record_model.dart';
@@ -46,7 +47,7 @@ class _ViolationReportDialogState
     super.dispose();
   }
 
-  Future<void> _submitReport() async {
+  Future<void> _submitReport(L10n l10n) async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -56,7 +57,7 @@ class _ViolationReportDialogState
     try {
       final currentUser = ref.read(currentFirebaseUserProvider);
       if (currentUser == null) {
-        throw Exception('ユーザー情報が取得できません');
+        throw Exception(l10n.violationReportUserNotFound);
       }
 
       final violationService = ref.read(violationServiceProvider);
@@ -76,8 +77,8 @@ class _ViolationReportDialogState
 
       if (mounted && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('違反報告を送信しました'),
+          SnackBar(
+            content: Text(l10n.violationReportSuccessMessage),
             backgroundColor: AppColors.success,
           ),
         );
@@ -87,7 +88,7 @@ class _ViolationReportDialogState
       if (mounted && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('エラー: $e'),
+            content: Text('${l10n.errorOccurred}: $e'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -103,6 +104,7 @@ class _ViolationReportDialogState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     final screenHeight = MediaQuery.of(context).size.height;
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     final maxDialogHeight = screenHeight - keyboardHeight - 100; // 画面上下に50pxずつマージン
@@ -136,9 +138,9 @@ class _ViolationReportDialogState
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    '違反報告',
-                    style: TextStyle(
+                  Text(
+                    l10n.violationReportDialogTitle,
+                    style: const TextStyle(
                       fontSize: AppDimensions.fontSizeL,
                       fontWeight: FontWeight.bold,
                     ),
@@ -187,9 +189,9 @@ class _ViolationReportDialogState
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    '報告対象',
-                                    style: TextStyle(
+                                  Text(
+                                    l10n.violationReportTargetLabel,
+                                    style: const TextStyle(
                                       fontSize: AppDimensions.fontSizeXS,
                                       color: AppColors.textSecondary,
                                     ),
@@ -234,7 +236,7 @@ class _ViolationReportDialogState
 
                       // 違反タイプ
                       Text(
-                        '違反の種類 *',
+                        '${l10n.violationReportTypeLabel} *',
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeS,
                           fontWeight: FontWeight.bold,
@@ -257,7 +259,7 @@ class _ViolationReportDialogState
                           return DropdownMenuItem(
                             value: type,
                             child: Text(
-                              type.displayName,
+                              _getViolationTypeDisplayName(l10n, type),
                               overflow: TextOverflow.ellipsis,
                             ),
                           );
@@ -274,7 +276,7 @@ class _ViolationReportDialogState
 
                       // 重要度
                       Text(
-                        '重要度 *',
+                        '${l10n.violationReportSeverityLabel} *',
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeS,
                           fontWeight: FontWeight.bold,
@@ -297,7 +299,7 @@ class _ViolationReportDialogState
                           return DropdownMenuItem(
                             value: severity,
                             child: Text(
-                              severity.displayName,
+                              _getViolationSeverityDisplayName(l10n, severity),
                               overflow: TextOverflow.ellipsis,
                             ),
                           );
@@ -315,30 +317,30 @@ class _ViolationReportDialogState
                       // 説明
                       AppTextFieldMultiline(
                         controller: _descriptionController,
-                        label: '違反内容の詳細',
-                        hintText: '違反の具体的な内容を記載してください',
+                        label: l10n.violationReportDescriptionLabel,
+                        hintText: l10n.violationReportDescriptionHint,
                         isRequired: true,
                         maxLines: 4,
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return '違反内容を入力してください';
+                            return l10n.violationReportDescriptionRequired;
                           }
                           if (value.trim().length < 10) {
-                            return '10文字以上で詳細を記載してください';
+                            return l10n.violationReportDescriptionMinLength;
                           }
                           return null;
                         },
-                        doneButtonText: '完了',
+                        doneButtonText: l10n.doneButtonLabel,
                       ),
                       const SizedBox(height: AppDimensions.spacingL),
 
                       // メモ（任意）
                       AppTextFieldMultiline(
                         controller: _notesController,
-                        label: 'メモ（任意）',
-                        hintText: '追加情報があれば記載してください',
+                        label: l10n.violationReportNotesLabel,
+                        hintText: l10n.violationReportNotesHint,
                         maxLines: 3,
-                        doneButtonText: '完了',
+                        doneButtonText: l10n.doneButtonLabel,
                       ),
                     ],
                   ),
@@ -367,11 +369,11 @@ class _ViolationReportDialogState
                     onPressed: _isSubmitting
                         ? null
                         : () => Navigator.of(context).pop(),
-                    child: const Text('キャンセル'),
+                    child: Text(l10n.cancel),
                   ),
                   const SizedBox(width: AppDimensions.spacingM),
                   ElevatedButton(
-                    onPressed: _isSubmitting ? null : _submitReport,
+                    onPressed: _isSubmitting ? null : () => _submitReport(l10n),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.error,
                       padding: const EdgeInsets.symmetric(
@@ -390,9 +392,9 @@ class _ViolationReportDialogState
                               ),
                             ),
                           )
-                        : const Text(
-                            '報告する',
-                            style: TextStyle(color: Colors.white),
+                        : Text(
+                            l10n.violationReportSubmitButton,
+                            style: const TextStyle(color: Colors.white),
                           ),
                   ),
                 ],
@@ -402,5 +404,39 @@ class _ViolationReportDialogState
         ),
       ),
     );
+  }
+
+  /// 違反タイプのローカライズされた表示名を取得
+  String _getViolationTypeDisplayName(L10n l10n, ViolationType type) {
+    switch (type) {
+      case ViolationType.harassment:
+        return l10n.violationTypeHarassment;
+      case ViolationType.cheating:
+        return l10n.violationTypeCheating;
+      case ViolationType.spam:
+        return l10n.violationTypeSpam;
+      case ViolationType.abusiveLanguage:
+        return l10n.violationTypeAbusiveLanguage;
+      case ViolationType.noShow:
+        return l10n.violationTypeNoShow;
+      case ViolationType.disruptiveBehavior:
+        return l10n.violationTypeDisruptiveBehavior;
+      case ViolationType.ruleViolation:
+        return l10n.violationTypeRuleViolation;
+      case ViolationType.other:
+        return l10n.violationTypeOther;
+    }
+  }
+
+  /// 重要度のローカライズされた表示名を取得
+  String _getViolationSeverityDisplayName(L10n l10n, ViolationSeverity severity) {
+    switch (severity) {
+      case ViolationSeverity.minor:
+        return l10n.violationSeverityMinor;
+      case ViolationSeverity.moderate:
+        return l10n.violationSeverityModerate;
+      case ViolationSeverity.severe:
+        return l10n.violationSeveritySevere;
+    }
   }
 }

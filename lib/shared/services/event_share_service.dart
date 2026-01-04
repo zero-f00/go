@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../features/game_event_management/models/game_event.dart';
+import '../../l10n/app_localizations.dart';
 import 'deep_link_service.dart';
 
 /// イベント共有サービス
@@ -28,8 +29,13 @@ class EventShareService {
   }
 
   /// イベントを共有する
+  /// [context] はローカライズされたテキストを取得するために必要
   /// [sharePositionOrigin] はiPadでシェアシートの表示位置を指定するために必要
-  static Future<void> shareEvent(GameEvent event, {Rect? sharePositionOrigin}) async {
+  static Future<void> shareEvent(
+    GameEvent event, {
+    required BuildContext context,
+    Rect? sharePositionOrigin,
+  }) async {
     if (!canShareEvent(event)) {
       if (kDebugMode) {
         print('EventShareService: Cannot share this event (visibility: ${event.visibility}, status: ${event.status})');
@@ -38,7 +44,8 @@ class EventShareService {
     }
 
     try {
-      final shareText = _buildShareText(event);
+      final l10n = L10n.of(context);
+      final shareText = _buildShareText(event, l10n);
       await Share.share(
         shareText,
         sharePositionOrigin: sharePositionOrigin,
@@ -52,7 +59,7 @@ class EventShareService {
   }
 
   /// 共有用テキストを生成
-  static String _buildShareText(GameEvent event) {
+  static String _buildShareText(GameEvent event, L10n l10n) {
     final buffer = StringBuffer();
 
     // イベント名
@@ -61,19 +68,19 @@ class EventShareService {
 
     // 開催日時
     final dateFormat = _getDateFormat();
-    buffer.writeln('📅 開催: ${dateFormat.format(event.startDate)}〜');
+    buffer.writeln('📅 ${l10n.shareTextEventDate}: ${dateFormat.format(event.startDate)}〜');
 
     // ゲーム情報（存在する場合）
     if (event.gameName != null && event.gameName!.isNotEmpty) {
-      buffer.writeln('🎮 ゲーム: ${event.gameName}');
+      buffer.writeln('🎮 ${l10n.shareTextGame}: ${event.gameName}');
     }
 
     // 参加者情報
-    buffer.writeln('👥 参加者: ${event.participantCount}/${event.maxParticipants}人');
+    buffer.writeln('👥 ${l10n.shareTextParticipants}: ${l10n.shareTextParticipantCount(event.participantCount, event.maxParticipants)}');
 
     // 賞品情報（存在する場合）
     if (event.prizeContent != null && event.prizeContent!.isNotEmpty) {
-      buffer.writeln('🏆 賞品あり');
+      buffer.writeln('🏆 ${l10n.shareTextPrizeAvailable}');
     }
     buffer.writeln();
 
@@ -88,12 +95,12 @@ class EventShareService {
 
     // イベント詳細URL
     final eventUrl = DeepLinkService.generateEventShareUrl(event.id);
-    buffer.writeln('▼ 詳細はこちら');
+    buffer.writeln('▼ ${l10n.shareTextDetailsLink}');
     buffer.writeln(eventUrl);
     buffer.writeln();
 
     // ハッシュタグ
-    final hashtags = <String>['Go.', 'ゲームイベント'];
+    final hashtags = <String>['Go.', l10n.shareHashtagGameEvent];
 
     // ゲーム名をハッシュタグに追加
     if (event.gameName != null && event.gameName!.isNotEmpty) {
@@ -117,11 +124,14 @@ class EventShareService {
   }
 
   /// 日付フォーマッターを取得
+  /// システムのロケールに基づいてフォーマットを返す
   static DateFormat _getDateFormat() {
     try {
-      return DateFormat('yyyy/MM/dd HH:mm', 'ja_JP');
+      // システムのデフォルトロケールを使用
+      final locale = Intl.getCurrentLocale();
+      return DateFormat('yyyy/MM/dd HH:mm', locale);
     } catch (e) {
-      // フォールバック: デフォルトロケール使用
+      // フォールバック: デフォルトフォーマット使用
       return DateFormat('yyyy/MM/dd HH:mm');
     }
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
+import '../../l10n/app_localizations.dart';
 
 /// 複数行入力対応のテキストフィールド
 /// 改行機能とキーボードツールバー（閉じるボタン）を提供
@@ -107,7 +108,7 @@ class _MultilineTextFieldState extends State<MultilineTextField> {
         validator: widget.validator ?? (widget.isRequired
             ? (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return '${widget.label}は必須項目です';
+                  return L10n.of(context).requiredFieldError(widget.label);
                 }
                 return null;
               }
@@ -126,7 +127,7 @@ class _MultilineTextFieldState extends State<MultilineTextField> {
             buttonItems: <ContextMenuButtonItem>[
               ...editableTextState.contextMenuButtonItems,
               ContextMenuButtonItem(
-                label: 'キーボードを閉じる',
+                label: L10n.of(context).hideKeyboard,
                 onPressed: () {
                   _hideKeyboard();
                   ContextMenuController.removeAny();
@@ -150,7 +151,7 @@ class _MultilineTextFieldState extends State<MultilineTextField> {
           color: AppColors.textSecondary,
         ),
         onPressed: _hideKeyboard,
-        tooltip: 'キーボードを閉じる',
+        tooltip: L10n.of(context).hideKeyboard,
       ),
     );
   }
@@ -164,16 +165,17 @@ class _MultilineTextFieldState extends State<MultilineTextField> {
 /// アクセサリビューとしてキーボード上部に表示するツールバー
 class KeyboardToolbar extends StatelessWidget {
   final VoidCallback? onDone;
-  final String doneText;
+  final String? doneText;
 
   const KeyboardToolbar({
     super.key,
     this.onDone,
-    this.doneText = '完了',
+    this.doneText,
   });
 
   @override
   Widget build(BuildContext context) {
+    final displayText = doneText ?? L10n.of(context).doneButtonLabel;
     return Container(
       height: 44,
       decoration: const BoxDecoration(
@@ -188,7 +190,7 @@ class KeyboardToolbar extends StatelessWidget {
           TextButton(
             onPressed: onDone ?? () => FocusScope.of(context).unfocus(),
             child: Text(
-              doneText,
+              displayText,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.accent,

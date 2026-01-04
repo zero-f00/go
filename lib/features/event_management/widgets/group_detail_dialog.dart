@@ -4,6 +4,7 @@ import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/services/group_management_service.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// グループ詳細表示ダイアログ
 class GroupDetailDialog extends ConsumerStatefulWidget {
@@ -77,6 +78,7 @@ class _GroupDetailDialogState extends ConsumerState<GroupDetailDialog> {
 
   /// ダイアログヘッダー
   Widget _buildDialogHeader() {
+    final l10n = L10n.of(context);
     return Row(
       children: [
         Icon(
@@ -87,7 +89,7 @@ class _GroupDetailDialogState extends ConsumerState<GroupDetailDialog> {
         const SizedBox(width: AppDimensions.spacingS),
         Expanded(
           child: Text(
-            'グループ詳細',
+            l10n.groupDetailTitle,
             style: TextStyle(
               fontSize: AppDimensions.fontSizeL,
               fontWeight: FontWeight.w600,
@@ -106,6 +108,7 @@ class _GroupDetailDialogState extends ConsumerState<GroupDetailDialog> {
 
   /// エラー表示
   Widget _buildErrorContent() {
+    final l10n = L10n.of(context);
     return Center(
       child: Column(
         children: [
@@ -116,7 +119,7 @@ class _GroupDetailDialogState extends ConsumerState<GroupDetailDialog> {
           ),
           const SizedBox(height: AppDimensions.spacingM),
           Text(
-            'グループ情報の読み込みに失敗しました',
+            l10n.groupInfoLoadError,
             style: TextStyle(
               fontSize: AppDimensions.fontSizeM,
               color: AppColors.error,
@@ -129,12 +132,13 @@ class _GroupDetailDialogState extends ConsumerState<GroupDetailDialog> {
 
   /// グループ詳細コンテンツ
   Widget _buildGroupContent() {
+    final l10n = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // グループ名
         _buildDetailSection(
-          'グループ名',
+          l10n.groupNameLabel,
           _groupDetail!.name,
           Icons.label,
         ),
@@ -143,7 +147,7 @@ class _GroupDetailDialogState extends ConsumerState<GroupDetailDialog> {
         // 説明
         if (_groupDetail!.description.isNotEmpty) ...[
           _buildDetailSection(
-            'グループ説明',
+            l10n.groupDescriptionLabel,
             _groupDetail!.description,
             Icons.description,
           ),
@@ -152,8 +156,8 @@ class _GroupDetailDialogState extends ConsumerState<GroupDetailDialog> {
 
         // メンバー数
         _buildDetailSection(
-          'メンバー数',
-          '${_groupDetail!.participants.length}人',
+          l10n.memberCountLabel,
+          l10n.memberCountValue(_groupDetail!.participants.length),
           Icons.people,
         ),
         const SizedBox(height: AppDimensions.spacingM),
@@ -161,7 +165,7 @@ class _GroupDetailDialogState extends ConsumerState<GroupDetailDialog> {
         // 連絡事項
         if (_groupDetail!.announcements.isNotEmpty) ...[
           _buildDetailSection(
-            'グループ連絡事項',
+            l10n.groupAnnouncementsLabel,
             _groupDetail!.announcements,
             Icons.announcement,
           ),
@@ -232,10 +236,11 @@ class _GroupDetailDialogState extends ConsumerState<GroupDetailDialog> {
 
   /// 閉じるボタン
   Widget _buildCloseButton() {
+    final l10n = L10n.of(context);
     return SizedBox(
       width: double.infinity,
       child: AppButton.secondary(
-        text: '閉じる',
+        text: l10n.closeButton,
         onPressed: () => Navigator.of(context).pop(),
       ),
     );

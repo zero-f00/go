@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../../features/game_event_management/models/game_event.dart';
+import '../../l10n/app_localizations.dart';
 
 /// 統一カレンダーウィジェット
 /// 参加予定カレンダーと主催イベントカレンダーの共通コンポーネント
@@ -36,6 +37,9 @@ class UnifiedCalendarWidget extends StatefulWidget {
   /// 空状態時のアイコン
   final IconData? emptyIcon;
 
+  /// フィルターキーを表示名に変換する関数（オプション）
+  final String Function(BuildContext context, String key)? filterDisplayNameBuilder;
+
   const UnifiedCalendarWidget({
     super.key,
     required this.title,
@@ -48,6 +52,7 @@ class UnifiedCalendarWidget extends StatefulWidget {
     this.normalizeDate,
     this.emptyMessage,
     this.emptyIcon,
+    this.filterDisplayNameBuilder,
   });
 
   @override
@@ -121,9 +126,10 @@ class _UnifiedCalendarWidgetState extends State<UnifiedCalendarWidget> {
         _isLoading = false;
       });
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('イベントの読み込みに失敗しました: $e'),
+            content: Text(l10n.eventLoadFailed(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -254,6 +260,7 @@ class _UnifiedCalendarWidgetState extends State<UnifiedCalendarWidget> {
   Widget _buildCompactSelectedDate() {
     if (_selectedDay == null) return const SizedBox.shrink();
 
+    final l10n = L10n.of(context);
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -304,7 +311,7 @@ class _UnifiedCalendarWidgetState extends State<UnifiedCalendarWidget> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '選択した日付',
+                        l10n.selectedDateLabel,
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeS,
                           color: AppColors.textSecondary,
@@ -313,7 +320,7 @@ class _UnifiedCalendarWidgetState extends State<UnifiedCalendarWidget> {
                       ),
                       const SizedBox(height: AppDimensions.spacingXS),
                       Text(
-                        '${_selectedDay!.month}月${_selectedDay!.day}日',
+                        l10n.monthDayFormat(_selectedDay!.month, _selectedDay!.day),
                         style: const TextStyle(
                           fontSize: AppDimensions.fontSizeXL,
                           fontWeight: FontWeight.w700,
@@ -321,7 +328,7 @@ class _UnifiedCalendarWidgetState extends State<UnifiedCalendarWidget> {
                         ),
                       ),
                       Text(
-                        '${_selectedDay!.year}年 ${_getWeekdayName(_selectedDay!.weekday)}',
+                        l10n.yearWeekdayFormat(_selectedDay!.year, _getWeekdayName(context, _selectedDay!.weekday)),
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeM,
                           color: AppColors.textSecondary,
@@ -363,7 +370,7 @@ class _UnifiedCalendarWidgetState extends State<UnifiedCalendarWidget> {
                   color: AppColors.primary,
                   size: AppDimensions.iconM,
                 ),
-                tooltip: 'カレンダーに戻る',
+                tooltip: l10n.backToCalendar,
                 padding: const EdgeInsets.all(AppDimensions.spacingS),
               ),
             ),
@@ -374,13 +381,37 @@ class _UnifiedCalendarWidgetState extends State<UnifiedCalendarWidget> {
   }
 
   /// 曜日名を取得
-  String _getWeekdayName(int weekday) {
-    const weekdays = ['月', '火', '水', '木', '金', '土', '日'];
-    return '${weekdays[weekday - 1]}曜日';
+  String _getWeekdayName(BuildContext context, int weekday) {
+    final l10n = L10n.of(context);
+    final weekdays = [
+      l10n.weekdayMonday,
+      l10n.weekdayTuesday,
+      l10n.weekdayWednesday,
+      l10n.weekdayThursday,
+      l10n.weekdayFriday,
+      l10n.weekdaySaturday,
+      l10n.weekdaySunday,
+    ];
+    return weekdays[weekday - 1];
+  }
+
+  /// 曜日短縮名を取得
+  List<String> _getWeekdayShortNames(BuildContext context) {
+    final l10n = L10n.of(context);
+    return [
+      l10n.weekdayShortSun,
+      l10n.weekdayShortMon,
+      l10n.weekdayShortTue,
+      l10n.weekdayShortWed,
+      l10n.weekdayShortThu,
+      l10n.weekdayShortFri,
+      l10n.weekdayShortSat,
+    ];
   }
 
   /// カレンダーヘッダーを構築
   Widget _buildCalendarHeader() {
+    final l10n = L10n.of(context);
     // 日付が選択されている場合はヘッダーを非表示または簡素化
     if (_isDateSelected) {
       return Container(
@@ -395,7 +426,7 @@ class _UnifiedCalendarWidgetState extends State<UnifiedCalendarWidget> {
             ),
             const SizedBox(width: AppDimensions.spacingS),
             Text(
-              '${_focusedDay.year}年${_focusedDay.month}月',
+              l10n.yearMonthFormat(_focusedDay.year, _focusedDay.month),
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 fontWeight: FontWeight.w600,
@@ -416,7 +447,7 @@ class _UnifiedCalendarWidgetState extends State<UnifiedCalendarWidget> {
           icon: const Icon(Icons.chevron_left, color: AppColors.primary),
         ),
         Text(
-          '${_focusedDay.year}年${_focusedDay.month}月',
+          l10n.yearMonthFormat(_focusedDay.year, _focusedDay.month),
           style: const TextStyle(
             fontSize: AppDimensions.fontSizeL,
             fontWeight: FontWeight.w600,
@@ -433,7 +464,7 @@ class _UnifiedCalendarWidgetState extends State<UnifiedCalendarWidget> {
 
   /// 曜日ヘッダーを構築
   Widget _buildWeekDaysHeader() {
-    const weekDays = ['日', '月', '火', '水', '木', '金', '土'];
+    final weekDays = _getWeekdayShortNames(context);
     return Row(
       children: weekDays.map((day) => Expanded(
         child: Container(
@@ -570,6 +601,7 @@ class _UnifiedCalendarWidgetState extends State<UnifiedCalendarWidget> {
 
   /// イベントリストカードを構築
   Widget _buildEventListCard() {
+    final l10n = L10n.of(context);
     return Container(
       margin: const EdgeInsets.fromLTRB(
         AppDimensions.spacingL,
@@ -605,8 +637,8 @@ class _UnifiedCalendarWidgetState extends State<UnifiedCalendarWidget> {
                 Expanded(
                   child: Text(
                     _selectedDay != null
-                        ? '${_selectedDay!.month}月${_selectedDay!.day}日のイベント'
-                        : 'イベント',
+                        ? l10n.eventsOnDate(_selectedDay!.month, _selectedDay!.day)
+                        : l10n.eventsLabel,
                     style: const TextStyle(
                       fontSize: AppDimensions.fontSizeL,
                       fontWeight: FontWeight.w700,
@@ -629,6 +661,7 @@ class _UnifiedCalendarWidgetState extends State<UnifiedCalendarWidget> {
     return ValueListenableBuilder<List<GameEvent>>(
       valueListenable: _selectedEvents,
       builder: (context, events, _) {
+        final l10n = L10n.of(context);
         if (events.isEmpty) {
           // SingleChildScrollViewでラップしてオーバーフローを防止
           return SingleChildScrollView(
@@ -646,7 +679,7 @@ class _UnifiedCalendarWidgetState extends State<UnifiedCalendarWidget> {
                     ),
                     const SizedBox(height: AppDimensions.spacingM),
                     Text(
-                      widget.emptyMessage ?? 'この日はイベントがありません',
+                      widget.emptyMessage ?? l10n.noEventsOnThisDay,
                       style: const TextStyle(
                         fontSize: AppDimensions.fontSizeM,
                         color: AppColors.textSecondary,
@@ -676,6 +709,7 @@ class _UnifiedCalendarWidgetState extends State<UnifiedCalendarWidget> {
 
   /// イベントカードを構築
   Widget _buildEventCard(GameEvent event) {
+    final l10n = L10n.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
       child: Material(
@@ -750,7 +784,7 @@ class _UnifiedCalendarWidgetState extends State<UnifiedCalendarWidget> {
                     ),
                     const SizedBox(width: AppDimensions.spacingS),
                     Text(
-                      '${event.participantCount}/${event.maxParticipants}人',
+                      l10n.participantCountFormat(event.participantCount, event.maxParticipants),
                       style: const TextStyle(
                         fontSize: AppDimensions.fontSizeM,
                         color: AppColors.textSecondary,
@@ -883,18 +917,22 @@ class _UnifiedCalendarWidgetState extends State<UnifiedCalendarWidget> {
   void _showFilterDialog() {
     if (!widget.showFilters) return;
 
-
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: const Text('表示フィルター'),
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          title: Text(l10n.displayFilter),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: _filters.entries.map((entry) {
+                // フィルター表示名を取得（ビルダーがあれば使用、なければキーをそのまま使用）
+                final displayName = widget.filterDisplayNameBuilder != null
+                    ? widget.filterDisplayNameBuilder!(context, entry.key)
+                    : entry.key;
                 return CheckboxListTile(
-                  title: Text(entry.key),
+                  title: Text(displayName),
                   value: entry.value,
                   onChanged: (value) {
                     setDialogState(() {
@@ -907,12 +945,12 @@ class _UnifiedCalendarWidgetState extends State<UnifiedCalendarWidget> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('キャンセル'),
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l10n.cancel),
             ),
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop();
                 if (widget.onFiltersChanged != null) {
                   widget.onFiltersChanged!(_filters);
                 }
@@ -922,7 +960,7 @@ class _UnifiedCalendarWidgetState extends State<UnifiedCalendarWidget> {
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('適用'),
+              child: Text(l10n.apply),
             ),
           ],
         ),

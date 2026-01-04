@@ -7,6 +7,7 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
+import '../../l10n/app_localizations.dart';
 
 class AvatarService {
   static AvatarService? _instance;
@@ -41,17 +42,18 @@ class AvatarService {
   }
 
   Future<XFile?> _showImageSourceDialog(BuildContext context) async {
+    final l10n = L10n.of(context);
     return showDialog<XFile?>(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: const Text('アバター画像を選択'),
+          title: Text(l10n.selectAvatarImage),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
                 leading: const Icon(Icons.camera_alt),
-                title: const Text('カメラで撮影'),
+                title: Text(l10n.takePhotoFromCamera),
                 onTap: () async {
                   final XFile? photo = await _picker.pickImage(
                     source: ImageSource.camera,
@@ -59,14 +61,14 @@ class AvatarService {
                     maxWidth: 512,
                     maxHeight: 512,
                   );
-                  if (context.mounted) {
-                    Navigator.of(context).pop(photo);
+                  if (dialogContext.mounted) {
+                    Navigator.of(dialogContext).pop(photo);
                   }
                 },
               ),
               ListTile(
                 leading: const Icon(Icons.photo_library),
-                title: const Text('ギャラリーから選択'),
+                title: Text(l10n.selectFromGalleryOption),
                 onTap: () async {
                   final XFile? image = await _picker.pickImage(
                     source: ImageSource.gallery,
@@ -74,8 +76,8 @@ class AvatarService {
                     maxWidth: 512,
                     maxHeight: 512,
                   );
-                  if (context.mounted) {
-                    Navigator.of(context).pop(image);
+                  if (dialogContext.mounted) {
+                    Navigator.of(dialogContext).pop(image);
                   }
                 },
               ),
@@ -83,8 +85,8 @@ class AvatarService {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('キャンセル'),
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l10n.cancel),
             ),
           ],
         );
@@ -94,12 +96,17 @@ class AvatarService {
 
   Future<File?> _cropImage(String imagePath, [BuildContext? context]) async {
     try {
+      // contextがある場合はローカライズされたタイトルを使用
+      final String toolbarTitle = context != null
+          ? L10n.of(context).adjustAvatar
+          : 'Adjust Avatar';
+
       final CroppedFile? croppedFile = await ImageCropper().cropImage(
         sourcePath: imagePath,
         aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
         uiSettings: [
           AndroidUiSettings(
-            toolbarTitle: 'アバターを調整',
+            toolbarTitle: toolbarTitle,
             toolbarColor: const Color(0xFF2E3B4E),
             toolbarWidgetColor: Colors.white,
             initAspectRatio: CropAspectRatioPreset.square,

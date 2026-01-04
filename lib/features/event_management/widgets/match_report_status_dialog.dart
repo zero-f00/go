@@ -3,6 +3,7 @@ import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/services/match_report_service.dart';
 import '../../../data/models/match_result_model.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 試合報告ステータス更新ダイアログ
 class MatchReportStatusDialog extends StatefulWidget {
@@ -50,10 +51,11 @@ class _MatchReportStatusDialogState extends State<MatchReportStatusDialog> {
 
   /// ステータス更新を実行
   Future<void> _updateStatus() async {
+    final l10n = L10n.of(context);
     // バリデーション
     if (_selectedStatus == widget.report.status) {
       setState(() {
-        _errorMessage = 'ステータスを変更してください';
+        _errorMessage = l10n.pleaseChangeStatus;
       });
       return;
     }
@@ -63,7 +65,7 @@ class _MatchReportStatusDialogState extends State<MatchReportStatusDialog> {
             _selectedStatus == MatchReportStatus.rejected) &&
         _responseController.text.trim().isEmpty) {
       setState(() {
-        _errorMessage = '対応内容を入力してください';
+        _errorMessage = l10n.pleaseEnterResponse;
       });
       return;
     }
@@ -87,15 +89,15 @@ class _MatchReportStatusDialogState extends State<MatchReportStatusDialog> {
         // 成功時はダイアログを閉じる
         Navigator.of(context).pop(true);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('ステータスを更新しました'),
+          SnackBar(
+            content: Text(l10n.statusUpdatedMessage),
             backgroundColor: AppColors.success,
           ),
         );
       }
     } catch (e) {
       setState(() {
-        _errorMessage = '更新に失敗しました: $e';
+        _errorMessage = l10n.updateFailedMessage(e.toString());
         _isProcessing = false;
       });
     }
@@ -103,6 +105,7 @@ class _MatchReportStatusDialogState extends State<MatchReportStatusDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.radiusL),
@@ -123,9 +126,9 @@ class _MatchReportStatusDialogState extends State<MatchReportStatusDialog> {
                     size: AppDimensions.iconL,
                   ),
                   const SizedBox(width: AppDimensions.spacingM),
-                  const Text(
-                    '報告への対応',
-                    style: TextStyle(
+                  Text(
+                    l10n.reportResponseTitle,
+                    style: const TextStyle(
                       fontSize: AppDimensions.fontSizeXL,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textDark,
@@ -146,7 +149,7 @@ class _MatchReportStatusDialogState extends State<MatchReportStatusDialog> {
               if (widget.matchResult != null) ...[
                 _buildInfoRow(
                   icon: Icons.sports_esports,
-                  label: '試合',
+                  label: l10n.matchLabel,
                   value: widget.matchResult!.matchName,
                 ),
                 const SizedBox(height: AppDimensions.spacingM),
@@ -155,15 +158,15 @@ class _MatchReportStatusDialogState extends State<MatchReportStatusDialog> {
               // 問題の種類
               _buildInfoRow(
                 icon: Icons.warning_amber,
-                label: '問題',
+                label: l10n.problemLabel,
                 value: widget.report.issueType,
               ),
               const SizedBox(height: AppDimensions.spacingXL),
 
               // ステータス選択
-              const Text(
-                'ステータス変更',
-                style: TextStyle(
+              Text(
+                l10n.statusChangeTitle,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textDark,
@@ -175,9 +178,9 @@ class _MatchReportStatusDialogState extends State<MatchReportStatusDialog> {
               const SizedBox(height: AppDimensions.spacingXL),
 
               // 対応内容入力
-              const Text(
-                '対応内容・コメント',
-                style: TextStyle(
+              Text(
+                l10n.responseContentLabel,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textDark,
@@ -187,8 +190,8 @@ class _MatchReportStatusDialogState extends State<MatchReportStatusDialog> {
               Text(
                 _selectedStatus == MatchReportStatus.resolved ||
                         _selectedStatus == MatchReportStatus.rejected
-                    ? '※ 必須'
-                    : '※ 任意',
+                    ? l10n.requiredMark
+                    : l10n.optionalMark,
                 style: const TextStyle(
                   fontSize: AppDimensions.fontSizeS,
                   color: AppColors.textSecondary,
@@ -200,7 +203,7 @@ class _MatchReportStatusDialogState extends State<MatchReportStatusDialog> {
                 maxLines: 4,
                 enabled: !_isProcessing,
                 decoration: InputDecoration(
-                  hintText: '対応内容や報告者への回答を入力してください',
+                  hintText: l10n.responseContentHint,
                   filled: true,
                   fillColor: AppColors.backgroundLight,
                   border: OutlineInputBorder(
@@ -264,7 +267,7 @@ class _MatchReportStatusDialogState extends State<MatchReportStatusDialog> {
                         ),
                       ),
                       child: Text(
-                        'キャンセル',
+                        l10n.cancel,
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeM,
                           color: _isProcessing
@@ -297,9 +300,9 @@ class _MatchReportStatusDialogState extends State<MatchReportStatusDialog> {
                                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
-                          : const Text(
-                              '更新',
-                              style: TextStyle(
+                          : Text(
+                              l10n.updateButton,
+                              style: const TextStyle(
                                 fontSize: AppDimensions.fontSizeM,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -425,7 +428,7 @@ class _MatchReportStatusDialogState extends State<MatchReportStatusDialog> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      status.displayName,
+                      status.getDisplayName(context),
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeM,
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
@@ -437,7 +440,7 @@ class _MatchReportStatusDialogState extends State<MatchReportStatusDialog> {
                     if (isCurrent) ...[
                       const SizedBox(height: AppDimensions.spacingXS),
                       Text(
-                        '（現在のステータス）',
+                        L10n.of(context).currentStatusLabel,
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeXS,
                           color: AppColors.textLight,

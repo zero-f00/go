@@ -86,7 +86,7 @@ class EventService {
         }
       }
     } catch (e) {
-      throw EventServiceException('イベント招待の送信に失敗しました', originalException: e);
+      throw EventServiceException('Failed to send event invitation', originalException: e);
     }
   }
 
@@ -103,7 +103,7 @@ class EventService {
       final currentUser = FirebaseAuth.instance.currentUser;
 
       if (currentUser == null) {
-        throw EventServiceException('ユーザーが認証されていません');
+        throw EventServiceException('User not authenticated');
       }
 
       // ドキュメント参照を作成（IDを事前生成）
@@ -204,7 +204,7 @@ class EventService {
         } catch (cleanupError) {}
       }
 
-      throw EventServiceException('イベントの作成に失敗しました', originalException: e);
+      throw EventServiceException('Failed to create event', originalException: e);
     }
   }
 
@@ -226,7 +226,7 @@ class EventService {
       // 既存のイベントを取得
       final existingEvent = await getEventById(eventId);
       if (existingEvent == null) {
-        throw EventServiceException('イベントが見つかりません');
+        throw EventServiceException('Event not found');
       }
 
       String? imageUrl = existingEvent.imageUrl;
@@ -333,7 +333,7 @@ class EventService {
         );
       }
     } catch (e) {
-      throw EventServiceException('イベントの更新に失敗しました', originalException: e);
+      throw EventServiceException('Failed to update event', originalException: e);
     }
   }
 
@@ -348,7 +348,7 @@ class EventService {
         'updatedAt': Timestamp.fromDate(DateTime.now()),
       });
     } catch (e) {
-      throw EventServiceException('イベントステータスの更新に失敗しました', originalException: e);
+      throw EventServiceException('Failed to update event status', originalException: e);
     }
   }
 
@@ -367,7 +367,7 @@ class EventService {
       final event = Event.fromFirestore(doc);
       return event;
     } catch (e) {
-      throw EventServiceException('イベントの取得に失敗しました', originalException: e);
+      throw EventServiceException('Failed to fetch event', originalException: e);
     }
   }
 
@@ -481,7 +481,7 @@ class EventService {
 
       return events;
     } catch (e) {
-      throw EventServiceException('公開イベントの取得に失敗しました', originalException: e);
+      throw EventServiceException('Failed to fetch public events', originalException: e);
     }
   }
 
@@ -491,7 +491,7 @@ class EventService {
       // イベント情報を取得
       final event = await getEventById(eventId);
       if (event == null) {
-        throw EventServiceException('削除対象のイベントが見つかりません');
+        throw EventServiceException('Event to delete not found');
       }
 
       // 関連する画像を削除
@@ -508,7 +508,7 @@ class EventService {
       // Firestoreドキュメントを削除
       await _firestore.collection(_eventsCollection).doc(eventId).delete();
     } catch (e) {
-      throw EventServiceException('イベントの削除に失敗しました', originalException: e);
+      throw EventServiceException('Failed to delete event', originalException: e);
     }
   }
 
@@ -596,7 +596,7 @@ class EventService {
 
       return filteredEvents;
     } catch (e) {
-      throw EventServiceException('イベントの検索に失敗しました', originalException: e);
+      throw EventServiceException('Failed to search events', originalException: e);
     }
   }
 
@@ -619,7 +619,7 @@ class EventService {
 
       return events;
     } catch (e) {
-      throw EventServiceException('ゲーム関連イベントの取得に失敗しました', originalException: e);
+      throw EventServiceException('Failed to fetch game-related events', originalException: e);
     }
   }
 
@@ -748,7 +748,7 @@ class EventService {
           .doc(eventId)
           .get();
       if (!eventDoc.exists) {
-        throw EventServiceException('イベントが見つかりません');
+        throw EventServiceException('Event not found');
       }
 
       final eventData = eventDoc.data() as Map<String, dynamic>;
@@ -756,7 +756,7 @@ class EventService {
 
       // パスワード検証
       if (storedPassword == null || storedPassword != password) {
-        throw EventServiceException('パスワードが正しくありません');
+        throw EventServiceException('Incorrect password');
       }
 
       // 既に参加申請済みかチェック
@@ -771,7 +771,7 @@ class EventService {
         final participantData = participantsDoc.data() as Map<String, dynamic>;
         final status = participantData['status'] as String?;
         if (status == 'pending' || status == 'approved') {
-          throw EventServiceException('既に参加申請済みです');
+          throw EventServiceException('Already applied');
         }
       }
 
@@ -796,7 +796,7 @@ class EventService {
       if (e is EventServiceException) {
         rethrow;
       }
-      throw EventServiceException('参加申請の送信に失敗しました', originalException: e);
+      throw EventServiceException('Failed to submit application', originalException: e);
     }
   }
 
@@ -827,7 +827,7 @@ class EventService {
 
       return true;
     } catch (e) {
-      throw EventServiceException('参加申請の承認に失敗しました', originalException: e);
+      throw EventServiceException('Failed to approve application', originalException: e);
     }
   }
 
@@ -858,7 +858,7 @@ class EventService {
 
       return true;
     } catch (e) {
-      throw EventServiceException('参加申請の拒否に失敗しました', originalException: e);
+      throw EventServiceException('Failed to reject application', originalException: e);
     }
   }
 
@@ -963,6 +963,11 @@ class EventService {
       }
 
       // 通知を送信
+      // 変更件数を計算
+      final criticalCount = changeResult.changes.where((c) => c.type.isCritical).length;
+      final moderateCount = changeResult.changes.where((c) => c.type.isModerate).length;
+      final minorCount = changeResult.changes.where((c) => !c.type.isCritical && !c.type.isModerate).length;
+
       await NotificationService.instance
           .sendEventUpdateNotifications(
             eventId: event.id,
@@ -974,6 +979,11 @@ class EventService {
             changesSummary: changeResult.generateSummaryText(),
             changesDetail: changeResult.generateDetailText(),
             hasCriticalChanges: changeResult.hasCriticalChanges,
+            hasModerateChanges: changeResult.hasModerateChanges,
+            hasMinorChanges: changeResult.hasMinorChanges,
+            criticalChangeCount: criticalCount,
+            moderateChangeCount: moderateCount,
+            minorChangeCount: minorCount,
           );
     } catch (e) {
       // 通知送信の失敗はイベント更新処理をブロックしない

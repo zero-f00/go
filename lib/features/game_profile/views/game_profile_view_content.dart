@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/game_icon.dart';
+import '../../../shared/helpers/game_profile_localization_helper.dart';
 import '../../../data/models/game_profile_model.dart';
 import '../../../data/models/user_model.dart';
+import '../../../l10n/app_localizations.dart';
 import 'game_profile_view_screen_sns.dart';
 
 /// ゲームプロフィールコンテンツウィジェット（Scaffold/ヘッダーなし）
@@ -24,35 +26,36 @@ class GameProfileViewContent extends StatelessWidget with GameProfileSNSMixin {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildUserHeader(context),
+        _buildUserHeader(context, l10n),
         const SizedBox(height: AppDimensions.spacingL),
-        _buildGameInfo(),
+        _buildGameInfo(l10n),
         const SizedBox(height: AppDimensions.spacingL),
-        _buildBasicInfo(),
+        _buildBasicInfo(context, l10n),
         const SizedBox(height: AppDimensions.spacingL),
-        _buildExperienceInfo(),
+        _buildExperienceInfo(context, l10n),
         const SizedBox(height: AppDimensions.spacingL),
-        _buildPlayStyleInfo(),
+        _buildPlayStyleInfo(context, l10n),
         const SizedBox(height: AppDimensions.spacingL),
-        _buildActivityInfo(),
+        _buildActivityInfo(context, l10n),
         const SizedBox(height: AppDimensions.spacingL),
-        _buildSocialLinksInfo(context),
+        _buildSocialLinksInfo(context, l10n),
         const SizedBox(height: AppDimensions.spacingL),
-        _buildCommunicationInfo(),
+        _buildCommunicationInfo(l10n),
         const SizedBox(height: AppDimensions.spacingL),
-        _buildAchievementsInfo(),
+        _buildAchievementsInfo(l10n),
         const SizedBox(height: AppDimensions.spacingL),
-        _buildNotesInfo(),
+        _buildNotesInfo(l10n),
         const SizedBox(height: AppDimensions.spacingXL),
       ],
     );
   }
 
   /// ユーザーヘッダー
-  Widget _buildUserHeader(BuildContext context) {
+  Widget _buildUserHeader(BuildContext context, L10n l10n) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -80,7 +83,7 @@ class GameProfileViewContent extends StatelessWidget with GameProfileSNSMixin {
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                'ユーザー情報',
+                l10n.userInfoSection,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w600,
@@ -133,7 +136,7 @@ class GameProfileViewContent extends StatelessWidget with GameProfileSNSMixin {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          userData?.username ?? 'ユーザー名不明',
+                          userData?.username ?? l10n.usernameUnknown,
                           style: TextStyle(
                             fontSize: AppDimensions.fontSizeL,
                             fontWeight: FontWeight.w600,
@@ -144,7 +147,7 @@ class GameProfileViewContent extends StatelessWidget with GameProfileSNSMixin {
                         Text(
                           userData?.userId != null
                               ? '@${userData!.userId}'
-                              : 'ユーザーIDなし',
+                              : l10n.noUserIdSet,
                           style: TextStyle(
                             fontSize: AppDimensions.fontSizeM,
                             color: AppColors.textSecondary,
@@ -168,24 +171,26 @@ class GameProfileViewContent extends StatelessWidget with GameProfileSNSMixin {
   }
 
   /// ゲーム情報
-  Widget _buildGameInfo() {
+  Widget _buildGameInfo(L10n l10n) {
     return _buildSection(
-      title: 'ゲーム情報',
+      title: l10n.gameInfoSection,
       icon: Icons.sports_esports,
       child: Column(
         children: [
-          _buildGameNameCard(),
+          _buildGameNameCard(l10n),
           const SizedBox(height: AppDimensions.spacingM),
           _buildInfoCard(
-            'ゲーム内ユーザー名',
-            profile.gameUsername.isNotEmpty ? profile.gameUsername : '未設定',
+            l10n.inGameUsername,
+            profile.gameUsername.isNotEmpty ? profile.gameUsername : l10n.notSet,
             Icons.account_circle,
+            l10n,
           ),
           const SizedBox(height: AppDimensions.spacingM),
           _buildInfoCard(
-            'ゲーム内ID',
-            profile.gameUserId.isNotEmpty ? profile.gameUserId : '未設定',
+            l10n.inGameId,
+            profile.gameUserId.isNotEmpty ? profile.gameUserId : l10n.notSet,
             Icons.fingerprint,
+            l10n,
           ),
         ],
       ),
@@ -193,7 +198,7 @@ class GameProfileViewContent extends StatelessWidget with GameProfileSNSMixin {
   }
 
   /// ゲーム名カード（アイコン付き）
-  Widget _buildGameNameCard() {
+  Widget _buildGameNameCard(L10n l10n) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingM),
@@ -208,13 +213,13 @@ class GameProfileViewContent extends StatelessWidget with GameProfileSNSMixin {
             GameIcon(
               iconUrl: gameIconUrl,
               size: 32,
-              gameName: gameName ?? '未設定',
+              gameName: gameName ?? l10n.notSet,
             ),
             const SizedBox(width: AppDimensions.spacingM),
           ],
           Expanded(
             child: Text(
-              gameName ?? '未設定',
+              gameName ?? l10n.notSet,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textDark,
@@ -228,28 +233,33 @@ class GameProfileViewContent extends StatelessWidget with GameProfileSNSMixin {
   }
 
   /// 基本情報
-  Widget _buildBasicInfo() {
+  Widget _buildBasicInfo(BuildContext context, L10n l10n) {
     return _buildSection(
-      title: '基本情報',
+      title: l10n.basicInfo,
       icon: Icons.person,
       child: Column(
         children: [
           _buildInfoCard(
-            'ランク・レベル',
-            profile.rankOrLevel.isNotEmpty ? profile.rankOrLevel : '未設定',
+            l10n.rankOrLevel,
+            profile.rankOrLevel.isNotEmpty ? profile.rankOrLevel : l10n.notSet,
             Icons.military_tech,
+            l10n,
           ),
           const SizedBox(height: AppDimensions.spacingM),
           _buildInfoCard(
-            'ゲーム歴',
-            profile.skillLevel?.displayName ?? '未設定',
+            l10n.gameExperience,
+            profile.skillLevel != null
+                ? GameProfileLocalizationHelper.getSkillLevelDisplayName(context, profile.skillLevel!)
+                : l10n.notSet,
             Icons.history,
+            l10n,
           ),
           const SizedBox(height: AppDimensions.spacingM),
           _buildInfoCard(
-            'クラン',
-            profile.clan.isNotEmpty ? profile.clan : '未設定',
+            l10n.clanLabel,
+            profile.clan.isNotEmpty ? profile.clan : l10n.notSet,
             Icons.groups,
+            l10n,
           ),
         ],
       ),
@@ -257,15 +267,16 @@ class GameProfileViewContent extends StatelessWidget with GameProfileSNSMixin {
   }
 
   /// 経験・スキル情報
-  Widget _buildExperienceInfo() {
+  Widget _buildExperienceInfo(BuildContext context, L10n l10n) {
     return _buildSection(
-      title: 'スキルレベル',
+      title: l10n.skillLevelSection,
       icon: Icons.emoji_events,
       child: profile.skillLevel != null
           ? _buildInfoCard(
-              profile.skillLevel!.displayName,
-              profile.skillLevel!.description,
+              GameProfileLocalizationHelper.getSkillLevelDisplayName(context, profile.skillLevel!),
+              GameProfileLocalizationHelper.getSkillLevelDescription(context, profile.skillLevel!),
               Icons.trending_up,
+              l10n,
               backgroundColor: _getExperienceColor(
                 profile.skillLevel!,
               ).withValues(alpha: 0.1),
@@ -274,14 +285,14 @@ class GameProfileViewContent extends StatelessWidget with GameProfileSNSMixin {
               ).withValues(alpha: 0.3),
               iconColor: _getExperienceColor(profile.skillLevel!),
             )
-          : _buildInfoCard('スキルレベル', '未設定', Icons.trending_up),
+          : _buildInfoCard(l10n.skillLevelSection, l10n.notSet, Icons.trending_up, l10n),
     );
   }
 
   /// プレイスタイル情報
-  Widget _buildPlayStyleInfo() {
+  Widget _buildPlayStyleInfo(BuildContext context, L10n l10n) {
     return _buildSection(
-      title: 'プレイスタイル',
+      title: l10n.playStyleSection,
       icon: Icons.style,
       child: profile.playStyles.isNotEmpty
           ? Column(
@@ -289,58 +300,62 @@ class GameProfileViewContent extends StatelessWidget with GameProfileSNSMixin {
                 width: double.infinity,
                 margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
                 child: _buildInfoCard(
-                  style.displayName,
-                  style.description,
+                  GameProfileLocalizationHelper.getPlayStyleDisplayName(context, style),
+                  GameProfileLocalizationHelper.getPlayStyleDescription(context, style),
                   Icons.psychology,
+                  l10n,
                   backgroundColor: AppColors.info.withValues(alpha: 0.1),
                   borderColor: AppColors.info.withValues(alpha: 0.3),
                   iconColor: AppColors.info,
                 ),
               )).toList(),
             )
-          : _buildInfoCard('プレイスタイル', '未設定', Icons.psychology),
+          : _buildInfoCard(l10n.playStyleSection, l10n.notSet, Icons.psychology, l10n),
     );
   }
 
   /// 活動時間情報
-  Widget _buildActivityInfo() {
+  Widget _buildActivityInfo(BuildContext context, L10n l10n) {
     return _buildSection(
-      title: '活動時間帯',
+      title: l10n.activityTimeSection,
       icon: Icons.schedule,
       child: profile.activityTimes.isNotEmpty
           ? _buildInfoCard(
-              '活動時間帯',
-              profile.activityTimes.map((time) => time.displayName).join('、'),
+              l10n.activityTimeSection,
+              profile.activityTimes.map((time) => GameProfileLocalizationHelper.getActivityTimeDisplayName(context, time)).join('、'),
               Icons.access_time,
+              l10n,
               backgroundColor: AppColors.warning.withValues(alpha: 0.1),
               borderColor: AppColors.warning.withValues(alpha: 0.3),
               iconColor: AppColors.warning,
             )
-          : _buildInfoCard('活動時間帯', '未設定', Icons.access_time),
+          : _buildInfoCard(l10n.activityTimeSection, l10n.notSet, Icons.access_time, l10n),
     );
   }
 
   /// SNSアカウント情報
-  Widget _buildSocialLinksInfo(BuildContext context) {
+  Widget _buildSocialLinksInfo(BuildContext context, L10n l10n) {
     return buildSocialLinksInfo(
       context: context,
       profile: profile,
       userData: userData,
       buildSection: _buildSection,
+      l10n: l10n,
     );
   }
 
   /// コミュニケーション情報
-  Widget _buildCommunicationInfo() {
+  Widget _buildCommunicationInfo(L10n l10n) {
     return _buildSection(
-      title: 'コミュニケーション',
+      title: l10n.communicationSection,
       icon: Icons.mic,
       child: Column(
         children: [
           _buildInfoCard(
-            'ボイスチャット',
-            profile.useInGameVC ? 'ボイスチャット使用可能' : 'ボイスチャット不使用',
+            l10n.voiceChat,
+            profile.useInGameVC ? l10n.vcUsable : l10n.vcNotUsable,
             profile.useInGameVC ? Icons.mic : Icons.mic_off,
+            l10n,
             backgroundColor: profile.useInGameVC
                 ? AppColors.success.withValues(alpha: 0.1)
                 : AppColors.error.withValues(alpha: 0.1),
@@ -353,11 +368,12 @@ class GameProfileViewContent extends StatelessWidget with GameProfileSNSMixin {
           ),
           const SizedBox(height: AppDimensions.spacingM),
           _buildInfoCard(
-            'ボイスチャット詳細',
+            l10n.vcDetailsSection,
             profile.voiceChatDetails.isNotEmpty
                 ? profile.voiceChatDetails
-                : '未設定',
+                : l10n.notSet,
             Icons.settings_voice,
+            l10n,
           ),
         ],
       ),
@@ -365,14 +381,15 @@ class GameProfileViewContent extends StatelessWidget with GameProfileSNSMixin {
   }
 
   /// 実績情報
-  Widget _buildAchievementsInfo() {
+  Widget _buildAchievementsInfo(L10n l10n) {
     return _buildSection(
-      title: '実績・達成目標',
+      title: l10n.achievementsGoals,
       icon: Icons.workspace_premium,
       child: _buildInfoCard(
-        '実績・達成目標',
-        profile.achievements.isNotEmpty ? profile.achievements : '未設定',
+        l10n.achievementsGoals,
+        profile.achievements.isNotEmpty ? profile.achievements : l10n.notSet,
         Icons.emoji_events,
+        l10n,
         backgroundColor: AppColors.accent.withValues(alpha: 0.1),
         borderColor: AppColors.accent.withValues(alpha: 0.3),
         iconColor: AppColors.accent,
@@ -381,14 +398,15 @@ class GameProfileViewContent extends StatelessWidget with GameProfileSNSMixin {
   }
 
   /// メモ・備考情報
-  Widget _buildNotesInfo() {
+  Widget _buildNotesInfo(L10n l10n) {
     return _buildSection(
-      title: 'メモ・備考',
+      title: l10n.notesSection,
       icon: Icons.note,
       child: _buildInfoCard(
-        'メモ・備考',
-        profile.notes.isNotEmpty ? profile.notes : '未設定',
+        l10n.notesSection,
+        profile.notes.isNotEmpty ? profile.notes : l10n.notSet,
         Icons.note_alt,
+        l10n,
         backgroundColor: AppColors.primary.withValues(alpha: 0.1),
         borderColor: AppColors.primary.withValues(alpha: 0.3),
         iconColor: AppColors.primary,
@@ -444,12 +462,13 @@ class GameProfileViewContent extends StatelessWidget with GameProfileSNSMixin {
   Widget _buildInfoCard(
     String label,
     String value,
-    IconData icon, {
+    IconData icon,
+    L10n l10n, {
     Color? backgroundColor,
     Color? borderColor,
     Color? iconColor,
   }) {
-    final bool isNotSet = value == '未設定';
+    final bool isNotSet = value == l10n.notSet;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingM),

@@ -10,6 +10,7 @@ import '../providers/auth_provider.dart';
 import 'user_settings_dialog.dart';
 import 'auth_dialog.dart';
 import 'user_avatar.dart';
+import '../../l10n/app_localizations.dart';
 
 class AppDrawer extends ConsumerStatefulWidget {
   const AppDrawer({super.key});
@@ -39,6 +40,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
 
   /// ユーザーIDをクリップボードにコピー
   Future<void> _copyUserIdToClipboard(BuildContext context, String userId) async {
+    final l10n = L10n.of(context);
     try {
       await Clipboard.setData(ClipboardData(text: userId));
       if (context.mounted) {
@@ -49,7 +51,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
               children: [
                 const Icon(Icons.check_circle, color: Colors.white, size: 18),
                 const SizedBox(width: 8),
-                Text('ユーザーID "$userId" をコピーしました'),
+                Text(l10n.copiedUserId(userId)),
               ],
             ),
             backgroundColor: AppColors.accent,
@@ -64,10 +66,10 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('コピーに失敗しました'),
+          SnackBar(
+            content: Text(l10n.copyFailed),
             backgroundColor: AppColors.error,
-            duration: Duration(seconds: 2),
+            duration: const Duration(seconds: 2),
           ),
         );
       }
@@ -76,6 +78,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Drawer(
       child: Column(
         children: [
@@ -86,12 +89,12 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
               children: [
                 _buildDrawerItem(
                   icon: Icons.people,
-                  title: 'フォロー',
+                  title: l10n.drawerFollow,
                   onTap: () => _onFriendsTap(context),
                 ),
                 _buildDrawerItem(
                   icon: Icons.videogame_asset,
-                  title: 'お気に入りのゲーム',
+                  title: l10n.drawerFavoriteGames,
                   onTap: () => _onFavoriteGamesTap(context),
                 ),
                 const Divider(
@@ -102,24 +105,25 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                 ),
                 _buildDrawerItem(
                   icon: Icons.settings,
-                  title: '設定',
+                  title: l10n.drawerSettings,
                   onTap: () => _onSettingsTap(context),
                 ),
                 _buildDrawerItem(
                   icon: Icons.star_rate,
-                  title: 'アプリを評価',
+                  title: l10n.drawerRateApp,
                   onTap: () => _onRatingTap(context),
                 ),
               ],
             ),
           ),
-          _buildDrawerFooter(),
+          _buildDrawerFooter(context),
         ],
       ),
     );
   }
 
   Widget _buildDrawerHeader(BuildContext context) {
+    final l10n = L10n.of(context);
     try {
       final isSignedIn = ref.watch(isSignedInProvider);
       final isSetupCompleted = ref.watch(userSettingsCompletedProvider);
@@ -184,8 +188,8 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                     isSignedIn
                         ? (isSetupCompleted
                             ? (appUsername?.isNotEmpty == true ? appUsername! : displayName)
-                            : '${appUsername?.isNotEmpty == true ? appUsername! : displayName}（設定未完了）')
-                        : 'ゲストユーザー',
+                            : '${appUsername?.isNotEmpty == true ? appUsername! : displayName}${l10n.setupIncomplete}')
+                        : l10n.guestUser,
                     style: const TextStyle(
                       color: AppColors.textOnPrimary,
                       fontSize: AppDimensions.fontSizeL,
@@ -214,10 +218,10 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                             color: Colors.orange,
                           ),
                           const SizedBox(width: 6),
-                          const Expanded(
+                          Expanded(
                             child: Text(
-                              'タップして初回設定を完了',
-                              style: TextStyle(
+                              l10n.tapToCompleteSetup,
+                              style: const TextStyle(
                                 color: Colors.orange,
                                 fontSize: AppDimensions.fontSizeS,
                                 fontWeight: FontWeight.w700,
@@ -250,7 +254,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                                 Expanded(
                                   child: Text(
                                     isSignedIn
-                                        ? (appUserId?.isNotEmpty == true ? 'ID: $appUserId' : 'ID: 未設定')
+                                        ? (appUserId?.isNotEmpty == true ? l10n.idLabel(appUserId!) : l10n.idNotSet)
                                         : 'ID: guest_001',
                                     style: const TextStyle(
                                       color: AppColors.textOnPrimary,
@@ -330,9 +334,9 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                   ),
                 ),
                 const SizedBox(height: AppDimensions.spacingS),
-                const Text(
-                  'ロード中...',
-                  style: TextStyle(
+                Text(
+                  l10n.loading,
+                  style: const TextStyle(
                     color: AppColors.textOnPrimary,
                     fontSize: AppDimensions.fontSizeL,
                     fontWeight: FontWeight.w600,
@@ -405,7 +409,8 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
     );
   }
 
-  Widget _buildDrawerFooter() {
+  Widget _buildDrawerFooter(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: const BoxDecoration(
@@ -419,7 +424,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
       child: Column(
         children: [
           Text(
-            'Go - ゲームイベント管理',
+            l10n.drawerFooterTitle,
             style: TextStyle(
               fontSize: AppDimensions.fontSizeS,
               color: AppColors.textSecondary,
@@ -428,7 +433,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
           ),
           const SizedBox(height: AppDimensions.spacingXS),
           Text(
-            'バージョン 1.0.0',
+            l10n.drawerVersion('1.0.0'),
             style: TextStyle(
               fontSize: AppDimensions.fontSizeXS,
               color: AppColors.textSecondary,
@@ -486,21 +491,21 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
       }
     } catch (e) {
       // エラー時はエラーダイアログを表示
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('エラー'),
-            content: Text('ユーザー情報の読み込みに失敗しました。\n\n$e'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
-      }
+      if (!mounted) return;
+      final l10n = L10n.of(this.context);
+      showDialog(
+        context: this.context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text(l10n.error),
+          content: Text('${l10n.userInfoLoadFailed}\n\n$e'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l10n.ok),
+            ),
+          ],
+        ),
+      );
     }
   }
 

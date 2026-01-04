@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/app_gradient_background.dart';
@@ -13,9 +14,11 @@ import '../../../shared/services/participation_service.dart';
 import '../../../shared/services/error_handler_service.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../data/models/user_model.dart';
+import '../../../data/models/game_profile_model.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/utils/withdrawn_user_helper.dart';
 import '../../../shared/widgets/event_info_card.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// イベント参加者管理画面
 class EventParticipantsManagementScreen extends ConsumerStatefulWidget {
@@ -71,16 +74,17 @@ class _EventParticipantsManagementScreenState
 
           // キャンセル情報をスナックバーで表示
           if (widget.cancelledUserName != null) {
+            final l10n = L10n.of(context);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  '${widget.cancelledUserName}さんがキャンセルしました',
+                  l10n.userCancelledParticipation(widget.cancelledUserName!),
                   style: const TextStyle(color: AppColors.textWhite),
                 ),
                 backgroundColor: AppColors.warning,
                 duration: const Duration(seconds: 3),
                 action: widget.cancellationReason != null ? SnackBarAction(
-                  label: '理由を確認',
+                  label: l10n.viewReason,
                   textColor: AppColors.textWhite,
                   onPressed: () => _showCancellationReasonDialog(),
                 ) : null,
@@ -100,13 +104,14 @@ class _EventParticipantsManagementScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Scaffold(
       body: AppGradientBackground(
         child: SafeArea(
           child: Column(
             children: [
               AppHeader(
-                title: '参加者',
+                title: l10n.participantsTitle,
                 showBackButton: true,
                 onBackPressed: () => Navigator.of(context).pop(),
               ),
@@ -142,9 +147,9 @@ class _EventParticipantsManagementScreenState
                               size: AppDimensions.iconM,
                             ),
                             const SizedBox(width: AppDimensions.spacingS),
-                            const Text(
-                              '参加申請',
-                              style: TextStyle(
+                            Text(
+                              l10n.participationApplications,
+                              style: const TextStyle(
                                 fontSize: AppDimensions.fontSizeL,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.textDark,
@@ -182,12 +187,12 @@ class _EventParticipantsManagementScreenState
                           ),
                           labelPadding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL), // タブ間のパディング調整
                           indicatorPadding: const EdgeInsets.all(4),
-                          tabs: const [
-                            Tab(text: '申請中'),
-                            Tab(text: '承認済み'),
-                            Tab(text: '拒否済み'),
-                            Tab(text: 'キャンセル待ち'),
-                            Tab(text: 'キャンセル済み'),
+                          tabs: [
+                            Tab(text: l10n.tabPending),
+                            Tab(text: l10n.tabApproved),
+                            Tab(text: l10n.tabRejected),
+                            Tab(text: l10n.tabWaitlisted),
+                            Tab(text: l10n.tabCancelled),
                           ],
                         ),
                       ),
@@ -226,6 +231,7 @@ class _EventParticipantsManagementScreenState
         }
 
         if (snapshot.hasError) {
+          final l10n = L10n.of(context);
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -237,7 +243,7 @@ class _EventParticipantsManagementScreenState
                 ),
                 const SizedBox(height: AppDimensions.spacingM),
                 Text(
-                  'データの読み込みに失敗しました',
+                  l10n.dataLoadFailed,
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeL,
                     color: AppColors.textDark,
@@ -245,7 +251,7 @@ class _EventParticipantsManagementScreenState
                 ),
                 const SizedBox(height: AppDimensions.spacingS),
                 Text(
-                  'エラー: ${snapshot.error}',
+                  l10n.errorLabel(snapshot.error.toString()),
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     color: AppColors.error,
@@ -278,32 +284,33 @@ class _EventParticipantsManagementScreenState
   }
 
   Widget _buildEmptyState(String status) {
+    final l10n = L10n.of(context);
     String message;
     IconData icon;
 
     switch (status) {
       case 'pending':
-        message = '申請中の参加者はいません';
+        message = l10n.noPendingParticipants;
         icon = Icons.pending_actions;
         break;
       case 'approved':
-        message = '承認済みの参加者はいません';
+        message = l10n.noApprovedParticipants;
         icon = Icons.check_circle;
         break;
       case 'rejected':
-        message = '拒否済みの参加者はいません';
+        message = l10n.noRejectedParticipants;
         icon = Icons.cancel;
         break;
       case 'waitlisted':
-        message = 'キャンセル待ちの参加者はいません';
+        message = l10n.noWaitlistedParticipants;
         icon = Icons.queue;
         break;
       case 'cancelled':
-        message = 'キャンセルした参加者はいません';
+        message = l10n.noCancelledParticipants;
         icon = Icons.cancel_outlined;
         break;
       default:
-        message = '参加者はいません';
+        message = l10n.noParticipants;
         icon = Icons.people;
     }
 
@@ -365,7 +372,7 @@ class _EventParticipantsManagementScreenState
                           : null,
                       child: WithdrawnUserHelper.getDisplayAvatarUrl(userData) == null
                           ? Text(
-                              WithdrawnUserHelper.getDisplayUsername(userData).substring(0, 1).toUpperCase(),
+                              WithdrawnUserHelper.getDisplayUsername(context, userData).substring(0, 1).toUpperCase(),
                               style: TextStyle(
                                 color: AppColors.accent,
                                 fontWeight: FontWeight.w600,
@@ -380,7 +387,7 @@ class _EventParticipantsManagementScreenState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            userData != null ? WithdrawnUserHelper.getDisplayUsername(userData) : '読み込み中...',
+                            userData != null ? WithdrawnUserHelper.getDisplayUsername(context, userData) : L10n.of(context).loadingText,
                             style: const TextStyle(
                               fontSize: AppDimensions.fontSizeL,
                               fontWeight: FontWeight.w600,
@@ -421,11 +428,11 @@ class _EventParticipantsManagementScreenState
                 ],
                 if (status == 'approved') ...[
                   const SizedBox(height: AppDimensions.spacingL),
-                  _buildReturnToPendingButton(application, '承認を取り消して申請中に戻す'),
+                  _buildReturnToPendingButton(application, L10n.of(context).revokeApprovalAndReturnToPending),
                 ],
                 if (status == 'rejected') ...[
                   const SizedBox(height: AppDimensions.spacingL),
-                  _buildReturnToPendingButton(application, '拒否を取り消して申請中に戻す'),
+                  _buildReturnToPendingButton(application, L10n.of(context).revokeRejectionAndReturnToPending),
                 ],
                 if (status == 'waitlisted') ...[
                   const SizedBox(height: AppDimensions.spacingL),
@@ -445,6 +452,7 @@ class _EventParticipantsManagementScreenState
   }
 
   Widget _buildStatusBadge(String status) {
+    final l10n = L10n.of(context);
     Color backgroundColor;
     Color textColor;
     String text;
@@ -453,32 +461,32 @@ class _EventParticipantsManagementScreenState
       case 'pending':
         backgroundColor = AppColors.warning.withValues(alpha: 0.2);
         textColor = AppColors.warning;
-        text = '申請中';
+        text = l10n.statusPending;
         break;
       case 'approved':
         backgroundColor = AppColors.success.withValues(alpha: 0.2);
         textColor = AppColors.success;
-        text = '承認済み';
+        text = l10n.statusApproved;
         break;
       case 'rejected':
         backgroundColor = AppColors.error.withValues(alpha: 0.2);
         textColor = AppColors.error;
-        text = '拒否済み';
+        text = l10n.statusRejected;
         break;
       case 'waitlisted':
         backgroundColor = AppColors.accent.withValues(alpha: 0.2);
         textColor = AppColors.accent;
-        text = 'キャンセル待ち';
+        text = l10n.statusWaitlisted;
         break;
       case 'cancelled':
         backgroundColor = AppColors.warning.withValues(alpha: 0.2);
         textColor = AppColors.warning;
-        text = 'キャンセル済み';
+        text = l10n.statusCancelled;
         break;
       default:
         backgroundColor = AppColors.textLight.withValues(alpha: 0.2);
         textColor = AppColors.textDark;
-        text = '不明';
+        text = l10n.statusUnknown;
     }
 
     return Container(
@@ -503,6 +511,7 @@ class _EventParticipantsManagementScreenState
   }
 
   Widget _buildGameAccountInfo(ParticipationApplication application) {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
@@ -524,7 +533,7 @@ class _EventParticipantsManagementScreenState
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                'ゲームアカウント情報',
+                l10n.gameAccountInfo,
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                   color: AppColors.accent,
@@ -535,14 +544,14 @@ class _EventParticipantsManagementScreenState
           ),
           const SizedBox(height: AppDimensions.spacingS),
           if (application.gameUsername != null) ...[
-            _buildInfoRow('ゲーム内ユーザー名', application.gameUsername!),
+            _buildInfoRow(l10n.inGameUsername, application.gameUsername!),
           ],
           if (application.gameUserId != null && application.gameUserId!.isNotEmpty) ...[
-            _buildInfoRow('ゲーム内ユーザーID', application.gameUserId!),
+            _buildInfoRow(l10n.inGameUserId, application.gameUserId!),
           ],
           if (application.gameUsername == null) ...[
             Text(
-              'ゲームアカウント情報が登録されていません',
+              l10n.noGameAccountInfo,
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeS,
                 color: AppColors.textDark,
@@ -556,16 +565,17 @@ class _EventParticipantsManagementScreenState
   }
 
   Widget _buildRequestInfo(ParticipationApplication application) {
-    String dateText = '申請日時: ${_formatDateTime(application.appliedAt)}';
+    final l10n = L10n.of(context);
+    String dateText = l10n.applicationDateTime(_formatDateTime(application.appliedAt));
 
     // Add message if present
     if (application.message != null && application.message!.isNotEmpty) {
-      dateText += '\nメッセージ: ${application.message}';
+      dateText += '\n${l10n.messageLabel(application.message!)}';
     }
 
     // Add rejection reason if present
     if (application.rejectionReason != null && application.rejectionReason!.isNotEmpty) {
-      dateText += '\n拒否理由: ${application.rejectionReason}';
+      dateText += '\n${l10n.rejectionReasonLabel(application.rejectionReason!)}';
     }
 
     return Text(
@@ -579,11 +589,12 @@ class _EventParticipantsManagementScreenState
   }
 
   Widget _buildActionButtons(ParticipationApplication application) {
+    final l10n = L10n.of(context);
     return Row(
       children: [
         Expanded(
           child: AppButton.primary(
-            text: '承認',
+            text: l10n.approve,
             onPressed: () => _approveApplication(application),
             isFullWidth: true,
           ),
@@ -591,7 +602,7 @@ class _EventParticipantsManagementScreenState
         const SizedBox(width: AppDimensions.spacingM),
         Expanded(
           child: AppButton.danger(
-            text: '拒否',
+            text: l10n.reject,
             onPressed: () => _rejectApplication(application),
             isFullWidth: true,
           ),
@@ -649,9 +660,10 @@ class _EventParticipantsManagementScreenState
 
       if (result && mounted) {
         // 通知はParticipationService内で一元管理されるため、ここでは送信しない
+        final l10n = L10n.of(context);
         final statusText = application.status == ParticipationStatus.waitlisted
-            ? 'キャンセル待ちユーザーを承認しました'
-            : '参加申請を承認しました';
+            ? l10n.waitlistUserApproved
+            : l10n.applicationApproved;
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -660,19 +672,21 @@ class _EventParticipantsManagementScreenState
           ),
         );
       } else if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('承認に失敗しました'),
+          SnackBar(
+            content: Text(l10n.approvalFailed),
             backgroundColor: AppColors.error,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         // 定員オーバーエラーの場合は専用メッセージを表示
-        String errorMessage = '承認に失敗しました';
+        String errorMessage = l10n.approvalFailed;
         if (e.toString().contains('定員を超過')) {
-          errorMessage = 'イベントが満員のため承認できませんでした。承認済み参加者が辞退してから再度お試しください。';
+          errorMessage = l10n.capacityExceededApprovalError;
         }
 
         ErrorHandlerService.showErrorDialog(
@@ -715,26 +729,28 @@ class _EventParticipantsManagementScreenState
 
       if (result && mounted) {
         // 通知はParticipationService内で一元管理されるため、ここでは送信しない
-
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('参加申請を拒否しました'),
+          SnackBar(
+            content: Text(l10n.applicationRejectedSuccess),
             backgroundColor: AppColors.warning,
           ),
         );
       } else if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('拒否に失敗しました'),
+          SnackBar(
+            content: Text(l10n.rejectionFailed),
             backgroundColor: AppColors.error,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ErrorHandlerService.showErrorDialog(
           context,
-          '拒否に失敗しました',
+          l10n.rejectionFailed,
         );
       }
     } finally {
@@ -755,6 +771,7 @@ class _EventParticipantsManagementScreenState
 
   /// 承認・拒否メッセージ入力ダイアログ
   Future<String?> _showApprovalMessageDialog(bool isApproval) async {
+    final l10n = L10n.of(context);
     return showDialog<String>(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -762,7 +779,7 @@ class _EventParticipantsManagementScreenState
         return StatefulBuilder(
           builder: (context, setState) => AlertDialog(
             title: Text(
-              isApproval ? '参加申請を承認' : '参加申請を拒否',
+              isApproval ? l10n.approveApplicationTitle : l10n.rejectApplicationTitle,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 fontWeight: FontWeight.w600,
@@ -774,8 +791,8 @@ class _EventParticipantsManagementScreenState
                 children: [
                   Text(
                     isApproval
-                        ? '申請者にメッセージを送信できます（任意）'
-                        : '拒否理由をメッセージで送信できます（任意）',
+                        ? l10n.approveApplicationMessageHint
+                        : l10n.rejectApplicationMessageHint,
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeM,
                       color: AppColors.textDark,
@@ -787,10 +804,10 @@ class _EventParticipantsManagementScreenState
                     maxLines: 3,
                     maxLength: 200,
                     decoration: InputDecoration(
-                      labelText: isApproval ? 'メッセージ' : '拒否理由',
+                      labelText: isApproval ? l10n.messageInputLabel : l10n.rejectReasonInputLabel,
                       hintText: isApproval
-                          ? '承認に関する詳細やイベント参加の注意事項など'
-                          : '拒否の理由や今後の改善点など',
+                          ? l10n.approveMessagePlaceholder
+                          : l10n.rejectMessagePlaceholder,
                       border: const OutlineInputBorder(),
                       counterText: '',
                     ),
@@ -805,12 +822,12 @@ class _EventParticipantsManagementScreenState
                   Navigator.of(dialogContext).pop();
                 },
                 child: Text(
-                  'キャンセル',
+                  l10n.cancel,
                   style: TextStyle(color: AppColors.textLight),
                 ),
               ),
               AppButton.primary(
-                text: isApproval ? '承認する' : '拒否する',
+                text: isApproval ? l10n.approveButton : l10n.rejectButton,
                 onPressed: () {
                   final message = messageController.text.trim();
                   messageController.dispose();
@@ -826,6 +843,7 @@ class _EventParticipantsManagementScreenState
 
   /// 申請中に戻すダイアログを表示
   Future<String?> _showReturnToPendingDialog(String title, String message) async {
+    final l10n = L10n.of(context);
     return showDialog<String>(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -853,9 +871,9 @@ class _EventParticipantsManagementScreenState
                   const SizedBox(height: AppDimensions.spacingM),
                   AppTextFieldMultiline(
                     controller: messageController,
-                    hintText: '理由を入力...',
+                    hintText: l10n.enterReasonHint,
                     maxLines: 3,
-                    doneButtonText: '完了',
+                    doneButtonText: l10n.ok,
                   ),
                 ],
               ),
@@ -866,10 +884,10 @@ class _EventParticipantsManagementScreenState
                   messageController.dispose();
                   Navigator.of(dialogContext).pop();
                 },
-                child: const Text('キャンセル'),
+                child: Text(l10n.cancel),
               ),
               AppButton.primary(
-                text: '申請中に戻す',
+                text: l10n.returnToPendingButton,
                 onPressed: () {
                   final text = messageController.text;
                   messageController.dispose();
@@ -925,9 +943,10 @@ class _EventParticipantsManagementScreenState
       if (userData != null && mounted) {
         // 退会ユーザーの場合はプロフィール表示を制限
         if (!userData.isActive) {
+          final l10n = L10n.of(context);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('退会したユーザーのプロフィールは表示できません'),
+            SnackBar(
+              content: Text(l10n.withdrawnUserProfileNotAvailable),
               backgroundColor: AppColors.warning,
             ),
           );
@@ -939,18 +958,20 @@ class _EventParticipantsManagementScreenState
           arguments: userData.userId, // カスタムユーザーIDを使用
         );
       } else if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('ユーザー情報が見つかりません'),
+          SnackBar(
+            content: Text(l10n.userNotFoundError),
             backgroundColor: AppColors.warning,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('ユーザープロフィールの表示に失敗しました'),
+          SnackBar(
+            content: Text(l10n.userProfileLoadFailed),
             backgroundColor: AppColors.error,
           ),
         );
@@ -976,21 +997,102 @@ class _EventParticipantsManagementScreenState
 
   /// ゲームプロフィール表示
   void _viewGameProfile(ParticipationApplication application) {
-    if (application.gameUsername != null) {
-      // ゲームプロフィール閲覧画面に遷移
-      Navigator.of(context).pushNamed(
-        '/game_profile_view',
-        arguments: {
-          'userId': application.userId,
-          'gameUsername': application.gameUsername,
-          'gameUserId': application.gameUserId,
-        },
+    // gameProfileDataからGameProfileを構築
+    GameProfile? gameProfile;
+    if (application.gameProfileData != null) {
+      final data = application.gameProfileData!;
+      gameProfile = GameProfile(
+        id: data['id'] as String? ?? '',
+        gameId: data['gameId'] as String? ?? '',
+        userId: application.userId,
+        gameUsername:
+            data['gameUsername'] as String? ?? application.gameUsername ?? '',
+        gameUserId:
+            data['gameUserId'] as String? ?? application.gameUserId ?? '',
+        skillLevel: data['skillLevel'] != null
+            ? SkillLevel.values.firstWhere(
+                (e) => e.name == data['skillLevel'],
+                orElse: () => SkillLevel.beginner,
+              )
+            : SkillLevel.beginner,
+        playStyles:
+            (data['playStyles'] as List?)
+                ?.map(
+                  (e) => PlayStyle.values.firstWhere(
+                    (style) => style.name == e,
+                    orElse: () => PlayStyle.casual,
+                  ),
+                )
+                .toList() ??
+            [],
+        rankOrLevel: data['rankOrLevel'] as String? ?? '',
+        activityTimes:
+            (data['activityTimes'] as List?)
+                ?.map(
+                  (e) => ActivityTime.values.firstWhere(
+                    (time) => time.name == e,
+                    orElse: () => ActivityTime.evening,
+                  ),
+                )
+                .toList() ??
+            [],
+        useInGameVC: data['useInGameVC'] as bool? ?? false,
+        voiceChatDetails: data['voiceChatDetails'] as String? ?? '',
+        achievements: data['achievements'] as String? ?? '',
+        notes: data['notes'] as String? ?? '',
+        isFavorite: data['isFavorite'] as bool? ?? false,
+        isPublic: data['isPublic'] as bool? ?? true,
+        createdAt: data['createdAt'] != null
+            ? (data['createdAt'] as Timestamp).toDate()
+            : DateTime.now(),
+        updatedAt: data['updatedAt'] != null
+            ? (data['updatedAt'] as Timestamp).toDate()
+            : DateTime.now(),
       );
+    } else if (application.gameUsername != null) {
+      // 基本的なゲームプロフィールを作成
+      gameProfile = GameProfile(
+        id: '',
+        gameId: '',
+        userId: application.userId,
+        gameUsername: application.gameUsername!,
+        gameUserId: application.gameUserId ?? '',
+        skillLevel: SkillLevel.beginner,
+        playStyles: [],
+        rankOrLevel: '',
+        activityTimes: [],
+        useInGameVC: false,
+        voiceChatDetails: '',
+        achievements: '',
+        notes: '',
+        isFavorite: false,
+        isPublic: true,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+    }
+
+    if (gameProfile != null) {
+      // ユーザーデータを取得してから画面に渡す
+      _getUserData(application.userId).then((userData) {
+        if (mounted) {
+          Navigator.of(context).pushNamed(
+            '/game_profile_view',
+            arguments: {
+              'profile': gameProfile,
+              'userData': userData,
+              'gameName': null,
+              'gameIconUrl': null,
+            },
+          );
+        }
+      });
     } else {
       // ゲーム情報が不足している場合の処理
+      final l10n = L10n.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('ゲームプロフィール情報が不足しています'),
+        SnackBar(
+          content: Text(l10n.gameProfileInfoMissing),
           backgroundColor: AppColors.warning,
         ),
       );
@@ -1014,6 +1116,7 @@ class _EventParticipantsManagementScreenState
 
   /// 申請中に戻す
   Future<void> _returnToPending(ParticipationApplication application) async {
+    final l10n = L10n.of(context);
     // 重複処理を防ぐ
     if (_processingApplications.contains(application.id)) {
       return;
@@ -1022,10 +1125,10 @@ class _EventParticipantsManagementScreenState
     final currentStatus = application.status;
     final isFromApproval = currentStatus == ParticipationStatus.approved;
 
-    final title = isFromApproval ? '承認を取り消しますか？' : '拒否を取り消しますか？';
+    final title = isFromApproval ? l10n.revokeApprovalTitle : l10n.revokeRejectionTitle;
     final confirmMessage = isFromApproval
-        ? 'この参加者の承認を取り消して申請中に戻します。理由を入力してください（任意）。'
-        : 'この参加者の拒否を取り消して申請中に戻します。理由を入力してください（任意）。';
+        ? l10n.revokeApprovalConfirmMessage
+        : l10n.revokeRejectionConfirmMessage;
 
     final message = await _showReturnToPendingDialog(title, confirmMessage);
     if (message == null) return;
@@ -1043,13 +1146,13 @@ class _EventParticipantsManagementScreenState
         application.id,
         ParticipationStatus.pending,
         adminMessage: message.isEmpty
-            ? (isFromApproval ? '承認が取り消されました' : '拒否が取り消されました')
+            ? (isFromApproval ? l10n.approvalRevoked : l10n.rejectionRevoked)
             : message,
         adminUserId: currentUserId,
       );
 
       if (result && mounted) {
-        final successMessage = isFromApproval ? '承認を取り消して申請中に戻しました' : '拒否を取り消して申請中に戻しました';
+        final successMessage = isFromApproval ? l10n.revokeApprovalSuccess : l10n.revokeRejectionSuccess;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(successMessage),
@@ -1057,7 +1160,7 @@ class _EventParticipantsManagementScreenState
           ),
         );
       } else if (mounted) {
-        final errorMessage = isFromApproval ? '承認取り消しに失敗しました' : '拒否取り消しに失敗しました';
+        final errorMessage = isFromApproval ? l10n.revokeApprovalFailed : l10n.revokeRejectionFailed;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
@@ -1067,7 +1170,7 @@ class _EventParticipantsManagementScreenState
       }
     } catch (e) {
       if (mounted) {
-        final errorMessage = isFromApproval ? '承認取り消しに失敗しました' : '拒否取り消しに失敗しました';
+        final errorMessage = isFromApproval ? l10n.revokeApprovalFailed : l10n.revokeRejectionFailed;
         ErrorHandlerService.showErrorDialog(
           context,
           errorMessage,
@@ -1087,6 +1190,7 @@ class _EventParticipantsManagementScreenState
       return;
     }
 
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -1144,9 +1248,9 @@ class _EventParticipantsManagementScreenState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'キャンセル理由',
-                            style: TextStyle(
+                          Text(
+                            l10n.cancellationReasonTitle,
+                            style: const TextStyle(
                               color: AppColors.textWhite,
                               fontSize: AppDimensions.fontSizeXL,
                               fontWeight: FontWeight.bold,
@@ -1154,7 +1258,7 @@ class _EventParticipantsManagementScreenState
                           ),
                           const SizedBox(height: AppDimensions.spacingXS),
                           Text(
-                            '${widget.cancelledUserName}さん',
+                            widget.cancelledUserName!,
                             style: const TextStyle(
                               color: AppColors.overlayMedium,
                               fontSize: AppDimensions.fontSizeM,
@@ -1206,7 +1310,7 @@ class _EventParticipantsManagementScreenState
                     SizedBox(
                       width: double.infinity,
                       child: AppButton(
-                        text: '閉じる',
+                        text: l10n.closeButton,
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                     ),
@@ -1222,6 +1326,7 @@ class _EventParticipantsManagementScreenState
 
   /// キャンセル情報を表示
   Widget _buildCancellationInfo(ParticipationApplication application) {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
@@ -1240,9 +1345,9 @@ class _EventParticipantsManagementScreenState
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                'キャンセル理由',
-                style: TextStyle(
+              Text(
+                l10n.cancellationReasonTitle,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textDark,
@@ -1254,7 +1359,7 @@ class _EventParticipantsManagementScreenState
           Text(
             application.cancellationReason?.isNotEmpty == true
                 ? application.cancellationReason!
-                : 'キャンセル理由の記録がありません',
+                : l10n.noCancellationReasonRecorded,
             style: TextStyle(
               fontSize: AppDimensions.fontSizeM,
               color: AppColors.textDark,
@@ -1264,7 +1369,7 @@ class _EventParticipantsManagementScreenState
           if (application.cancelledAt != null) ...[
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              'キャンセル日時: ${application.cancelledAt!.year}年${application.cancelledAt!.month}月${application.cancelledAt!.day}日 ${application.cancelledAt!.hour}:${application.cancelledAt!.minute.toString().padLeft(2, '0')}',
+              l10n.cancellationDateTimeLabel('${application.cancelledAt!.year}/${application.cancelledAt!.month}/${application.cancelledAt!.day} ${application.cancelledAt!.hour}:${application.cancelledAt!.minute.toString().padLeft(2, '0')}'),
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeS,
                 color: AppColors.textSecondary,
@@ -1279,6 +1384,7 @@ class _EventParticipantsManagementScreenState
 
   /// 承認前の定員チェック（申請中・キャンセル待ち共通）
   Future<bool> _checkCapacityForApproval(ParticipationApplication application) async {
+    final l10n = L10n.of(context);
     try {
       // 現在の承認済み参加者数を取得
       final currentApprovedCount = await ParticipationService.getApprovedParticipantCount(application.eventId);
@@ -1290,7 +1396,7 @@ class _EventParticipantsManagementScreenState
         if (mounted) {
           ErrorHandlerService.showErrorDialog(
             context,
-            'イベント情報の取得に失敗しました',
+            l10n.eventInfoFetchFailed,
           );
         }
         return false;
@@ -1304,16 +1410,16 @@ class _EventParticipantsManagementScreenState
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: const Text(
-                  '定員超過のため承認できません',
-                  style: TextStyle(
+                title: Text(
+                  l10n.capacityExceededTitle,
+                  style: const TextStyle(
                     fontSize: AppDimensions.fontSizeL,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textDark,
                   ),
                 ),
                 content: Text(
-                  'イベントが満員です（現在 $currentApprovedCount/${event.maxParticipants}人）。\n\n承認済み参加者が辞退してから、再度承認してください。',
+                  l10n.capacityExceededMessage(currentApprovedCount, event.maxParticipants),
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     color: AppColors.textDark,
@@ -1322,9 +1428,9 @@ class _EventParticipantsManagementScreenState
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text(
-                      'OK',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.ok,
+                      style: const TextStyle(
                         color: AppColors.accent,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1343,7 +1449,7 @@ class _EventParticipantsManagementScreenState
       if (mounted) {
         ErrorHandlerService.showErrorDialog(
           context,
-          '定員チェックに失敗しました',
+          l10n.capacityCheckFailed,
         );
       }
       return false;
@@ -1352,11 +1458,12 @@ class _EventParticipantsManagementScreenState
 
   /// キャンセル待ちアクションボタンを構築
   Widget _buildWaitlistActionButtons(ParticipationApplication application) {
+    final l10n = L10n.of(context);
     return Row(
       children: [
         Expanded(
           child: AppButton.primary(
-            text: '承認する',
+            text: l10n.approveWaitlistUser,
             onPressed: () => _approveApplication(application),
             isFullWidth: true,
           ),
@@ -1364,7 +1471,7 @@ class _EventParticipantsManagementScreenState
         const SizedBox(width: AppDimensions.spacingM),
         Expanded(
           child: AppButton.secondary(
-            text: '申請中に戻す',
+            text: l10n.returnWaitlistToPending,
             onPressed: () => _returnToPending(application),
             isFullWidth: true,
           ),

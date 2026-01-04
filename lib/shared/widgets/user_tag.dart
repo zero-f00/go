@@ -72,7 +72,7 @@ class UserTag extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      WithdrawnUserHelper.getDisplayUsername(user),
+                      WithdrawnUserHelper.getDisplayUsername(context, user),
                       style: TextStyle(
                         fontSize: tagSize * 0.35,
                         fontWeight: FontWeight.w600,

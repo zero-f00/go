@@ -137,7 +137,7 @@ class Event {
       invitedUserIds: List<String>.from(data['invitedUserIds'] ?? []),
       visibility: _parseVisibility(data['visibility']),
       eventTags: List<String>.from(data['eventTags'] ?? []),
-      language: data['language'] ?? '日本語',
+      language: data['language'] ?? 'ja',
       contactInfo: data['contactInfo'],
       hasStreaming: data['hasStreaming'] ?? false,
       streamingUrls: List<String>.from(data['streamingUrls'] ?? []),

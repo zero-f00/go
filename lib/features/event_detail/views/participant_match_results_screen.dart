@@ -11,6 +11,7 @@ import '../../../shared/services/match_result_service.dart';
 import '../../../shared/services/group_management_service.dart';
 import '../../../shared/services/participation_service.dart';
 import 'participant_match_detail_screen.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 参加者向け戦績・結果確認画面
 class ParticipantMatchResultsScreen extends ConsumerStatefulWidget {
@@ -70,7 +71,7 @@ class _ParticipantMatchResultsScreenState
       _currentUserId = currentUser?.uid;
 
       if (_currentUserId == null) {
-        throw Exception('ユーザーが認証されていません');
+        throw Exception('User not authenticated');
       }
 
       // イベントタイプを確認
@@ -107,7 +108,7 @@ class _ParticipantMatchResultsScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('データの読み込みに失敗しました: $e'),
+            content: Text(L10n.of(context).failedToLoadData(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -132,7 +133,7 @@ class _ParticipantMatchResultsScreenState
 
           for (final entry in memberInfo.entries) {
             _participantNames[entry.key] =
-                entry.value['gameUsername'] ?? entry.value['displayName'] ?? 'ユーザー';
+                entry.value['gameUsername'] ?? entry.value['displayName'] ?? 'User';
           }
         }
       } else {
@@ -170,13 +171,14 @@ class _ParticipantMatchResultsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Scaffold(
       body: AppGradientBackground(
         child: SafeArea(
           child: Column(
             children: [
               AppHeader(
-                title: '戦績・結果確認',
+                title: l10n.matchResults,
                 showBackButton: true,
                 onBackPressed: () => Navigator.of(context).pop(),
               ),
@@ -196,7 +198,7 @@ class _ParticipantMatchResultsScreenState
                         borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                       ),
                       child: Text(
-                        _isTeamEvent ? 'チーム戦' : '個人戦',
+                        _isTeamEvent ? l10n.teamMatch : l10n.individualMatch,
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeS,
                           fontWeight: FontWeight.w600,
@@ -231,9 +233,9 @@ class _ParticipantMatchResultsScreenState
                               size: AppDimensions.iconM,
                             ),
                             const SizedBox(width: AppDimensions.spacingS),
-                            const Text(
-                              '試合結果',
-                              style: TextStyle(
+                            Text(
+                              l10n.matchResultsTitle,
+                              style: const TextStyle(
                                 fontSize: AppDimensions.fontSizeL,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.textDark,
@@ -257,9 +259,9 @@ class _ParticipantMatchResultsScreenState
                             fontWeight: FontWeight.w600,
                             fontSize: AppDimensions.fontSizeM,
                           ),
-                          tabs: const [
-                            Tab(text: 'すべての試合'),
-                            Tab(text: '自分の試合'),
+                          tabs: [
+                            Tab(text: l10n.allMatches),
+                            Tab(text: l10n.myMatches),
                           ],
                         ),
                       ),
@@ -288,8 +290,9 @@ class _ParticipantMatchResultsScreenState
 
   /// すべての試合タブ
   Widget _buildAllMatchesTab() {
+    final l10n = L10n.of(context);
     if (_allMatches.isEmpty) {
-      return _buildEmptyState('まだ試合が登録されていません');
+      return _buildEmptyState(l10n.noMatchesRegistered);
     }
 
     return ListView.builder(
@@ -303,8 +306,9 @@ class _ParticipantMatchResultsScreenState
 
   /// 自分の試合タブ
   Widget _buildMyMatchesTab() {
+    final l10n = L10n.of(context);
     if (_myMatches.isEmpty) {
-      return _buildEmptyState('あなたが参加した試合はありません');
+      return _buildEmptyState(l10n.noMyMatchesFound);
     }
 
     return ListView.builder(
@@ -344,6 +348,7 @@ class _ParticipantMatchResultsScreenState
 
   /// 試合カード
   Widget _buildMatchCard(MatchResult match, {required bool isMyMatch}) {
+    final l10n = L10n.of(context);
     return GestureDetector(
       onTap: () => _navigateToMatchDetail(match),
       child: Container(
@@ -383,7 +388,7 @@ class _ParticipantMatchResultsScreenState
                     ),
                     const SizedBox(width: AppDimensions.spacingXS),
                     Text(
-                      match.status.displayName,
+                      match.status.getDisplayName(context),
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeS,
                         fontWeight: FontWeight.w500,
@@ -452,7 +457,7 @@ class _ParticipantMatchResultsScreenState
                         ),
                         const SizedBox(width: AppDimensions.spacingS),
                         Text(
-                          '勝者: ${_participantNames[match.winner] ?? match.winner}',
+                          l10n.winner(_participantNames[match.winner] ?? match.winner!),
                           style: TextStyle(
                             fontSize: AppDimensions.fontSizeM,
                             fontWeight: FontWeight.w600,
@@ -467,7 +472,7 @@ class _ParticipantMatchResultsScreenState
                   // スコア
                   if (match.scores.isNotEmpty) ...[
                     Text(
-                      'スコア',
+                      l10n.score,
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeS,
                         fontWeight: FontWeight.w600,
@@ -488,7 +493,7 @@ class _ParticipantMatchResultsScreenState
                             ),
                           ),
                           Text(
-                            '${entry.value}点',
+                            l10n.points(entry.value),
                             style: TextStyle(
                               fontSize: AppDimensions.fontSizeM,
                               fontWeight: FontWeight.w600,
@@ -555,6 +560,7 @@ class _ParticipantMatchResultsScreenState
 
   /// 参加者表示をフォーマット
   String _formatParticipants(List<String> participants) {
+    final l10n = L10n.of(context);
     final names = participants.map((id) => _participantNames[id] ?? id).toList();
 
     if (names.length <= 2) {
@@ -565,7 +571,7 @@ class _ParticipantMatchResultsScreenState
       return names.join(' • ');
     } else {
       // 5人以上の場合は省略形式
-      return '${names.take(3).join(' • ')} 他${names.length - 3}名';
+      return l10n.participantMatchAndMore(names.take(3).join(' • '), names.length - 3);
     }
   }
 

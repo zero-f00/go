@@ -8,6 +8,7 @@ import '../../../data/models/match_result_model.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/services/match_report_service.dart';
 import '../../../shared/widgets/app_text_field.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 参加者向け試合詳細画面（閲覧専用）
 class ParticipantMatchDetailScreen extends ConsumerWidget {
@@ -32,6 +33,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
     final isMyMatch = _isUserParticipant();
 
     return Scaffold(
@@ -40,7 +42,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
           child: Column(
             children: [
               AppHeader(
-                title: '試合詳細',
+                title: l10n.matchDetailTitle,
                 showBackButton: true,
                 onBackPressed: () => Navigator.of(context).pop(),
               ),
@@ -50,31 +52,31 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildMatchHeader(isMyMatch),
+                      _buildMatchHeader(context, isMyMatch),
                       const SizedBox(height: AppDimensions.spacingL),
-                      _buildMatchStatus(),
+                      _buildMatchStatus(context),
                       if (match.isCompleted) ...[
                         const SizedBox(height: AppDimensions.spacingL),
-                        _buildMatchResults(),
+                        _buildMatchResults(context),
                       ],
                       if (match.isCompleted && match.individualScores != null && match.individualScores!.isNotEmpty) ...[
                         const SizedBox(height: AppDimensions.spacingL),
-                        _buildIndividualScores(),
+                        _buildIndividualScores(context),
                       ],
                       if (match.notes != null && match.notes!.isNotEmpty) ...[
                         const SizedBox(height: AppDimensions.spacingL),
-                        _buildNotes(),
+                        _buildNotes(context),
                       ],
                       if (match.adminPublicNotes != null && match.adminPublicNotes!.isNotEmpty) ...[
                         const SizedBox(height: AppDimensions.spacingL),
-                        _buildAdminPublicNotes(),
+                        _buildAdminPublicNotes(context),
                       ],
                       if (match.evidenceImages.isNotEmpty) ...[
                         const SizedBox(height: AppDimensions.spacingL),
-                        _buildEvidenceImages(),
+                        _buildEvidenceImages(context),
                       ],
                       const SizedBox(height: AppDimensions.spacingL),
-                      _buildReportStatusSection(),
+                      _buildReportStatusSection(context),
                       const SizedBox(height: AppDimensions.spacingL),
                       _buildReportSection(context),
                     ],
@@ -89,7 +91,8 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
   }
 
   /// 試合ヘッダー
-  Widget _buildMatchHeader(bool isMyMatch) {
+  Widget _buildMatchHeader(BuildContext context, bool isMyMatch) {
+    final l10n = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -129,7 +132,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
                 Text(
-                  'あなたの試合',
+                  l10n.participantMatchYourMatch,
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeL,
                     fontWeight: FontWeight.w700,
@@ -193,7 +196,8 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
   }
 
   /// 試合ステータス
-  Widget _buildMatchStatus() {
+  Widget _buildMatchStatus(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -220,7 +224,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                '試合情報',
+                l10n.participantMatchInfoTitle,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w600,
@@ -234,8 +238,8 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
           // ステータス
           _buildInfoRow(
             icon: _getStatusIcon(match.status),
-            label: 'ステータス',
-            value: match.status.displayName,
+            label: l10n.statusLabel,
+            value: match.status.getDisplayName(context),
             valueColor: _getStatusColor(match.status),
           ),
           const SizedBox(height: AppDimensions.spacingM),
@@ -244,7 +248,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
           if (match.matchFormat != null) ...[
             _buildInfoRow(
               icon: Icons.category,
-              label: '形式',
+              label: l10n.participantMatchFormatLabel,
               value: match.matchFormat!,
             ),
             const SizedBox(height: AppDimensions.spacingM),
@@ -270,7 +274,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
                     ),
                     const SizedBox(width: AppDimensions.spacingS),
                     Text(
-                      isTeamEvent ? 'チーム' : '参加者',
+                      isTeamEvent ? l10n.participantMatchTeamLabel : l10n.participantMatchParticipantsLabel,
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeS,
                         fontWeight: FontWeight.w600,
@@ -300,7 +304,8 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
   }
 
   /// 試合結果
-  Widget _buildMatchResults() {
+  Widget _buildMatchResults(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -327,7 +332,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                '試合結果',
+                l10n.matchResultsTitle,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w600,
@@ -362,7 +367,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '勝者',
+                          l10n.participantMatchWinnerLabel,
                           style: TextStyle(
                             fontSize: AppDimensions.fontSizeS,
                             color: AppColors.success,
@@ -390,7 +395,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
           // スコア
           if (match.scores.isNotEmpty) ...[
             Text(
-              'スコア',
+              l10n.scoresTitle,
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 fontWeight: FontWeight.w600,
@@ -406,7 +411,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
                 border: Border.all(color: AppColors.border),
               ),
               child: Column(
-                children: _buildScoreList(),
+                children: _buildScoreList(context),
               ),
             ),
           ],
@@ -423,7 +428,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
-                  '完了: ${_formatDateTime(match.completedAt!)}',
+                  l10n.participantMatchCompletedAt(_formatDateTime(match.completedAt!)),
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     color: AppColors.textSecondary,
@@ -438,7 +443,8 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
   }
 
   /// 個人スコア
-  Widget _buildIndividualScores() {
+  Widget _buildIndividualScores(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -465,7 +471,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                '個人スコア',
+                l10n.individualScoresTitle,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w600,
@@ -511,7 +517,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
                         ],
                       ),
                       Text(
-                        '${entry.value}点',
+                        l10n.pointsFormat(entry.value),
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeM,
                           fontWeight: FontWeight.w600,
@@ -530,7 +536,8 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
   }
 
   /// 備考
-  Widget _buildNotes() {
+  Widget _buildNotes(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -557,7 +564,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                '備考',
+                l10n.notesLabel,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w600,
@@ -581,7 +588,8 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
   }
 
   /// 運営公開メモ
-  Widget _buildAdminPublicNotes() {
+  Widget _buildAdminPublicNotes(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -619,7 +627,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '運営からのお知らせ',
+                      l10n.participantMatchAdminNoticeTitle,
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeM,
                         fontWeight: FontWeight.w600,
@@ -627,7 +635,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
                       ),
                     ),
                     Text(
-                      '運営側からの重要な情報です',
+                      l10n.participantMatchAdminNoticeDesc,
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeS,
                         color: AppColors.info,
@@ -703,7 +711,8 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
   }
 
   /// スコアリスト構築
-  List<Widget> _buildScoreList() {
+  List<Widget> _buildScoreList(BuildContext context) {
+    final l10n = L10n.of(context);
     final sortedScores = match.scores.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
@@ -755,7 +764,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
               ),
             ),
             Text(
-              '${scoreEntry.value}点',
+              l10n.pointsFormat(scoreEntry.value),
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 fontWeight: FontWeight.w600,
@@ -815,7 +824,8 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
   }
 
   /// 報告状況セクション
-  Widget _buildReportStatusSection() {
+  Widget _buildReportStatusSection(BuildContext context) {
+    final l10n = L10n.of(context);
     return Consumer(
       builder: (context, ref, child) {
         final currentUserId = ref.watch(currentFirebaseUserProvider)?.uid;
@@ -857,7 +867,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
                       ),
                       const SizedBox(width: AppDimensions.spacingS),
                       Text(
-                        'あなたの報告状況',
+                        l10n.participantMatchYourReportStatus,
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeL,
                           fontWeight: FontWeight.w600,
@@ -867,7 +877,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: AppDimensions.spacingM),
-                  ...matchReports.map((report) => _buildReportItem(report)),
+                  ...matchReports.map((report) => _buildReportItem(context, report)),
                 ],
               ),
             );
@@ -878,7 +888,8 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
   }
 
   /// 報告アイテム
-  Widget _buildReportItem(MatchReport report) {
+  Widget _buildReportItem(BuildContext context, MatchReport report) {
+    final l10n = L10n.of(context);
     Color statusColor;
     IconData statusIcon;
 
@@ -942,7 +953,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
                   ),
                 ),
                 child: Text(
-                  report.status.displayName,
+                  report.status.getDisplayName(context),
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     fontWeight: FontWeight.w600,
@@ -983,7 +994,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
                       ),
                       const SizedBox(width: AppDimensions.spacingXS),
                       Text(
-                        '運営回答',
+                        l10n.participantMatchAdminResponse,
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeS,
                           fontWeight: FontWeight.w600,
@@ -1006,7 +1017,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
           ],
           const SizedBox(height: AppDimensions.spacingS),
           Text(
-            '${_formatDateTime(report.createdAt)} 報告',
+            l10n.participantMatchReportedAt(_formatDateTime(report.createdAt)),
             style: TextStyle(
               fontSize: AppDimensions.fontSizeXS,
               color: AppColors.textSecondary,
@@ -1018,7 +1029,8 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
   }
 
   /// エビデンス画像セクション
-  Widget _buildEvidenceImages() {
+  Widget _buildEvidenceImages(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -1045,7 +1057,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                'エビデンス画像',
+                l10n.evidenceImageTitle,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w600,
@@ -1066,7 +1078,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
                   ),
                 ),
                 child: Text(
-                  '${match.evidenceImages.length}枚',
+                  l10n.imagesCountLabel(match.evidenceImages.length),
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     fontWeight: FontWeight.w600,
@@ -1078,7 +1090,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
           ),
           const SizedBox(height: AppDimensions.spacingM),
           Text(
-            '運営がアップロードした試合の証拠画像です',
+            l10n.participantMatchEvidenceDesc,
             style: TextStyle(
               fontSize: AppDimensions.fontSizeM,
               color: AppColors.textSecondary,
@@ -1182,6 +1194,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
 
   /// エビデンス画像拡大表示ダイアログ
   void _showEvidenceImageDialog(BuildContext context, String imageUrl, Map<String, dynamic>? metadata) {
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -1234,7 +1247,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
                           ),
                           const SizedBox(width: AppDimensions.spacingS),
                           Text(
-                            'エビデンス画像',
+                            l10n.evidenceImageTitle,
                             style: TextStyle(
                               fontSize: AppDimensions.fontSizeL,
                               fontWeight: FontWeight.w600,
@@ -1277,7 +1290,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
                                     ),
                                     const SizedBox(height: AppDimensions.spacingS),
                                     Text(
-                                      '画像の読み込みに失敗しました',
+                                      l10n.imageLoadFailedSimple,
                                       style: TextStyle(
                                         color: AppColors.textSecondary,
                                       ),
@@ -1315,7 +1328,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
                                   ),
                                   const SizedBox(width: AppDimensions.spacingS),
                                   Text(
-                                    'アップロード者: ${metadata['uploaderName']}',
+                                    l10n.participantMatchUploaderLabel(metadata['uploaderName']),
                                     style: TextStyle(
                                       fontSize: AppDimensions.fontSizeS,
                                       color: AppColors.textSecondary,
@@ -1335,7 +1348,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
                                   ),
                                   const SizedBox(width: AppDimensions.spacingS),
                                   Text(
-                                    'アップロード日時: ${_formatDateTime(DateTime.parse(metadata['uploadedAt']))}',
+                                    l10n.participantMatchUploadedAtLabel(_formatDateTime(DateTime.parse(metadata['uploadedAt']))),
                                     style: TextStyle(
                                       fontSize: AppDimensions.fontSizeS,
                                       color: AppColors.textSecondary,
@@ -1360,6 +1373,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
 
   /// 問題報告セクション
   Widget _buildReportSection(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -1386,7 +1400,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                '問題の報告',
+                l10n.participantMatchReportProblemTitle,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w600,
@@ -1397,7 +1411,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
           ),
           const SizedBox(height: AppDimensions.spacingM),
           Text(
-            '試合結果に誤りがある場合は運営に報告できます',
+            l10n.participantMatchReportProblemDesc,
             style: TextStyle(
               fontSize: AppDimensions.fontSizeM,
               color: AppColors.textSecondary,
@@ -1413,7 +1427,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
                 size: AppDimensions.iconS,
               ),
               label: Text(
-                '問題を報告する',
+                l10n.participantMatchReportProblemButton,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   fontWeight: FontWeight.w600,
@@ -1447,22 +1461,6 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
     );
   }
 
-  /// 参加者表示をフォーマット
-  String _formatParticipants(List<String> participants) {
-    final names = participants.map((id) => participantNames[id] ?? id).toList();
-
-    if (names.length <= 2) {
-      // 2人以下の場合は従来の「vs」形式
-      return names.join(' vs ');
-    } else if (names.length <= 4) {
-      // 3-4人の場合は改行区切り
-      return names.join(' • ');
-    } else {
-      // 5人以上の場合は省略形式
-      return '${names.take(3).join(' • ')} 他${names.length - 3}名';
-    }
-  }
-
   /// 日時フォーマット
   String _formatDateTime(DateTime dateTime) {
     return '${dateTime.year}/${dateTime.month}/${dateTime.day} '
@@ -1491,16 +1489,16 @@ class _ReportMatchDialog extends ConsumerStatefulWidget {
 
 class _ReportMatchDialogState extends ConsumerState<_ReportMatchDialog> {
   final TextEditingController _descriptionController = TextEditingController();
-  String _selectedIssueType = 'スコア誤り';
+  int _selectedIssueTypeIndex = 0;
   bool _isSubmitting = false;
   final MatchReportService _reportService = MatchReportService();
 
-  final List<String> _issueTypes = [
-    'スコア誤り',
-    '勝者判定誤り',
-    '参加者誤り',
-    '試合ステータス誤り',
-    'その他',
+  List<String> _getIssueTypes(L10n l10n) => [
+    l10n.participantMatchIssueScoreError,
+    l10n.participantMatchIssueWinnerError,
+    l10n.participantMatchIssueParticipantError,
+    l10n.participantMatchIssueStatusError,
+    l10n.participantMatchIssueOther,
   ];
 
   @override
@@ -1511,6 +1509,8 @@ class _ReportMatchDialogState extends ConsumerState<_ReportMatchDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
+    final issueTypes = _getIssueTypes(l10n);
     return AlertDialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.radiusM),
@@ -1523,9 +1523,9 @@ class _ReportMatchDialogState extends ConsumerState<_ReportMatchDialog> {
             size: AppDimensions.iconM,
           ),
           const SizedBox(width: AppDimensions.spacingS),
-          const Text(
-            '問題を報告',
-            style: TextStyle(
+          Text(
+            l10n.participantMatchReportDialogTitle,
+            style: const TextStyle(
               fontSize: AppDimensions.fontSizeL,
               fontWeight: FontWeight.w600,
             ),
@@ -1549,7 +1549,7 @@ class _ReportMatchDialogState extends ConsumerState<_ReportMatchDialog> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '試合: ${widget.match.matchName}',
+                    l10n.participantMatchMatchLabel(widget.match.matchName),
                     style: const TextStyle(
                       fontSize: AppDimensions.fontSizeM,
                       fontWeight: FontWeight.w600,
@@ -1557,7 +1557,7 @@ class _ReportMatchDialogState extends ConsumerState<_ReportMatchDialog> {
                   ),
                   const SizedBox(height: AppDimensions.spacingXS),
                   Text(
-                    '参加者: ${_formatParticipants(widget.match.participants, widget.participantNames)}',
+                    l10n.participantMatchParticipantsDialogLabel(_formatParticipants(widget.match.participants, widget.participantNames, l10n)),
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeS,
                       color: AppColors.textSecondary,
@@ -1572,7 +1572,7 @@ class _ReportMatchDialogState extends ConsumerState<_ReportMatchDialog> {
 
             // 問題の種類
             Text(
-              '問題の種類',
+              l10n.participantMatchIssueTypeTitle,
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 fontWeight: FontWeight.w600,
@@ -1586,21 +1586,21 @@ class _ReportMatchDialogState extends ConsumerState<_ReportMatchDialog> {
                 border: Border.all(color: AppColors.border),
                 borderRadius: BorderRadius.circular(AppDimensions.radiusS),
               ),
-              child: DropdownButton<String>(
-                value: _selectedIssueType,
+              child: DropdownButton<int>(
+                value: _selectedIssueTypeIndex,
                 isExpanded: true,
                 underline: const SizedBox(),
-                onChanged: (String? newValue) {
+                onChanged: (int? newValue) {
                   if (newValue != null) {
                     setState(() {
-                      _selectedIssueType = newValue;
+                      _selectedIssueTypeIndex = newValue;
                     });
                   }
                 },
-                items: _issueTypes.map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
+                items: issueTypes.asMap().entries.map<DropdownMenuItem<int>>((entry) {
+                  return DropdownMenuItem<int>(
+                    value: entry.key,
+                    child: Text(entry.value),
                   );
                 }).toList(),
               ),
@@ -1609,7 +1609,7 @@ class _ReportMatchDialogState extends ConsumerState<_ReportMatchDialog> {
 
             // 詳細説明
             Text(
-              '詳細説明',
+              l10n.detailDescriptionLabel,
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 fontWeight: FontWeight.w600,
@@ -1619,9 +1619,9 @@ class _ReportMatchDialogState extends ConsumerState<_ReportMatchDialog> {
             const SizedBox(height: AppDimensions.spacingS),
             AppTextFieldMultiline(
               controller: _descriptionController,
-              hintText: '問題の詳細を説明してください...',
+              hintText: l10n.participantMatchDetailDescHint,
               maxLines: 4,
-              doneButtonText: '完了',
+              doneButtonText: l10n.doneButton,
             ),
           ],
         ),
@@ -1629,10 +1629,10 @@ class _ReportMatchDialogState extends ConsumerState<_ReportMatchDialog> {
       actions: [
         TextButton(
           onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
-          child: const Text('キャンセル'),
+          child: Text(l10n.cancel),
         ),
         ElevatedButton(
-          onPressed: _isSubmitting ? null : _submitReport,
+          onPressed: _isSubmitting ? null : () => _submitReport(l10n, issueTypes),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.warning,
             foregroundColor: Colors.white,
@@ -1646,18 +1646,18 @@ class _ReportMatchDialogState extends ConsumerState<_ReportMatchDialog> {
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 )
-              : const Text('報告する'),
+              : Text(l10n.participantMatchSubmitReport),
         ),
       ],
     );
   }
 
   /// 報告を送信
-  Future<void> _submitReport() async {
+  Future<void> _submitReport(L10n l10n, List<String> issueTypes) async {
     if (_descriptionController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('詳細説明を入力してください'),
+        SnackBar(
+          content: Text(l10n.participantMatchEnterDetailDesc),
           backgroundColor: AppColors.error,
         ),
       );
@@ -1671,13 +1671,13 @@ class _ReportMatchDialogState extends ConsumerState<_ReportMatchDialog> {
     try {
       final currentUser = ref.read(currentFirebaseUserProvider);
       if (currentUser?.uid == null) {
-        throw Exception('ログインが必要です');
+        throw Exception(l10n.loginRequired);
       }
 
       await _reportService.submitMatchReport(
         matchId: widget.match.id!,
         reporterId: currentUser!.uid,
-        issueType: _selectedIssueType,
+        issueType: issueTypes[_selectedIssueTypeIndex],
         description: _descriptionController.text.trim(),
         eventId: widget.eventId,
         matchName: widget.match.matchName,
@@ -1686,8 +1686,8 @@ class _ReportMatchDialogState extends ConsumerState<_ReportMatchDialog> {
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('問題を報告しました。運営が確認次第対応いたします。'),
+          SnackBar(
+            content: Text(l10n.participantMatchReportSuccess),
             backgroundColor: AppColors.success,
           ),
         );
@@ -1696,7 +1696,7 @@ class _ReportMatchDialogState extends ConsumerState<_ReportMatchDialog> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('報告の送信に失敗しました: $e'),
+            content: Text(l10n.participantMatchReportFailed(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -1711,7 +1711,7 @@ class _ReportMatchDialogState extends ConsumerState<_ReportMatchDialog> {
   }
 
   /// 参加者表示をフォーマット (ダイアログ用)
-  String _formatParticipants(List<String> participants, Map<String, String> participantNames) {
+  String _formatParticipants(List<String> participants, Map<String, String> participantNames, L10n l10n) {
     final names = participants.map((id) => participantNames[id] ?? id).toList();
 
     if (names.length <= 2) {
@@ -1722,7 +1722,7 @@ class _ReportMatchDialogState extends ConsumerState<_ReportMatchDialog> {
       return names.join(' • ');
     } else {
       // 5人以上の場合は省略形式
-      return '${names.take(3).join(' • ')} 他${names.length - 3}名';
+      return l10n.participantMatchAndMore(names.take(3).join(' • '), names.length - 3);
     }
   }
 }

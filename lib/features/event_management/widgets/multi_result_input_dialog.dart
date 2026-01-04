@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../data/models/match_result_model.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 勝敗結果
 enum MultiWinLossResult {
@@ -13,14 +14,15 @@ enum MultiWinLossResult {
 }
 
 extension MultiWinLossResultExtension on MultiWinLossResult {
-  String get displayName {
+  String getDisplayName(BuildContext context) {
+    final l10n = L10n.of(context);
     switch (this) {
       case MultiWinLossResult.win:
-        return '勝ち';
+        return l10n.winLabel;
       case MultiWinLossResult.loss:
-        return '負け';
+        return l10n.lossLabel;
       case MultiWinLossResult.draw:
-        return '引き分け';
+        return l10n.drawLabel;
     }
   }
 
@@ -129,6 +131,7 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
 
   /// ヘッダー
   Widget _buildHeader() {
+    final l10n = L10n.of(context);
     return Row(
       children: [
         Icon(
@@ -137,10 +140,10 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
           size: AppDimensions.iconL,
         ),
         const SizedBox(width: AppDimensions.spacingM),
-        const Expanded(
+        Expanded(
           child: Text(
-            '試合結果入力',
-            style: TextStyle(
+            l10n.matchResultInputTitle,
+            style: const TextStyle(
               fontSize: AppDimensions.fontSizeXL,
               fontWeight: FontWeight.w700,
               color: AppColors.textDark,
@@ -160,12 +163,13 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
 
   /// 試合名入力
   Widget _buildMatchNameInput() {
+    final l10n = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '試合名',
-          style: TextStyle(
+        Text(
+          l10n.matchNameLabel,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeM,
             fontWeight: FontWeight.w600,
             color: AppColors.textDark,
@@ -175,7 +179,7 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
         TextFormField(
           controller: _matchNameController,
           decoration: InputDecoration(
-            hintText: '例: 第1回トーナメント決勝',
+            hintText: l10n.matchNameHint,
             filled: true,
             fillColor: AppColors.backgroundLight,
             border: OutlineInputBorder(
@@ -193,7 +197,7 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
           ),
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
-              return '試合名を入力してください';
+              return l10n.matchNameValidation;
             }
             return null;
           },
@@ -204,12 +208,13 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
 
   /// 結果タイプトグル
   Widget _buildResultTypeToggles() {
+    final l10n = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '記録する情報',
-          style: TextStyle(
+        Text(
+          l10n.recordInfoToRecord,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeM,
             fontWeight: FontWeight.w600,
             color: AppColors.textDark,
@@ -217,7 +222,7 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
         ),
         const SizedBox(height: AppDimensions.spacingS),
         Text(
-          '必要な情報にチェックを入れてください（複数選択可）',
+          l10n.checkRequiredInfo,
           style: TextStyle(
             fontSize: AppDimensions.fontSizeS,
             color: AppColors.textDark.withValues(alpha: 0.7),
@@ -233,22 +238,22 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
           child: Column(
             children: [
               _buildToggleOption(
-                'スコア・点数',
-                'ゲームで獲得したスコアや点数を記録',
+                l10n.scorePointsLabel,
+                l10n.scorePointsDesc,
                 Icons.score,
                 _useScore,
                 (value) => setState(() => _useScore = value ?? false),
               ),
               _buildToggleOption(
-                '順位・ランキング',
-                '参加者の順位を記録（1位、2位、3位...)',
+                l10n.rankingPositionLabel,
+                l10n.rankingPositionDesc,
                 Icons.emoji_events,
                 _useRanking,
                 (value) => setState(() => _useRanking = value ?? false),
               ),
               _buildToggleOption(
-                '勝敗結果',
-                '勝ち、負け、引き分けの結果を記録',
+                l10n.winLossResultLabel,
+                l10n.winLossResultDesc,
                 Icons.sports_score,
                 _useWinLoss,
                 (value) => setState(() => _useWinLoss = value ?? false),
@@ -307,10 +312,11 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
 
   /// 結果入力エリア
   Widget _buildResultInput() {
+    final l10n = L10n.of(context);
     if (!_useScore && !_useRanking && !_useWinLoss) {
       return Center(
         child: Text(
-          '記録したい情報を1つ以上選択してください',
+          l10n.selectAtLeastOneInfo,
           style: TextStyle(
             fontSize: AppDimensions.fontSizeM,
             color: AppColors.textDark.withValues(alpha: 0.7),
@@ -323,7 +329,7 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '参加者の結果',
+          l10n.participantResultsLabel,
           style: const TextStyle(
             fontSize: AppDimensions.fontSizeM,
             fontWeight: FontWeight.w600,
@@ -397,6 +403,7 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
 
   /// スコア入力
   Widget _buildScoreInput(String participantId) {
+    final l10n = L10n.of(context);
     return Row(
       children: [
         Icon(
@@ -411,8 +418,8 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             decoration: InputDecoration(
-              labelText: 'スコア・点数',
-              suffixText: '点',
+              labelText: l10n.scorePointsLabel,
+              suffixText: l10n.pointsSuffix,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppDimensions.radiusS),
               ),
@@ -432,6 +439,7 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
 
   /// 順位入力
   Widget _buildRankingInput(String participantId) {
+    final l10n = L10n.of(context);
     return Row(
       children: [
         Icon(
@@ -444,7 +452,7 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
           child: DropdownButtonFormField<int>(
             value: _rankings[participantId],
             decoration: InputDecoration(
-              labelText: '順位',
+              labelText: l10n.rankLabel,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppDimensions.radiusS),
               ),
@@ -457,7 +465,7 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
               final rank = index + 1;
               return DropdownMenuItem(
                 value: rank,
-                child: Text('${rank}位'),
+                child: Text(l10n.rankPosition(rank)),
               );
             }),
             onChanged: (value) {
@@ -473,6 +481,7 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
 
   /// 勝敗入力
   Widget _buildWinLossInput(String participantId) {
+    final l10n = L10n.of(context);
     return Row(
       children: [
         Icon(
@@ -485,7 +494,7 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
           child: DropdownButtonFormField<MultiWinLossResult>(
             value: _winLossResults[participantId],
             decoration: InputDecoration(
-              labelText: '勝敗結果',
+              labelText: l10n.winLossResultLabel,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppDimensions.radiusS),
               ),
@@ -508,7 +517,7 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
                       ),
                     ),
                     const SizedBox(width: AppDimensions.spacingS),
-                    Text(result.displayName),
+                    Text(result.getDisplayName(context)),
                   ],
                 ),
               );
@@ -526,12 +535,13 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
 
   /// メモ入力
   Widget _buildNotesInput() {
+    final l10n = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'メモ（任意）',
-          style: TextStyle(
+        Text(
+          l10n.notesOptional,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeM,
             fontWeight: FontWeight.w600,
             color: AppColors.textDark,
@@ -542,7 +552,7 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
           controller: _notesController,
           maxLines: 2,
           decoration: InputDecoration(
-            hintText: '試合の詳細や特記事項',
+            hintText: l10n.matchDetailsHint,
             filled: true,
             fillColor: AppColors.backgroundLight,
             border: OutlineInputBorder(
@@ -565,12 +575,13 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
 
   /// アクションボタン
   Widget _buildActionButtons() {
+    final l10n = L10n.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('キャンセル'),
+          child: Text(l10n.cancelButton),
         ),
         const SizedBox(width: AppDimensions.spacingM),
         ElevatedButton(
@@ -592,9 +603,9 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
                     color: Colors.white,
                   ),
                 )
-              : const Text(
-                  '保存',
-                  style: TextStyle(
+              : Text(
+                  l10n.saveButton,
+                  style: const TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     fontWeight: FontWeight.w600,
                   ),
@@ -606,12 +617,13 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
 
   /// 結果を送信
   void _submitResult() {
+    final l10n = L10n.of(context);
     if (!_formKey.currentState!.validate()) return;
 
     if (!_useScore && !_useRanking && !_useWinLoss) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('記録したい情報を1つ以上選択してください'),
+        SnackBar(
+          content: Text(l10n.selectAtLeastOneInfo),
           backgroundColor: AppColors.warning,
         ),
       );
@@ -629,9 +641,9 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
       List<String> resultTypes = [];
 
       // 使用されている結果タイプを記録
-      if (_useScore) resultTypes.add('スコア');
-      if (_useRanking) resultTypes.add('順位');
-      if (_useWinLoss) resultTypes.add('勝敗');
+      if (_useScore) resultTypes.add(l10n.resultTypeScoreLabel);
+      if (_useRanking) resultTypes.add(l10n.resultTypeRankLabel);
+      if (_useWinLoss) resultTypes.add(l10n.resultTypeWinLossLabel);
 
       // 各参加者の統合スコアを計算
       for (final participantId in widget.participants) {
@@ -718,7 +730,7 @@ class _MultiResultInputDialogState extends State<MultiResultInputDialog> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('結果の保存中にエラーが発生しました: $e'),
+          content: Text(l10n.resultSaveError(e.toString())),
           backgroundColor: AppColors.error,
         ),
       );

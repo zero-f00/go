@@ -6,6 +6,7 @@ import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
 import '../../../shared/services/payment_service.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 参加費管理画面
 class PaymentManagementScreen extends ConsumerStatefulWidget {
@@ -57,8 +58,9 @@ class _PaymentManagementScreenState
       });
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('統計データの取得に失敗しました: $e')),
+          SnackBar(content: Text(l10n.paymentStatsFetchFailed(e.toString()))),
         );
       }
     }
@@ -72,7 +74,7 @@ class _PaymentManagementScreenState
           child: Column(
             children: [
               AppHeader(
-                title: '参加費管理',
+                title: L10n.of(context).paymentManagementTitle,
                 showBackButton: true,
                 onBackPressed: () => Navigator.of(context).pop(),
               ),
@@ -88,6 +90,7 @@ class _PaymentManagementScreenState
 
   /// 統計サマリーセクション
   Widget _buildSummarySection() {
+    final l10n = L10n.of(context);
     return Container(
       margin: const EdgeInsets.all(AppDimensions.spacingL),
       padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -114,7 +117,7 @@ class _PaymentManagementScreenState
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                '収支サマリー',
+                l10n.paymentSummaryTitle,
                 style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
@@ -127,15 +130,15 @@ class _PaymentManagementScreenState
           Row(
             children: [
               Expanded(child: _buildSummaryCard(
-                '総参加者',
-                '${_paymentSummary!.totalParticipants}名',
+                l10n.totalParticipantsLabel,
+                l10n.participantCountValue(_paymentSummary!.totalParticipants),
                 Icons.people,
                 AppColors.info,
               )),
               const SizedBox(width: AppDimensions.spacingM),
               Expanded(child: _buildSummaryCard(
-                '支払済',
-                '${_paymentSummary!.paidCount}名',
+                l10n.paidLabel,
+                l10n.participantCountValue(_paymentSummary!.paidCount),
                 Icons.check_circle,
                 AppColors.success,
               )),
@@ -145,14 +148,14 @@ class _PaymentManagementScreenState
           Row(
             children: [
               Expanded(child: _buildSummaryCard(
-                '収集済金額',
+                l10n.collectedAmountLabel,
                 '¥${_formatCurrency(_paymentSummary!.collectedAmount)}',
                 Icons.savings,
                 AppColors.success,
               )),
               const SizedBox(width: AppDimensions.spacingM),
               Expanded(child: _buildSummaryCard(
-                '未収金額',
+                l10n.pendingAmountLabel,
                 '¥${_formatCurrency(_paymentSummary!.pendingAmount)}',
                 Icons.pending,
                 AppColors.warning,
@@ -200,6 +203,7 @@ class _PaymentManagementScreenState
 
   /// タブバー
   Widget _buildTabBar() {
+    final l10n = L10n.of(context);
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -219,11 +223,11 @@ class _PaymentManagementScreenState
         unselectedLabelColor: AppColors.textSecondary,
         indicatorColor: AppColors.accent,
         indicatorSize: TabBarIndicatorSize.tab,
-        tabs: const [
-          Tab(text: 'すべて'),
-          Tab(text: '未払い'),
-          Tab(text: '確認待ち'),
-          Tab(text: '完了'),
+        tabs: [
+          Tab(text: l10n.tabAll),
+          Tab(text: l10n.tabUnpaid),
+          Tab(text: l10n.tabPendingConfirmation),
+          Tab(text: l10n.tabCompleted),
         ],
       ),
     );
@@ -244,6 +248,7 @@ class _PaymentManagementScreenState
 
   /// 支払い記録リスト
   Widget _buildPaymentList(PaymentStatus? statusFilter) {
+    final l10n = L10n.of(context);
     return StreamBuilder<List<PaymentRecord>>(
       stream: PaymentService.getPaymentRecordsStream(
         eventId: widget.eventId,
@@ -266,7 +271,7 @@ class _PaymentManagementScreenState
                 ),
                 const SizedBox(height: AppDimensions.spacingM),
                 Text(
-                  'データの読み込みに失敗しました',
+                  l10n.paymentDataLoadFailed,
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeL,
                     color: AppColors.textSecondary,
@@ -290,8 +295,8 @@ class _PaymentManagementScreenState
 
         if (paymentRecords.isEmpty) {
           String message = statusFilter == null
-              ? '支払い記録がありません'
-              : _getEmptyMessage(statusFilter);
+              ? l10n.noPaymentRecords
+              : _getEmptyMessage(l10n, statusFilter);
 
           return Center(
             child: Column(
@@ -327,21 +332,22 @@ class _PaymentManagementScreenState
   }
 
   /// 空状態メッセージ
-  String _getEmptyMessage(PaymentStatus status) {
+  String _getEmptyMessage(L10n l10n, PaymentStatus status) {
     switch (status) {
       case PaymentStatus.pending:
-        return '未払いの参加者はいません';
+        return l10n.noUnpaidParticipants;
       case PaymentStatus.submitted:
-        return '確認待ちの支払いはありません';
+        return l10n.noPendingPayments;
       case PaymentStatus.verified:
-        return '完了した支払いはありません';
+        return l10n.noCompletedPayments;
       case PaymentStatus.disputed:
-        return '問題のある支払いはありません';
+        return l10n.noDisputedPayments;
     }
   }
 
   /// 支払い記録カード
   Widget _buildPaymentCard(PaymentRecord record) {
+    final l10n = L10n.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
       padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -378,7 +384,7 @@ class _PaymentManagementScreenState
                     ),
                     const SizedBox(height: AppDimensions.spacingXS),
                     Text(
-                      '参加費: ¥${_formatCurrency(record.amount)}',
+                      l10n.participationFeeLabelWithAmount(_formatCurrency(record.amount)),
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeM,
                         color: AppColors.textSecondary,
@@ -403,7 +409,7 @@ class _PaymentManagementScreenState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '参加者からのメモ',
+                    l10n.participantNoteLabel,
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeS,
                       fontWeight: FontWeight.w600,
@@ -434,7 +440,7 @@ class _PaymentManagementScreenState
                 const SizedBox(width: AppDimensions.spacingS),
                 Expanded(
                   child: Text(
-                    '支払い証跡: ${record.evidenceFileName ?? '証跡あり'}',
+                    l10n.paymentEvidenceLabel(record.evidenceFileName ?? l10n.evidenceExists),
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeM,
                       color: AppColors.accent,
@@ -444,7 +450,7 @@ class _PaymentManagementScreenState
                 ElevatedButton.icon(
                   onPressed: () => _showEvidenceDialog(record),
                   icon: const Icon(Icons.visibility, size: AppDimensions.iconS),
-                  label: const Text('確認'),
+                  label: Text(l10n.confirmButton),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.accent,
                     foregroundColor: Colors.white,
@@ -462,7 +468,7 @@ class _PaymentManagementScreenState
                   child: ElevatedButton.icon(
                     onPressed: () => _verifyPayment(record, true),
                     icon: const Icon(Icons.check, size: AppDimensions.iconS),
-                    label: const Text('承認'),
+                    label: Text(l10n.approveButton),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.success,
                       foregroundColor: Colors.white,
@@ -474,7 +480,7 @@ class _PaymentManagementScreenState
                   child: ElevatedButton.icon(
                     onPressed: () => _verifyPayment(record, false),
                     icon: const Icon(Icons.close, size: AppDimensions.iconS),
-                    label: const Text('差し戻し'),
+                    label: Text(l10n.rejectButton),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.error,
                       foregroundColor: Colors.white,
@@ -539,15 +545,16 @@ class _PaymentManagementScreenState
 
   /// ステータステキスト
   String _getStatusText(PaymentStatus status) {
+    final l10n = L10n.of(context);
     switch (status) {
       case PaymentStatus.pending:
-        return '未払い';
+        return l10n.paymentStatusPending;
       case PaymentStatus.submitted:
-        return '確認待ち';
+        return l10n.paymentStatusSubmitted;
       case PaymentStatus.verified:
-        return '確認済み';
+        return l10n.paymentStatusVerified;
       case PaymentStatus.disputed:
-        return '問題あり';
+        return l10n.paymentStatusDisputed;
     }
   }
 
@@ -567,10 +574,11 @@ class _PaymentManagementScreenState
 
   /// 証跡確認ダイアログ
   void _showEvidenceDialog(PaymentRecord record) {
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('${record.participantName}の支払い証跡'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.paymentEvidenceDialogTitle(record.participantName)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -606,7 +614,7 @@ class _PaymentManagementScreenState
             if (record.participantNotes?.isNotEmpty == true) ...[
               const SizedBox(height: AppDimensions.spacingM),
               Text(
-                '参加者からのメモ:',
+                l10n.participantNoteDialogLabel,
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
                 ),
@@ -618,8 +626,8 @@ class _PaymentManagementScreenState
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('閉じる'),
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.closeButton),
           ),
         ],
       ),
@@ -628,17 +636,18 @@ class _PaymentManagementScreenState
 
   /// 支払い確認処理
   Future<void> _verifyPayment(PaymentRecord record, bool isVerified) async {
+    final l10n = L10n.of(context);
     try {
       await PaymentService.verifyPayment(
         paymentId: record.id,
         isVerified: isVerified,
-        organizerNotes: isVerified ? '支払い確認済み' : '証跡に問題があります',
+        organizerNotes: isVerified ? l10n.paymentVerifiedNote : l10n.paymentEvidenceIssueNote,
       );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(isVerified ? '支払いを承認しました' : '支払いを差し戻しました'),
+            content: Text(isVerified ? l10n.paymentApprovedMessage : l10n.paymentRejectedMessage),
             backgroundColor: isVerified ? AppColors.success : AppColors.warning,
           ),
         );
@@ -650,7 +659,7 @@ class _PaymentManagementScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('処理に失敗しました: $e'),
+            content: Text(l10n.paymentProcessFailed(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );

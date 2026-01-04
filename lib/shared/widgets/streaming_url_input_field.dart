@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
+import '../../l10n/app_localizations.dart';
 
 /// 配信URL入力ウィジェット
 /// 複数の配信URLを追加・削除できる
@@ -49,13 +50,14 @@ class _StreamingUrlInputFieldState extends State<StreamingUrlInputField> {
   /// URLの追加
   void _addUrl(String url) {
     final trimmedUrl = url.trim();
+    final l10n = L10n.of(context);
 
     if (trimmedUrl.isEmpty) return;
 
     // 重複チェック
     if (_urls.contains(trimmedUrl)) {
       setState(() {
-        _errorText = 'このURLは既に追加されています';
+        _errorText = l10n.streamingUrlDuplicate;
       });
       return;
     }
@@ -63,7 +65,7 @@ class _StreamingUrlInputFieldState extends State<StreamingUrlInputField> {
     // 最大数チェック
     if (_urls.length >= widget.maxUrls) {
       setState(() {
-        _errorText = '最大${widget.maxUrls}個まで配信URLを追加できます';
+        _errorText = l10n.streamingUrlMaxReached(widget.maxUrls);
       });
       return;
     }
@@ -71,7 +73,7 @@ class _StreamingUrlInputFieldState extends State<StreamingUrlInputField> {
     // URL形式チェック
     if (!_isValidUrl(trimmedUrl)) {
       setState(() {
-        _errorText = '有効なURLを入力してください (https://... または http://...)';
+        _errorText = l10n.streamingUrlInvalid;
       });
       return;
     }
@@ -126,6 +128,7 @@ class _StreamingUrlInputFieldState extends State<StreamingUrlInputField> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     final externalError = _runValidation();
     final displayError = _errorText ?? externalError;
 
@@ -154,7 +157,7 @@ class _StreamingUrlInputFieldState extends State<StreamingUrlInputField> {
           enabled: widget.isEnabled && _urls.length < widget.maxUrls,
           keyboardType: TextInputType.url,
           decoration: InputDecoration(
-            hintText: widget.hint ?? 'https://... と入力してEnterで追加',
+            hintText: widget.hint ?? l10n.streamingUrlInputHint,
             hintStyle: const TextStyle(
               color: AppColors.textLight,
               fontSize: AppDimensions.fontSizeM,
@@ -219,7 +222,7 @@ class _StreamingUrlInputFieldState extends State<StreamingUrlInputField> {
         // URL数の表示
         const SizedBox(height: AppDimensions.spacingXS),
         Text(
-          '${_urls.length}/${widget.maxUrls}個の配信URL',
+          l10n.streamingUrlCount(_urls.length, widget.maxUrls),
           style: const TextStyle(
             color: AppColors.textMuted,
             fontSize: AppDimensions.fontSizeS,
@@ -323,7 +326,7 @@ class _UrlCard extends StatelessWidget {
                   color: AppColors.textMuted,
                   size: 20,
                 ),
-                tooltip: 'URLを削除',
+                tooltip: L10n.of(context).deleteUrlTooltip,
               ),
           ],
         ),

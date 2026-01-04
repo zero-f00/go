@@ -15,6 +15,7 @@ import '../../../data/models/user_model.dart';
 import '../../../features/game_profile/providers/game_profile_provider.dart';
 import '../../../data/models/violation_record_model.dart';
 import '../../../data/repositories/user_repository.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 参加者用参加者一覧画面
 class ParticipantListViewScreen extends ConsumerStatefulWidget {
@@ -169,9 +170,10 @@ class _ParticipantListViewScreenState
       }
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         setState(() {
           _isLoading = false;
-          _errorMessage = '参加者情報の読み込みに失敗しました: $e';
+          _errorMessage = l10n.participantInfoLoadFailed(e.toString());
         });
       }
     }
@@ -194,6 +196,8 @@ class _ParticipantListViewScreenState
   Widget build(BuildContext context) {
     final currentUser = ref.watch(currentFirebaseUserProvider);
 
+    final l10n = L10n.of(context);
+
     if (currentUser == null) {
       return Scaffold(
         body: AppGradientBackground(
@@ -201,15 +205,15 @@ class _ParticipantListViewScreenState
             child: Column(
               children: [
                 AppHeader(
-                  title: '参加者一覧',
+                  title: l10n.participantList,
                   showBackButton: true,
                   onBackPressed: () => Navigator.of(context).pop(),
                 ),
-                const Expanded(
+                Expanded(
                   child: Center(
                     child: Text(
-                      'ログインが必要です',
-                      style: TextStyle(
+                      l10n.homeLoginRequiredShort,
+                      style: const TextStyle(
                         fontSize: AppDimensions.fontSizeL,
                         color: AppColors.textSecondary,
                       ),
@@ -229,7 +233,7 @@ class _ParticipantListViewScreenState
           child: Column(
             children: [
               AppHeader(
-                title: '参加者一覧',
+                title: l10n.participantList,
                 showBackButton: true,
                 onBackPressed: () => Navigator.of(context).pop(),
               ),
@@ -268,22 +272,22 @@ class _ParticipantListViewScreenState
                               ),
                             ),
                             const SizedBox(width: AppDimensions.spacingL),
-                            const Expanded(
+                            Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    '参加者詳細',
-                                    style: TextStyle(
+                                    l10n.participantDetails,
+                                    style: const TextStyle(
                                       fontSize: AppDimensions.fontSizeL,
                                       fontWeight: FontWeight.w600,
                                       color: AppColors.textDark,
                                     ),
                                   ),
-                                  SizedBox(height: AppDimensions.spacingXS),
+                                  const SizedBox(height: AppDimensions.spacingXS),
                                   Text(
-                                    'イベント参加者のプロフィール情報を確認',
-                                    style: TextStyle(
+                                    l10n.checkParticipantProfiles,
+                                    style: const TextStyle(
                                       fontSize: AppDimensions.fontSizeS,
                                       color: AppColors.textSecondary,
                                       height: 1.3,
@@ -312,6 +316,7 @@ class _ParticipantListViewScreenState
 
   /// イベント情報
   Widget _buildEventInfo() {
+    final l10n = L10n.of(context);
     return EventInfoCard(
       eventName: widget.eventName,
       eventId: widget.eventId,
@@ -326,7 +331,7 @@ class _ParticipantListViewScreenState
           borderRadius: BorderRadius.circular(AppDimensions.radiusS),
         ),
         child: Text(
-          '${_participants.length}名',
+          l10n.participantCountValue(_participants.length),
           style: TextStyle(
             fontSize: AppDimensions.fontSizeS,
             fontWeight: FontWeight.w600,
@@ -339,13 +344,14 @@ class _ParticipantListViewScreenState
 
   /// 検索バー
   Widget _buildSearchBar() {
+    final l10n = L10n.of(context);
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
       child: TextField(
         controller: _searchController,
         onChanged: _filterParticipants,
         decoration: InputDecoration(
-          hintText: 'ユーザー名やゲームIDで検索...',
+          hintText: l10n.searchByUsernameOrGameId,
           prefixIcon: Icon(Icons.search, color: AppColors.textDark),
           suffixIcon: _searchController.text.isNotEmpty
             ? IconButton(
@@ -369,6 +375,7 @@ class _ParticipantListViewScreenState
 
   /// 参加者一覧タブ
   Widget _buildParticipantListTab() {
+    final l10n = L10n.of(context);
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -395,7 +402,7 @@ class _ParticipantListViewScreenState
             const SizedBox(height: AppDimensions.spacingM),
             ElevatedButton(
               onPressed: _loadParticipantDetails,
-              child: const Text('再試行'),
+              child: Text(l10n.retry),
             ),
           ],
         ),
@@ -414,7 +421,7 @@ class _ParticipantListViewScreenState
             ),
             const SizedBox(height: AppDimensions.spacingM),
             Text(
-              '参加者がいません',
+              l10n.noParticipantsInEvent,
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 color: AppColors.textDark,
@@ -504,8 +511,10 @@ class _ParticipantListViewScreenState
         },
       );
     } catch (e) {
+      if (!mounted) return;
+      final l10n = L10n.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('ゲームプロフィールの表示に失敗しました: $e')),
+        SnackBar(content: Text('${l10n.gameProfileDisplayFailed}: $e')),
       );
     }
   }

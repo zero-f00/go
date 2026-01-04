@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
+import '../../l10n/app_localizations.dart';
 
 /// アバター画像を丸形に加工するダイアログ
 class AvatarCropDialog extends StatefulWidget {
@@ -37,6 +38,7 @@ class _AvatarCropDialogState extends State<AvatarCropDialog> {
   }
 
   Future<void> _cropImage() async {
+    final l10n = L10n.of(context);
     setState(() {
       _isLoading = true;
     });
@@ -48,7 +50,7 @@ class _AvatarCropDialogState extends State<AvatarCropDialog> {
         compressQuality: 85,
         uiSettings: [
           AndroidUiSettings(
-            toolbarTitle: 'プロフィール画像を調整',
+            toolbarTitle: l10n.adjustProfileImage,
             toolbarColor: AppColors.primary,
             toolbarWidgetColor: AppColors.textOnPrimary,
             backgroundColor: AppColors.backgroundDark,
@@ -64,9 +66,9 @@ class _AvatarCropDialogState extends State<AvatarCropDialog> {
             hideBottomControls: false,
           ),
           IOSUiSettings(
-            title: 'プロフィール画像を調整',
-            doneButtonTitle: '完了',
-            cancelButtonTitle: 'キャンセル',
+            title: l10n.adjustProfileImage,
+            doneButtonTitle: l10n.doneButtonText,
+            cancelButtonTitle: l10n.cancelButtonText,
             aspectRatioLockEnabled: true,
             resetAspectRatioEnabled: false,
             aspectRatioPickerButtonHidden: true,
@@ -97,16 +99,17 @@ class _AvatarCropDialogState extends State<AvatarCropDialog> {
         _isLoading = false;
       });
       if (mounted) {
-        _showErrorDialog('画像の加工に失敗しました: $e');
+        _showErrorDialog(l10n.imageProcessingError(e.toString()));
       }
     }
   }
 
   void _showErrorDialog(String message) {
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('エラー'),
+        title: Text(l10n.errorDialogTitle),
         content: Text(message),
         actions: [
           TextButton(
@@ -114,7 +117,7 @@ class _AvatarCropDialogState extends State<AvatarCropDialog> {
               Navigator.of(context).pop();
               Navigator.of(context).pop(null);
             },
-            child: const Text('OK'),
+            child: Text(l10n.okButtonText),
           ),
         ],
       ),
@@ -123,6 +126,7 @@ class _AvatarCropDialogState extends State<AvatarCropDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     if (_isLoading) {
       return Dialog(
         backgroundColor: AppColors.backgroundLight,
@@ -135,9 +139,9 @@ class _AvatarCropDialogState extends State<AvatarCropDialog> {
                 valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
               ),
               const SizedBox(height: AppDimensions.spacingL),
-              const Text(
-                '画像を読み込んでいます...',
-                style: TextStyle(
+              Text(
+                l10n.loadingImageText,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   color: AppColors.textDark,
                 ),
@@ -162,9 +166,9 @@ class _AvatarCropDialogState extends State<AvatarCropDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             // タイトル
-            const Text(
-              'プロフィール画像の確認',
-              style: TextStyle(
+            Text(
+              l10n.confirmProfileImage,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textDark,
@@ -201,9 +205,9 @@ class _AvatarCropDialogState extends State<AvatarCropDialog> {
             ),
             const SizedBox(height: AppDimensions.spacingL),
 
-            const Text(
-              'この画像をプロフィール画像として使用しますか？',
-              style: TextStyle(
+            Text(
+              l10n.useThisImageConfirm,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textSecondary,
               ),
@@ -228,9 +232,9 @@ class _AvatarCropDialogState extends State<AvatarCropDialog> {
                         side: const BorderSide(color: AppColors.border),
                       ),
                     ),
-                    child: const Text(
-                      'キャンセル',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.cancelButtonText,
+                      style: const TextStyle(
                         fontSize: AppDimensions.fontSizeM,
                         fontWeight: FontWeight.w600,
                       ),
@@ -252,9 +256,9 @@ class _AvatarCropDialogState extends State<AvatarCropDialog> {
                       ),
                       elevation: 0,
                     ),
-                    child: const Text(
-                      '使用する',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.useText,
+                      style: const TextStyle(
                         fontSize: AppDimensions.fontSizeM,
                         fontWeight: FontWeight.w600,
                       ),

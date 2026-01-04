@@ -1,16 +1,47 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'notification_service.dart';
+import '../../l10n/app_localizations.dart';
 
 /// 試合報告の状況
 enum MatchReportStatus {
-  submitted('submitted', '報告済み'),
-  reviewing('reviewing', '確認中'),
-  resolved('resolved', '解決済み'),
-  rejected('rejected', '却下');
+  submitted('submitted'),
+  reviewing('reviewing'),
+  resolved('resolved'),
+  rejected('rejected');
 
-  const MatchReportStatus(this.value, this.displayName);
+  const MatchReportStatus(this.value);
   final String value;
-  final String displayName;
+
+  /// ローカライズされた表示名を取得（後方互換性のため維持）
+  /// @deprecated 代わりに getDisplayName(context) を使用してください
+  String get displayName {
+    switch (this) {
+      case MatchReportStatus.submitted:
+        return '報告済み';
+      case MatchReportStatus.reviewing:
+        return '確認中';
+      case MatchReportStatus.resolved:
+        return '解決済み';
+      case MatchReportStatus.rejected:
+        return '却下';
+    }
+  }
+
+  /// ローカライズされた表示名を取得
+  String getDisplayName(BuildContext context) {
+    final l10n = L10n.of(context);
+    switch (this) {
+      case MatchReportStatus.submitted:
+        return l10n.matchReportStatusSubmitted;
+      case MatchReportStatus.reviewing:
+        return l10n.matchReportStatusReviewing;
+      case MatchReportStatus.resolved:
+        return l10n.matchReportStatusResolved;
+      case MatchReportStatus.rejected:
+        return l10n.matchReportStatusRejected;
+    }
+  }
 
   static MatchReportStatus fromString(String value) {
     return MatchReportStatus.values.firstWhere(

@@ -10,6 +10,7 @@ import '../../../shared/models/game.dart';
 import '../providers/game_profile_provider.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/services/game_service.dart';
+import '../../../l10n/app_localizations.dart';
 import 'game_profile_view_content.dart';
 
 /// ゲームプロフィール表示ラッパー画面
@@ -61,10 +62,12 @@ class _GameProfileViewWrapperState
         _isLoading = false;
       });
     } catch (e) {
-      setState(() {
-        _errorMessage = 'データの取得に失敗しました: $e';
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = L10n.of(context).dataFetchError(e.toString());
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -83,7 +86,7 @@ class _GameProfileViewWrapperState
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = 'ゲームプロフィールの取得に失敗しました: $e';
+          _errorMessage = L10n.of(context).gameProfileFetchError(e.toString());
         });
       }
     }
@@ -111,7 +114,7 @@ class _GameProfileViewWrapperState
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = 'ユーザーデータの取得に失敗しました: $e';
+          _errorMessage = L10n.of(context).userDataFetchError(e.toString());
         });
       }
     }
@@ -128,7 +131,7 @@ class _GameProfileViewWrapperState
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = 'ゲームデータの取得に失敗しました: $e';
+          _errorMessage = L10n.of(context).gameDataFetchError(e.toString());
         });
       }
     }
@@ -142,7 +145,7 @@ class _GameProfileViewWrapperState
           child: Column(
             children: [
               AppHeader(
-                title: 'ゲームプロフィール',
+                title: L10n.of(context).gameProfile,
                 showBackButton: true,
                 onBackPressed: () => Navigator.of(context).pop(),
               ),
@@ -178,16 +181,16 @@ class _GameProfileViewWrapperState
             ),
           ],
         ),
-        child: const Column(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(
+            const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
             ),
-            SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.spacingM),
             Text(
-              'ゲームプロフィールを取得中...',
-              style: TextStyle(
+              L10n.of(context).loadingGameProfile,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textSecondary,
               ),
@@ -231,7 +234,7 @@ class _GameProfileViewWrapperState
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('再試行'),
+              child: Text(L10n.of(context).retryButton),
             ),
           ],
         ),
@@ -262,7 +265,7 @@ class _GameProfileViewWrapperState
             ),
             const SizedBox(height: AppDimensions.spacingM),
             Text(
-              'このゲームのプロフィールが見つかりません',
+              L10n.of(context).noGameProfileFound,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textDark,
@@ -271,7 +274,7 @@ class _GameProfileViewWrapperState
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              'ユーザーがこのゲームのプロフィールを作成していないか、\n公開設定になっていない可能性があります。',
+              L10n.of(context).noGameProfileDetailMessage,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeS,
                 color: AppColors.textSecondary,

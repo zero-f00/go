@@ -4,6 +4,7 @@ import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/services/event_service.dart';
 import '../../../shared/utils/event_converter.dart';
+import '../../../l10n/app_localizations.dart';
 import 'event_detail_screen.dart';
 
 /// EventDetailScreen用のラッパー
@@ -43,7 +44,7 @@ class EventDetailWrapper extends StatelessWidget {
                 );
               }
 
-              return _buildErrorState(context, 'イベントが見つかりませんでした');
+              return _buildErrorState(context, L10n.of(context).eventNotFoundErrorText);
             },
           ),
         ),
@@ -56,7 +57,7 @@ class EventDetailWrapper extends StatelessWidget {
       // EventServiceからEventを取得
       final event = await EventService.getEventById(eventId);
       if (event == null) {
-        throw Exception('イベントが見つかりませんでした');
+        throw Exception('Event not found');
       }
 
       // EventをGameEventに変換
@@ -69,6 +70,7 @@ class EventDetailWrapper extends StatelessWidget {
   }
 
   Widget _buildErrorState(BuildContext context, String error) {
+    final l10n = L10n.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -82,7 +84,7 @@ class EventDetailWrapper extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Text(
-              'エラーが発生しました',
+              l10n.errorOccurredSimple,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 fontWeight: FontWeight.w700,
@@ -105,7 +107,7 @@ class EventDetailWrapper extends StatelessWidget {
                 backgroundColor: AppColors.accent,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('戻る'),
+              child: Text(l10n.back),
             ),
           ],
         ),

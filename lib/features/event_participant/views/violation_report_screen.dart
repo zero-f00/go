@@ -7,6 +7,7 @@ import '../../../shared/widgets/app_header.dart';
 import '../../../shared/widgets/event_info_card.dart';
 import '../../../shared/widgets/user_selection_violation_modal.dart';
 import '../../../shared/providers/auth_provider.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 参加者用違反報告画面
 class ViolationReportScreen extends ConsumerStatefulWidget {
@@ -28,6 +29,7 @@ class _ViolationReportScreenState extends ConsumerState<ViolationReportScreen> {
   @override
   Widget build(BuildContext context) {
     final currentUser = ref.watch(currentFirebaseUserProvider);
+    final l10n = L10n.of(context);
 
     if (currentUser == null) {
       return Scaffold(
@@ -36,15 +38,15 @@ class _ViolationReportScreenState extends ConsumerState<ViolationReportScreen> {
             child: Column(
               children: [
                 AppHeader(
-                  title: '違反報告',
+                  title: l10n.violationReport,
                   showBackButton: true,
                   onBackPressed: () => Navigator.of(context).pop(),
                 ),
-                const Expanded(
+                Expanded(
                   child: Center(
                     child: Text(
-                      'ログインが必要です',
-                      style: TextStyle(
+                      l10n.homeLoginRequiredShort,
+                      style: const TextStyle(
                         fontSize: AppDimensions.fontSizeL,
                         color: AppColors.textSecondary,
                       ),
@@ -64,7 +66,7 @@ class _ViolationReportScreenState extends ConsumerState<ViolationReportScreen> {
           child: Column(
             children: [
               AppHeader(
-                title: '違反報告',
+                title: l10n.violationReport,
                 showBackButton: true,
                 onBackPressed: () => Navigator.of(context).pop(),
               ),
@@ -100,9 +102,9 @@ class _ViolationReportScreenState extends ConsumerState<ViolationReportScreen> {
                               size: AppDimensions.iconM,
                             ),
                             const SizedBox(width: AppDimensions.spacingS),
-                            const Text(
-                              '違反報告',
-                              style: TextStyle(
+                            Text(
+                              l10n.violationReport,
+                              style: const TextStyle(
                                 fontSize: AppDimensions.fontSizeL,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.textDark,
@@ -137,6 +139,7 @@ class _ViolationReportScreenState extends ConsumerState<ViolationReportScreen> {
   }
 
   Widget _buildInformationSection() {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -163,22 +166,22 @@ class _ViolationReportScreenState extends ConsumerState<ViolationReportScreen> {
                 ),
               ),
               const SizedBox(width: AppDimensions.spacingL),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '違反報告について',
-                      style: TextStyle(
+                      l10n.aboutViolationReport,
+                      style: const TextStyle(
                         fontSize: AppDimensions.fontSizeL,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textDark,
                       ),
                     ),
-                    SizedBox(height: AppDimensions.spacingXS),
+                    const SizedBox(height: AppDimensions.spacingXS),
                     Text(
-                      '適切な利用のための重要な注意事項',
-                      style: TextStyle(
+                      l10n.importantNotesForProperUse,
+                      style: const TextStyle(
                         fontSize: AppDimensions.fontSizeS,
                         color: AppColors.textSecondary,
                         height: 1.3,
@@ -197,24 +200,24 @@ class _ViolationReportScreenState extends ConsumerState<ViolationReportScreen> {
               borderRadius: BorderRadius.circular(AppDimensions.radiusS),
               border: Border.all(color: AppColors.info.withValues(alpha: 0.2)),
             ),
-            child: const Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '報告時の注意事項：',
-                  style: TextStyle(
+                  l10n.reportPrecautions,
+                  style: const TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textDark,
                   ),
                 ),
-                SizedBox(height: AppDimensions.spacingS),
+                const SizedBox(height: AppDimensions.spacingS),
                 Text(
-                  '• 虚偽の報告や悪意のある報告は禁止されています\n'
-                  '• 報告内容は運営が確認し、必要に応じて対処いたします\n'
-                  '• 報告者の情報は適切に保護されます\n'
-                  '• 重複報告を避けるため、同じ内容での報告は控えてください',
-                  style: TextStyle(
+                  '• ${l10n.violationReportPrecaution1}\n'
+                  '• ${l10n.violationReportPrecaution2}\n'
+                  '• ${l10n.violationReportPrecaution3}\n'
+                  '• ${l10n.violationReportPrecaution4}',
+                  style: const TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     color: AppColors.textDark,
                     height: 1.4,
@@ -229,6 +232,7 @@ class _ViolationReportScreenState extends ConsumerState<ViolationReportScreen> {
   }
 
   Widget _buildReportSection() {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -255,22 +259,22 @@ class _ViolationReportScreenState extends ConsumerState<ViolationReportScreen> {
                 ),
               ),
               const SizedBox(width: AppDimensions.spacingL),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '違反報告を作成',
-                      style: TextStyle(
+                      l10n.createViolationReport,
+                      style: const TextStyle(
                         fontSize: AppDimensions.fontSizeL,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textDark,
                       ),
                     ),
-                    SizedBox(height: AppDimensions.spacingXS),
+                    const SizedBox(height: AppDimensions.spacingXS),
                     Text(
-                      '参加者を選択して違反内容を報告',
-                      style: TextStyle(
+                      l10n.selectParticipantToReport,
+                      style: const TextStyle(
                         fontSize: AppDimensions.fontSizeS,
                         color: AppColors.textSecondary,
                         height: 1.3,
@@ -282,7 +286,7 @@ class _ViolationReportScreenState extends ConsumerState<ViolationReportScreen> {
             ],
           ),
           const SizedBox(height: AppDimensions.spacingM),
-          Container(
+          SizedBox(
             width: double.infinity,
             child: Material(
               color: Colors.transparent,
@@ -305,9 +309,9 @@ class _ViolationReportScreenState extends ConsumerState<ViolationReportScreen> {
                         size: AppDimensions.iconM,
                       ),
                       const SizedBox(width: AppDimensions.spacingS),
-                      const Text(
-                        '違反報告を開始',
-                        style: TextStyle(
+                      Text(
+                        l10n.startViolationReport,
+                        style: const TextStyle(
                           fontSize: AppDimensions.fontSizeM,
                           fontWeight: FontWeight.w600,
                           color: AppColors.warning,
@@ -330,11 +334,12 @@ class _ViolationReportScreenState extends ConsumerState<ViolationReportScreen> {
       eventId: widget.eventId,
       eventName: widget.eventName,
       onViolationReported: () {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('違反報告を送信しました。運営で確認いたします。'),
+          SnackBar(
+            content: Text(l10n.violationReportSubmitted),
             backgroundColor: AppColors.success,
-            duration: Duration(seconds: 4),
+            duration: const Duration(seconds: 4),
           ),
         );
       },

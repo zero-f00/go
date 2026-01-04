@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import 'app_button.dart';
 import 'app_text_field.dart';
+import 'marquee_text.dart';
 
 /// グループ管理者専用メモ機能
 /// 管理者のみが閲覧・編集可能なグループメモ
@@ -89,18 +91,20 @@ class _GroupMemoWidgetState extends State<GroupMemoWidget> {
       setState(() => _memo = memo.trim());
 
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('グループメモを保存しました'),
+          SnackBar(
+            content: Text(l10n.groupMemoSaved),
             backgroundColor: AppColors.success,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('グループメモの保存に失敗しました'),
+          SnackBar(
+            content: Text(l10n.groupMemoSaveFailed),
             backgroundColor: AppColors.error,
           ),
         );
@@ -113,6 +117,7 @@ class _GroupMemoWidgetState extends State<GroupMemoWidget> {
   /// メモ編集ダイアログを表示
   void _showMemoEditDialog() {
     final controller = TextEditingController(text: _memo);
+    final l10n = L10n.of(context);
 
     showDialog(
       context: context,
@@ -122,10 +127,9 @@ class _GroupMemoWidgetState extends State<GroupMemoWidget> {
             const Icon(Icons.note_add, color: AppColors.primary),
             const SizedBox(width: AppDimensions.spacingS),
             Expanded(
-              child: Text(
-                'グループメモ - ${widget.groupName}',
+              child: MarqueeText(
+                text: l10n.groupMemoDialogTitle(widget.groupName),
                 style: const TextStyle(fontSize: AppDimensions.fontSizeL),
-                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -144,18 +148,18 @@ class _GroupMemoWidgetState extends State<GroupMemoWidget> {
                     color: AppColors.warning.withValues(alpha: 0.3),
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.admin_panel_settings,
                       color: AppColors.warning,
                       size: AppDimensions.iconS,
                     ),
-                    SizedBox(width: AppDimensions.spacingXS),
+                    const SizedBox(width: AppDimensions.spacingXS),
                     Expanded(
                       child: Text(
-                        '管理者のみ閲覧・編集可能',
-                        style: TextStyle(
+                        l10n.groupMemoAdminOnly,
+                        style: const TextStyle(
                           fontSize: AppDimensions.fontSizeXS,
                           color: AppColors.warning,
                           fontWeight: FontWeight.w600,
@@ -168,11 +172,11 @@ class _GroupMemoWidgetState extends State<GroupMemoWidget> {
               const SizedBox(height: AppDimensions.spacingM),
               AppTextFieldMultiline(
                 controller: controller,
-                label: 'グループメモ',
-                hintText: 'グループ管理上の注意点やメモを入力してください',
+                label: l10n.groupMemoLabel,
+                hintText: l10n.groupMemoHint,
                 maxLines: 5,
                 minLines: 3,
-                doneButtonText: '完了',
+                doneButtonText: l10n.doneButtonLabel,
               ),
             ],
           ),
@@ -180,10 +184,10 @@ class _GroupMemoWidgetState extends State<GroupMemoWidget> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル'),
+            child: Text(l10n.cancel),
           ),
           AppButton.primary(
-            text: _isSaving ? '保存中...' : '保存',
+            text: _isSaving ? l10n.saving : l10n.save,
             onPressed: _isSaving
                 ? null
                 : () {
@@ -202,6 +206,8 @@ class _GroupMemoWidgetState extends State<GroupMemoWidget> {
     if (widget.currentUserId == null) {
       return const SizedBox.shrink();
     }
+
+    final l10n = L10n.of(context);
 
     return Container(
       margin: const EdgeInsets.only(top: AppDimensions.spacingS),
@@ -244,7 +250,7 @@ class _GroupMemoWidgetState extends State<GroupMemoWidget> {
                           ),
                         )
                       : Text(
-                          _memo.isNotEmpty ? _memo : 'グループメモを追加',
+                          _memo.isNotEmpty ? _memo : l10n.groupMemoAdd,
                           style: TextStyle(
                             fontSize: AppDimensions.fontSizeXS,
                             color: _memo.isNotEmpty

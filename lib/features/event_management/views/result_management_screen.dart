@@ -18,6 +18,7 @@ import 'group_room_management_screen.dart';
 import 'event_participants_management_screen.dart';
 import '../../../shared/widgets/event_info_card.dart';
 import '../../../shared/providers/auth_provider.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 試合ソート種別
 enum MatchSortType {
@@ -104,8 +105,9 @@ class _ResultManagementScreenState
       }
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('参加者の読み込みに失敗しました: $e')),
+          SnackBar(content: Text(l10n.failedToLoadParticipants(e.toString()))),
         );
       }
     }
@@ -129,10 +131,13 @@ class _ResultManagementScreenState
         );
 
         // ゲーム内ユーザー名を優先的に使用し、なければ表示名を使用
-        for (final entry in participantInfo.entries) {
-          final userId = entry.key;
-          final info = entry.value;
-          _participantNames[userId] = info['gameUsername'] ?? info['displayName'] ?? 'ユーザー';
+        if (mounted) {
+          final l10n = L10n.of(context);
+          for (final entry in participantInfo.entries) {
+            final userId = entry.key;
+            final info = entry.value;
+            _participantNames[userId] = info['gameUsername'] ?? info['displayName'] ?? l10n.defaultUserName;
+          }
         }
       }
     } catch (e) {
@@ -168,8 +173,9 @@ class _ResultManagementScreenState
         _isLoading = false;
       });
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('データの読み込みに失敗しました: $e')),
+          SnackBar(content: Text(l10n.failedToLoadData(e.toString()))),
         );
       }
     }
@@ -262,17 +268,18 @@ class _ResultManagementScreenState
 
   /// ソート種別の表示名を取得
   String _getSortTypeName(MatchSortType type) {
+    final l10n = L10n.of(context);
     switch (type) {
       case MatchSortType.newest:
-        return '新しい順';
+        return l10n.sortNewest;
       case MatchSortType.oldest:
-        return '古い順';
+        return l10n.sortOldest;
       case MatchSortType.reportCount:
-        return '報告数順';
+        return l10n.sortReportCount;
       case MatchSortType.pendingReports:
-        return '未処理報告優先';
+        return l10n.sortPendingReports;
       case MatchSortType.status:
-        return 'ステータス順';
+        return l10n.sortStatus;
     }
   }
 
@@ -323,7 +330,7 @@ class _ResultManagementScreenState
               ),
               const SizedBox(width: AppDimensions.spacingXS),
               Text(
-                '$pendingReports件',
+                L10n.of(context).pendingReportsCount(pendingReports),
                 style: const TextStyle(
                   fontSize: AppDimensions.fontSizeXS,
                   fontWeight: FontWeight.bold,
@@ -366,7 +373,7 @@ class _ResultManagementScreenState
               ),
               const SizedBox(width: AppDimensions.spacingXS),
               Text(
-                '$resolvedReports件',
+                L10n.of(context).resolvedReportsCount(resolvedReports),
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeXS,
                   fontWeight: FontWeight.w600,
@@ -384,13 +391,14 @@ class _ResultManagementScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Scaffold(
       body: AppGradientBackground(
         child: SafeArea(
           child: Column(
             children: [
               AppHeader(
-                title: '戦績・結果',
+                title: l10n.matchResultTitle,
                 showBackButton: true,
                 onBackPressed: () => Navigator.of(context).pop(),
               ),
@@ -428,9 +436,9 @@ class _ResultManagementScreenState
                                   size: AppDimensions.iconM,
                                 ),
                                 const SizedBox(width: AppDimensions.spacingS),
-                                const Text(
-                                  '試合結果',
-                                  style: TextStyle(
+                                Text(
+                                  l10n.matchResultLabel,
+                                  style: const TextStyle(
                                     fontSize: AppDimensions.fontSizeL,
                                     fontWeight: FontWeight.w700,
                                     color: AppColors.textDark,
@@ -543,7 +551,7 @@ class _ResultManagementScreenState
                                           ),
                                           const SizedBox(width: AppDimensions.spacingXS),
                                           Text(
-                                            '未処理報告のみ表示',
+                                            l10n.showPendingReportsOnly,
                                             style: TextStyle(
                                               fontSize: AppDimensions.fontSizeS,
                                               color: _showPendingReportsOnly
@@ -585,9 +593,9 @@ class _ResultManagementScreenState
                 onPressed: _registerMatch,
                 backgroundColor: AppColors.accent,
                 icon: const Icon(Icons.add_box, color: Colors.white),
-                label: const Text(
-                  '試合追加',
-                  style: TextStyle(
+                label: Text(
+                  l10n.addMatch,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                   ),
@@ -614,6 +622,7 @@ class _ResultManagementScreenState
     final displayMatches = _getDisplayMatches();
 
     if (displayMatches.isEmpty && _showPendingReportsOnly) {
+      final l10n = L10n.of(context);
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.spacingXL),
@@ -627,7 +636,7 @@ class _ResultManagementScreenState
               ),
               const SizedBox(height: AppDimensions.spacingL),
               Text(
-                '未処理の報告はありません',
+                l10n.noPendingReports,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   color: AppColors.textSecondary,
@@ -635,7 +644,7 @@ class _ResultManagementScreenState
               ),
               const SizedBox(height: AppDimensions.spacingS),
               Text(
-                '問題が発生した試合は、ここに表示されます',
+                l10n.problemMatchesDescription,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   color: AppColors.textLight,
@@ -660,7 +669,8 @@ class _ResultManagementScreenState
 
   /// 試合データが空の場合の表示
   Widget _buildEmptyMatchesState() {
-    return Padding(
+    final l10n = L10n.of(context);
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       child: Container(
         width: double.infinity,
@@ -698,7 +708,7 @@ class _ResultManagementScreenState
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Text(
-              'まだ試合が登録されていません',
+              l10n.noMatchesRegistered,
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 fontWeight: FontWeight.w600,
@@ -731,8 +741,8 @@ class _ResultManagementScreenState
                   Expanded(
                     child: Text(
                       _isTeamEvent
-                          ? 'チーム（グループ）対戦の試合結果を記録して管理しましょう'
-                          : '参加者同士の個人戦の試合結果を記録して管理しましょう',
+                          ? l10n.teamMatchDescription
+                          : l10n.individualMatchDescription,
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeM,
                         color: AppColors.info,
@@ -768,8 +778,8 @@ class _ResultManagementScreenState
                         Flexible(
                           child: Text(
                             _isTeamEvent
-                                ? '試合を開催するには2つ以上のチーム（グループ）が必要です'
-                                : '試合を開催するには2人以上の参加者が必要です',
+                                ? l10n.needTwoTeamsForMatch
+                                : l10n.needTwoParticipantsForMatch,
                             style: TextStyle(
                               fontSize: AppDimensions.fontSizeM,
                               color: AppColors.warning,
@@ -783,7 +793,7 @@ class _ResultManagementScreenState
                     const SizedBox(height: AppDimensions.spacingM),
                     if (_isTeamEvent) ...[
                       Text(
-                        'チーム戦を開催するには事前にグループの作成が必要です',
+                        l10n.needGroupsForTeamMatch,
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeM,
                           color: AppColors.textDark.withValues(alpha: 0.8),
@@ -802,9 +812,9 @@ class _ResultManagementScreenState
                           ),
                         ),
                         icon: const Icon(Icons.group_add, size: AppDimensions.iconS),
-                        label: const Text(
-                          'グループ管理画面へ',
-                          style: TextStyle(
+                        label: Text(
+                          l10n.goToGroupManagement,
+                          style: const TextStyle(
                             fontSize: AppDimensions.fontSizeM,
                             fontWeight: FontWeight.w600,
                           ),
@@ -812,7 +822,7 @@ class _ResultManagementScreenState
                       ),
                     ] else ...[
                       Text(
-                        'イベントに参加者を追加してから試合を開始できます',
+                        l10n.needParticipantsForMatch,
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeM,
                           color: AppColors.textDark.withValues(alpha: 0.8),
@@ -831,9 +841,9 @@ class _ResultManagementScreenState
                           ),
                         ),
                         icon: const Icon(Icons.person_add, size: AppDimensions.iconS),
-                        label: const Text(
-                          '参加者管理画面へ',
-                          style: TextStyle(
+                        label: Text(
+                          l10n.goToParticipantManagement,
+                          style: const TextStyle(
                             fontSize: AppDimensions.fontSizeM,
                             fontWeight: FontWeight.w600,
                           ),
@@ -852,6 +862,7 @@ class _ResultManagementScreenState
 
   /// 試合カード（コンパクト版）
   Widget _buildMatchCard(MatchResult match) {
+    final l10n = L10n.of(context);
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -915,7 +926,7 @@ class _ResultManagementScreenState
                             ),
                             const SizedBox(width: AppDimensions.spacingXS),
                             Text(
-                              match.status.displayName,
+                              _getLocalizedMatchStatus(match.status),
                               style: TextStyle(
                                 fontSize: AppDimensions.fontSizeS,
                                 fontWeight: FontWeight.w500,
@@ -947,27 +958,27 @@ class _ResultManagementScreenState
                               children: [
                                 const Icon(Icons.report, color: AppColors.warning),
                                 const SizedBox(width: AppDimensions.spacingS),
-                                Text('問題報告を確認 ($reportCount件)'),
+                                Text(l10n.confirmReportsCount(reportCount)),
                               ],
                             ),
                           ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'change_status',
                           child: Row(
                             children: [
-                              Icon(Icons.edit, color: AppColors.info),
-                              SizedBox(width: AppDimensions.spacingS),
-                              Text('ステータス変更'),
+                              const Icon(Icons.edit, color: AppColors.info),
+                              const SizedBox(width: AppDimensions.spacingS),
+                              Text(l10n.changeStatus),
                             ],
                           ),
                         ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'delete',
                           child: Row(
                             children: [
-                              Icon(Icons.delete, color: AppColors.error),
-                              SizedBox(width: AppDimensions.spacingS),
-                              Text('削除'),
+                              const Icon(Icons.delete, color: AppColors.error),
+                              const SizedBox(width: AppDimensions.spacingS),
+                              Text(l10n.deleteAction),
                             ],
                           ),
                         ),
@@ -1035,7 +1046,7 @@ class _ResultManagementScreenState
                     ),
                     const SizedBox(width: AppDimensions.spacingS),
                     Text(
-                      '勝者: ${_participantNames[match.winner] ?? match.winner}',
+                      l10n.winnerLabel(_participantNames[match.winner] ?? match.winner!),
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeM,
                         fontWeight: FontWeight.w600,
@@ -1062,7 +1073,7 @@ class _ResultManagementScreenState
                         match.isCompleted ? Icons.edit : Icons.input,
                         size: AppDimensions.iconS,
                       ),
-                      label: Text(match.isCompleted ? '結果編集' : '結果入力'),
+                      label: Text(match.isCompleted ? l10n.editResult : l10n.inputResult),
                     ),
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
@@ -1072,7 +1083,7 @@ class _ResultManagementScreenState
                       foregroundColor: AppColors.textDark,
                       side: BorderSide(color: AppColors.border),
                     ),
-                    child: const Text('詳細'),
+                    child: Text(l10n.detailButton),
                   ),
                 ],
               ),
@@ -1154,12 +1165,13 @@ class _ResultManagementScreenState
 
   /// 試合を登録
   void _registerMatch() {
+    final l10n = L10n.of(context);
     if (_participants.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(_isTeamEvent
-              ? '試合を開催するには2つ以上のチーム（グループ）が必要です'
-              : '試合を開催するには2人以上の参加者が必要です'),
+              ? l10n.needTwoTeamsForMatch
+              : l10n.needTwoParticipantsForMatch),
           backgroundColor: AppColors.warning,
         ),
       );
@@ -1180,6 +1192,7 @@ class _ResultManagementScreenState
 
   /// 試合登録完了時の処理
   Future<void> _onMatchRegistered(MatchResult match) async {
+    final l10n = L10n.of(context);
     try {
       await _matchResultService.createMatchResult(match);
 
@@ -1189,7 +1202,7 @@ class _ResultManagementScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('試合「${match.matchName}」を登録しました'),
+            content: Text(l10n.matchRegisteredMessage(match.matchName)),
             backgroundColor: AppColors.success,
           ),
         );
@@ -1198,7 +1211,7 @@ class _ResultManagementScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('試合の登録に失敗しました: $e'),
+            content: Text(l10n.failedToRegisterMatch(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -1224,6 +1237,7 @@ class _ResultManagementScreenState
 
   /// 試合結果提出完了時の処理
   Future<void> _onResultSubmitted(MatchResult updatedMatch) async {
+    final l10n = L10n.of(context);
     try {
       await _matchResultService.updateMatchResult(updatedMatch);
 
@@ -1233,7 +1247,7 @@ class _ResultManagementScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('試合結果を保存しました'),
+            content: Text(l10n.matchResultSaved),
             backgroundColor: AppColors.success,
           ),
         );
@@ -1242,7 +1256,7 @@ class _ResultManagementScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('試合結果の保存に失敗しました: $e'),
+            content: Text(l10n.failedToSaveMatchResult(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -1278,6 +1292,7 @@ class _ResultManagementScreenState
 
   /// ステータス変更ダイアログを表示
   void _showStatusChangeDialog(MatchResult match) {
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1285,14 +1300,14 @@ class _ResultManagementScreenState
           children: [
             Icon(Icons.edit, color: AppColors.info),
             const SizedBox(width: AppDimensions.spacingS),
-            const Text('ステータス変更'),
+            Text(l10n.changeStatusTitle),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('「${match.matchName}」のステータスを選択してください'),
+            Text(l10n.selectStatusForMatch(match.matchName)),
             const SizedBox(height: AppDimensions.spacingL),
             ...MatchStatus.values.map((status) => RadioListTile<MatchStatus>(
               title: Row(
@@ -1303,7 +1318,7 @@ class _ResultManagementScreenState
                     size: AppDimensions.iconS,
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
-                  Text(status.displayName),
+                  Text(_getLocalizedMatchStatus(status)),
                 ],
               ),
               value: status,
@@ -1320,7 +1335,7 @@ class _ResultManagementScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('キャンセル'),
+            child: Text(l10n.cancel),
           ),
         ],
       ),
@@ -1329,6 +1344,7 @@ class _ResultManagementScreenState
 
   /// ステータス変更処理
   Future<void> _changeMatchStatus(MatchResult match, MatchStatus newStatus) async {
+    final l10n = L10n.of(context);
     try {
       final updatedMatch = match.copyWith(
         status: newStatus,
@@ -1343,7 +1359,7 @@ class _ResultManagementScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('ステータスを「${newStatus.displayName}」に変更しました'),
+            content: Text(l10n.statusChangedMessage(_getLocalizedMatchStatus(newStatus))),
             backgroundColor: AppColors.success,
           ),
         );
@@ -1352,7 +1368,7 @@ class _ResultManagementScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('ステータス変更に失敗しました: $e'),
+            content: Text(l10n.failedToChangeStatus(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -1386,6 +1402,7 @@ class _ResultManagementScreenState
 
   /// 報告リストのボトムシート
   Widget _buildReportsBottomSheet(MatchResult match, ScrollController scrollController) {
+    final l10n = L10n.of(context);
     final reports = _matchReports[match.id!] ?? [];
 
     return Container(
@@ -1407,7 +1424,7 @@ class _ResultManagementScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '試合報告',
+                      l10n.matchReportsTitle,
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeL,
                         fontWeight: FontWeight.bold,
@@ -1446,7 +1463,7 @@ class _ResultManagementScreenState
                     ),
                     const SizedBox(height: AppDimensions.spacingM),
                     Text(
-                      'この試合に関する報告はありません',
+                      l10n.noReportsForMatch,
                       style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: AppDimensions.fontSizeM,
@@ -1474,6 +1491,7 @@ class _ResultManagementScreenState
 
   /// 報告カード（簡略版）
   Widget _buildReportCard(MatchReport report, MatchResult match) {
+    final l10n = L10n.of(context);
     return Card(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
       child: InkWell(
@@ -1496,7 +1514,7 @@ class _ResultManagementScreenState
                       borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                     ),
                     child: Text(
-                      report.status.displayName,
+                      _getLocalizedReportStatus(report.status),
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeS,
                         fontWeight: FontWeight.bold,
@@ -1506,7 +1524,7 @@ class _ResultManagementScreenState
                   ),
                   const Spacer(),
                   Text(
-                    _formatReportDateTime(report.createdAt),
+                    _formatReportDateTime(report.createdAt, l10n),
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeS,
                       color: AppColors.textSecondary,
@@ -1609,16 +1627,16 @@ class _ResultManagementScreenState
   }
 
   /// 報告日時フォーマット
-  String _formatReportDateTime(DateTime dateTime) {
+  String _formatReportDateTime(DateTime dateTime, L10n l10n) {
     final now = DateTime.now();
     final difference = now.difference(dateTime);
 
     if (difference.inMinutes < 1) {
-      return 'たった今';
+      return l10n.justNow;
     } else if (difference.inHours < 1) {
-      return '${difference.inMinutes}分前';
+      return l10n.minutesAgo(difference.inMinutes);
     } else if (difference.inDays < 1) {
-      return '${difference.inHours}時間前';
+      return l10n.hoursAgo(difference.inHours);
     } else {
       return '${dateTime.month}/${dateTime.day}';
     }
@@ -1643,21 +1661,22 @@ class _ResultManagementScreenState
 
   /// 試合削除確認ダイアログを表示
   void _showDeleteConfirmationDialog(MatchResult match) {
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.warning, color: AppColors.error),
-            SizedBox(width: AppDimensions.spacingS),
-            Text('試合削除'),
+            const Icon(Icons.warning, color: AppColors.error),
+            const SizedBox(width: AppDimensions.spacingS),
+            Text(l10n.deleteMatchTitle),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('「${match.matchName}」を削除しますか？'),
+            Text(l10n.deleteMatchConfirmation(match.matchName)),
             const SizedBox(height: AppDimensions.spacingM),
             Container(
               padding: const EdgeInsets.all(AppDimensions.spacingM),
@@ -1668,14 +1687,14 @@ class _ResultManagementScreenState
                   color: AppColors.error.withValues(alpha: 0.3),
                 ),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.info_outline, color: AppColors.error, size: 20),
-                  SizedBox(width: AppDimensions.spacingS),
+                  const Icon(Icons.info_outline, color: AppColors.error, size: 20),
+                  const SizedBox(width: AppDimensions.spacingS),
                   Expanded(
                     child: Text(
-                      'この操作は取り消せません。\n試合データは完全に削除されます。',
-                      style: TextStyle(
+                      l10n.deleteMatchWarning,
+                      style: const TextStyle(
                         fontSize: AppDimensions.fontSizeS,
                         color: AppColors.error,
                       ),
@@ -1689,7 +1708,7 @@ class _ResultManagementScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('キャンセル'),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () {
@@ -1700,7 +1719,7 @@ class _ResultManagementScreenState
               backgroundColor: AppColors.error,
               foregroundColor: Colors.white,
             ),
-            child: const Text('削除'),
+            child: Text(l10n.deleteAction),
           ),
         ],
       ),
@@ -1709,6 +1728,7 @@ class _ResultManagementScreenState
 
   /// 試合を削除
   Future<void> _deleteMatch(MatchResult match) async {
+    final l10n = L10n.of(context);
     try {
       // データベースから削除
       if (match.id != null) {
@@ -1724,7 +1744,7 @@ class _ResultManagementScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('試合「${match.matchName}」を削除しました'),
+            content: Text(l10n.matchDeletedMessage(match.matchName)),
             backgroundColor: AppColors.success,
           ),
         );
@@ -1736,7 +1756,7 @@ class _ResultManagementScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('試合の削除に失敗しました: $e'),
+            content: Text(l10n.failedToDeleteMatch(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -1744,5 +1764,32 @@ class _ResultManagementScreenState
     }
   }
 
+  /// MatchStatusのローカライズ表示名を取得
+  String _getLocalizedMatchStatus(MatchStatus status) {
+    final l10n = L10n.of(context);
+    switch (status) {
+      case MatchStatus.scheduled:
+        return l10n.matchStatusScheduled;
+      case MatchStatus.inProgress:
+        return l10n.matchStatusInProgress;
+      case MatchStatus.completed:
+        return l10n.matchStatusCompleted;
+    }
+  }
+
+  /// MatchReportStatusのローカライズ表示名を取得
+  String _getLocalizedReportStatus(MatchReportStatus status) {
+    final l10n = L10n.of(context);
+    switch (status) {
+      case MatchReportStatus.submitted:
+        return l10n.reportStatusSubmitted;
+      case MatchReportStatus.reviewing:
+        return l10n.reportStatusReviewing;
+      case MatchReportStatus.resolved:
+        return l10n.reportStatusResolved;
+      case MatchReportStatus.rejected:
+        return l10n.reportStatusRejected;
+    }
+  }
 }
 

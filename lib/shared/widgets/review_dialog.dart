@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../services/in_app_review_service.dart';
+import '../../l10n/app_localizations.dart';
 import 'app_button.dart';
 
 /// アプリ評価の選択ダイアログ
@@ -19,6 +20,7 @@ class ReviewDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return AlertDialog(
       backgroundColor: AppColors.cardBackground,
       shape: RoundedRectangleBorder(
@@ -32,9 +34,9 @@ class ReviewDialog extends StatelessWidget {
             size: AppDimensions.iconM,
           ),
           const SizedBox(width: AppDimensions.spacingS),
-          const Text(
-            'アプリを評価',
-            style: TextStyle(
+          Text(
+            l10n.rateAppTitle,
+            style: const TextStyle(
               fontSize: AppDimensions.fontSizeL,
               fontWeight: FontWeight.w700,
               color: AppColors.textDark,
@@ -42,9 +44,9 @@ class ReviewDialog extends StatelessWidget {
           ),
         ],
       ),
-      content: const Text(
-        'Goをご利用いただきありがとうございます！\nどちらの方法で評価しますか？',
-        style: TextStyle(
+      content: Text(
+        l10n.rateAppMessage,
+        style: const TextStyle(
           fontSize: AppDimensions.fontSizeM,
           color: AppColors.textSecondary,
           height: 1.4,
@@ -55,7 +57,7 @@ class ReviewDialog extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             AppButton(
-              text: '星で評価',
+              text: l10n.rateWithStars,
               icon: Icons.star_outline_rounded,
               onPressed: () {
                 Navigator.pop(context);
@@ -66,7 +68,7 @@ class ReviewDialog extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.spacingS),
             AppButton(
-              text: 'レビューを書く',
+              text: l10n.writeReview,
               icon: Icons.rate_review_outlined,
               onPressed: () {
                 Navigator.pop(context);
@@ -78,9 +80,9 @@ class ReviewDialog extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingS),
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
-                'あとで',
-                style: TextStyle(
+              child: Text(
+                l10n.later,
+                style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: AppDimensions.fontSizeM,
                 ),

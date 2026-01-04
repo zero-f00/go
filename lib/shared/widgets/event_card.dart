@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../features/game_event_management/models/game_event.dart';
+import '../../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../constants/app_constants.dart';
@@ -67,6 +68,27 @@ class EventCard extends StatelessWidget {
     }
   }
 
+  /// ステータスの表示名を取得
+  String _getStatusDisplayName(BuildContext context, GameEventStatus status) {
+    final l10n = L10n.of(context);
+    switch (status) {
+      case GameEventStatus.draft:
+        return l10n.eventStatusDraft;
+      case GameEventStatus.published:
+        return l10n.eventStatusPublished;
+      case GameEventStatus.upcoming:
+        return l10n.eventStatusUpcoming;
+      case GameEventStatus.active:
+        return l10n.eventStatusActive;
+      case GameEventStatus.completed:
+        return l10n.eventStatusCompleted;
+      case GameEventStatus.expired:
+        return l10n.eventStatusExpired;
+      case GameEventStatus.cancelled:
+        return l10n.eventStatusCancelled;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -94,23 +116,23 @@ class EventCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (event.imageUrl != null) _buildEventImage(),
+                if (event.imageUrl != null) _buildEventImage(context),
                 Padding(
                   padding: const EdgeInsets.all(AppDimensions.spacingL),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildEventHeader(),
+                      _buildEventHeader(context),
                       if (event.subtitle != null) ...[
                         const SizedBox(height: AppDimensions.spacingXS),
                         _buildSubtitle(),
                       ],
                       const SizedBox(height: AppDimensions.spacingM),
                       if (event.status == GameEventStatus.cancelled)
-                        _buildCancellationInfo(),
-                      _buildEventMeta(),
+                        _buildCancellationInfo(context),
+                      _buildEventMeta(context),
                       const SizedBox(height: AppDimensions.spacingM),
-                      _buildEventFooter(),
+                      _buildEventFooter(context),
                     ],
                   ),
                 ),
@@ -122,7 +144,7 @@ class EventCard extends StatelessWidget {
     );
   }
 
-  Widget _buildEventImage() {
+  Widget _buildEventImage(BuildContext context) {
     return SizedBox(
       width: double.infinity,
       height: 180,
@@ -134,7 +156,7 @@ class EventCard extends StatelessWidget {
               fit: BoxFit.cover,
               width: double.infinity,
               height: 180,
-              errorBuilder: (context, error, stackTrace) {
+              errorBuilder: (ctx, error, stackTrace) {
                 return Container(
                   color: AppColors.backgroundLight,
                   child: const Center(
@@ -146,7 +168,7 @@ class EventCard extends StatelessWidget {
                   ),
                 );
               },
-              loadingBuilder: (context, child, loadingProgress) {
+              loadingBuilder: (ctx, child, loadingProgress) {
                 if (loadingProgress == null) {
                   return Stack(
                     children: [
@@ -178,14 +200,14 @@ class EventCard extends StatelessWidget {
           Positioned(
             top: AppDimensions.spacingM,
             right: AppDimensions.spacingM,
-            child: _buildStatusBadgeOverlay(),
+            child: _buildStatusBadgeOverlay(context),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStatusBadgeOverlay() {
+  Widget _buildStatusBadgeOverlay(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingS,
@@ -200,7 +222,7 @@ class EventCard extends StatelessWidget {
         ),
       ),
       child: Text(
-        event.status.displayName,
+        _getStatusDisplayName(context, event.status),
         style: const TextStyle(
           fontSize: AppDimensions.fontSizeXS,
           color: Colors.white,
@@ -210,7 +232,8 @@ class EventCard extends StatelessWidget {
     );
   }
 
-  Widget _buildGameInfo() {
+  Widget _buildGameInfo(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
@@ -255,7 +278,7 @@ class EventCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'ゲーム',
+                  l10n.eventGame,
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeXS,
                     color: AppColors.textSecondary,
@@ -264,7 +287,7 @@ class EventCard extends StatelessWidget {
                 ),
                 const SizedBox(height: AppDimensions.spacingXS / 2),
                 Text(
-                  event.gameName ?? '未設定',
+                  event.gameName ?? l10n.eventGameNotSet,
                   style: const TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     color: AppColors.textDark,
@@ -279,7 +302,7 @@ class EventCard extends StatelessWidget {
     );
   }
 
-  Widget _buildEventHeader() {
+  Widget _buildEventHeader(BuildContext context) {
     final hasImage = event.imageUrl != null;
 
     return Row(
@@ -309,7 +332,7 @@ class EventCard extends StatelessWidget {
                   ),
                   if (!hasImage) ...[
                     const SizedBox(width: AppDimensions.spacingS),
-                    _buildStatusBadge(),
+                    _buildStatusBadge(context),
                   ],
                 ],
               ),
@@ -326,7 +349,7 @@ class EventCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusBadge() {
+  Widget _buildStatusBadge(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingS,
@@ -341,7 +364,7 @@ class EventCard extends StatelessWidget {
         ),
       ),
       child: Text(
-        event.status.displayName,
+        _getStatusDisplayName(context, event.status),
         style: TextStyle(
           fontSize: AppDimensions.fontSizeXS,
           color: _getStatusColor(event.status),
@@ -369,7 +392,8 @@ class EventCard extends StatelessWidget {
     );
   }
 
-  Widget _buildCancellationInfo() {
+  Widget _buildCancellationInfo(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingM),
@@ -393,10 +417,10 @@ class EventCard extends StatelessWidget {
                 size: AppDimensions.iconS,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'このイベントは中止されました',
-                  style: TextStyle(
+                  l10n.eventCancelled,
+                  style: const TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     color: AppColors.error,
                     fontWeight: FontWeight.w600,
@@ -408,7 +432,7 @@ class EventCard extends StatelessWidget {
           if (event.cancellationReason != null && event.cancellationReason!.isNotEmpty) ...[
             const SizedBox(height: AppDimensions.spacingXS),
             Text(
-              '理由: ${event.cancellationReason}',
+              l10n.eventCancellationReason(event.cancellationReason!),
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeXS,
                 color: AppColors.textSecondary,
@@ -422,67 +446,45 @@ class EventCard extends StatelessWidget {
     );
   }
 
-  Widget _buildEventMeta() {
+  Widget _buildEventMeta(BuildContext context) {
     return Column(
       children: [
         if (event.gameName != null) ...[
-          _buildGameInfo(),
+          _buildGameInfo(context),
           const SizedBox(height: AppDimensions.spacingM),
         ],
         Row(
           children: [
-            // TODO: 参加費機能はリリース後に実装予定
-            // if (event.hasFee)
-            //   _buildFeeChip()
-            // else
-            //   _buildMetaChip(
-            //     '無料',
-            //     Icons.free_breakfast,
-            //     AppColors.success,
-            //   ),
-            // const SizedBox(width: AppDimensions.spacingS),
             if (event.rewards.isNotEmpty)
-              _buildPrizeChip(),
+              _buildPrizeChip(context),
             if (event.rewards.isNotEmpty)
               const Spacer()
             else
               const Spacer(),
-            _buildParticipantInfo(),
+            _buildParticipantInfo(context),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildFeeChip() {
-    String label = '有料';
-    if (event.feeAmount != null && event.feeAmount! > 0) {
-      if (event.feeAmount! >= 1000) {
-        label = '¥${(event.feeAmount! / 1000).toStringAsFixed(event.feeAmount! % 1000 == 0 ? 0 : 1)}k';
-      } else {
-        label = '¥${event.feeAmount!.toInt()}';
-      }
-    }
-
-    return _buildMetaChip(
-      label,
-      Icons.paid,
-      AppColors.warning,
-    );
-  }
-
-  Widget _buildPrizeChip() {
-    String label = '賞品あり';
+  Widget _buildPrizeChip(BuildContext context) {
+    final l10n = L10n.of(context);
+    String label = l10n.eventHasPrize;
 
     // 賞品の種類を確認して適切なアイコンとラベルを設定
     if (event.rewards.containsKey('coin')) {
       final amount = event.rewards['coin']!;
-      label = amount >= 1000 ? '${(amount / 1000).toInt()}kコイン' : '${amount.toInt()}コイン';
+      label = amount >= 1000
+          ? l10n.eventCoinRewardK('${(amount / 1000).toInt()}')
+          : l10n.eventCoinReward('${amount.toInt()}');
     } else if (event.rewards.containsKey('gem')) {
-      label = '${event.rewards['gem']!.toInt()}ジェム';
+      label = l10n.eventGemReward('${event.rewards['gem']!.toInt()}');
     } else if (event.rewards.containsKey('exp')) {
       final amount = event.rewards['exp']!;
-      label = amount >= 1000 ? '${(amount / 1000).toInt()}k経験値' : '${amount.toInt()}経験値';
+      label = amount >= 1000
+          ? l10n.eventExpRewardK('${(amount / 1000).toInt()}')
+          : l10n.eventExpReward('${amount.toInt()}');
     }
 
     return _buildMetaChip(
@@ -524,7 +526,8 @@ class EventCard extends StatelessWidget {
     );
   }
 
-  Widget _buildParticipantInfo() {
+  Widget _buildParticipantInfo(BuildContext context) {
+    final l10n = L10n.of(context);
     return Row(
       children: [
         Icon(
@@ -534,7 +537,7 @@ class EventCard extends StatelessWidget {
         ),
         const SizedBox(width: AppDimensions.spacingXS),
         Text(
-          '${event.participantCount}/${event.maxParticipants}人',
+          l10n.eventParticipants(event.participantCount, event.maxParticipants),
           style: const TextStyle(
             fontSize: AppDimensions.fontSizeS,
             fontWeight: FontWeight.w600,
@@ -545,25 +548,26 @@ class EventCard extends StatelessWidget {
         // 満員バッジ表示
         if (event.isFull) ...[
           const SizedBox(width: AppDimensions.spacingXS),
-          _buildCustomStatusBadge('満員', AppColors.error),
+          _buildCustomStatusBadge(l10n.eventFull, AppColors.error),
         ]
         // 期限間近バッジ表示
         else if (event.daysUntilRegistrationDeadline != null &&
                 event.daysUntilRegistrationDeadline! <= 2 &&
                 event.daysUntilRegistrationDeadline! > 0) ...[
           const SizedBox(width: AppDimensions.spacingXS),
-          _buildCustomStatusBadge('残り${event.daysUntilRegistrationDeadline}日', AppColors.warning),
+          _buildCustomStatusBadge(l10n.eventDaysRemaining(event.daysUntilRegistrationDeadline!), AppColors.warning),
         ]
         // 期限切れバッジ表示
         else if (event.isRegistrationExpired) ...[
           const SizedBox(width: AppDimensions.spacingXS),
-          _buildCustomStatusBadge('締切', AppColors.warning),
+          _buildCustomStatusBadge(l10n.eventDeadline, AppColors.warning),
         ],
       ],
     );
   }
 
-  Widget _buildEventFooter() {
+  Widget _buildEventFooter(BuildContext context) {
+    final l10n = L10n.of(context);
     final dateFormat = '${event.startDate.month}/${event.startDate.day}';
     final timeFormat = '${event.startDate.hour.toString().padLeft(2, '0')}:${event.startDate.minute.toString().padLeft(2, '0')}';
 
@@ -576,7 +580,7 @@ class EventCard extends StatelessWidget {
         ),
         const SizedBox(width: AppDimensions.spacingXS),
         Text(
-          '開催日時: $dateFormat $timeFormat',
+          l10n.eventDateTime(dateFormat, timeFormat),
           style: TextStyle(
             fontSize: AppDimensions.fontSizeS,
             color: event.status == GameEventStatus.cancelled
@@ -652,7 +656,8 @@ class EventCard extends StatelessWidget {
     );
   }
 
-  Widget _buildEventPeriod() {
+  Widget _buildEventPeriod(BuildContext context) {
+    final l10n = L10n.of(context);
     final startDate = event.startDate;
     final endDate = event.endDate;
     final now = DateTime.now();
@@ -663,43 +668,43 @@ class EventCard extends StatelessWidget {
 
     switch (event.status) {
       case GameEventStatus.draft:
-        periodText = '下書き';
+        periodText = l10n.eventStatusDraft;
         periodColor = AppColors.warning;
         periodIcon = Icons.edit;
         break;
       case GameEventStatus.published:
-        periodText = '公開中';
+        periodText = l10n.eventPublishing;
         periodColor = AppColors.success;
         periodIcon = Icons.public;
         break;
       case GameEventStatus.upcoming:
         final daysUntilStart = startDate.difference(now).inDays;
         periodText = daysUntilStart > 0
-            ? '開始まで$daysUntilStart日'
-            : '間もなく開始';
+            ? l10n.eventDaysUntilStart(daysUntilStart)
+            : l10n.eventStartingSoon;
         periodColor = AppColors.info;
         periodIcon = Icons.schedule;
         break;
       case GameEventStatus.active:
         final daysRemaining = endDate.difference(now).inDays;
         periodText = daysRemaining > 0
-            ? '残り$daysRemaining日'
-            : '本日終了';
+            ? l10n.eventDaysRemaining(daysRemaining)
+            : l10n.eventEndsToday;
         periodColor = AppColors.success;
         periodIcon = Icons.timelapse;
         break;
       case GameEventStatus.completed:
-        periodText = '終了済み';
+        periodText = l10n.eventEnded;
         periodColor = AppColors.statusCompleted;
         periodIcon = Icons.check_circle;
         break;
       case GameEventStatus.expired:
-        periodText = '期限切れ';
+        periodText = l10n.eventStatusExpired;
         periodColor = AppColors.statusExpired;
         periodIcon = Icons.cancel;
         break;
       case GameEventStatus.cancelled:
-        periodText = 'イベント中止';
+        periodText = l10n.eventCancelledStatus;
         periodColor = AppColors.error;
         periodIcon = Icons.cancel_outlined;
         break;

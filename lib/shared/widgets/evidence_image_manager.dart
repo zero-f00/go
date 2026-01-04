@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import '../services/match_result_service.dart';
+import '../../l10n/app_localizations.dart';
 
 /// エビデンス画像管理ウィジェット
 class EvidenceImageManager extends StatefulWidget {
@@ -68,9 +69,10 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
       });
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('画像の読み込みに失敗しました: $e'),
+            content: Text(l10n.imageLoadError(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -82,6 +84,7 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
 
   /// 画像選択ダイアログを表示
   Future<void> _showImageSourceDialog() async {
+    final l10n = L10n.of(context);
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -89,7 +92,7 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
           top: Radius.circular(AppDimensions.radiusM),
         ),
       ),
-      builder: (context) => Container(
+      builder: (dialogContext) => Container(
         padding: const EdgeInsets.all(AppDimensions.spacingL),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -104,7 +107,7 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Text(
-              'エビデンス画像の追加',
+              l10n.addEvidenceImageTitle,
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 fontWeight: FontWeight.w600,
@@ -117,9 +120,9 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
                 Expanded(
                   child: _buildImageSourceButton(
                     icon: Icons.camera_alt,
-                    label: 'カメラで撮影',
+                    label: l10n.takePhotoLabel,
                     onTap: () {
-                      Navigator.of(context).pop();
+                      Navigator.of(dialogContext).pop();
                       _takePicture();
                     },
                   ),
@@ -128,9 +131,9 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
                 Expanded(
                   child: _buildImageSourceButton(
                     icon: Icons.photo_library,
-                    label: 'ギャラリーから選択',
+                    label: l10n.selectFromGalleryLabel,
                     onTap: () {
-                      Navigator.of(context).pop();
+                      Navigator.of(dialogContext).pop();
                       _pickImagesFromGallery();
                     },
                   ),
@@ -197,9 +200,10 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('カメラでの撮影に失敗しました: $e'),
+            content: Text(l10n.cameraCaptureError(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -223,9 +227,10 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('ギャラリーからの選択に失敗しました: $e'),
+            content: Text(l10n.gallerySelectError(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -254,18 +259,20 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
       widget.onImagesUpdated?.call();
 
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${imageFiles.length}枚の画像をアップロードしました'),
+            content: Text(l10n.imagesUploadedMessage(imageFiles.length)),
             backgroundColor: AppColors.success,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('画像のアップロードに失敗しました: $e'),
+            content: Text(l10n.imageUploadError(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -289,18 +296,20 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
       widget.onImagesUpdated?.call();
 
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('画像を削除しました'),
+          SnackBar(
+            content: Text(l10n.imageDeletedMessage),
             backgroundColor: AppColors.success,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('画像の削除に失敗しました: $e'),
+            content: Text(l10n.imageDeleteError(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -312,35 +321,36 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
 
   /// 画像削除確認ダイアログ
   Future<void> _showDeleteConfirmation(String imageUrl) async {
+    final l10n = L10n.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusM),
         ),
-        title: const Text(
-          '画像を削除',
-          style: TextStyle(
+        title: Text(
+          l10n.deleteImageTitle,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeL,
             fontWeight: FontWeight.w600,
           ),
         ),
-        content: const Text('この画像を削除しますか？この操作は取り消せません。'),
+        content: Text(l10n.deleteImageConfirmMessage),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
             child: Text(
-              'キャンセル',
+              l10n.cancel,
               style: TextStyle(color: AppColors.textSecondary),
             ),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.error,
               foregroundColor: Colors.white,
             ),
-            child: const Text('削除'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -353,6 +363,7 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
 
   /// 画像操作メニューを表示（削除・置き換え）
   Future<void> _showImageActionMenu(String imageUrl) async {
+    final l10n = L10n.of(context);
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -360,7 +371,7 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
           top: Radius.circular(AppDimensions.radiusM),
         ),
       ),
-      builder: (context) => Container(
+      builder: (dialogContext) => Container(
         padding: const EdgeInsets.all(AppDimensions.spacingL),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -375,7 +386,7 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Text(
-              '画像の操作',
+              l10n.imageOperationsTitle,
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 fontWeight: FontWeight.w600,
@@ -396,15 +407,15 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
                   color: AppColors.accent,
                 ),
               ),
-              title: const Text(
-                '画像を置き換え',
-                style: TextStyle(
+              title: Text(
+                l10n.replaceImageLabel,
+                style: const TextStyle(
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              subtitle: const Text('新しい画像で置き換えます（古い画像は自動削除）'),
+              subtitle: Text(l10n.replaceImageDescription),
               onTap: () {
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop();
                 _showReplaceImageDialog(imageUrl);
               },
             ),
@@ -421,15 +432,15 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
                   color: AppColors.error,
                 ),
               ),
-              title: const Text(
-                '画像を削除',
-                style: TextStyle(
+              title: Text(
+                l10n.deleteImageLabel,
+                style: const TextStyle(
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              subtitle: const Text('この画像を完全に削除します'),
+              subtitle: Text(l10n.deleteImageDescription),
               onTap: () {
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop();
                 _showDeleteConfirmation(imageUrl);
               },
             ),
@@ -449,67 +460,70 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
           top: Radius.circular(AppDimensions.radiusM),
         ),
       ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(AppDimensions.spacingL),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.border,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: AppDimensions.spacingL),
-            Text(
-              '画像の置き換え',
-              style: TextStyle(
-                fontSize: AppDimensions.fontSizeL,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textDark,
-              ),
-            ),
-            const SizedBox(height: AppDimensions.spacingM),
-            Text(
-              '古い画像は自動的に削除され、新しい画像に置き換わります',
-              style: TextStyle(
-                fontSize: AppDimensions.fontSizeM,
-                color: AppColors.textSecondary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppDimensions.spacingL),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildImageSourceButton(
-                    icon: Icons.camera_alt,
-                    label: 'カメラで撮影',
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      _replaceWithCamera(imageUrl);
-                    },
-                  ),
+      builder: (dialogContext) {
+        final l10n = L10n.of(dialogContext);
+        return Container(
+          padding: const EdgeInsets.all(AppDimensions.spacingL),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                const SizedBox(width: AppDimensions.spacingM),
-                Expanded(
-                  child: _buildImageSourceButton(
-                    icon: Icons.photo_library,
-                    label: 'ギャラリーから選択',
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      _replaceFromGallery(imageUrl);
-                    },
-                  ),
+              ),
+              const SizedBox(height: AppDimensions.spacingL),
+              Text(
+                l10n.replaceImageTitle,
+                style: TextStyle(
+                  fontSize: AppDimensions.fontSizeL,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textDark,
                 ),
-              ],
-            ),
-            const SizedBox(height: AppDimensions.spacingL),
-          ],
-        ),
-      ),
+              ),
+              const SizedBox(height: AppDimensions.spacingM),
+              Text(
+                l10n.replaceImageDialogDescription,
+                style: TextStyle(
+                  fontSize: AppDimensions.fontSizeM,
+                  color: AppColors.textSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppDimensions.spacingL),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildImageSourceButton(
+                      icon: Icons.camera_alt,
+                      label: l10n.takePhotoLabel,
+                      onTap: () {
+                        Navigator.of(dialogContext).pop();
+                        _replaceWithCamera(imageUrl);
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: AppDimensions.spacingM),
+                  Expanded(
+                    child: _buildImageSourceButton(
+                      icon: Icons.photo_library,
+                      label: l10n.selectFromGalleryLabel,
+                      onTap: () {
+                        Navigator.of(dialogContext).pop();
+                        _replaceFromGallery(imageUrl);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppDimensions.spacingL),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -528,9 +542,10 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('カメラでの撮影に失敗しました: $e'),
+            content: Text(l10n.cameraCaptureError(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -553,9 +568,10 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('ギャラリーからの選択に失敗しました: $e'),
+            content: Text(l10n.gallerySelectError(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -580,18 +596,20 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
       widget.onImagesUpdated?.call();
 
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('画像を置き換えました（古い画像は自動削除されました）'),
+          SnackBar(
+            content: Text(l10n.imageReplacedMessage),
             backgroundColor: AppColors.success,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('画像の置き換えに失敗しました: $e'),
+            content: Text(l10n.imageReplaceError(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -603,37 +621,38 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
 
   /// 全ての画像を置き換え確認ダイアログ
   Future<void> _showReplaceAllConfirmation() async {
+    final l10n = L10n.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusM),
         ),
-        title: const Text(
-          '全ての画像を置き換え',
-          style: TextStyle(
+        title: Text(
+          l10n.replaceAllImagesTitle,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeL,
             fontWeight: FontWeight.w600,
           ),
         ),
         content: Text(
-          '現在の${_images.length}枚の画像を全て削除し、新しい画像に置き換えますか？\n\nこの操作は取り消せません。',
+          l10n.replaceAllImagesConfirmMessage(_images.length),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
             child: Text(
-              'キャンセル',
+              l10n.cancelButton,
               style: TextStyle(color: AppColors.textSecondary),
             ),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.warning,
               foregroundColor: Colors.white,
             ),
-            child: const Text('置き換える'),
+            child: Text(l10n.replaceAllButton),
           ),
         ],
       ),
@@ -660,9 +679,10 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('画像の選択に失敗しました: $e'),
+            content: Text(l10n.imageSelectError(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -686,18 +706,20 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
       widget.onImagesUpdated?.call();
 
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${newImageFiles.length}枚の新しい画像に置き換えました'),
+            content: Text(l10n.imagesReplacedMessage(newImageFiles.length)),
             backgroundColor: AppColors.success,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('画像の一括置き換えに失敗しました: $e'),
+            content: Text(l10n.imagesBulkReplaceFailedError(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -709,9 +731,10 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
 
   /// 画像拡大表示ダイアログ
   void _showImageDialog(String imageUrl, Map<String, dynamic>? metadata) {
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
-      builder: (context) => Dialog(
+      builder: (dialogContext) => Dialog(
         backgroundColor: Colors.transparent,
         child: Stack(
           children: [
@@ -759,7 +782,7 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
                           ),
                           const SizedBox(width: AppDimensions.spacingS),
                           Text(
-                            'エビデンス画像',
+                            l10n.evidenceImageTitle,
                             style: TextStyle(
                               fontSize: AppDimensions.fontSizeL,
                               fontWeight: FontWeight.w600,
@@ -769,25 +792,25 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
                           const Spacer(),
                           IconButton(
                             onPressed: () {
-                              Navigator.of(context).pop();
+                              Navigator.of(dialogContext).pop();
                               _showReplaceImageDialog(imageUrl);
                             },
                             icon: Icon(
                               Icons.swap_horiz,
                               color: AppColors.accent,
                             ),
-                            tooltip: '画像を置き換え',
+                            tooltip: l10n.replaceImageTooltip,
                           ),
                           IconButton(
                             onPressed: () {
-                              Navigator.of(context).pop();
+                              Navigator.of(dialogContext).pop();
                               _showDeleteConfirmation(imageUrl);
                             },
                             icon: Icon(
                               Icons.delete,
                               color: AppColors.error,
                             ),
-                            tooltip: '画像を削除',
+                            tooltip: l10n.deleteImageTooltip,
                           ),
                           IconButton(
                             onPressed: () => Navigator.of(context).pop(),
@@ -824,7 +847,7 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
                                     ),
                                     const SizedBox(height: AppDimensions.spacingS),
                                     Text(
-                                      '画像の読み込みに失敗しました',
+                                      l10n.imageLoadFailedMessage,
                                       style: TextStyle(
                                         color: AppColors.textSecondary,
                                       ),
@@ -855,7 +878,7 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
                             if (metadata['uploaderName'] != null) ...[
                               _buildMetadataRow(
                                 Icons.person,
-                                'アップロード者',
+                                l10n.uploaderLabel,
                                 metadata['uploaderName'],
                               ),
                               const SizedBox(height: AppDimensions.spacingXS),
@@ -863,7 +886,7 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
                             if (metadata['uploadedAt'] != null) ...[
                               _buildMetadataRow(
                                 Icons.schedule,
-                                'アップロード日時',
+                                l10n.uploadDateTimeLabel,
                                 _formatDateTime(DateTime.parse(metadata['uploadedAt'])),
                               ),
                             ],
@@ -909,6 +932,7 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -935,7 +959,7 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                'エビデンス画像',
+                l10n.evidenceImageSectionTitle,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w600,
@@ -957,7 +981,7 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
                     ),
                   ),
                   child: Text(
-                    '${_images.length}枚',
+                    l10n.imagesCountLabel(_images.length),
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeS,
                       fontWeight: FontWeight.w600,
@@ -976,7 +1000,7 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
                         Icons.swap_horiz,
                         size: AppDimensions.iconS,
                       ),
-                      label: const Text('全て置換'),
+                      label: Text(l10n.replaceAllLabel),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.warning,
                         foregroundColor: Colors.white,
@@ -990,7 +1014,7 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
                       Icons.add_photo_alternate,
                       size: AppDimensions.iconS,
                     ),
-                    label: const Text('画像を追加'),
+                    label: Text(l10n.addImageButtonLabel),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.accent,
                       foregroundColor: Colors.white,
@@ -1002,7 +1026,7 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
           ),
           const SizedBox(height: AppDimensions.spacingM),
           Text(
-            '試合の証拠となる画像をアップロードできます',
+            l10n.evidenceImageInfo,
             style: TextStyle(
               fontSize: AppDimensions.fontSizeM,
               color: AppColors.textSecondary,
@@ -1136,7 +1160,7 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
                   ),
                   const SizedBox(height: AppDimensions.spacingM),
                   Text(
-                    'エビデンス画像がありません',
+                    l10n.noEvidenceImages,
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeM,
                       color: AppColors.textSecondary,
@@ -1145,7 +1169,7 @@ class _EvidenceImageManagerState extends State<EvidenceImageManager> {
                   ),
                   const SizedBox(height: AppDimensions.spacingS),
                   Text(
-                    '「画像を追加」ボタンから画像をアップロードできます',
+                    l10n.noEvidenceImagesDescription,
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeS,
                       color: AppColors.textSecondary,

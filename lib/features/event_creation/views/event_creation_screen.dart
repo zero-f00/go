@@ -4,9 +4,9 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../l10n/app_localizations.dart' show L10n;
 
 import '../../../shared/constants/app_colors.dart';
-import '../../../shared/constants/app_strings.dart';
 import '../../../shared/constants/app_dimensions.dart';
 import '../../../shared/widgets/app_gradient_background.dart';
 import '../../../shared/widgets/app_header.dart';
@@ -57,21 +57,18 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   final _contactController = TextEditingController();
   final _policyController = TextEditingController();
   final _additionalInfoController = TextEditingController();
-  final _feeAmountController = TextEditingController();
-  final _feeSupplementController = TextEditingController();
   final _eventPasswordController = TextEditingController();
 
   // Form state variables
   bool _hasPrize = false;
   Game? _selectedGame;
   final List<String> _selectedPlatforms = [];
-  String _visibility = 'パブリック';
-  String _language = '日本語';
+  String _visibility = 'public'; // 内部値: 'public' または 'invite_only'
+  String _language = 'ja'; // 内部値
   bool _hasStreaming = false;
-  bool _hasParticipationFee = false;
   bool _hasAgeRestriction = false;
   int _minAge = 0;
-  String _approvalMethod = '自動承認';
+  String _approvalMethod = 'auto'; // 内部値
 
   List<String> _eventTags = [];
   List<String> _streamingUrls = [];
@@ -121,15 +118,6 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       _additionalInfoController.text = event.additionalInfo ?? '';
       _streamingUrls = List.from(event.streamingUrls);
 
-
-      // 参加費の初期化
-      if (event.feeText != null && event.feeText!.isNotEmpty) {
-        _feeAmountController.text = event.feeText!;
-      } else if (event.feeAmount != null) {
-        _feeAmountController.text = event.feeAmount!.toString();
-      }
-      _feeSupplementController.text = event.feeSupplement ?? '';
-
       // イベント画像の初期化（編集・コピーモード共に画像URLを設定）
       if (event.imageUrl != null && event.imageUrl!.isNotEmpty) {
         _existingImageUrl = event.imageUrl;
@@ -142,10 +130,11 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
       // フォーム状態の初期値設定
       _hasPrize = event.rewards.isNotEmpty;
-      _visibility = event.visibility == 'プライベート' ? 'パブリック' : event.visibility;
-      _language = event.language;
+      // GameEvent.visibilityは日本語表記なので内部値に変換
+      _visibility = _convertVisibilityToInternalValue(event.visibility);
+      // GameEvent.languageは日本語表記の場合があるので内部値に変換
+      _language = _convertLanguageToInternalValue(event.language);
       _hasStreaming = event.hasStreaming;
-      _hasParticipationFee = event.hasFee;
       _eventTags = List.from(event.eventTags);
       _selectedPlatforms.clear();
       _selectedPlatforms.addAll(event.platforms);
@@ -265,8 +254,6 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     _contactController.dispose();
     _policyController.dispose();
     _additionalInfoController.dispose();
-    _feeAmountController.dispose();
-    _feeSupplementController.dispose();
     _eventPasswordController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -280,7 +267,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           child: Column(
             children: [
               AppHeader(
-                title: widget.editingEvent != null ? 'イベント編集' : AppStrings.createEventTitle,
+                title: widget.editingEvent != null ? L10n.of(context).eventEditTitle : L10n.of(context).createEventTitle,
                 showBackButton: true,
                 onBackPressed: () {
                   Navigator.of(context).pop();
@@ -306,7 +293,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                       _buildCategorySection(),
                       const SizedBox(height: AppDimensions.spacingXL),
                       _buildInvitationSection(),
-                      if (_visibility == '招待制') const SizedBox(height: AppDimensions.spacingXL),
+                      if (_visibility == L10n.of(context).visibilityInviteOnly) const SizedBox(height: AppDimensions.spacingXL),
                       _buildExternalSection(),
                       const SizedBox(height: AppDimensions.spacingXL),
                       _buildOtherSection(),
@@ -497,7 +484,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         Row(
           children: [
             Text(
-              AppStrings.eventPasswordLabel,
+              L10n.of(context).eventPasswordLabel,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 fontWeight: FontWeight.w600,
@@ -520,7 +507,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           obscureText: !_isPasswordVisible,
           textInputAction: TextInputAction.next,
           decoration: InputDecoration(
-            hintText: AppStrings.eventPasswordHint,
+            hintText: L10n.of(context).eventPasswordHint,
             hintStyle: const TextStyle(
               color: AppColors.textLight,
               fontSize: AppDimensions.fontSizeM,
@@ -550,14 +537,14 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                   _isPasswordVisible = !_isPasswordVisible;
                 });
               },
-              tooltip: _isPasswordVisible ? 'パスワードを隠す' : 'パスワードを表示',
+              tooltip: _isPasswordVisible ? L10n.of(context).hidePassword : L10n.of(context).showPassword,
             ),
           ),
           style: const TextStyle(
             fontSize: AppDimensions.fontSizeM,
             color: AppColors.textDark,
           ),
-          validator: (value) => ValidationService.validateEventPassword(value, true),
+          validator: (value) => ValidationService.of(context).validateEventPassword(value, true),
         ),
       ],
     );
@@ -640,6 +627,86 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     );
   }
 
+  /// ローカライズされたドロップダウンフィールド
+  /// [options] は内部値からローカライズされた表示値へのマップ
+  Widget _buildLocalizedDropdownField({
+    required String label,
+    required String value,
+    required Map<String, String> options,
+    required ValueChanged<String?> onChanged,
+    bool isRequired = false,
+  }) {
+    final l10n = L10n.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: AppDimensions.fontSizeM,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textDark,
+              ),
+            ),
+            if (isRequired)
+              const Text(
+                ' *',
+                style: TextStyle(
+                  fontSize: AppDimensions.fontSizeM,
+                  color: AppColors.error,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: AppDimensions.spacingS),
+        DropdownButtonFormField<String>(
+          value: value,
+          onChanged: onChanged,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: AppColors.backgroundLight,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+              borderSide: const BorderSide(color: AppColors.accent, width: 2),
+            ),
+            contentPadding: const EdgeInsets.all(AppDimensions.spacingM),
+          ),
+          items: options.entries.map((entry) {
+            return DropdownMenuItem<String>(
+              value: entry.key,
+              child: Text(
+                entry.value,
+                style: const TextStyle(
+                  fontSize: AppDimensions.fontSizeM,
+                  color: AppColors.textDark,
+                ),
+              ),
+            );
+          }).toList(),
+          validator: isRequired
+              ? (val) {
+                  if (val == null || val.isEmpty) {
+                    return l10n.requiredFieldError(label);
+                  }
+                  return null;
+                }
+              : null,
+        ),
+      ],
+    );
+  }
+
   Widget _buildSwitchField({
     required String label,
     required bool value,
@@ -669,34 +736,34 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
   Widget _buildBasicInfoSection() {
     return _buildSectionContainer(
-      title: AppStrings.basicInfoSection,
+      title: L10n.of(context).basicInfoSection,
       icon: Icons.info,
       children: [
         _buildTextField(
           controller: _eventNameController,
-          label: AppStrings.eventNameLabel,
-          hint: AppStrings.eventNameHint,
+          label: L10n.of(context).eventNameLabel,
+          hint: L10n.of(context).eventNameHint,
           isRequired: true,
         ),
         const SizedBox(height: AppDimensions.spacingL),
         _buildTextField(
           controller: _subtitleController,
-          label: AppStrings.subtitleLabel,
-          hint: AppStrings.subtitleHint,
+          label: L10n.of(context).subtitleLabel,
+          hint: L10n.of(context).subtitleHint,
         ),
         const SizedBox(height: AppDimensions.spacingL),
         _buildTextField(
           controller: _descriptionController,
-          label: AppStrings.descriptionLabel,
-          hint: AppStrings.descriptionHint,
+          label: L10n.of(context).descriptionLabel,
+          hint: L10n.of(context).descriptionHint,
           maxLines: 4,
           isRequired: true,
         ),
         const SizedBox(height: AppDimensions.spacingL),
         _buildTextField(
           controller: _rulesController,
-          label: AppStrings.rulesLabel,
-          hint: AppStrings.rulesHint,
+          label: L10n.of(context).rulesLabel,
+          hint: L10n.of(context).rulesHint,
           maxLines: 6,
           isRequired: true,
         ),
@@ -710,9 +777,9 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          AppStrings.imageLabel,
-          style: TextStyle(
+        Text(
+          L10n.of(context).imageLabel,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeM,
             fontWeight: FontWeight.w600,
             color: AppColors.textDark,
@@ -737,18 +804,18 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                   child: InkWell(
                     onTap: _selectImage,
                     borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                    child: const Column(
+                    child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.add_photo_alternate_outlined,
                           size: AppDimensions.iconXL,
                           color: AppColors.textLight,
                         ),
-                        SizedBox(height: AppDimensions.spacingS),
+                        const SizedBox(height: AppDimensions.spacingS),
                         Text(
-                          AppStrings.addImageButton,
-                          style: TextStyle(
+                          L10n.of(context).addImageButton,
+                          style: const TextStyle(
                             fontSize: AppDimensions.fontSizeM,
                             color: AppColors.textDark,
                             fontWeight: FontWeight.w500,
@@ -770,19 +837,19 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                         borderRadius: BorderRadius.circular(AppDimensions.radiusM),
                         color: Colors.black.withValues(alpha: 0.3),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.edit,
                               size: AppDimensions.iconL,
                               color: Colors.white,
                             ),
-                            SizedBox(height: AppDimensions.spacingS),
+                            const SizedBox(height: AppDimensions.spacingS),
                             Text(
-                              '画像を変更',
-                              style: TextStyle(
+                              L10n.of(context).changeImage,
+                              style: const TextStyle(
                                 fontSize: AppDimensions.fontSizeM,
                                 color: Colors.white,
                                 fontWeight: FontWeight.w600,
@@ -812,9 +879,9 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              '画像を選択',
-              style: TextStyle(
+            Text(
+              L10n.of(context).selectImage,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textDark,
@@ -828,12 +895,12 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                   children: [
                     _buildImageSourceOption(
                       icon: Icons.camera_alt,
-                      label: 'カメラで撮影',
+                      label: L10n.of(context).takePhoto,
                       onTap: () => Navigator.pop(context, 'camera'),
                     ),
                     _buildImageSourceOption(
                       icon: Icons.photo_library,
-                      label: 'ギャラリーから選択',
+                      label: L10n.of(context).selectFromGallery,
                       onTap: () => Navigator.pop(context, 'gallery'),
                     ),
                   ],
@@ -841,7 +908,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                 const SizedBox(height: AppDimensions.spacingM),
                 _buildImageSourceOption(
                   icon: Icons.history,
-                  label: '過去のイベント画像から選択',
+                  label: L10n.of(context).selectFromPastEventImages,
                   onTap: () => Navigator.pop(context, 'past_events'),
                   isWide: true,
                 ),
@@ -989,8 +1056,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       final selectedImageUrl = await PastEventImagesSelectionDialog.show(
         context,
         pastEvents: eventsWithImages,
-        title: '過去のイベント画像から選択',
-        emptyMessage: '利用可能な画像がありません',
+        title: L10n.of(context).selectFromPastEventImagesTitle,
+        emptyMessage: L10n.of(context).noAvailableImages,
       );
 
       if (selectedImageUrl != null) {
@@ -1003,7 +1070,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('過去の画像の読み込みでエラーが発生しました: $e'),
+          content: Text(L10n.of(context).pastImageLoadError(e.toString())),
           backgroundColor: AppColors.error,
         ),
       );
@@ -1012,11 +1079,11 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
   Widget _buildScheduleSection() {
     return _buildSectionContainer(
-      title: AppStrings.scheduleSection,
+      title: L10n.of(context).scheduleSection,
       icon: Icons.schedule,
       children: [
         _buildDateTimeField(
-          label: AppStrings.eventDateLabel,
+          label: L10n.of(context).eventDateLabel,
           value: _eventDate,
           onTap: () => _selectDateTime(isEventDate: true),
           isRequired: true,
@@ -1077,7 +1144,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                   Text(
                     value != null
                         ? '${value.year}年${value.month}月${value.day}日 ${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}'
-                        : '日時を選択してください',
+                        : L10n.of(context).selectDateTime,
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeM,
                       color: value != null ? AppColors.textDark : AppColors.textLight,
@@ -1105,9 +1172,9 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              '申込期限',
-              style: TextStyle(
+            Text(
+              L10n.of(context).registrationDeadline,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textDark,
@@ -1149,7 +1216,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                 const SizedBox(width: AppDimensions.spacingS),
                 Expanded(
                   child: Text(
-                    '申込期限なし - 参加者はいつでも申し込み可能です',
+                    L10n.of(context).noRegistrationDeadline,
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeS,
                       color: AppColors.info,
@@ -1163,14 +1230,14 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         if (_hasRegistrationDeadline) ...[
           const SizedBox(height: AppDimensions.spacingS),
           _buildDateTimeField(
-            label: AppStrings.registrationDeadlineLabel,
+            label: L10n.of(context).registrationDeadlineSectionLabel,
             value: _registrationDeadline,
             onTap: () => _selectDateTime(isEventDate: false),
             isRequired: true,
           ),
           const SizedBox(height: AppDimensions.spacingL),
           _buildDateTimeField(
-            label: '参加者キャンセル期限（任意）',
+            label: L10n.of(context).participantCancelDeadline,
             value: _participationCancelDeadline,
             onTap: () => _selectDateTime(isEventDate: false, isParticipationCancelDeadline: true),
             isRequired: false,
@@ -1182,7 +1249,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
   Widget _buildGameSettingsSection() {
     return _buildSectionContainer(
-      title: AppStrings.gameSettingsSection,
+      title: L10n.of(context).gameSettingsSection,
       icon: Icons.videogame_asset,
       children: [
         _buildGameSelectionField(),
@@ -1191,8 +1258,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         const SizedBox(height: AppDimensions.spacingL),
         _buildTextField(
           controller: _maxParticipantsController,
-          label: AppStrings.maxParticipantsLabel,
-          hint: '例：100',
+          label: L10n.of(context).maxParticipantsLabel,
+          hint: L10n.of(context).exampleCount,
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           isRequired: true,
@@ -1200,37 +1267,10 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         const SizedBox(height: AppDimensions.spacingL),
         _buildTextField(
           controller: _additionalInfoController,
-          label: AppStrings.additionalInfoLabel,
-          hint: AppStrings.additionalInfoHint,
+          label: L10n.of(context).additionalInfoLabel,
+          hint: L10n.of(context).additionalInfoHint,
           maxLines: 3,
         ),
-        // TODO: 参加費設定機能はリリース後にアップデートで対応予定
-        // const SizedBox(height: AppDimensions.spacingL),
-        // _buildSwitchField(
-        //   label: AppStrings.participationFeeLabel,
-        //   value: _hasParticipationFee,
-        //   onChanged: (value) {
-        //     setState(() {
-        //       _hasParticipationFee = value;
-        //     });
-        //   },
-        // ),
-        // if (_hasParticipationFee) ...[
-        //   const SizedBox(height: AppDimensions.spacingL),
-        //   _buildTextField(
-        //     controller: _feeAmountController,
-        //     label: AppStrings.feeAmountLabel,
-        //     hint: '参加費（例：1000円、\$50、無料など）',
-        //     keyboardType: TextInputType.text,
-        //   ),
-        //   const SizedBox(height: AppDimensions.spacingL),
-        //   _buildTextField(
-        //     controller: _feeSupplementController,
-        //     label: '参加費用補足',
-        //     hint: '例：イベント1回目は無料、支払い方法、キャンセルポリシーなど',
-        //     maxLines: 3,
-        //   ),
-        // ],
       ],
     );
   }
@@ -1239,17 +1279,17 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Row(
+        Row(
           children: [
             Text(
-              AppStrings.gameSelectionLabel,
-              style: TextStyle(
+              L10n.of(context).gameSelectionLabel,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textDark,
               ),
             ),
-            Text(
+            const Text(
               ' *',
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeM,
@@ -1267,7 +1307,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
               GameSelectionDialog.show(
                 context,
                 selectedGame: _selectedGame,
-                title: AppStrings.gameSelectionLabel,
+                title: L10n.of(context).gameSelectionLabel,
                 allowNone: false,
                 onGameSelected: (Game? game) {
                   if (game != null) {
@@ -1291,7 +1331,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    _selectedGame == null ? 'ゲームを選択してください' : _selectedGame!.name,
+                    _selectedGame == null ? L10n.of(context).selectGame : _selectedGame!.name,
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeM,
                       color: _selectedGame == null ? AppColors.textLight : AppColors.textDark,
@@ -1312,23 +1352,23 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   }
 
   Widget _buildPlatformSelectionField() {
-    const platforms = [AppStrings.iosLabel, AppStrings.androidLabel];
+    final platforms = [L10n.of(context).iosLabel, L10n.of(context).androidLabel];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         RichText(
-          text: const TextSpan(
+          text: TextSpan(
             children: [
               TextSpan(
-                text: AppStrings.platformLabel,
-                style: TextStyle(
+                text: L10n.of(context).platformLabel,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textDark,
                 ),
               ),
-              TextSpan(
+              const TextSpan(
                 text: ' *',
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeM,
@@ -1402,7 +1442,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                AppStrings.prizeSection,
+                L10n.of(context).prizeSection,
                 style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w600,
@@ -1422,7 +1462,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           ),
           const SizedBox(height: AppDimensions.spacingL),
         _buildSwitchField(
-          label: AppStrings.hasPrizeLabel,
+          label: L10n.of(context).hasPrizeLabel,
           value: _hasPrize,
           onChanged: (value) {
             setState(() {
@@ -1453,7 +1493,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                 const SizedBox(width: AppDimensions.spacingS),
                 Expanded(
                   child: Text(
-                    '賞品の受け渡しは主催者と参加者間で直接行ってください。アプリでは受け渡しの仲介や保証は行いません。',
+                    L10n.of(context).prizeDisclaimer,
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeXS,
                       color: AppColors.textSecondary,
@@ -1469,19 +1509,19 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           const SizedBox(height: AppDimensions.spacingL),
           _buildTextField(
             controller: _prizeContentController,
-            label: AppStrings.prizeContentLabel,
-            hint: '例：1位 10万円、2位 5万円、3位 1万円',
+            label: L10n.of(context).prizeContentLabel,
+            hint: L10n.of(context).prizeContentHint,
             maxLines: 3,
             isRequired: true,
           ),
           const SizedBox(height: AppDimensions.spacingL),
           _buildUserManagementField(
-            title: AppStrings.sponsorsLabel,
+            title: L10n.of(context).sponsorsLabel,
             users: _selectedSponsors,
             onAddUser: _addSponsor,
             onRemoveUser: _removeSponsor,
-            emptyMessage: 'スポンサーを追加してください',
-            addButtonText: 'スポンサーを追加',
+            emptyMessage: L10n.of(context).addSponsorPlaceholder,
+            addButtonText: L10n.of(context).addSponsor,
             addButtonIcon: Icons.business,
           ),
         ],
@@ -1492,6 +1532,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
   /// 賞品設定のヘルプダイアログを表示
   void _showPrizeInfoDialog() {
+    final l10n = L10n.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1499,17 +1540,17 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           children: [
             Icon(Icons.help_outline, color: AppColors.accent),
             const SizedBox(width: AppDimensions.spacingS),
-            const Text('賞品設定について'),
+            Text(l10n.prizeSettingsTitle),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildDialogBulletPoint('賞品情報は参加者への案内として表示されます'),
-            _buildDialogBulletPoint('実際の受け渡しは主催者と参加者間で行ってください'),
-            _buildDialogBulletPoint('アプリでは受け渡しの仲介や保証は行いません'),
-            _buildDialogBulletPoint('受け渡し方法は事前に参加者と相談してください'),
+            _buildDialogBulletPoint(l10n.prizeInfoBullet1),
+            _buildDialogBulletPoint(l10n.prizeInfoBullet2),
+            _buildDialogBulletPoint(l10n.prizeInfoBullet3),
+            _buildDialogBulletPoint(l10n.prizeInfoBullet4),
             const SizedBox(height: AppDimensions.spacingM),
             Container(
               padding: const EdgeInsets.all(AppDimensions.spacingS),
@@ -1518,7 +1559,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                 borderRadius: BorderRadius.circular(AppDimensions.radiusS),
               ),
               child: Text(
-                '推奨: PayPal、銀行振込、現金手渡しなど、双方が安心できる方法を選択してください。',
+                l10n.prizeRecommendation,
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeXS,
                   color: AppColors.textSecondary,
@@ -1531,7 +1572,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('了解'),
+            child: Text(l10n.understood),
           ),
         ],
       ),
@@ -1572,18 +1613,18 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
   Widget _buildManagementSection() {
     return _buildSectionContainer(
-      title: AppStrings.managementSection,
+      title: L10n.of(context).managementSection,
       icon: Icons.admin_panel_settings,
       children: [
         _buildManagerField(),
         const SizedBox(height: AppDimensions.spacingL),
         _buildUserManagementField(
-          title: '参加NGユーザー',
+          title: L10n.of(context).blockedUsersTitle,
           users: _blockedUsers,
           onAddUser: _addBlockedUser,
           onRemoveUser: _removeBlockedUser,
-          emptyMessage: 'ブロックするユーザーを追加してください',
-          addButtonText: 'NGユーザーを追加',
+          emptyMessage: L10n.of(context).addBlockedUserPlaceholder,
+          addButtonText: L10n.of(context).addBlockedUserButton,
           addButtonIcon: Icons.block,
         ),
       ],
@@ -1592,14 +1633,15 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
   /// 運営者管理フィールド（自分追加ボタン付き）
   Widget _buildManagerField() {
+    final l10n = L10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Text(
-              'イベント運営者',
-              style: TextStyle(
+            Text(
+              l10n.eventOperatorsTitle,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textDark,
@@ -1619,7 +1661,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         UserTagsList(
           users: _selectedManagers,
           onUserRemove: _removeManager,
-          emptyMessage: 'イベント運営者を追加してください',
+          emptyMessage: l10n.addOperatorPlaceholder,
           showRemoveButtons: true,
         ),
         const SizedBox(height: AppDimensions.spacingM),
@@ -1639,18 +1681,18 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                     borderRadius: BorderRadius.circular(AppDimensions.radiusM),
                     border: Border.all(color: AppColors.primary),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.person_add_alt_1,
                         color: AppColors.primary,
                         size: AppDimensions.iconS,
                       ),
-                      SizedBox(width: AppDimensions.spacingS),
+                      const SizedBox(width: AppDimensions.spacingS),
                       Text(
-                        '自分を追加',
-                        style: TextStyle(
+                        l10n.addMyselfButton,
+                        style: const TextStyle(
                           fontSize: AppDimensions.fontSizeS,
                           color: AppColors.primary,
                           fontWeight: FontWeight.w600,
@@ -1663,78 +1705,75 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingM),
 
-            // ボタンを横並びで配置
-            Row(
-              children: [
-                // 相互フォローから追加ボタン
-                Expanded(
-                  child: GestureDetector(
-                    onTap: _addManagerFromFriends,
-                    child: Container(
-                      padding: const EdgeInsets.all(AppDimensions.spacingM),
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                        border: Border.all(color: AppColors.secondary),
+            // 相互フォローから追加ボタン
+            SizedBox(
+              width: double.infinity,
+              child: GestureDetector(
+                onTap: _addManagerFromFriends,
+                child: Container(
+                  padding: const EdgeInsets.all(AppDimensions.spacingM),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                    border: Border.all(color: AppColors.secondary),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.people,
+                        color: AppColors.secondary,
+                        size: AppDimensions.iconS,
                       ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.people,
-                            color: AppColors.secondary,
-                            size: AppDimensions.iconS,
-                          ),
-                          SizedBox(width: AppDimensions.spacingS),
-                          Text(
-                            '相互フォローから',
-                            style: TextStyle(
-                              fontSize: AppDimensions.fontSizeS,
-                              color: AppColors.secondary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
+                      const SizedBox(width: AppDimensions.spacingS),
+                      Text(
+                        l10n.fromMutualFollows,
+                        style: const TextStyle(
+                          fontSize: AppDimensions.fontSizeS,
+                          color: AppColors.secondary,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: AppDimensions.spacingM),
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacingM),
 
-                // 他のユーザーを追加ボタン
-                Expanded(
-                  child: GestureDetector(
-                    onTap: _addManager,
-                    child: Container(
-                      padding: const EdgeInsets.all(AppDimensions.spacingM),
-                      decoration: BoxDecoration(
-                        color: AppColors.accent.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                        border: Border.all(color: AppColors.accent),
+            // 他のユーザーを追加ボタン
+            SizedBox(
+              width: double.infinity,
+              child: GestureDetector(
+                onTap: _addManager,
+                child: Container(
+                  padding: const EdgeInsets.all(AppDimensions.spacingM),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                    border: Border.all(color: AppColors.accent),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.search,
+                        color: AppColors.accent,
+                        size: AppDimensions.iconS,
                       ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.search,
-                            color: AppColors.accent,
-                            size: AppDimensions.iconS,
-                          ),
-                          SizedBox(width: AppDimensions.spacingS),
-                          Text(
-                            'ユーザー検索',
-                            style: TextStyle(
-                              fontSize: AppDimensions.fontSizeS,
-                              color: AppColors.accent,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
+                      const SizedBox(width: AppDimensions.spacingS),
+                      Text(
+                        l10n.userSearch,
+                        style: const TextStyle(
+                          fontSize: AppDimensions.fontSizeS,
+                          color: AppColors.accent,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
           ],
         ),
@@ -1819,10 +1858,11 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   }
 
   Future<void> _addManager() async {
+    final l10n = L10n.of(context);
     await UserSearchDialog.show(
       context,
-      title: 'イベント運営者を検索',
-      description: 'イベントを管理する運営者を追加してください',
+      title: l10n.searchOperatorTitle,
+      description: l10n.searchOperatorDesc,
       onUserSelected: (user) {
         if (!_selectedManagers.any((manager) => manager.id == user.id)) {
           setState(() {
@@ -1836,10 +1876,11 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   }
 
   Future<void> _addManagerFromFriends() async {
+    final l10n = L10n.of(context);
     await FriendSelectionDialog.show(
       context,
-      title: '相互フォローから運営者を選択',
-      description: '相互フォローの中からイベント運営者を追加してください',
+      title: l10n.selectFromMutualFollowsOrganizer,
+      description: l10n.selectFromMutualFollowsOrganizerDescription,
       excludedUsers: _selectedManagers,
       onFriendSelected: (user) {
         if (!_selectedManagers.any((manager) => manager.id == user.id)) {
@@ -1858,23 +1899,24 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   }
 
   Future<void> _showSponsorSelectionDialog() async {
+    final l10n = L10n.of(context);
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('スポンサーを追加'),
-        content: const Text('どの方法でスポンサーを追加しますか？'),
+        title: Text(l10n.addSponsorDialogTitle),
+        content: Text(l10n.addSponsorDialogQuestion),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
               _addSelfAsSponsor();
             },
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.person_add_alt_1, size: 16),
-                SizedBox(width: 8),
-                Text('自分を追加'),
+                const Icon(Icons.person_add_alt_1, size: 16),
+                const SizedBox(width: 8),
+                Text(l10n.addMyselfButton),
               ],
             ),
           ),
@@ -1883,12 +1925,12 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
               Navigator.of(context).pop();
               _addSponsorFromFriends();
             },
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.people, size: 16),
-                SizedBox(width: 8),
-                Text('相互フォローから選択'),
+                const Icon(Icons.people, size: 16),
+                const SizedBox(width: 8),
+                Text(l10n.selectFromMutualFollowsButton),
               ],
             ),
           ),
@@ -1897,18 +1939,18 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
               Navigator.of(context).pop();
               _addSponsorFromSearch();
             },
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.search, size: 16),
-                SizedBox(width: 8),
-                Text('ユーザー検索'),
+                const Icon(Icons.search, size: 16),
+                const SizedBox(width: 8),
+                Text(l10n.userSearch),
               ],
             ),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('キャンセル'),
+            child: Text(l10n.cancel),
           ),
         ],
       ),
@@ -1916,10 +1958,11 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   }
 
   Future<void> _addSponsorFromSearch() async {
+    final l10n = L10n.of(context);
     await UserSearchDialog.show(
       context,
-      title: 'スポンサーを検索',
-      description: 'イベントのスポンサーを追加してください',
+      title: l10n.searchSponsorTitle,
+      description: l10n.searchSponsorDesc,
       onUserSelected: (user) {
         if (!_selectedSponsors.any((sponsor) => sponsor.id == user.id)) {
           setState(() {
@@ -1937,10 +1980,11 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   }
 
   Future<void> _addSponsorFromFriends() async {
+    final l10n = L10n.of(context);
     await FriendSelectionDialog.show(
       context,
-      title: '相互フォローからスポンサーを選択',
-      description: '相互フォローの中からイベントスポンサーを追加してください',
+      title: l10n.selectFromMutualFollowsSponsor,
+      description: l10n.selectFromMutualFollowsSponsorDescription,
       excludedUsers: _selectedSponsors,
       onFriendSelected: (user) {
         if (!_selectedSponsors.any((sponsor) => sponsor.id == user.id)) {
@@ -1959,15 +2003,16 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   }
 
   Future<void> _addBlockedUser() async {
+    final l10n = L10n.of(context);
     await UserSearchDialog.show(
       context,
-      title: 'NGユーザーを検索',
-      description: 'このイベントをブロックするユーザーを追加してください',
+      title: l10n.searchBlockedUserTitle,
+      description: l10n.searchBlockedUserDesc,
       onUserSelected: (user) {
         // Validate that the user is not a manager or sponsor
         if (_selectedManagers.any((manager) => manager.id == user.id) ||
             _selectedSponsors.any((sponsor) => sponsor.id == user.id)) {
-          ErrorHandlerService.showErrorDialog(context, '運営者やスポンサーをNGユーザーに設定することはできません');
+          ErrorHandlerService.showErrorDialog(context, l10n.cannotBlockOperatorOrSponsorError);
           return;
         }
 
@@ -2004,9 +2049,10 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   /// 自分自身を運営者に追加
   Future<void> _addSelfAsManager() async {
     final currentUser = FirebaseAuth.instance.currentUser;
+    final l10n = L10n.of(context);
     if (currentUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ユーザーが認証されていません')),
+        SnackBar(content: Text(l10n.userNotAuthenticated)),
       );
       return;
     }
@@ -2046,7 +2092,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         selfUserData = UserData(
           id: currentUser.uid,
           userId: '', // カスタムユーザーIDが未設定の場合は空文字
-          username: currentUser.displayName ?? currentUser.email?.split('@').first ?? 'ユーザー',
+          username: currentUser.displayName ?? currentUser.email?.split('@').first ?? l10n.defaultUsername,
           email: currentUser.email ?? '',
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
@@ -2067,25 +2113,26 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${userData.username}を運営者に追加しました')),
+          SnackBar(content: Text(l10n.addedAsOperatorMessage(userData.username))),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('既に運営者として追加されています')),
+          SnackBar(content: Text(l10n.alreadyAddedAsOperator)),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('エラーが発生しました: ${e.toString()}')),
+        SnackBar(content: Text(l10n.errorOccurredWithDetails(e.toString()))),
       );
     }
   }
 
   Future<void> _addSelfAsSponsor() async {
     final currentUser = FirebaseAuth.instance.currentUser;
+    final l10n = L10n.of(context);
     if (currentUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ユーザーが認証されていません')),
+        SnackBar(content: Text(l10n.userNotAuthenticated)),
       );
       return;
     }
@@ -2117,7 +2164,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         selfUserData = UserData.create(
           id: currentUser.uid,
           userId: currentUser.uid,
-          username: currentUser.displayName ?? 'ユーザー',
+          username: currentUser.displayName ?? L10n.of(context).guestUser,
           email: currentUser.email ?? '',
           photoUrl: currentUser.photoURL,
         );
@@ -2138,14 +2185,18 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           _blockedUsers.removeWhere((blockedUser) => blockedUser.id == userData.id);
         });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('既にスポンサーとして追加されています')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(L10n.of(context).alreadyAddedAsSponsor)),
+          );
+        }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('エラーが発生しました: ${e.toString()}')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(L10n.of(context).errorOccurredWithDetails(e.toString()))),
+        );
+      }
     }
   }
 
@@ -2196,8 +2247,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   Future<void> _addInvitedUser() async {
     await UserSearchDialog.show(
       context,
-      title: '招待メンバーを検索',
-      description: 'イベントに招待するメンバーを追加してください',
+      title: L10n.of(context).searchInviteMembers,
+      description: L10n.of(context).addInviteMembersDescription,
       onUserSelected: (user) {
         if (!_invitedUsers.any((invitedUser) => invitedUser.id == user.id)) {
           setState(() {
@@ -2220,20 +2271,26 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
 
   Widget _buildCategorySection() {
+    final l10n = L10n.of(context);
+    // 内部値からローカライズ表示値へのマッピング
+    final visibilityOptions = {
+      'public': l10n.visibilityPublic,
+      'invite_only': l10n.visibilityInviteOnly,
+    };
     return _buildSectionContainer(
-      title: AppStrings.categorySection,
+      title: l10n.categorySection,
       icon: Icons.category,
       children: [
-        _buildDropdownField(
-          label: AppStrings.visibilityLabel,
+        _buildLocalizedDropdownField(
+          label: l10n.visibilityLabel,
           value: _visibility,
-          options: ['パブリック', '招待制'],
+          options: visibilityOptions,
           onChanged: (value) {
             setState(() {
               final previousVisibility = _visibility;
               _visibility = value!;
               // 招待制からパブリックに変更した場合、招待制の設定をクリア
-              if (previousVisibility == '招待制' && _visibility == 'パブリック') {
+              if (previousVisibility == 'invite_only' && _visibility == 'public') {
                 _eventPasswordController.clear();
                 _invitedUsers.clear();
               }
@@ -2243,8 +2300,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         ),
         const SizedBox(height: AppDimensions.spacingL),
         TagInputField(
-          label: AppStrings.eventTagsLabel,
-          hint: AppStrings.eventTagsHint,
+          label: L10n.of(context).eventTagsLabel,
+          hint: L10n.of(context).eventTagsHint,
           initialTags: _eventTags,
           maxTags: 10,
           maxTagLength: 20,
@@ -2253,31 +2310,37 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
               _eventTags = tags;
             });
           },
-          validator: (tags) => ValidationService.validateEventTags(tags),
+          validator: (tags) => ValidationService.of(context).validateEventTags(tags),
         ),
-        // TODO: 多言語化は見送り - 言語設定セクションを非表示化
-        // const SizedBox(height: AppDimensions.spacingL),
-        // _buildDropdownField(
-        //   label: AppStrings.languageLabel,
-        //   value: _language,
-        //   options: ['日本語', '英語', 'その他'],
-        //   onChanged: (value) {
-        //     setState(() {
-        //       _language = value!;
-        //     });
-        //   },
-        // ),
+        const SizedBox(height: AppDimensions.spacingL),
+        _buildLocalizedDropdownField(
+          label: l10n.languageSettingLabel,
+          value: _language,
+          options: {
+            'ja': l10n.languageJapanese,
+            'en': l10n.languageEnglish,
+            'ko': l10n.languageKorean,
+            'zh': l10n.languageChineseSimplified,
+            'zh_TW': l10n.languageChineseTraditional,
+            'other': l10n.languageOther,
+          },
+          onChanged: (value) {
+            setState(() {
+              _language = value!;
+            });
+          },
+        ),
       ],
     );
   }
 
   Widget _buildInvitationSection() {
-    if (_visibility != '招待制') {
+    if (_visibility != 'invite_only') {
       return const SizedBox.shrink();
     }
 
     return _buildSectionContainer(
-      title: AppStrings.invitationSection,
+      title: L10n.of(context).invitationSection,
       icon: Icons.person_add,
       children: [
         // パスワード入力フィールド（表示/非表示トグル付き）
@@ -2286,12 +2349,12 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
         // 招待メンバー管理（ユーザー検索形式）
         _buildUserManagementField(
-          title: AppStrings.inviteMembersLabel,
+          title: L10n.of(context).inviteMembersLabel,
           users: _invitedUsers,
           onAddUser: _addInvitedUser,
           onRemoveUser: _removeInvitedUser,
-          emptyMessage: '招待するメンバーを追加してください',
-          addButtonText: '招待メンバーを追加',
+          emptyMessage: L10n.of(context).addInviteMembersEmptyMessage,
+          addButtonText: L10n.of(context).addInviteMembersButton,
           addButtonIcon: Icons.person_add_outlined,
           isRequired: true,
         ),
@@ -2301,18 +2364,18 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
   Widget _buildExternalSection() {
     return _buildSectionContainer(
-      title: AppStrings.externalSection,
+      title: L10n.of(context).externalSection,
       icon: Icons.link,
       children: [
         _buildTextField(
           controller: _contactController,
-          label: AppStrings.contactLabel,
-          hint: 'イベント公式Discord、コミュニティサイト、配信チャンネル等\n例：公式Discord: https://discord.gg/xxxxx\nコミュニティサイト: https://example.com\nYouTube: @channelname',
+          label: L10n.of(context).contactLabel,
+          hint: L10n.of(context).contactHint,
           maxLines: 4,
         ),
         const SizedBox(height: AppDimensions.spacingL),
         _buildSwitchField(
-          label: AppStrings.streamingLabel,
+          label: L10n.of(context).streamingLabel,
           value: _hasStreaming,
           onChanged: (value) {
             setState(() {
@@ -2323,8 +2386,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         if (_hasStreaming) ...[
           const SizedBox(height: AppDimensions.spacingL),
           StreamingUrlInputField(
-            label: AppStrings.streamingUrlLabel,
-            hint: AppStrings.streamingUrlHint,
+            label: L10n.of(context).streamingUrlLabel,
+            hint: L10n.of(context).streamingUrlHint,
             initialUrls: _streamingUrls,
             maxUrls: 5,
             onChanged: (urls) {
@@ -2334,7 +2397,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
             },
             validator: (urls) {
               if (_hasStreaming && urls.isEmpty) {
-                return '最低1つの配信URLを入力してください';
+                return L10n.of(context).atLeastOneStreamingUrlRequired;
               }
               return null;
             },
@@ -2346,13 +2409,13 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
   Widget _buildOtherSection() {
     return _buildSectionContainer(
-      title: AppStrings.otherSection,
+      title: L10n.of(context).otherSection,
       icon: Icons.more_horiz,
       children: [
         _buildTextField(
           controller: _policyController,
-          label: AppStrings.policyLabel,
-          hint: '例：イベント開始24時間前まではキャンセル可能',
+          label: L10n.of(context).policyLabel,
+          hint: L10n.of(context).policyHint,
           maxLines: 4,
         ),
       ],
@@ -2367,7 +2430,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         // Create Event Button
         AppButton.primary(
           text: _isCreatingEvent
-              ? 'イベントを作成中...'
+              ? L10n.of(context).creatingEvent
               : _getCreateButtonText(),
           isFullWidth: true,
           isEnabled: !_isCreatingEvent && !_isSavingDraft,
@@ -2383,7 +2446,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
         // Save Draft Button
         AppButton.white(
-          text: _isSavingDraft ? '下書きを保存中...' : AppStrings.saveDraftButton,
+          text: _isSavingDraft ? L10n.of(context).savingDraft : L10n.of(context).saveDraftButton,
           isFullWidth: true,
           isEnabled: !_isCreatingEvent && !_isSavingDraft,
           onPressed: _isCreatingEvent || _isSavingDraft ? null : _saveDraft,
@@ -2405,8 +2468,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       // キャンセル期限の場合
       if (!_hasRegistrationDeadline || _registrationDeadline == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('申込期限を有効にして設定してください'),
+          SnackBar(
+            content: Text(L10n.of(context).enableRegistrationDeadline),
             backgroundColor: AppColors.error,
           ),
         );
@@ -2421,8 +2484,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         // 申込期限と開催日時の間隔が短すぎる場合の警告
         if (!_registrationDeadline!.isBefore(lastDate)) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('申込期限から開催日時まで間隔が短すぎるため、キャンセル期限を設定できません'),
+            SnackBar(
+              content: Text(L10n.of(context).cancelDeadlineTooShort),
               backgroundColor: AppColors.error,
             ),
           );
@@ -2434,8 +2497,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       } else {
         // 開催日時が未設定の場合はエラー
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('まず開催日時を設定してください'),
+          SnackBar(
+            content: Text(L10n.of(context).setEventDateFirst),
             backgroundColor: AppColors.error,
           ),
         );
@@ -2451,8 +2514,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         if (lastDate.isBefore(DateTime.now())) {
           // 開催日時が3時間以内の場合はエラー
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('開催日時が近すぎるため申込期限を設定できません（開催3時間前まで設定可能）'),
+            SnackBar(
+              content: Text(L10n.of(context).eventDateTooCloseForDeadline),
               backgroundColor: AppColors.error,
             ),
           );
@@ -2468,8 +2531,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       } else {
         // 開催日時が未設定の場合はエラー
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('まず開催日時を設定してください'),
+          SnackBar(
+            content: Text(L10n.of(context).setEventDateFirst),
             backgroundColor: AppColors.error,
           ),
         );
@@ -2526,8 +2589,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         } else {
           // 開催時刻が早い場合は前日を推奨
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('申込期限は開催時刻の少なくとも3時間前に設定してください'),
+            SnackBar(
+              content: Text(L10n.of(context).deadlineMustBe3HoursBefore),
               backgroundColor: AppColors.warning,
             ),
           );
@@ -2571,8 +2634,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           // キャンセル期限のチェック
           if (_registrationDeadline != null && selectedDateTime.isBefore(_registrationDeadline!)) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('キャンセル期限は申込期限以降に設定してください'),
+              SnackBar(
+                content: Text(L10n.of(context).cancelDeadlineAfterRegistration),
                 backgroundColor: AppColors.error,
               ),
             );
@@ -2581,8 +2644,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           }
           if (_eventDate != null && (selectedDateTime.isAfter(_eventDate!) || selectedDateTime.isAtSameMomentAs(_eventDate!))) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('キャンセル期限は開催日時より前に設定してください'),
+              SnackBar(
+                content: Text(L10n.of(context).cancelDeadlineBeforeEvent),
                 backgroundColor: AppColors.error,
               ),
             );
@@ -2597,8 +2660,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           // 現在時刻より前かチェック
           if (selectedDateTime.isBefore(now)) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('申込期限は現在時刻より後に設定してください'),
+              SnackBar(
+                content: Text(L10n.of(context).registrationDeadlineAfterNow),
                 backgroundColor: AppColors.error,
               ),
             );
@@ -2609,8 +2672,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           // 開催日時の3時間前より後かチェック
           if (selectedDateTime.isAfter(deadlineLimit)) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('申込期限は開催日時の3時間前までに設定してください'),
+              SnackBar(
+                content: Text(L10n.of(context).deadlineMust3HoursBeforeEvent),
                 backgroundColor: AppColors.error,
               ),
             );
@@ -2622,8 +2685,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         // 開催日時が現在時刻より前でないかチェック
         if (isEventDate && selectedDateTime.isBefore(DateTime.now())) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('開催日時は現在時刻より後に設定してください'),
+            SnackBar(
+              content: Text(L10n.of(context).eventDateAfterNow),
               backgroundColor: AppColors.error,
             ),
           );
@@ -2699,7 +2762,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         // 中程度の参加者がいる場合は理由入力必須の警告
         return await _showManyParticipantsWarningDialog(
           participantCount,
-          action: '下書きに変更'
+          action: L10n.of(context).changeToRevertToDraft
         );
       } else {
         // 多数の参加者がいる場合は制限
@@ -2708,10 +2771,12 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       }
     } catch (e) {
       // エラー時は安全のため制限
-      ErrorHandlerService.showErrorDialog(
-        context,
-        '参加者数の確認に失敗しました。\n安全のため下書きに戻すことができません。',
-      );
+      if (mounted) {
+        ErrorHandlerService.showErrorDialog(
+          context,
+          L10n.of(context).participantCheckFailedMessage,
+        );
+      }
       return false;
     }
   }
@@ -2735,9 +2800,9 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                 size: AppDimensions.iconL,
               ),
               const SizedBox(width: AppDimensions.spacingM),
-              const Text(
-                '参加者への影響について',
-                style: TextStyle(
+              Text(
+                L10n.of(context).impactOnParticipantsTitle,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -2765,7 +2830,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                     const SizedBox(width: AppDimensions.spacingM),
                     Expanded(
                       child: Text(
-                        '現在$participantCount名が参加申込済みです',
+                        L10n.of(context).currentlyParticipantsApplied(participantCount),
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeM,
                           color: Colors.orange[800],
@@ -2778,7 +2843,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
               ),
               const SizedBox(height: AppDimensions.spacingM),
               Text(
-                '下書きに戻すと、参加者は以下の影響を受けます：',
+                L10n.of(context).impactOnRevertToDraft,
                 style: const TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   color: AppColors.textDark,
@@ -2786,9 +2851,9 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                 ),
               ),
               const SizedBox(height: AppDimensions.spacingS),
-              _buildImpactItem('イベントが非公開になり、参加者がアクセスできなくなります'),
-              _buildImpactItem('参加者に通知が送信されます'),
-              _buildImpactItem('参加申込は保持されますが、一時的に無効となります'),
+              _buildImpactItem(L10n.of(context).impactEventHidden),
+              _buildImpactItem(L10n.of(context).impactParticipantsNotified),
+              _buildImpactItem(L10n.of(context).impactRegistrationTemporarilyInvalid),
               const SizedBox(height: AppDimensions.spacingM),
               Container(
                 padding: const EdgeInsets.all(AppDimensions.spacingM),
@@ -2799,9 +2864,9 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                     color: AppColors.info.withValues(alpha: 0.3),
                   ),
                 ),
-                child: const Text(
-                  '下書きから再公開した際、参加申込は自動的に復活します。',
-                  style: TextStyle(
+                child: Text(
+                  L10n.of(context).registrationReactivatedOnRepublish,
+                  style: const TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     color: AppColors.textDark,
                   ),
@@ -2812,9 +2877,9 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text(
-                'キャンセル',
-                style: TextStyle(
+              child: Text(
+                L10n.of(context).cancel,
+                style: const TextStyle(
                   color: AppColors.textDark,
                   fontWeight: FontWeight.w600,
                 ),
@@ -2825,9 +2890,9 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
               style: FilledButton.styleFrom(
                 backgroundColor: Colors.orange,
               ),
-              child: const Text(
-                '下書きに戻す',
-                style: TextStyle(fontWeight: FontWeight.w600),
+              child: Text(
+                L10n.of(context).revertToDraftButton,
+                style: const TextStyle(fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -2878,7 +2943,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
       // 現在のユーザー名を取得（主催者名として使用）
       final currentUser = FirebaseAuth.instance.currentUser;
-      final organizerName = currentUser?.displayName ?? currentUser?.email?.split('@').first ?? '主催者';
+      final organizerName = currentUser?.displayName ?? currentUser?.email?.split('@').first ?? L10n.of(context).organizerDefault;
 
       // 承認済み参加者のリストを取得
       final approvedParticipants = await ParticipationService.getApprovedParticipants(eventId);
@@ -2905,7 +2970,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   Future<void> _saveEventWithStatus(EventStatus status) async {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
-      ErrorHandlerService.showErrorDialog(context, 'ユーザーが認証されていません。ログインしてください。');
+      ErrorHandlerService.showErrorDialog(context, L10n.of(context).pleaseLoginFirst);
       return;
     }
 
@@ -2962,7 +3027,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         await EventService.updateEventStatus(eventId, status);
 
         // 編集モードで招待制イベントの場合、新規追加された招待ユーザーにのみ通知を送信
-        if (_visibility == '招待制' && _invitedUsers.isNotEmpty && status == EventStatus.published) {
+        if (_visibility == 'invite_only' && _invitedUsers.isNotEmpty && status == EventStatus.published) {
           // 新規追加されたユーザーのみ抽出（既存ユーザーには再送しない）
           final newInvitedUserIds = _invitedUsers
               .map((user) => user.id)
@@ -3009,7 +3074,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         await EventService.updateEventStatus(eventId, status);
 
         // 招待制イベントの場合、招待通知を送信（新規作成時のみ）
-        if (_visibility == '招待制' && _invitedUsers.isNotEmpty && status == EventStatus.published) {
+        if (_visibility == 'invite_only' && _invitedUsers.isNotEmpty && status == EventStatus.published) {
           try {
             await EventService.sendEventInvitations(
               eventId: eventId,
@@ -3029,7 +3094,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           // イベント公開時は成功ダイアログを表示して詳細画面に遷移
           if (widget.editingEvent != null) {
             // 編集モードの場合
-            ErrorHandlerService.showSuccessSnackBar(context, 'イベントを更新しました');
+            ErrorHandlerService.showSuccessSnackBar(context, L10n.of(context).eventUpdatedSuccess);
             Navigator.of(context).pop(eventId);
           } else {
             // 新規作成モードの場合
@@ -3037,7 +3102,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           }
         } else {
           // 下書き保存時は成功メッセージを表示して前の画面に戻る
-          final message = widget.editingEvent != null ? '変更を保存しました' : '下書きを保存しました';
+          final message = widget.editingEvent != null ? L10n.of(context).changesSavedSuccess : L10n.of(context).draftSavedSuccess;
           ErrorHandlerService.showSuccessSnackBar(context, message);
           Navigator.of(context).pop(eventId);
         }
@@ -3079,13 +3144,9 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       additionalInfo: _additionalInfoController.text.trim().isEmpty
           ? null
           : _additionalInfoController.text.trim(),
-      hasParticipationFee: _hasParticipationFee,
-      participationFeeText: _hasParticipationFee && _feeAmountController.text.isNotEmpty
-          ? _feeAmountController.text.trim()
-          : null,
-      participationFeeSupplement: _hasParticipationFee && _feeSupplementController.text.isNotEmpty
-          ? _feeSupplementController.text.trim()
-          : null,
+      hasParticipationFee: false,
+      participationFeeText: null,
+      participationFeeSupplement: null,
       hasPrize: _hasPrize,
       prizeContent: _hasPrize && _prizeContentController.text.isNotEmpty
           ? _prizeContentController.text.trim()
@@ -3094,7 +3155,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       managerIds: _selectedManagers.map((manager) => manager.id).toList(),
       blockedUserIds: _blockedUsers.map((user) => user.id).toList(),
       // パブリックの場合は招待ユーザーIDをクリア
-      invitedUserIds: _visibility == '招待制'
+      invitedUserIds: _visibility == 'invite_only'
           ? _invitedUsers.map((user) => user.id).toList()
           : [],
       // 下書き保存時もユーザーが選択したvisibilityを保持する
@@ -3109,7 +3170,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       policy: _policyController.text.trim().isEmpty
           ? null
           : _policyController.text.trim(),
-      eventPassword: _visibility == '招待制' && _eventPasswordController.text.isNotEmpty
+      eventPassword: _visibility == 'invite_only' && _eventPasswordController.text.isNotEmpty
           ? _eventPasswordController.text.trim()
           : null,
       status: overrideStatus ?? EventStatus.published,
@@ -3119,16 +3180,65 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   /// 作成ボタンのテキストを取得
   String _getCreateButtonText() {
     final isEditing = widget.editingEvent != null;
-    return isEditing ? 'イベントを更新・公開する' : 'イベントを公開する';
+    return isEditing ? L10n.of(context).updateAndPublishEvent : L10n.of(context).publishEvent;
   }
 
   /// 文字列の可視性をEnumに変換
   EventVisibility _convertVisibilityToEnum(String visibility) {
     switch (visibility) {
-      case '招待制':
+      case 'invite_only':
         return EventVisibility.inviteOnly;
       default:
         return EventVisibility.public;
+    }
+  }
+
+  /// GameEventの日本語visibility表記を内部値に変換
+  String _convertVisibilityToInternalValue(String visibility) {
+    switch (visibility) {
+      case '招待制':
+      case 'inviteOnly':
+      case 'invite_only':
+        return 'invite_only';
+      case 'プライベート':
+      case 'private':
+        return 'public'; // プライベートはサポートしないためpublicにフォールバック
+      case 'パブリック':
+      case 'public':
+      default:
+        return 'public';
+    }
+  }
+
+  /// 言語表記を内部値に変換
+  String _convertLanguageToInternalValue(String language) {
+    switch (language) {
+      case '日本語':
+      case 'Japanese':
+      case 'ja':
+        return 'ja';
+      case '英語':
+      case 'English':
+      case 'en':
+        return 'en';
+      case '韓国語':
+      case 'Korean':
+      case 'ko':
+        return 'ko';
+      case '中国語（簡体字）':
+      case 'Chinese (Simplified)':
+      case 'zh':
+        return 'zh';
+      case '中国語（繁体字）':
+      case 'Chinese (Traditional)':
+      case 'zh_TW':
+        return 'zh_TW';
+      case 'その他':
+      case 'Other':
+      case 'other':
+        return 'other';
+      default:
+        return 'ja'; // デフォルトは日本語
     }
   }
 
@@ -3138,76 +3248,72 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
     // ※基本情報セクションの必須項目
     if (_eventNameController.text.trim().isEmpty) {
-      errors.add('イベント名を入力してください');
+      errors.add(L10n.of(context).validationEventNameRequired);
     }
 
     if (_descriptionController.text.trim().isEmpty) {
-      errors.add('イベント内容を入力してください');
+      errors.add(L10n.of(context).validationEventDescriptionRequired);
     }
 
     if (_rulesController.text.trim().isEmpty) {
-      errors.add('参加ルールを入力してください');
+      errors.add(L10n.of(context).validationRulesRequired);
     }
 
     // ※ゲーム情報セクションの必須項目
     if (_selectedGame == null) {
-      errors.add('ゲームを選択してください');
+      errors.add(L10n.of(context).validationGameRequired);
     }
 
     if (_selectedPlatforms.isEmpty) {
-      errors.add('プラットフォームを選択してください');
+      errors.add(L10n.of(context).validationPlatformRequired);
     }
 
     // ※開催設定セクションの必須項目
     if (_eventDate == null) {
-      errors.add('開催日時を設定してください');
+      errors.add(L10n.of(context).validationEventDateRequired);
     } else if (_eventDate!.isBefore(DateTime.now())) {
-      errors.add('開催日時は現在時刻より後に設定してください');
+      errors.add(L10n.of(context).validationEventDateFuture);
     }
 
     if (_hasRegistrationDeadline) {
       if (_registrationDeadline == null) {
-        errors.add('参加申込締切を設定してください');
+        errors.add(L10n.of(context).validationRegistrationDeadlineRequired);
       } else if (_eventDate != null &&
                  (_registrationDeadline!.isAfter(_eventDate!) || _registrationDeadline!.isAtSameMomentAs(_eventDate!))) {
-        errors.add('参加申込締切は開催日時より前に設定してください');
+        errors.add(L10n.of(context).validationRegistrationDeadlineBeforeEvent);
       }
     }
 
     if (_maxParticipantsController.text.trim().isEmpty) {
-      errors.add('最大参加人数を入力してください');
+      errors.add(L10n.of(context).validationMaxParticipantsRequired);
     } else {
       final maxParticipants = int.tryParse(_maxParticipantsController.text.trim());
       if (maxParticipants == null || maxParticipants <= 0) {
-        errors.add('最大参加人数は正の整数で入力してください');
+        errors.add(L10n.of(context).validationMaxParticipantsPositive);
       }
     }
 
-    if (_visibility == '招待制') {
+    if (_visibility == 'invite_only') {
       // 招待制イベント時の条件付き必須項目
       if (_invitedUsers.isEmpty) {
-        errors.add('招待メンバーを追加してください');
+        errors.add(L10n.of(context).validationInviteMembersRequired);
       }
     }
 
     // ※賞品設定時の条件付き必須項目
     if (_hasPrize) {
       if (_prizeContentController.text.trim().isEmpty) {
-        errors.add('賞品内容を入力してください');
+        errors.add(L10n.of(context).validationPrizeContentRequired);
       }
 
       if (_selectedManagers.isEmpty) {
-        errors.add('賞品設定時は運営者を追加してください');
+        errors.add(L10n.of(context).validationManagerRequiredForPrize);
       }
     }
 
     // その他の条件付き必須項目のチェック
-    if (_hasParticipationFee && _feeAmountController.text.trim().isEmpty) {
-      errors.add('参加費用の詳細を入力してください');
-    }
-
     if (_hasStreaming && _streamingUrls.isEmpty) {
-      errors.add('配信URLを入力してください');
+      errors.add(L10n.of(context).validationStreamingUrlRequired);
     }
 
 
@@ -3226,8 +3332,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       final maxParticipants = int.tryParse(_maxParticipantsController.text.trim());
       if (maxParticipants == null || maxParticipants <= 0) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('最大参加人数は正の整数で入力してください'),
+          SnackBar(
+            content: Text(L10n.of(context).validationMaxParticipantsPositive),
             backgroundColor: AppColors.error,
           ),
         );
@@ -3239,8 +3345,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     if (_eventDate != null && _registrationDeadline != null) {
       if (_registrationDeadline!.isAfter(_eventDate!) || _registrationDeadline!.isAtSameMomentAs(_eventDate!)) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('参加申込締切は開催日時より前に設定してください'),
+          SnackBar(
+            content: Text(L10n.of(context).validationRegistrationDeadlineBeforeEvent),
             backgroundColor: AppColors.error,
           ),
         );
@@ -3281,9 +3387,9 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'イベントを公開しました！',
-                      style: TextStyle(
+                    Text(
+                      L10n.of(context).eventPublished,
+                      style: const TextStyle(
                         fontSize: AppDimensions.fontSizeL,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textDark,
@@ -3314,18 +3420,18 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                   color: AppColors.backgroundLight,
                   borderRadius: BorderRadius.circular(AppDimensions.radiusS),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.info_outline,
                       color: AppColors.info,
                       size: AppDimensions.iconM,
                     ),
-                    SizedBox(width: AppDimensions.spacingS),
+                    const SizedBox(width: AppDimensions.spacingS),
                     Expanded(
                       child: Text(
-                        'イベント詳細画面で参加者の管理や\nイベント情報の確認ができます',
-                        style: TextStyle(
+                        L10n.of(context).eventDetailDescription,
+                        style: const TextStyle(
                           fontSize: AppDimensions.fontSizeM,
                           color: AppColors.textDark,
                           height: 1.4,
@@ -3350,7 +3456,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              child: const Text('後で確認'),
+              child: Text(L10n.of(context).checkLater),
             ),
             FilledButton(
               onPressed: () {
@@ -3368,7 +3474,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              child: const Text('詳細を見る'),
+              child: Text(L10n.of(context).viewDetails),
             ),
           ],
         );
@@ -3394,9 +3500,9 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                '入力内容を確認してください',
-                style: TextStyle(
+              Text(
+                L10n.of(context).checkInputContent,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -3410,9 +3516,9 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '以下の必須項目（※）を入力してください：',
-                  style: TextStyle(
+                Text(
+                  L10n.of(context).fillRequiredFields,
+                  style: const TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     color: AppColors.textDark,
                     fontWeight: FontWeight.w600,
@@ -3458,7 +3564,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              child: const Text('確認'),
+              child: Text(L10n.of(context).confirm),
             ),
           ],
         );
@@ -3472,14 +3578,15 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   /// 中程度の参加者がいる場合の警告ダイアログ（6-20人）
   Future<bool> _showManyParticipantsWarningDialog(
     int participantCount, {
-    String action = '下書きに変更'
+    String? action,
   }) async {
+    final actionText = action ?? L10n.of(context).changeToRevertToDraft;
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(
-          '注意が必要です',
-          style: TextStyle(
+        title: Text(
+          L10n.of(context).cautionRequired,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeL,
             fontWeight: FontWeight.w600,
             color: AppColors.warning,
@@ -3490,7 +3597,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '現在${participantCount}名の参加者がいるため、変更には慎重な検討が必要です。',
+              L10n.of(context).participantsRequireCarefulChange(participantCount),
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 color: AppColors.textDark,
@@ -3498,9 +3605,9 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
               ),
             ),
             const SizedBox(height: AppDimensions.spacingM),
-            const Text(
-              '変更理由を記入してください：',
-              style: TextStyle(
+            Text(
+              L10n.of(context).enterChangeReason,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textDark,
@@ -3509,10 +3616,10 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
             const SizedBox(height: AppDimensions.spacingS),
             TextField(
               maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: '例：スケジュール変更により内容を更新しました',
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.all(AppDimensions.spacingM),
+              decoration: InputDecoration(
+                hintText: L10n.of(context).changeReasonHint,
+                border: const OutlineInputBorder(),
+                contentPadding: const EdgeInsets.all(AppDimensions.spacingM),
               ),
               onChanged: (value) {
                 // 理由を保存（実装時に追加）
@@ -3526,14 +3633,14 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
             style: TextButton.styleFrom(
               foregroundColor: AppColors.textSecondary,
             ),
-            child: const Text('キャンセル'),
+            child: Text(L10n.of(context).cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(
               foregroundColor: AppColors.warning,
             ),
-            child: Text('${action}する'),
+            child: Text(actionText),
           ),
         ],
       ),
@@ -3547,17 +3654,16 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(
-          'イベントの下書き化はできません',
-          style: TextStyle(
+        title: Text(
+          L10n.of(context).cannotRevertToDraftTitle,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeL,
             fontWeight: FontWeight.w600,
             color: AppColors.textDark,
           ),
         ),
         content: Text(
-          '参加者が${participantCount}人いるため、イベントを下書きに戻すことはできません。'
-          '\n\n申し込み締切後の大幅な変更は参加者の混乱を招く可能性があります。',
+          L10n.of(context).cannotRevertToDraftMessage(participantCount),
           style: const TextStyle(
             fontSize: AppDimensions.fontSizeM,
             color: AppColors.textDark,
@@ -3570,9 +3676,9 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
             style: TextButton.styleFrom(
               foregroundColor: AppColors.accent,
             ),
-            child: const Text(
-              '了解',
-              style: TextStyle(
+            child: Text(
+              L10n.of(context).understood,
+              style: const TextStyle(
                 fontSize: AppDimensions.fontSizeM,
                 fontWeight: FontWeight.w600,
               ),

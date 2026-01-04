@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/game_profile_model.dart';
 import '../../features/game_profile/providers/game_profile_provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 import 'primary_button.dart';
@@ -24,33 +25,34 @@ class GameProfileConfirmationDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = L10n.of(context);
     return AlertDialog(
-      title: const Text('ゲームプロフィールの確認'),
+      title: Text(l10n.gameProfileConfirmationTitle),
       content: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '「$eventName」への申請時に以下のプロフィール情報を送信します。',
+              l10n.gameProfileSendMessage(eventName),
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 fontWeight: FontWeight.w500,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingM),
-            _buildProfileSection(ref),
+            _buildProfileSection(ref, l10n),
           ],
         ),
       ),
       actions: [
         SecondaryButton(
-          text: '編集する',
+          text: l10n.editButtonText,
           onPressed: onEdit,
           width: 100,
         ),
         PrimaryButton(
-          text: 'この内容で申請',
+          text: l10n.applyWithThisContent,
           onPressed: onConfirm,
           width: 140,
         ),
@@ -58,17 +60,17 @@ class GameProfileConfirmationDialog extends ConsumerWidget {
     );
   }
 
-  Widget _buildProfileSection(WidgetRef ref) {
+  Widget _buildProfileSection(WidgetRef ref, L10n l10n) {
     final gameAsync = ref.watch(gameByIdProvider(gameProfile.gameId));
 
     return gameAsync.when(
-      data: (game) => _buildProfileContent(game?.name ?? gameProfile.gameId),
-      loading: () => _buildProfileContent(gameProfile.gameId),
-      error: (_, __) => _buildProfileContent(gameProfile.gameId),
+      data: (game) => _buildProfileContent(game?.name ?? gameProfile.gameId, l10n),
+      loading: () => _buildProfileContent(gameProfile.gameId, l10n),
+      error: (_, __) => _buildProfileContent(gameProfile.gameId, l10n),
     );
   }
 
-  Widget _buildProfileContent(String gameName) {
+  Widget _buildProfileContent(String gameName, L10n l10n) {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
@@ -79,34 +81,34 @@ class GameProfileConfirmationDialog extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildInfoRow('ゲーム', gameName),
-          _buildInfoRow('ゲーム内ユーザー名', gameProfile.gameUsername),
+          _buildInfoRow(l10n.gameLabel, gameName),
+          _buildInfoRow(l10n.gameUsernameLabel, gameProfile.gameUsername),
           if (gameProfile.gameUserId.isNotEmpty)
-            _buildInfoRow('ゲーム内ユーザーID', gameProfile.gameUserId),
+            _buildInfoRow(l10n.gameUserIdLabel, gameProfile.gameUserId),
           if (gameProfile.skillLevel != null)
-            _buildInfoRow('スキルレベル', gameProfile.skillLevel!.displayName),
+            _buildInfoRow(l10n.skillLevelLabel, gameProfile.skillLevel!.displayName),
           if (gameProfile.rankOrLevel.isNotEmpty)
-            _buildInfoRow('ランク・レベル', gameProfile.rankOrLevel),
+            _buildInfoRow(l10n.rankLevelLabel, gameProfile.rankOrLevel),
           if (gameProfile.playStyles.isNotEmpty)
             _buildInfoRow(
-              'プレイスタイル',
+              l10n.playStyleLabel,
               gameProfile.playStyles.map((style) => style.displayName).join(', '),
             ),
           if (gameProfile.activityTimes.isNotEmpty)
             _buildInfoRow(
-              '活動時間',
+              l10n.activityTimeLabel,
               gameProfile.activityTimes.map((time) => time.displayName).join(', '),
             ),
           _buildInfoRow(
-            'ゲーム内ボイスチャット',
-            gameProfile.useInGameVC ? '利用する' : '利用しない',
+            l10n.inGameVoiceChatLabel,
+            gameProfile.useInGameVC ? l10n.useVoiceChat : l10n.notUseVoiceChat,
           ),
           if (gameProfile.voiceChatDetails.isNotEmpty)
-            _buildInfoRow('ボイスチャット詳細', gameProfile.voiceChatDetails),
+            _buildInfoRow(l10n.voiceChatDetailsLabel, gameProfile.voiceChatDetails),
           if (gameProfile.achievements.isNotEmpty)
-            _buildInfoRow('実績・成果', gameProfile.achievements),
+            _buildInfoRow(l10n.achievementsLabel, gameProfile.achievements),
           if (gameProfile.notes.isNotEmpty)
-            _buildInfoRow('その他メモ', gameProfile.notes),
+            _buildInfoRow(l10n.otherNotesLabel, gameProfile.notes),
         ],
       ),
     );

@@ -1,32 +1,43 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 /// アプリケーション全体の入力検証サービス
+/// ローカライズ対応版: BuildContextを使用してL10nからメッセージを取得
 class ValidationService {
+  final L10n l10n;
+
+  ValidationService(this.l10n);
+
+  /// BuildContextからValidationServiceを作成
+  factory ValidationService.of(BuildContext context) {
+    return ValidationService(L10n.of(context));
+  }
+
   /// メールアドレスの検証
-  static String? validateEmail(String? value) {
+  String? validateEmail(String? value) {
     if (value == null || value.isEmpty) {
-      return 'メールアドレスを入力してください';
+      return l10n.validationEmailRequired;
     }
 
     final emailRegex = RegExp(
       r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
     );
     if (!emailRegex.hasMatch(value)) {
-      return 'メールアドレスの形式が正しくありません';
+      return l10n.validationEmailInvalid;
     }
 
     return null;
   }
 
   /// パスワードの検証
-  static String? validatePassword(String? value, {int minLength = 8}) {
+  String? validatePassword(String? value, {int minLength = 8}) {
     if (value == null || value.isEmpty) {
-      return 'パスワードを入力してください';
+      return l10n.validationPasswordRequired;
     }
 
     if (value.length < minLength) {
-      return 'パスワードは${minLength}文字以上で入力してください';
+      return l10n.validationPasswordMinLength(minLength);
     }
 
     // 英数字を含む検証
@@ -35,136 +46,139 @@ class ValidationService {
     final hasDigits = value.contains(RegExp(r'[0-9]'));
 
     if (!hasUppercase || !hasLowercase || !hasDigits) {
-      return 'パスワードは大文字、小文字、数字をそれぞれ1文字以上含む必要があります';
+      return l10n.validationPasswordComplexity;
     }
 
     return null;
   }
 
   /// パスワード確認の検証
-  static String? validatePasswordConfirm(
+  String? validatePasswordConfirm(
     String? value,
     String? originalPassword,
   ) {
     if (value == null || value.isEmpty) {
-      return 'パスワード確認を入力してください';
+      return l10n.validationPasswordConfirmRequired;
     }
 
     if (value != originalPassword) {
-      return 'パスワードが一致しません';
+      return l10n.validationPasswordMismatch;
     }
 
     return null;
   }
 
   /// 必須フィールドの検証
-  static String? validateRequired(String? value, [String? fieldName]) {
+  String? validateRequired(String? value, [String? fieldName]) {
     if (value == null || value.trim().isEmpty) {
-      return '${fieldName ?? 'この項目'}は必須です';
+      if (fieldName != null) {
+        return l10n.validationFieldRequired(fieldName);
+      }
+      return l10n.validationFieldRequiredDefault;
     }
     return null;
   }
 
   /// イベント名の検証
-  static String? validateEventName(String? value) {
+  String? validateEventName(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'イベント名を入力してください';
+      return l10n.validationEventNameRequired;
     }
 
     if (value.trim().length < 3) {
-      return 'イベント名は3文字以上で入力してください';
+      return l10n.validationEventNameMinLength;
     }
 
     if (value.trim().length > 100) {
-      return 'イベント名は100文字以内で入力してください';
+      return l10n.validationEventNameMaxLength;
     }
 
     // 禁止文字のチェック
     final forbiddenChars = RegExp(r'[<>&"\\\/]');
     if (forbiddenChars.hasMatch(value)) {
-      return 'イベント名に使用できない文字が含まれています';
+      return l10n.validationEventNameForbiddenChars;
     }
 
     return null;
   }
 
   /// イベント説明の検証
-  static String? validateEventDescription(String? value) {
+  String? validateEventDescription(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'イベント説明を入力してください';
+      return l10n.validationEventDescriptionRequired;
     }
 
     if (value.trim().length < 10) {
-      return 'イベント説明は10文字以上で入力してください';
+      return l10n.validationEventDescriptionMinLength;
     }
 
     if (value.trim().length > 2000) {
-      return 'イベント説明は2000文字以内で入力してください';
+      return l10n.validationEventDescriptionMaxLength;
     }
 
     return null;
   }
 
   /// イベントルールの検証
-  static String? validateEventRules(String? value) {
+  String? validateEventRules(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'イベントルールを入力してください';
+      return l10n.validationEventRulesRequired;
     }
 
     if (value.trim().length < 5) {
-      return 'イベントルールは5文字以上で入力してください';
+      return l10n.validationEventRulesMinLength;
     }
 
     if (value.trim().length > 1000) {
-      return 'イベントルールは1000文字以内で入力してください';
+      return l10n.validationEventRulesMaxLength;
     }
 
     return null;
   }
 
   /// 参加者数の検証
-  static String? validateMaxParticipants(String? value) {
+  String? validateMaxParticipants(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return '最大参加者数を入力してください';
+      return l10n.validationMaxParticipantsRequired;
     }
 
     final intValue = int.tryParse(value.trim());
     if (intValue == null) {
-      return '数値を入力してください';
+      return l10n.validationNumberRequired;
     }
 
     if (intValue < 2) {
-      return '最大参加者数は2人以上で設定してください';
+      return l10n.validationMaxParticipantsMin;
     }
 
     if (intValue > 10000) {
-      return '最大参加者数は10,000人以下で設定してください';
+      return l10n.validationMaxParticipantsMax;
     }
 
     return null;
   }
 
   /// 参加費（自由入力）の検証
-  static String? validateParticipationFeeText(String? value, bool isRequired) {
+  String? validateParticipationFeeText(String? value, bool isRequired) {
     if (!isRequired && (value == null || value.trim().isEmpty)) {
       return null;
     }
 
     if (isRequired && (value == null || value.trim().isEmpty)) {
-      return '参加費を入力してください';
+      return l10n.validationParticipationFeeRequired;
     }
 
     if (value != null && value.trim().isNotEmpty) {
       final trimmedValue = value.trim();
 
       if (trimmedValue.length > 100) {
-        return '参加費は100文字以内で入力してください';
+        return l10n.validationParticipationFeeMaxLength;
       }
 
       // 禁止文字のチェック（基本的なHTMLタグやスクリプトを防ぐ）
       final forbiddenChars = RegExp(r'[<>&"\\\\/]');
       if (forbiddenChars.hasMatch(trimmedValue)) {
-        return '使用できない文字が含まれています';
+        return l10n.validationForbiddenChars;
       }
     }
 
@@ -172,17 +186,19 @@ class ValidationService {
   }
 
   /// URLの検証
-  static String? validateUrl(
+  String? validateUrl(
     String? value,
     bool isRequired, [
     String? fieldName,
   ]) {
+    final displayName = fieldName ?? 'URL';
+
     if (!isRequired && (value == null || value.trim().isEmpty)) {
       return null;
     }
 
     if (isRequired && (value == null || value.trim().isEmpty)) {
-      return '${fieldName ?? 'URL'}を入力してください';
+      return l10n.validationUrlRequired(displayName);
     }
 
     if (value != null && value.trim().isNotEmpty) {
@@ -192,7 +208,7 @@ class ValidationService {
       );
 
       if (!urlPattern.hasMatch(value.trim())) {
-        return '有効な${fieldName ?? 'URL'}を入力してください（http://またはhttps://で始まる）';
+        return l10n.validationUrlInvalid(displayName);
       }
     }
 
@@ -200,29 +216,29 @@ class ValidationService {
   }
 
   /// 日時の検証
-  static String? validateDateTime(
+  String? validateDateTime(
     DateTime? value,
     String fieldName, {
     DateTime? minDate,
     DateTime? maxDate,
   }) {
     if (value == null) {
-      return '${fieldName}を設定してください';
+      return l10n.validationDateTimeRequired(fieldName);
     }
 
     if (minDate != null && value.isBefore(minDate)) {
-      return '${fieldName}は${_formatDateTime(minDate)}以降に設定してください';
+      return l10n.validationDateTimeAfter(fieldName, _formatDateTime(minDate));
     }
 
     if (maxDate != null && value.isAfter(maxDate)) {
-      return '${fieldName}は${_formatDateTime(maxDate)}以前に設定してください';
+      return l10n.validationDateTimeBefore(fieldName, _formatDateTime(maxDate));
     }
 
     return null;
   }
 
   /// 文字数制限の検証
-  static String? validateTextLength(
+  String? validateTextLength(
     String? value,
     int maxLength,
     String fieldName, {
@@ -234,37 +250,37 @@ class ValidationService {
     }
 
     if (isRequired && (value == null || value.trim().isEmpty)) {
-      return '${fieldName}を入力してください';
+      return l10n.validationUrlRequired(fieldName);
     }
 
     final trimmedValue = value?.trim() ?? '';
 
     if (minLength > 0 && trimmedValue.length < minLength) {
-      return '${fieldName}は${minLength}文字以上で入力してください';
+      return l10n.validationTextMinLength(fieldName, minLength);
     }
 
     if (trimmedValue.length > maxLength) {
-      return '${fieldName}は${maxLength}文字以内で入力してください';
+      return l10n.validationTextMaxLength(fieldName, maxLength);
     }
 
     return null;
   }
 
   /// 画像ファイルの検証
-  static String? validateImageFile(File? file, bool isRequired) {
+  String? validateImageFile(File? file, bool isRequired) {
     if (!isRequired && file == null) {
       return null;
     }
 
     if (isRequired && file == null) {
-      return '画像を選択してください';
+      return l10n.validationImageRequired;
     }
 
     if (file != null) {
       // ファイルサイズの検証（10MB）
       final fileSizeInMB = file.lengthSync() / (1024 * 1024);
       if (fileSizeInMB > 10) {
-        return '画像ファイルサイズは10MB以下にしてください';
+        return l10n.validationImageSizeMax;
       }
 
       // ファイル拡張子の検証
@@ -272,7 +288,7 @@ class ValidationService {
       const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
 
       if (!allowedExtensions.contains(extension)) {
-        return '対応している画像形式: ${allowedExtensions.join(', ')}';
+        return l10n.validationImageFormat(allowedExtensions.join(', '));
       }
     }
 
@@ -280,29 +296,29 @@ class ValidationService {
   }
 
   /// リストの検証（プラットフォーム、タグなど）
-  static String? validateList(
+  String? validateList(
     List<dynamic>? list,
     String fieldName, {
     int minItems = 1,
     int maxItems = 50,
   }) {
     if (list == null || list.isEmpty) {
-      return '${fieldName}を少なくとも${minItems}つ選択してください';
+      return l10n.validationListMinItems(fieldName, minItems);
     }
 
     if (list.length < minItems) {
-      return '${fieldName}を少なくとも${minItems}つ選択してください';
+      return l10n.validationListMinItems(fieldName, minItems);
     }
 
     if (list.length > maxItems) {
-      return '${fieldName}は${maxItems}個以下で選択してください';
+      return l10n.validationListMaxItems(fieldName, maxItems);
     }
 
     return null;
   }
 
   /// イベントタグの検証
-  static String? validateEventTags(
+  String? validateEventTags(
     List<String>? tags, {
     bool isRequired = false,
   }) {
@@ -311,31 +327,31 @@ class ValidationService {
     }
 
     if (isRequired && (tags == null || tags.isEmpty)) {
-      return 'イベントタグを少なくとも1つ追加してください';
+      return l10n.validationEventTagsRequired;
     }
 
     if (tags != null) {
       // 最大タグ数チェック
       if (tags.length > 10) {
-        return 'イベントタグは10個以下で設定してください';
+        return l10n.validationEventTagsMaxCount;
       }
 
       // 各タグの検証
       for (final tag in tags) {
         // 空文字チェック
         if (tag.trim().isEmpty) {
-          return '空のタグは使用できません';
+          return l10n.validationTagEmpty;
         }
 
         // 文字数チェック
         if (tag.trim().length > 20) {
-          return 'タグは20文字以内で設定してください';
+          return l10n.validationTagMaxLength;
         }
 
         // 禁止文字チェック
         final forbiddenChars = RegExp(r'[<>&"\\\/\s]');
         if (forbiddenChars.hasMatch(tag)) {
-          return 'タグに使用できない文字が含まれています';
+          return l10n.validationTagForbiddenChars;
         }
 
         // 英数字、ひらがな、カタカナ、漢字、一部記号のみ許可
@@ -343,14 +359,14 @@ class ValidationService {
           r'^[a-zA-Z0-9\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAFー・＃＆＠＋－]+$',
         );
         if (!validPattern.hasMatch(tag)) {
-          return 'タグは英数字、ひらがな、カタカナ、漢字、一部記号のみ使用可能です';
+          return l10n.validationTagInvalidChars;
         }
       }
 
       // 重複チェック
       final uniqueTags = tags.toSet();
       if (uniqueTags.length != tags.length) {
-        return '重複するタグは使用できません';
+        return l10n.validationTagDuplicate;
       }
     }
 
@@ -358,13 +374,13 @@ class ValidationService {
   }
 
   /// 電話番号の検証
-  static String? validatePhoneNumber(String? value, bool isRequired) {
+  String? validatePhoneNumber(String? value, bool isRequired) {
     if (!isRequired && (value == null || value.trim().isEmpty)) {
       return null;
     }
 
     if (isRequired && (value == null || value.trim().isEmpty)) {
-      return '電話番号を入力してください';
+      return l10n.validationPhoneRequired;
     }
 
     if (value != null && value.trim().isNotEmpty) {
@@ -375,11 +391,11 @@ class ValidationService {
       final cleanValue = value.replaceAll(RegExp(r'[^\d]'), '');
 
       if (cleanValue.length < 10 || cleanValue.length > 11) {
-        return '電話番号の形式が正しくありません';
+        return l10n.validationPhoneInvalid;
       }
 
       if (!phoneRegex.hasMatch(value.trim())) {
-        return '電話番号の形式が正しくありません（例: 090-1234-5678）';
+        return l10n.validationPhoneInvalidWithExample;
       }
     }
 
@@ -387,7 +403,7 @@ class ValidationService {
   }
 
   /// 数値範囲の検証
-  static String? validateNumberRange(
+  String? validateNumberRange(
     String? value,
     String fieldName, {
     int? min,
@@ -399,21 +415,21 @@ class ValidationService {
     }
 
     if (isRequired && (value == null || value.trim().isEmpty)) {
-      return '${fieldName}を入力してください';
+      return l10n.validationNumberRangeRequired(fieldName);
     }
 
     if (value != null && value.trim().isNotEmpty) {
       final intValue = int.tryParse(value.trim());
       if (intValue == null) {
-        return '${fieldName}は数値で入力してください';
+        return l10n.validationNumberRangeInvalid(fieldName);
       }
 
       if (min != null && intValue < min) {
-        return '${fieldName}は${min}以上で入力してください';
+        return l10n.validationNumberRangeMin(fieldName, min);
       }
 
       if (max != null && intValue > max) {
-        return '${fieldName}は${max}以下で入力してください';
+        return l10n.validationNumberRangeMax(fieldName, max);
       }
     }
 
@@ -421,7 +437,7 @@ class ValidationService {
   }
 
   /// 複数のバリデータを組み合わせて実行
-  static String? validateMultiple(
+  String? validateMultiple(
     String? value,
     List<String? Function(String?)> validators,
   ) {
@@ -435,24 +451,24 @@ class ValidationService {
   }
 
   /// イベントパスワードの検証
-  static String? validateEventPassword(String? value, bool isRequired) {
+  String? validateEventPassword(String? value, bool isRequired) {
     if (!isRequired && (value == null || value.trim().isEmpty)) {
       return null;
     }
 
     if (isRequired && (value == null || value.trim().isEmpty)) {
-      return 'イベントパスワードを設定してください';
+      return l10n.validationEventPasswordRequired;
     }
 
     if (value != null && value.trim().isNotEmpty) {
       final trimmedValue = value.trim();
 
       if (trimmedValue.length < 4) {
-        return 'パスワードは4文字以上で設定してください';
+        return l10n.validationEventPasswordMinLength;
       }
 
       if (trimmedValue.length > 20) {
-        return 'パスワードは20文字以内で設定してください';
+        return l10n.validationEventPasswordMaxLength;
       }
 
       // 安全なパスワード文字のみ許可
@@ -460,7 +476,7 @@ class ValidationService {
         r'^[a-zA-Z0-9!@#$%^&*()_+-=\[\]{}|;:,.<>?]+$',
       );
       if (!allowedPattern.hasMatch(trimmedValue)) {
-        return 'パスワードには英数字と一般的な記号のみ使用できます';
+        return l10n.validationEventPasswordInvalidChars;
       }
     }
 
@@ -469,8 +485,8 @@ class ValidationService {
 
 
   /// 日時フォーマット用ヘルパー
-  static String _formatDateTime(DateTime dateTime) {
-    return '${dateTime.year}年${dateTime.month}月${dateTime.day}日 ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+  String _formatDateTime(DateTime dateTime) {
+    return '${dateTime.year}/${dateTime.month}/${dateTime.day} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
 
   /// フォーム全体の検証
@@ -495,46 +511,55 @@ class ValidationService {
   }
 }
 
-/// カスタムバリデーター用のクラス
+/// カスタムバリデーター用のクラス（ローカライズ対応版）
 class CustomValidators {
+  final L10n l10n;
+
+  CustomValidators(this.l10n);
+
+  /// BuildContextからCustomValidatorsを作成
+  factory CustomValidators.of(BuildContext context) {
+    return CustomValidators(L10n.of(context));
+  }
+
   /// ひらがなのみの検証
-  static String? hiraganaOnly(String? value, String fieldName) {
+  String? hiraganaOnly(String? value, String fieldName) {
     if (value == null || value.isEmpty) return null;
 
     final hiraganaRegex = RegExp(r'^[あ-ん\s]*$');
     if (!hiraganaRegex.hasMatch(value)) {
-      return '${fieldName}はひらがなのみで入力してください';
+      return l10n.validationHiraganaOnly(fieldName);
     }
 
     return null;
   }
 
   /// カタカナのみの検証
-  static String? katakanaOnly(String? value, String fieldName) {
+  String? katakanaOnly(String? value, String fieldName) {
     if (value == null || value.isEmpty) return null;
 
     final katakanaRegex = RegExp(r'^[ア-ン\s]*$');
     if (!katakanaRegex.hasMatch(value)) {
-      return '${fieldName}はカタカナのみで入力してください';
+      return l10n.validationKatakanaOnly(fieldName);
     }
 
     return null;
   }
 
   /// 英数字のみの検証
-  static String? alphanumericOnly(String? value, String fieldName) {
+  String? alphanumericOnly(String? value, String fieldName) {
     if (value == null || value.isEmpty) return null;
 
     final alphanumericRegex = RegExp(r'^[a-zA-Z0-9]*$');
     if (!alphanumericRegex.hasMatch(value)) {
-      return '${fieldName}は英数字のみで入力してください';
+      return l10n.validationAlphanumericOnly(fieldName);
     }
 
     return null;
   }
 
   /// 禁止語句の検証
-  static String? forbiddenWords(
+  String? forbiddenWords(
     String? value,
     List<String> forbiddenWords,
     String fieldName,
@@ -544,7 +569,7 @@ class CustomValidators {
     final lowerValue = value.toLowerCase();
     for (final word in forbiddenWords) {
       if (lowerValue.contains(word.toLowerCase())) {
-        return '${fieldName}に不適切な内容が含まれています';
+        return l10n.validationForbiddenContent(fieldName);
       }
     }
 

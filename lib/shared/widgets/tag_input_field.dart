@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
 
@@ -52,13 +53,14 @@ class _TagInputFieldState extends State<TagInputField> {
   /// タグの追加
   void _addTag(String tag) {
     final trimmedTag = tag.trim();
+    final l10n = L10n.of(context);
 
     if (trimmedTag.isEmpty) return;
 
     // 重複チェック
     if (_tags.contains(trimmedTag)) {
       setState(() {
-        _errorText = 'このタグは既に追加されています';
+        _errorText = l10n.tagDuplicateError;
       });
       return;
     }
@@ -66,7 +68,7 @@ class _TagInputFieldState extends State<TagInputField> {
     // 最大数チェック
     if (_tags.length >= widget.maxTags) {
       setState(() {
-        _errorText = '最大${widget.maxTags}個までタグを追加できます';
+        _errorText = l10n.tagMaxReachedError(widget.maxTags);
       });
       return;
     }
@@ -74,7 +76,7 @@ class _TagInputFieldState extends State<TagInputField> {
     // 文字数チェック
     if (trimmedTag.length > widget.maxTagLength) {
       setState(() {
-        _errorText = 'タグは${widget.maxTagLength}文字以内で入力してください';
+        _errorText = l10n.tagTooLongError(widget.maxTagLength);
       });
       return;
     }
@@ -82,7 +84,7 @@ class _TagInputFieldState extends State<TagInputField> {
     // 禁止文字チェック
     if (!_isValidTag(trimmedTag)) {
       setState(() {
-        _errorText = 'タグに使用できない文字が含まれています';
+        _errorText = l10n.tagInvalidCharError;
       });
       return;
     }
@@ -160,7 +162,7 @@ class _TagInputFieldState extends State<TagInputField> {
           controller: _controller,
           enabled: widget.isEnabled && _tags.length < widget.maxTags,
           decoration: InputDecoration(
-            hintText: widget.hint ?? 'タグを入力してEnterで追加',
+            hintText: widget.hint ?? L10n.of(context).tagInputHint,
             hintStyle: const TextStyle(
               color: AppColors.textLight,
               fontSize: AppDimensions.fontSizeM,
@@ -229,7 +231,7 @@ class _TagInputFieldState extends State<TagInputField> {
         // タグ数の表示
         const SizedBox(height: AppDimensions.spacingXS),
         Text(
-          '${_tags.length}/${widget.maxTags}個のタグ',
+          L10n.of(context).tagCountLabel(_tags.length, widget.maxTags),
           style: const TextStyle(
             color: AppColors.textMuted,
             fontSize: AppDimensions.fontSizeS,

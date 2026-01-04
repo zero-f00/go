@@ -7,6 +7,7 @@ import '../../game_event_management/models/game_event.dart';
 import '../../../shared/utils/event_converter.dart';
 import '../../../data/models/event_model.dart';
 import '../../../shared/constants/app_colors.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 参加予定イベント画面
 /// カレンダー/リスト表示切り替え機能を提供
@@ -161,6 +162,7 @@ class _ParticipatingEventsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     if (_isLoading) {
       return const Scaffold(
         body: Center(
@@ -170,12 +172,12 @@ class _ParticipatingEventsScreenState
     }
 
     return EventListScreen(
-      title: '参加予定イベント',
+      title: l10n.participatingEvents,
       headerIcon: Icons.event_available,
       initialEvents: _events,
       onRefresh: _fetchParticipatingEvents,
-      emptyMessage: '参加予定のイベントがありません',
-      emptySubMessage: '新しいイベントに参加してみませんか？',
+      emptyMessage: l10n.noParticipatingEvents,
+      emptySubMessage: l10n.tryJoinNewEvents,
       emptyIcon: Icons.event_available,
       listType: EventListType.participating,
       getEventStatusColor: _getEventStatusColor,

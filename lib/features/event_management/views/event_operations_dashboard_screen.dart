@@ -9,6 +9,7 @@ import '../../../shared/services/event_deletion_service.dart';
 import '../../../data/models/event_model.dart';
 import '../widgets/event_cancellation_dialog.dart';
 import '../widgets/event_deletion_dialog.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// イベント運営ダッシュボード画面
 class EventOperationsDashboardScreen extends ConsumerStatefulWidget {
@@ -99,7 +100,7 @@ class _EventOperationsDashboardScreenState
           child: Column(
             children: [
               AppHeader(
-                title: '運営ダッシュボード',
+                title: L10n.of(context).operationsDashboard,
                 showBackButton: true,
                 onBackPressed: () => _handleBackPressed(),
               ),
@@ -184,7 +185,7 @@ class _EventOperationsDashboardScreenState
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
-                  '運営モード',
+                  L10n.of(context).operationsMode,
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     fontWeight: FontWeight.w600,
@@ -225,9 +226,9 @@ class _EventOperationsDashboardScreenState
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                'クイックアクション',
-                style: TextStyle(
+              Text(
+                L10n.of(context).quickActions,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -241,8 +242,8 @@ class _EventOperationsDashboardScreenState
               Expanded(
                 child: _buildQuickActionCard(
                   icon: Icons.group_add,
-                  title: '参加者',
-                  subtitle: '承認・拒否',
+                  title: L10n.of(context).dashboardParticipants,
+                  subtitle: L10n.of(context).dashboardApproveReject,
                   color: AppColors.success,
                   onTap: () => _navigateToParticipantManagement(),
                 ),
@@ -251,8 +252,8 @@ class _EventOperationsDashboardScreenState
               Expanded(
                 child: _buildQuickActionCard(
                   icon: Icons.groups,
-                  title: 'グループ分け',
-                  subtitle: '部屋割り当て',
+                  title: L10n.of(context).dashboardGroupAssignment,
+                  subtitle: L10n.of(context).dashboardRoomAllocation,
                   color: AppColors.info,
                   onTap: () => _navigateToGroupManagement(),
                 ),
@@ -339,9 +340,9 @@ class _EventOperationsDashboardScreenState
                 size: AppDimensions.iconM,
               ),
               const SizedBox(width: AppDimensions.spacingS),
-              const Text(
-                '運営管理メニュー',
-                style: TextStyle(
+              Text(
+                L10n.of(context).dashboardManagementMenu,
+                style: const TextStyle(
                   fontSize: AppDimensions.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -352,36 +353,36 @@ class _EventOperationsDashboardScreenState
           const SizedBox(height: AppDimensions.spacingL),
           _buildManagementCard(
             icon: Icons.people_alt,
-            title: '参加者',
-            subtitle: '参加申請の承認・拒否、参加者一覧',
+            title: L10n.of(context).dashboardParticipantsTitle,
+            subtitle: L10n.of(context).dashboardParticipantsDesc,
             onTap: () => _navigateToParticipantManagement(),
           ),
           const SizedBox(height: AppDimensions.spacingM),
           _buildManagementCard(
             icon: Icons.group_work,
-            title: 'グループ',
-            subtitle: 'チーム分け',
+            title: L10n.of(context).dashboardGroupTitle,
+            subtitle: L10n.of(context).dashboardGroupDesc,
             onTap: () => _navigateToGroupManagement(),
           ),
           const SizedBox(height: AppDimensions.spacingM),
           _buildManagementCard(
             icon: Icons.leaderboard,
-            title: '戦績・結果',
-            subtitle: '試合結果入力、順位管理、統計',
+            title: L10n.of(context).dashboardResultsTitle,
+            subtitle: L10n.of(context).dashboardResultsDesc,
             onTap: () => _navigateToResultManagement(),
           ),
           const SizedBox(height: AppDimensions.spacingM),
           _buildManagementCard(
             icon: Icons.report_problem,
-            title: '違反',
-            subtitle: '違反記録、警告管理、ペナルティ',
+            title: L10n.of(context).dashboardViolationTitle,
+            subtitle: L10n.of(context).dashboardViolationDesc,
             onTap: () => _navigateToViolationManagement(),
           ),
           const SizedBox(height: AppDimensions.spacingM),
           _buildManagementCard(
             icon: Icons.person_search,
-            title: 'ユーザー詳細',
-            subtitle: '参加履歴、詳細情報、総合評価',
+            title: L10n.of(context).dashboardUserDetailTitle,
+            subtitle: L10n.of(context).dashboardUserDetailDesc,
             onTap: () => _navigateToUserDetailManagement(),
           ),
           // TODO: 参加費管理機能はリリース後にアップデートで対応予定
@@ -511,7 +512,7 @@ class _EventOperationsDashboardScreenState
     if (_isLoading || _event == null) {
       return _buildQuickActionCard(
         icon: Icons.more_horiz,
-        title: '読み込み中',
+        title: L10n.of(context).dashboardLoading,
         subtitle: '',
         color: AppColors.textLight,
         onTap: () {},
@@ -525,7 +526,7 @@ class _EventOperationsDashboardScreenState
     if (isCancelled) {
       return _buildQuickActionCard(
         icon: Icons.cancel_outlined,
-        title: '中止済み',
+        title: L10n.of(context).dashboardCancelled,
         subtitle: '',
         color: AppColors.textSecondary,
         onTap: () {},
@@ -535,7 +536,7 @@ class _EventOperationsDashboardScreenState
     if (isCompleted) {
       return _buildQuickActionCard(
         icon: Icons.check_circle_outline,
-        title: '完了済み',
+        title: L10n.of(context).dashboardCompleted,
         subtitle: '',
         color: AppColors.textSecondary,
         onTap: () {},
@@ -546,7 +547,7 @@ class _EventOperationsDashboardScreenState
     if (_deletionCheck?.canDelete == true) {
       return _buildQuickActionCard(
         icon: Icons.delete_forever,
-        title: 'イベント削除',
+        title: L10n.of(context).dashboardDeleteEvent,
         subtitle: '',
         color: AppColors.error,
         onTap: () => _showEventDeletionDialog(),
@@ -556,7 +557,7 @@ class _EventOperationsDashboardScreenState
     // 削除不可（参加申込者がいる公開イベント）は中止を表示
     return _buildQuickActionCard(
       icon: Icons.cancel,
-      title: 'イベント中止',
+      title: L10n.of(context).dashboardCancelEvent,
       subtitle: '',
       color: AppColors.error,
       onTap: () => _showEventCancellationDialog(),

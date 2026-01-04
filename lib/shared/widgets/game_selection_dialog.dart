@@ -7,18 +7,19 @@ import '../models/game.dart';
 import '../services/game_service.dart';
 import '../providers/auth_provider.dart';
 import '../../data/repositories/user_repository.dart';
+import '../../l10n/app_localizations.dart';
 
 class GameSelectionDialog extends ConsumerStatefulWidget {
   final Game? selectedGame;
   final Function(Game?) onGameSelected;
-  final String title;
+  final String? title;
   final bool allowNone;
 
   const GameSelectionDialog({
     super.key,
     this.selectedGame,
     required this.onGameSelected,
-    this.title = 'ゲーム選択',
+    this.title,
     this.allowNone = false,
   });
 
@@ -26,7 +27,7 @@ class GameSelectionDialog extends ConsumerStatefulWidget {
     BuildContext context, {
     Game? selectedGame,
     required Function(Game?) onGameSelected,
-    String title = 'ゲーム選択',
+    String? title,
     bool allowNone = false,
   }) {
     showDialog(
@@ -143,11 +144,14 @@ class _GameSelectionDialogState extends ConsumerState<GameSelectionDialog> {
         _isLoading = false;
       });
     } catch (e) {
-      setState(() {
-        _errorMessage = 'ゲーム検索に失敗しました: $e';
-        _filteredGames = [];
-        _isLoading = false;
-      });
+      if (mounted) {
+        final l10n = L10n.of(context);
+        setState(() {
+          _errorMessage = l10n.gameSearchFailed(e.toString());
+          _filteredGames = [];
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -191,6 +195,7 @@ class _GameSelectionDialogState extends ConsumerState<GameSelectionDialog> {
   }
 
   Widget _buildHeader() {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -210,7 +215,7 @@ class _GameSelectionDialogState extends ConsumerState<GameSelectionDialog> {
           const SizedBox(width: AppDimensions.spacingM),
           Expanded(
             child: Text(
-              widget.title,
+              widget.title ?? l10n.gameSelection,
               style: const TextStyle(
                 fontSize: AppDimensions.fontSizeL,
                 fontWeight: FontWeight.w700,
@@ -231,6 +236,7 @@ class _GameSelectionDialogState extends ConsumerState<GameSelectionDialog> {
   }
 
   Widget _buildSearchSection() {
+    final l10n = L10n.of(context);
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       child: Container(
@@ -251,9 +257,9 @@ class _GameSelectionDialogState extends ConsumerState<GameSelectionDialog> {
                   size: AppDimensions.iconM,
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
-                const Text(
-                  '検索',
-                  style: TextStyle(
+                Text(
+                  l10n.searchTab2,
+                  style: const TextStyle(
                     fontSize: AppDimensions.fontSizeL,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textDark,
@@ -265,7 +271,7 @@ class _GameSelectionDialogState extends ConsumerState<GameSelectionDialog> {
             TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'ゲーム名で検索...',
+                hintText: l10n.searchGameHint,
                 prefixIcon: const Icon(
                   Icons.search,
                   color: AppColors.accent,
@@ -316,6 +322,7 @@ class _GameSelectionDialogState extends ConsumerState<GameSelectionDialog> {
 
   /// お気に入りゲームリスト
   Widget _buildFavoriteGamesList() {
+    final l10n = L10n.of(context);
     if (_isFavoritesLoading) {
       return const Center(
         child: Padding(
@@ -326,30 +333,30 @@ class _GameSelectionDialogState extends ConsumerState<GameSelectionDialog> {
     }
 
     if (_favoriteGames.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(AppDimensions.spacingL),
+          padding: const EdgeInsets.all(AppDimensions.spacingL),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
+              const Icon(
                 Icons.favorite_border,
                 color: AppColors.textSecondary,
                 size: AppDimensions.iconXL,
               ),
-              SizedBox(height: AppDimensions.spacingM),
+              const SizedBox(height: AppDimensions.spacingM),
               Text(
-                'お気に入りゲームがありません',
-                style: TextStyle(
+                l10n.noFavoriteGamesShort,
+                style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: AppDimensions.fontSizeM,
                 ),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: AppDimensions.spacingS),
+              const SizedBox(height: AppDimensions.spacingS),
               Text(
-                'プロフィール画面でゲームを\nお気に入りに追加できます',
-                style: TextStyle(
+                l10n.addFavoriteGamesFromProfile,
+                style: const TextStyle(
                   color: AppColors.textMuted,
                   fontSize: AppDimensions.fontSizeS,
                 ),
@@ -366,6 +373,7 @@ class _GameSelectionDialogState extends ConsumerState<GameSelectionDialog> {
 
   /// 検索ゲームリスト
   Widget _buildSearchGamesList() {
+    final l10n = L10n.of(context);
     if (_isLoading) {
       return const Center(
         child: Padding(
@@ -403,21 +411,21 @@ class _GameSelectionDialogState extends ConsumerState<GameSelectionDialog> {
     }
 
     if (_searchController.text.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(AppDimensions.spacingL),
+          padding: const EdgeInsets.all(AppDimensions.spacingL),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
+              const Icon(
                 Icons.search,
                 color: AppColors.textSecondary,
                 size: AppDimensions.iconXL,
               ),
-              SizedBox(height: AppDimensions.spacingM),
+              const SizedBox(height: AppDimensions.spacingM),
               Text(
-                'ゲーム名を入力して検索してください',
-                style: TextStyle(
+                l10n.enterGameNameToSearch,
+                style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: AppDimensions.fontSizeM,
                 ),
@@ -430,12 +438,12 @@ class _GameSelectionDialogState extends ConsumerState<GameSelectionDialog> {
     }
 
     if (_filteredGames.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(AppDimensions.spacingL),
+          padding: const EdgeInsets.all(AppDimensions.spacingL),
           child: Text(
-            'ゲームが見つかりませんでした',
-            style: TextStyle(
+            l10n.gameNotFoundShort,
+            style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: AppDimensions.fontSizeM,
             ),
@@ -546,6 +554,7 @@ class _GameSelectionDialogState extends ConsumerState<GameSelectionDialog> {
   }
 
   Widget _buildActions() {
+    final l10n = L10n.of(context);
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: const BoxDecoration(
@@ -571,9 +580,9 @@ class _GameSelectionDialogState extends ConsumerState<GameSelectionDialog> {
                     borderRadius: BorderRadius.circular(AppDimensions.radiusM),
                   ),
                 ),
-                child: const Text(
-                  '未選択',
-                  style: TextStyle(
+                child: Text(
+                  l10n.notSelected,
+                  style: const TextStyle(
                     color: AppColors.textDark,
                     fontWeight: FontWeight.w600,
                   ),
@@ -593,7 +602,7 @@ class _GameSelectionDialogState extends ConsumerState<GameSelectionDialog> {
                 ),
               ),
               child: Text(
-                _selectedGame != null ? '選択' : 'ゲームを選んでください',
+                _selectedGame != null ? l10n.select : l10n.selectGame,
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
                 ),
@@ -607,6 +616,7 @@ class _GameSelectionDialogState extends ConsumerState<GameSelectionDialog> {
 
   /// タブバー
   Widget _buildTabBar() {
+    final l10n = L10n.of(context);
     return Container(
       margin: const EdgeInsets.all(AppDimensions.spacingL),
       child: Row(
@@ -641,7 +651,7 @@ class _GameSelectionDialogState extends ConsumerState<GameSelectionDialog> {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      'お気に入り',
+                      l10n.favoritesTab,
                       style: TextStyle(
                         color: _selectedTabIndex == 0 ? Colors.white : AppColors.accent,
                         fontWeight: FontWeight.w600,
@@ -680,7 +690,7 @@ class _GameSelectionDialogState extends ConsumerState<GameSelectionDialog> {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      '検索',
+                      l10n.searchTab2,
                       style: TextStyle(
                         color: _selectedTabIndex == 1 ? Colors.white : AppColors.accent,
                         fontWeight: FontWeight.w600,

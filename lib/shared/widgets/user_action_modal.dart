@@ -9,6 +9,7 @@ import 'violation_report_dialog.dart';
 import '../providers/auth_provider.dart';
 import '../../data/models/user_model.dart';
 import '../../data/models/game_profile_model.dart';
+import '../../l10n/app_localizations.dart';
 
 /// ユーザーアクションモーダル
 /// アプリプロフィール・ゲームプロフィール表示・管理者メモ・違反報告機能を統合
@@ -58,9 +59,6 @@ class UserActionModal extends ConsumerWidget {
     List<Widget>? additionalActions,
     bool showViolationReport = true,
   }) {
-    // 元のNavigatorを保持（モーダルを閉じた後のナビゲーションで使用）
-    final rootNavigator = Navigator.of(context, rootNavigator: true);
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -71,7 +69,7 @@ class UserActionModal extends ConsumerWidget {
         expand: false,
         builder: (sheetContext, scrollController) => UserActionModal(
           eventId: eventId,
-          eventName: eventName ?? 'イベント',
+          eventName: eventName ?? L10n.of(sheetContext).eventDefault,
           userId: userId,
           userName: userName,
           gameUsername: gameUsername,
@@ -79,12 +77,14 @@ class UserActionModal extends ConsumerWidget {
           gameProfile: gameProfile,
           gameId: gameId,
           onGameProfileTap: () {
-            rootNavigator.pop(); // モーダルを閉じる
-            onGameProfileTap?.call(); // コールバック実行
+            // モーダルを閉じてからコールバック実行
+            Navigator.of(modalContext).pop();
+            onGameProfileTap?.call();
           },
           onUserProfileTap: () {
-            rootNavigator.pop(); // モーダルを閉じる
-            onUserProfileTap?.call(); // コールバック実行
+            // モーダルを閉じてからコールバック実行
+            Navigator.of(modalContext).pop();
+            onUserProfileTap?.call();
           },
           additionalActions: additionalActions,
           showViolationReport: showViolationReport,
@@ -124,7 +124,7 @@ class UserActionModal extends ConsumerWidget {
             if (showViolationReport) ...[
               const SizedBox(height: AppDimensions.spacingM),
               AppButton.danger(
-                text: '違反を報告',
+                text: L10n.of(context).reportViolation,
                 icon: Icons.warning_amber_rounded,
                 onPressed: () => _showViolationReportDialog(context),
                 isFullWidth: true,
@@ -137,7 +137,7 @@ class UserActionModal extends ConsumerWidget {
             ],
             const SizedBox(height: AppDimensions.spacingM),
             AppButton.outline(
-              text: 'キャンセル',
+              text: L10n.of(context).cancel,
               onPressed: () => Navigator.pop(context),
               isFullWidth: true,
             ),
@@ -201,37 +201,42 @@ class UserActionModal extends ConsumerWidget {
           width: 1,
         ),
       ),
-      child: Column(
-        children: [
-          const Text(
-            'プロフィール表示',
-            style: TextStyle(
-              fontSize: AppDimensions.fontSizeM,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textDark,
-            ),
-          ),
-          const SizedBox(height: AppDimensions.spacingM),
-          // ゲームプロフィールボタン
-          _buildProfileButton(
-            context: context,
-            title: 'ゲームプロフィール',
-            subtitle: 'ゲーム内でのプロフィール情報',
-            icon: Icons.sports_esports,
-            color: AppColors.accent,
-            onTap: onGameProfileTap,
-          ),
-          const SizedBox(height: AppDimensions.spacingM),
-          // ユーザープロフィールボタン
-          _buildProfileButton(
-            context: context,
-            title: 'ユーザープロフィール',
-            subtitle: 'アプリ内でのユーザー情報',
-            icon: Icons.person,
-            color: AppColors.info,
-            onTap: onUserProfileTap,
-          ),
-        ],
+      child: Builder(
+        builder: (context) {
+          final l10n = L10n.of(context);
+          return Column(
+            children: [
+              Text(
+                l10n.profileDisplaySection,
+                style: const TextStyle(
+                  fontSize: AppDimensions.fontSizeM,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textDark,
+                ),
+              ),
+              const SizedBox(height: AppDimensions.spacingM),
+              // ゲームプロフィールボタン
+              _buildProfileButton(
+                context: context,
+                title: l10n.gameProfile,
+                subtitle: l10n.gameProfileDescription,
+                icon: Icons.sports_esports,
+                color: AppColors.accent,
+                onTap: onGameProfileTap,
+              ),
+              const SizedBox(height: AppDimensions.spacingM),
+              // ユーザープロフィールボタン
+              _buildProfileButton(
+                context: context,
+                title: l10n.userProfileLabel,
+                subtitle: l10n.userProfileDescription,
+                icon: Icons.person,
+                color: AppColors.info,
+                onTap: onUserProfileTap,
+              ),
+            ],
+          );
+        },
       ),
     );
   }

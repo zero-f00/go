@@ -6,6 +6,7 @@ import '../../data/models/violation_record_model.dart';
 import '../../data/models/user_model.dart';
 import '../services/violation_service.dart';
 import '../providers/auth_provider.dart';
+import '../../l10n/app_localizations.dart';
 import 'app_text_field.dart';
 
 /// 違反記録編集ダイアログ
@@ -94,9 +95,10 @@ class _ViolationEditDialogState extends ConsumerState<ViolationEditDialog> {
       );
 
       if (mounted && context.mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('違反記録を更新しました'),
+          SnackBar(
+            content: Text(l10n.violationRecordUpdatedSuccess),
             backgroundColor: AppColors.success,
           ),
         );
@@ -104,9 +106,10 @@ class _ViolationEditDialogState extends ConsumerState<ViolationEditDialog> {
       }
     } catch (e) {
       if (mounted && context.mounted) {
+        final l10n = L10n.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('エラー: $e'),
+            content: Text(l10n.errorFormatted(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -122,6 +125,7 @@ class _ViolationEditDialogState extends ConsumerState<ViolationEditDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = L10n.of(context);
     final screenHeight = MediaQuery.of(context).size.height;
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     final maxDialogHeight = screenHeight - keyboardHeight - 100;
@@ -153,9 +157,9 @@ class _ViolationEditDialogState extends ConsumerState<ViolationEditDialog> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    '違反記録編集',
-                    style: TextStyle(
+                  Text(
+                    l10n.violationEditDialogTitle,
+                    style: const TextStyle(
                       fontSize: AppDimensions.fontSizeL,
                       fontWeight: FontWeight.bold,
                     ),
@@ -194,24 +198,24 @@ class _ViolationEditDialogState extends ConsumerState<ViolationEditDialog> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    '報告対象',
-                                    style: TextStyle(
+                                  Text(
+                                    l10n.reportTargetLabel,
+                                    style: const TextStyle(
                                       fontSize: AppDimensions.fontSizeXS,
                                       color: AppColors.textSecondary,
                                     ),
                                   ),
                                   if (_isLoadingUserData)
-                                    const Text(
-                                      'ユーザー情報読み込み中...',
-                                      style: TextStyle(
+                                    Text(
+                                      l10n.loadingUserInfo,
+                                      style: const TextStyle(
                                         fontSize: AppDimensions.fontSizeM,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     )
                                   else
                                     Text(
-                                      _violatedUserData?.displayName ?? '不明なユーザー',
+                                      _violatedUserData?.displayName ?? l10n.unknownUser,
                                       style: const TextStyle(
                                         fontSize: AppDimensions.fontSizeM,
                                         fontWeight: FontWeight.bold,
@@ -250,7 +254,7 @@ class _ViolationEditDialogState extends ConsumerState<ViolationEditDialog> {
 
                       // 違反タイプ
                       Text(
-                        '違反の種類 *',
+                        l10n.violationTypeLabel,
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeS,
                           fontWeight: FontWeight.bold,
@@ -290,7 +294,7 @@ class _ViolationEditDialogState extends ConsumerState<ViolationEditDialog> {
 
                       // 重要度
                       Text(
-                        '重要度 *',
+                        l10n.severityLabel,
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeS,
                           fontWeight: FontWeight.bold,
@@ -330,7 +334,7 @@ class _ViolationEditDialogState extends ConsumerState<ViolationEditDialog> {
 
                       // 説明
                       Text(
-                        '違反内容の詳細 *',
+                        l10n.violationDetailLabel,
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeS,
                           fontWeight: FontWeight.bold,
@@ -340,26 +344,26 @@ class _ViolationEditDialogState extends ConsumerState<ViolationEditDialog> {
                       const SizedBox(height: AppDimensions.spacingS),
                       AppTextFieldMultiline(
                         controller: _descriptionController,
-                        label: '違反内容の詳細',
-                        hintText: '違反の具体的な内容を記載してください',
+                        label: l10n.violationDetailLabel,
+                        hintText: l10n.violationDetailHint,
                         isRequired: true,
                         maxLines: 4,
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return '違反内容を入力してください';
+                            return l10n.enterViolationContentError;
                           }
                           if (value.trim().length < 10) {
-                            return '10文字以上で詳細を記載してください';
+                            return l10n.minCharsDetailError(10);
                           }
                           return null;
                         },
-                        doneButtonText: '完了',
+                        doneButtonText: l10n.doneButtonText,
                       ),
                       const SizedBox(height: AppDimensions.spacingL),
 
                       // メモ（任意）
                       Text(
-                        'メモ（任意）',
+                        l10n.memoOptionalLabel,
                         style: TextStyle(
                           fontSize: AppDimensions.fontSizeS,
                           fontWeight: FontWeight.bold,
@@ -369,10 +373,10 @@ class _ViolationEditDialogState extends ConsumerState<ViolationEditDialog> {
                       const SizedBox(height: AppDimensions.spacingS),
                       AppTextFieldMultiline(
                         controller: _notesController,
-                        label: 'メモ（任意）',
-                        hintText: '追加情報があれば記載してください',
+                        label: l10n.memoOptionalLabel,
+                        hintText: l10n.additionalInfoHint,
                         maxLines: 3,
-                        doneButtonText: '完了',
+                        doneButtonText: l10n.doneButtonText,
                       ),
 
                       // 変更不可な情報を表示
@@ -386,9 +390,9 @@ class _ViolationEditDialogState extends ConsumerState<ViolationEditDialog> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              '変更不可な情報',
-                              style: TextStyle(
+                            Text(
+                              l10n.unchangeableInfoLabel,
+                              style: const TextStyle(
                                 fontSize: AppDimensions.fontSizeS,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.textSecondary,
@@ -396,15 +400,15 @@ class _ViolationEditDialogState extends ConsumerState<ViolationEditDialog> {
                             ),
                             const SizedBox(height: AppDimensions.spacingS),
                             Text(
-                              '報告日時: ${_formatDateTime(widget.violation.reportedAt)}',
+                              l10n.reportedAtFormatted(_formatDateTime(widget.violation.reportedAt)),
                               style: const TextStyle(fontSize: AppDimensions.fontSizeS),
                             ),
                             Text(
-                              '報告者: ${widget.violation.reportedByUserName}',
+                              l10n.reporterFormatted(widget.violation.reportedByUserName),
                               style: const TextStyle(fontSize: AppDimensions.fontSizeS),
                             ),
                             Text(
-                              'ステータス: ${widget.violation.status.displayName}',
+                              l10n.statusFormatted(widget.violation.status.displayName),
                               style: const TextStyle(fontSize: AppDimensions.fontSizeS),
                             ),
                           ],
@@ -435,7 +439,7 @@ class _ViolationEditDialogState extends ConsumerState<ViolationEditDialog> {
                     onPressed: _isSubmitting
                         ? null
                         : () => Navigator.of(context).pop(),
-                    child: const Text('キャンセル'),
+                    child: Text(l10n.cancelButtonText),
                   ),
                   const SizedBox(width: AppDimensions.spacingM),
                   ElevatedButton(
@@ -458,9 +462,9 @@ class _ViolationEditDialogState extends ConsumerState<ViolationEditDialog> {
                               ),
                             ),
                           )
-                        : const Text(
-                            '更新',
-                            style: TextStyle(color: Colors.white),
+                        : Text(
+                            l10n.updateButton,
+                            style: const TextStyle(color: Colors.white),
                           ),
                   ),
                 ],
