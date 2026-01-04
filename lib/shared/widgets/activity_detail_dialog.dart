@@ -584,7 +584,12 @@ class _ActivityDetailDialogState extends State<ActivityDetailDialog> {
   }
 
   String _formatDate(DateTime date) {
-    return '${date.year}/${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}';
+    final l10n = L10n.of(context);
+    return l10n.dateFormatYearMonthDay(
+      date.year,
+      date.month,
+      date.day,
+    );
   }
 
   GameEventType _parseEventType(dynamic value) {

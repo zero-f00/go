@@ -36,7 +36,8 @@ class UserProfileShareService {
 
     try {
       final l10n = L10n.of(context);
-      final shareText = _buildShareText(user, l10n);
+      final locale = Localizations.localeOf(context);
+      final shareText = _buildShareText(user, l10n, locale);
       await Share.share(shareText, sharePositionOrigin: sharePositionOrigin);
     } catch (e) {
       if (kDebugMode) {
@@ -47,7 +48,7 @@ class UserProfileShareService {
   }
 
   /// 共有用テキストを生成
-  static String _buildShareText(UserData user, L10n l10n) {
+  static String _buildShareText(UserData user, L10n l10n, Locale locale) {
     final buffer = StringBuffer();
 
     // ユーザー名
@@ -69,8 +70,8 @@ class UserProfileShareService {
 
     buffer.writeln();
 
-    // プロフィール詳細URL
-    final profileUrl = DeepLinkService.generateUserShareUrl(user.userId);
+    // プロフィール詳細URL（言語パラメータ付き）
+    final profileUrl = DeepLinkService.generateUserShareUrl(user.userId, locale: locale);
     buffer.writeln('▼ ${l10n.shareTextProfileLink}');
     buffer.writeln(profileUrl);
     buffer.writeln();

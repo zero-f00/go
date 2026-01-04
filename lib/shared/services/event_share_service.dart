@@ -45,7 +45,8 @@ class EventShareService {
 
     try {
       final l10n = L10n.of(context);
-      final shareText = _buildShareText(event, l10n);
+      final locale = Localizations.localeOf(context);
+      final shareText = _buildShareText(event, l10n, locale);
       await Share.share(
         shareText,
         sharePositionOrigin: sharePositionOrigin,
@@ -59,7 +60,7 @@ class EventShareService {
   }
 
   /// 共有用テキストを生成
-  static String _buildShareText(GameEvent event, L10n l10n) {
+  static String _buildShareText(GameEvent event, L10n l10n, Locale locale) {
     final buffer = StringBuffer();
 
     // イベント名
@@ -93,8 +94,8 @@ class EventShareService {
       buffer.writeln();
     }
 
-    // イベント詳細URL
-    final eventUrl = DeepLinkService.generateEventShareUrl(event.id);
+    // イベント詳細URL（言語パラメータ付き）
+    final eventUrl = DeepLinkService.generateEventShareUrl(event.id, locale: locale);
     buffer.writeln('▼ ${l10n.shareTextDetailsLink}');
     buffer.writeln(eventUrl);
     buffer.writeln();

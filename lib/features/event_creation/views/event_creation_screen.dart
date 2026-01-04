@@ -1143,7 +1143,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                 children: [
                   Text(
                     value != null
-                        ? '${value.year}年${value.month}月${value.day}日 ${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}'
+                        ? L10n.of(context).dateTimeFormatFull(value.year, value.month, value.day, value.hour.toString().padLeft(2, '0'), value.minute.toString().padLeft(2, '0'))
                         : L10n.of(context).selectDateTime,
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeM,

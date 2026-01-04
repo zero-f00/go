@@ -488,11 +488,12 @@ class _EnhancedActivityDetailDialogState
   }
 
   Widget _buildGroupedList(List<ParticipationApplication> applications) {
+    final l10n = L10n.of(context);
     // 月別にグループ化
     Map<String, List<ParticipationApplication>> groupedByMonth = {};
 
     for (var app in applications) {
-      final monthKey = '${app.appliedAt.year}年${app.appliedAt.month}月';
+      final monthKey = l10n.yearMonthFormat(app.appliedAt.year, app.appliedAt.month);
       groupedByMonth[monthKey] ??= [];
       groupedByMonth[monthKey]!.add(app);
     }
@@ -683,7 +684,7 @@ class _EnhancedActivityDetailDialogState
               final date = data['updatedAt'] != null
                   ? (data['updatedAt'] as Timestamp).toDate()
                   : DateTime.now();
-              final monthKey = '${date.year}年${date.month}月';
+              final monthKey = l10n.yearMonthFormat(date.year, date.month);
               groupedByMonth[monthKey] ??= [];
               groupedByMonth[monthKey]!.add(doc);
             }
@@ -1097,7 +1098,12 @@ class _EnhancedActivityDetailDialogState
   }
 
   String _formatDate(DateTime date) {
-    return '${date.year}/${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}';
+    final l10n = L10n.of(context);
+    return l10n.dateFormatYearMonthDay(
+      date.year,
+      date.month,
+      date.day,
+    );
   }
 
   GameEventType _parseEventType(dynamic value) {

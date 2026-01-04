@@ -180,7 +180,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
                   Text(
-                    _formatDateTime(match.createdAt),
+                    _formatDateTime(context, match.createdAt),
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeM,
                       color: AppColors.textSecondary,
@@ -428,7 +428,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
-                  l10n.participantMatchCompletedAt(_formatDateTime(match.completedAt!)),
+                  l10n.participantMatchCompletedAt(_formatDateTime(context, match.completedAt!)),
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeS,
                     color: AppColors.textSecondary,
@@ -1017,7 +1017,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
           ],
           const SizedBox(height: AppDimensions.spacingS),
           Text(
-            l10n.participantMatchReportedAt(_formatDateTime(report.createdAt)),
+            l10n.participantMatchReportedAt(_formatDateTime(context, report.createdAt)),
             style: TextStyle(
               fontSize: AppDimensions.fontSizeXS,
               color: AppColors.textSecondary,
@@ -1348,7 +1348,7 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
                                   ),
                                   const SizedBox(width: AppDimensions.spacingS),
                                   Text(
-                                    l10n.participantMatchUploadedAtLabel(_formatDateTime(DateTime.parse(metadata['uploadedAt']))),
+                                    l10n.participantMatchUploadedAtLabel(_formatDateTime(context, DateTime.parse(metadata['uploadedAt']))),
                                     style: TextStyle(
                                       fontSize: AppDimensions.fontSizeS,
                                       color: AppColors.textSecondary,
@@ -1462,10 +1462,15 @@ class ParticipantMatchDetailScreen extends ConsumerWidget {
   }
 
   /// 日時フォーマット
-  String _formatDateTime(DateTime dateTime) {
-    return '${dateTime.year}/${dateTime.month}/${dateTime.day} '
-           '${dateTime.hour.toString().padLeft(2, '0')}:'
-           '${dateTime.minute.toString().padLeft(2, '0')}';
+  String _formatDateTime(BuildContext context, DateTime dateTime) {
+    final l10n = L10n.of(context);
+    return l10n.dateTimeFormatFull(
+      dateTime.year,
+      dateTime.month,
+      dateTime.day,
+      dateTime.hour.toString().padLeft(2, '0'),
+      dateTime.minute.toString().padLeft(2, '0'),
+    );
   }
 }
 

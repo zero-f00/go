@@ -906,7 +906,8 @@ class _ManagementScreenState extends ConsumerState<ManagementScreen>
 
   /// 日付フォーマット
   String _formatDate(DateTime date) {
-    return '${date.year}/${date.month}/${date.day}';
+    final l10n = L10n.of(context);
+    return l10n.dateFormatYearMonthDay(date.year, date.month, date.day);
   }
 
   Widget _buildQuickActionsSection() {

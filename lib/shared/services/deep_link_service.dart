@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show Locale;
 import 'package:flutter/foundation.dart';
 import 'package:app_links/app_links.dart';
 import 'navigation_service.dart';
@@ -127,13 +128,33 @@ class DeepLinkService {
   }
 
   /// イベント共有用URLを生成
-  static String generateEventShareUrl(String eventId) {
-    return 'https://$webDomain$eventPathPrefix$eventId';
+  /// [locale] が指定された場合、言語パラメータをURLに追加
+  static String generateEventShareUrl(String eventId, {Locale? locale}) {
+    final baseUrl = 'https://$webDomain$eventPathPrefix$eventId';
+    return _appendLangParam(baseUrl, locale);
   }
 
   /// ユーザープロフィール共有用URLを生成
-  static String generateUserShareUrl(String userId) {
-    return 'https://$webDomain$userPathPrefix$userId';
+  /// [locale] が指定された場合、言語パラメータをURLに追加
+  static String generateUserShareUrl(String userId, {Locale? locale}) {
+    final baseUrl = 'https://$webDomain$userPathPrefix$userId';
+    return _appendLangParam(baseUrl, locale);
+  }
+
+  /// URLに言語パラメータを追加
+  /// go-webがサポートする言語: ja, en, ko, zh
+  static String _appendLangParam(String url, Locale? locale) {
+    if (locale == null) return url;
+
+    // go-webがサポートする言語コード
+    const supportedLangs = ['ja', 'en', 'ko', 'zh'];
+    final langCode = locale.languageCode;
+
+    if (supportedLangs.contains(langCode)) {
+      return '$url?lang=$langCode';
+    }
+
+    return url;
   }
 
   /// リソース解放
