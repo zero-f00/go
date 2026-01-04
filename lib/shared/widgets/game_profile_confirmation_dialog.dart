@@ -5,6 +5,7 @@ import '../../features/game_profile/providers/game_profile_provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
+import '../helpers/game_profile_localization_helper.dart';
 import 'primary_button.dart';
 import 'secondary_button.dart';
 
@@ -41,7 +42,7 @@ class GameProfileConfirmationDialog extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: AppDimensions.spacingM),
-            _buildProfileSection(ref, l10n),
+            _buildProfileSection(context, ref, l10n),
           ],
         ),
       ),
@@ -60,17 +61,17 @@ class GameProfileConfirmationDialog extends ConsumerWidget {
     );
   }
 
-  Widget _buildProfileSection(WidgetRef ref, L10n l10n) {
+  Widget _buildProfileSection(BuildContext context, WidgetRef ref, L10n l10n) {
     final gameAsync = ref.watch(gameByIdProvider(gameProfile.gameId));
 
     return gameAsync.when(
-      data: (game) => _buildProfileContent(game?.name ?? gameProfile.gameId, l10n),
-      loading: () => _buildProfileContent(gameProfile.gameId, l10n),
-      error: (_, __) => _buildProfileContent(gameProfile.gameId, l10n),
+      data: (game) => _buildProfileContent(context, game?.name ?? gameProfile.gameId, l10n),
+      loading: () => _buildProfileContent(context, gameProfile.gameId, l10n),
+      error: (_, __) => _buildProfileContent(context, gameProfile.gameId, l10n),
     );
   }
 
-  Widget _buildProfileContent(String gameName, L10n l10n) {
+  Widget _buildProfileContent(BuildContext context, String gameName, L10n l10n) {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
@@ -86,18 +87,18 @@ class GameProfileConfirmationDialog extends ConsumerWidget {
           if (gameProfile.gameUserId.isNotEmpty)
             _buildInfoRow(l10n.gameUserIdLabel, gameProfile.gameUserId),
           if (gameProfile.skillLevel != null)
-            _buildInfoRow(l10n.skillLevelLabel, gameProfile.skillLevel!.displayName),
+            _buildInfoRow(l10n.skillLevelLabel, GameProfileLocalizationHelper.getSkillLevelDisplayName(context, gameProfile.skillLevel!)),
           if (gameProfile.rankOrLevel.isNotEmpty)
             _buildInfoRow(l10n.rankLevelLabel, gameProfile.rankOrLevel),
           if (gameProfile.playStyles.isNotEmpty)
             _buildInfoRow(
               l10n.playStyleLabel,
-              gameProfile.playStyles.map((style) => style.displayName).join(', '),
+              gameProfile.playStyles.map((style) => GameProfileLocalizationHelper.getPlayStyleDisplayName(context, style)).join(', '),
             ),
           if (gameProfile.activityTimes.isNotEmpty)
             _buildInfoRow(
               l10n.activityTimeLabel,
-              gameProfile.activityTimes.map((time) => time.displayName).join(', '),
+              gameProfile.activityTimes.map((time) => GameProfileLocalizationHelper.getActivityTimeDisplayName(context, time)).join(', '),
             ),
           _buildInfoRow(
             l10n.inGameVoiceChatLabel,

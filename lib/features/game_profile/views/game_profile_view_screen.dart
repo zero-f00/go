@@ -8,6 +8,7 @@ import '../../../shared/widgets/game_icon.dart';
 import '../../../data/models/game_profile_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/helpers/game_profile_localization_helper.dart';
 import 'game_profile_view_screen_sns.dart';
 
 /// ゲームプロフィール閲覧画面（読み取り専用）
@@ -48,13 +49,13 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
                       const SizedBox(height: AppDimensions.spacingL),
                       _buildGameInfo(l10n),
                       const SizedBox(height: AppDimensions.spacingL),
-                      _buildBasicInfo(l10n),
+                      _buildBasicInfo(context, l10n),
                       const SizedBox(height: AppDimensions.spacingL),
-                      _buildExperienceInfo(l10n),
+                      _buildExperienceInfo(context, l10n),
                       const SizedBox(height: AppDimensions.spacingL),
-                      _buildPlayStyleInfo(l10n),
+                      _buildPlayStyleInfo(context, l10n),
                       const SizedBox(height: AppDimensions.spacingL),
-                      _buildActivityInfo(l10n),
+                      _buildActivityInfo(context, l10n),
                       const SizedBox(height: AppDimensions.spacingL),
                       _buildSocialLinksInfo(context, l10n),
                       const SizedBox(height: AppDimensions.spacingL),
@@ -245,7 +246,7 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
   }
 
   /// 基本情報
-  Widget _buildBasicInfo(L10n l10n) {
+  Widget _buildBasicInfo(BuildContext context, L10n l10n) {
     return _buildSection(
       title: l10n.basicInfo,
       icon: Icons.person,
@@ -253,7 +254,7 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
         children: [
           _buildInfoCard(l10n.rankOrLevel, profile.rankOrLevel.isNotEmpty ? profile.rankOrLevel : l10n.notSet, Icons.military_tech, l10n),
           const SizedBox(height: AppDimensions.spacingM),
-          _buildInfoCard(l10n.skillLevelSection, profile.skillLevel?.displayName ?? l10n.notSet, Icons.history, l10n),
+          _buildInfoCard(l10n.skillLevelSection, profile.skillLevel != null ? GameProfileLocalizationHelper.getSkillLevelDisplayName(context, profile.skillLevel!) : l10n.notSet, Icons.history, l10n),
           const SizedBox(height: AppDimensions.spacingM),
           _buildInfoCard(l10n.clanName, profile.clan.isNotEmpty ? profile.clan : l10n.notSet, Icons.groups, l10n),
         ],
@@ -262,14 +263,14 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
   }
 
   /// スキルレベル情報
-  Widget _buildExperienceInfo(L10n l10n) {
+  Widget _buildExperienceInfo(BuildContext context, L10n l10n) {
     return _buildSection(
       title: l10n.skillLevelSection,
       icon: Icons.emoji_events,
       child: profile.skillLevel != null
         ? _buildInfoCard(
-            profile.skillLevel!.displayName,
-            profile.skillLevel!.description,
+            GameProfileLocalizationHelper.getSkillLevelDisplayName(context, profile.skillLevel!),
+            GameProfileLocalizationHelper.getSkillLevelDescription(context, profile.skillLevel!),
             Icons.trending_up,
             l10n,
             backgroundColor: _getExperienceColor(profile.skillLevel!).withValues(alpha: 0.1),
@@ -281,7 +282,7 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
   }
 
   /// プレイスタイル情報
-  Widget _buildPlayStyleInfo(L10n l10n) {
+  Widget _buildPlayStyleInfo(BuildContext context, L10n l10n) {
     return _buildSection(
       title: l10n.playStyleSection,
       icon: Icons.style,
@@ -291,8 +292,8 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
               width: double.infinity,
               margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
               child: _buildInfoCard(
-                style.displayName,
-                style.description,
+                GameProfileLocalizationHelper.getPlayStyleDisplayName(context, style),
+                GameProfileLocalizationHelper.getPlayStyleDescription(context, style),
                 Icons.psychology,
                 l10n,
                 backgroundColor: AppColors.info.withValues(alpha: 0.1),
@@ -306,14 +307,14 @@ class GameProfileViewScreen extends ConsumerWidget with GameProfileSNSMixin {
   }
 
   /// 活動時間情報
-  Widget _buildActivityInfo(L10n l10n) {
+  Widget _buildActivityInfo(BuildContext context, L10n l10n) {
     return _buildSection(
       title: l10n.activityTimeSection,
       icon: Icons.schedule,
       child: profile.activityTimes.isNotEmpty
         ? _buildInfoCard(
             l10n.activityTimeSection,
-            profile.activityTimes.map((time) => time.displayName).join('、'),
+            profile.activityTimes.map((time) => GameProfileLocalizationHelper.getActivityTimeDisplayName(context, time)).join('、'),
             Icons.access_time,
             l10n,
             backgroundColor: AppColors.warning.withValues(alpha: 0.1),
